@@ -7,8 +7,30 @@
 # See the COPYRIGHT file distributed with this work for additional
 # information regarding copyright ownership.
 
-AC_INIT(BIND, [9.15], [info@isc.org], [], [https://www.isc.org/downloads/BIND/])
-AC_PREREQ([2.60])
+m4_include([./version.m4])
+
+AC_INIT([BIND], bind_PKG_VERSION, [info@isc.org], [], [https://www.isc.org/downloads/BIND/])
+AC_PREREQ(2.60)
+
+#
+# Define PACKAGE_DESCRIPTION and PACKAGE_SRCID when generating configure
+#
+AC_DEFINE([PACKAGE_DESCRIPTION],
+	  [m4_ifnblank(bind_DESCRIPTION, [ ]bind_DESCRIPTION, [])],
+	  [An extra string to print after PACKAGE_STRING])
+AC_DEFINE([PACKAGE_SRCID], [bind_SRCID], [A short hash from git])
+
+bind_CONFIGARGS="${ac_configure_args:-default}"
+AC_DEFINE_UNQUOTED([PACKAGE_CONFIGARGS], ["$bind_CONFIGARGS"], [Either 'defaults' or used ./configure options])
+
+AC_DEFINE_UNQUOTED([PACKAGE_BUILDER], ["make"], ["make or Visual Studio"])
+
+AC_CONFIG_SRCDIR([bin/named/main.c])
+AM_INIT_AUTOMAKE([gnu subdir-objects dist-xz -Wall -Werror])
+AM_SILENT_RULES([yes])
+
+AC_CONFIG_HEADER([config.h])
+AC_CONFIG_MACRO_DIR([m4])
 
 #
 # Enable maintainer mode by default, but allow to disable it in the CI
@@ -16,8 +38,8 @@ AC_PREREQ([2.60])
 AM_MAINTAINER_MODE([enable])
 
 AC_CONFIG_HEADER(config.h)
-AC_CONFIG_MACRO_DIR([m4])
 
+AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_HOST
 
 #
@@ -44,10 +66,15 @@ AC_DEFINE([__APPLE_USE_RFC_3542], [1], [Select RFC3542 IPv6 API on macOS])
 
 AC_PROG_MAKE_SET
 
-AC_PROG_LIBTOOL
+# Checks for programs.
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR]) # call AM_PROG_AR only if available
+
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AX_POSIX_SHELL
+
+# Initialize libtool
+LT_INIT
 
 AC_SUBST(STD_CINCLUDES)
 AC_SUBST(STD_CDEFINES)
@@ -153,13 +180,6 @@ no)
         ;;
 esac
 
-#
-# Make very sure that these are the first files processed by
-# config.status, since we use the processed output as the input for
-# AC_SUBST_FILE() substitutions in other files.
-#
-AC_CONFIG_FILES([make/rules make/includes])
-
 AC_PATH_PROG(AR, ar)
 ARFLAGS="cruv"
 AC_SUBST(AR)
@@ -188,109 +208,70 @@ esac
 AC_PATH_PROGS(PERL, perl5 perl)
 AC_SUBST(PERL)
 
+AC_ARG_ENABLE([dnssec-keymgr],
+	      [AS_HELP_STRING([--disable-dnssec-keymgr],
+			      [Enable dnssec-keymgr tool,
+					     requires Python 3.2 or 2.7
+					     and ply, argparse and dnspython
+					     modules
+					     [default=yes]])],
+	      [],[enable_dnssec_keymgr=yes])
+
 #
-# Python is also optional but required by default so that dnssec-keymgr gets
-# installed unless explicitly prevented by the user using --without-python.
+# Python and modules are optional
 #
-testminvers='import sys
-if (sys.version_info < (2,7)) or (sys.version_info < (3,2) and sys.version_info >= (3,0)):
-   exit(1)'
+AS_IF([test "$enable_dnssec_keymgr" != "no"],
+      [AS_IF([test -n "$PYTHON"],
+	     [AC_MSG_CHECKING([whether $PYTHON version is >= 3.2])
+	      AM_PYTHON_CHECK_VERSION([$PYTHON], [3.2],
+				      [AC_MSG_RESULT([yes])
+				       AM_PATH_PYTHON(,,[:])
+				      ],
+				      [AC_MSG_RESULT([no])
+				       AC_MSG_CHECKING([whether $PYTHON version is >= 2.7])
+				       AM_PYTHON_CHECK_VERSION([$PYTHON], [2.7],
+							       [AC_MSG_RESULT([yes])
+								AM_PATH_PYTHON(,,[:])
+							       ],
+							       [AC_MSG_RESULT([no])
+								unset PYTHON
+							       ])
+				      ])],
+	     [AM_PATH_PYTHON([3.2],
+			     [],
+			     [AM_PATH_PYTHON([2.7],
+					     []
+					     [:])])])
 
-testargparse='try: import argparse
-except: exit(1)'
+       AS_IF([test "$PYTHON" != ":"],
+	     [AX_PYTHON_MODULE([ply], [1])
+	      AX_PYTHON_MODULE([argparse], [1])
+	      AX_PYTHON_MODULE([dns.message], [1])
+	     ])
+       ])
 
-testply='try: import ply
-except: exit(1)'
+AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ":"])
 
-default_with_python="python python3 python3.7 python3.6 python3.5 python3.4 python3.3 python3.2 python2 python2.7"
-
-AC_ARG_WITH([python],
-	    AS_HELP_STRING([--with-python=PATH],
-			   [specify path to Python interpreter]),
-	    [], [with_python=$default_with_python])
-AC_ARG_WITH([python-install-dir],
-	    AS_HELP_STRING([--with-python-install-dir=PATH],
-			   [installation directory for Python modules]),
-	    [], with_python_install_dir="")
-
-AS_IF([test "$with_python" = "yes"],
-      [with_python=$default_with_python])
-
-AS_IF([test "$with_python" = "no"],
-      [AC_MSG_CHECKING([for Python support])
-       AC_MSG_RESULT([disabled])],
-      [for p in $with_python
-       do
-	 AS_CASE([$p],
-		 [/*],[PYTHON="$p"])
-
-	 AC_PATH_PROG([PYTHON], [$p])
-	 # Do not cache the result of the check from the previous line.  If the
-	 # first found Python interpreter has missing module dependencies and
-	 # the result of the above check is cached, subsequent module checks
-	 # will erroneously keep on using the cached path to the first found
-	 # Python interpreter instead of different ones.
-	 unset ac_cv_path_PYTHON
-
-	 AS_IF([test -z "$PYTHON"], [continue])
-
-	 AC_MSG_CHECKING([if $PYTHON is python2 version >= 2.7 or python3 version >= 3.2])
-	 AS_IF(["$PYTHON" -c "$testminvers" 2>/dev/null],
-	       [AC_MSG_RESULT([yes])],
-	       [AC_MSG_RESULT([no])
-		unset PYTHON
-		continue])
-
-	 AC_MSG_CHECKING([Python module 'argparse'])
-	 AS_IF(["$PYTHON" -c "$testargparse" 2>/dev/null],
-	       [AC_MSG_RESULT([yes])],
-	       [AC_MSG_RESULT([no])
-		unset PYTHON
-		continue])
-
-	 AC_MSG_CHECKING([Python module 'ply'])
-	 AS_IF(["$PYTHON" -c "$testply" 2>/dev/null],
-	       [AC_MSG_RESULT([yes])],
-	       [AC_MSG_RESULT([no])
-		unset PYTHON
-		continue])
-
-	 # Stop looking any further once we find a Python interpreter
-	 # satisfying all requirements.
-	 break
-       done
-
-       AS_IF([test "X$PYTHON" = "X"],
-	     [AC_MSG_CHECKING([for Python support])
-	      AC_MSG_RESULT([no])
-	      AC_MSG_ERROR([m4_normalize(
-				[Python >= 2.7 or >= 3.2 and the PLY package
-                                 are required for dnssec-keymgr and other
-                                 Python-based tools. PLY may be
-                                 available from your OS package manager
-                                 as python-ply or python3-ply; it can also
-                                 be installed via pip. To build without
-                                 Python/PLY, use --without-python.]
-			    )])])])
-
-PYTHON_TOOLS=''
-CHECKDS=''
-COVERAGE=''
-KEYMGR=''
-AS_IF([test "X$PYTHON" != "X"],
-      [PYTHON_TOOLS=python
-       CHECKDS=checkds
-       COVERAGE=coverage
-       KEYMGR=keymgr
-       PYTHON_INSTALL_DIR="$with_python_install_dir"
-       AS_IF([test -n "$with_python_install_dir"],
-	     [PYTHON_INSTALL_LIB="--install-lib=$with_python_install_dir"])])
-AC_SUBST(CHECKDS)
-AC_SUBST(COVERAGE)
-AC_SUBST(KEYMGR)
-AC_SUBST(PYTHON_TOOLS)
-AC_SUBST(PYTHON_INSTALL_DIR)
-AC_SUBST(PYTHON_INSTALL_LIB)
+AS_IF([test "$PYTHON" != ":"],
+      [AC_CONFIG_FILES([bin/python/isc/__init__.py
+			bin/python/isc/checkds.py
+			bin/python/isc/coverage.py
+			bin/python/isc/dnskey.py
+			bin/python/isc/eventlist.py
+			bin/python/isc/keydict.py
+			bin/python/isc/keyevent.py
+			bin/python/isc/keymgr.py
+			bin/python/isc/keyseries.py
+			bin/python/isc/keyzone.py
+			bin/python/isc/policy.py
+			bin/python/isc/rndc.py
+			bin/python/isc/utils.py
+		       ])
+       AC_CONFIG_FILES([bin/python/dnssec-checkds:bin/python/dnssec-checkds.py.in]
+		       [bin/python/dnssec-coverage:bin/python/dnssec-coverage.py.in]
+		       [bin/python/dnssec-keymgr:bin/python/dnssec-keymgr.py.in],
+		       [chmod +x bin/python/dnssec-checkds bin/python/dnssec-coverage bin/python/dnssec-keymgr])
+      ])
 
 #
 # expanded_sysconfdir is needed for replacement in the python utilities
@@ -399,6 +380,7 @@ AC_CHECK_HEADERS([threads.h],
 AC_C_CONST
 AC_C_INLINE
 AC_C_VOLATILE
+AC_CHECK_FUNCS([sysctlbyname])
 AC_C_FLEXIBLE_ARRAY_MEMBER
 
 #
@@ -637,40 +619,6 @@ AC_CHECK_FUNCS([flockfile getc_unlocked])
 #
 AC_CHECK_FUNCS([sysconf])
 
-AC_SUBST(ALWAYS_DEFINES)
-
-AC_MSG_CHECKING(for libtool)
-AC_ARG_WITH(libtool, AS_HELP_STRING([--with-libtool], [use GNU libtool]),
-	    use_libtool="$withval", use_libtool="no")
-
-case $use_libtool in
-	yes)
-		AC_MSG_RESULT(yes)
-		AM_PROG_LIBTOOL
-		O=lo
-		A=la
-		LIBTOOL_MKDEP_SED='s;\.o;\.lo;'
-		LIBTOOL_MODE_COMPILE='--mode=compile'
-		LIBTOOL_MODE_INSTALL='--mode=install'
-		LIBTOOL_MODE_LINK='--mode=link'
-		LIBTOOL_MODE_UNINSTALL='--mode=uninstall'
-		INSTALL_LIBRARY='${INSTALL_PROGRAM}'
-		;;
-	*)
-		AC_MSG_RESULT(no)
-		O=o
-		A=a
-		LIBTOOL=
-		AC_SUBST(LIBTOOL)
-		LIBTOOL_MKDEP_SED=
-		LIBTOOL_MODE_COMPILE=
-		LIBTOOL_MODE_INSTALL=
-		LIBTOOL_MODE_LINK=
-		LIBTOOL_MODE_UNINSTALL=
-		INSTALL_LIBRARY='${INSTALL_DATA}'
-		;;
-esac
-AC_SUBST(INSTALL_LIBRARY)
 
 #
 # Do we want to use pthread rwlock? (useful for ThreadSanitizer)
@@ -818,24 +766,18 @@ AC_ARG_ENABLE(native-pkcs11,
 AC_MSG_CHECKING([for PKCS11 for Public-Key Cryptography])
 AS_CASE([$enable_native_pkcs11],
 	[no],[AC_MSG_RESULT([no])],
-	[yes],[PKCS11_TOOLS=pkcs11
-	       PKCS11_TEST=pkcs11
-	       CRYPTO=pkcs11
+	[yes],[CRYPTO=pkcs11
 	       AS_IF([$use_threads],
 		     [:],
 		     [AC_MSG_ERROR([PKCS11 requires threading support])])
 	       AC_MSG_RESULT([yes])
 	       AC_CHECK_FUNCS([getpassphrase])
 	      ])
-AC_SUBST([PKCS11_TEST])
-AC_SUBST([PKCS11_TOOLS])
+AM_CONDITIONAL([HAVE_PKCS11], [test "$CRYPTO" = "pkcs11"])
 
 AS_CASE([$CRYPTO],
 	[pkcs11],[AC_DEFINE([USE_PKCS11], [1], [define if PKCS11 is used for Public-Key Cryptography])],
 	[AC_DEFINE([USE_OPENSSL], [1], [define if OpenSSL is used for Public-Key Cryptography])])
-
-# preparation for automake
-# AM_CONDITIONAL([PKCS11_TOOLS], [test "$with_native_pkcs11" = "yes"])
 
 #
 # was --with-pkcs11 specified?
@@ -1213,6 +1155,7 @@ fi
 AC_SUBST(NZD_TOOLS)
 AC_SUBST(NZDSRCS)
 AC_SUBST(NZDTARGETS)
+AM_CONDITIONAL([HAVE_LMDB], [test "$NZD_TOOLS" = "nzd"])
 
 #
 # was --with-libxml2 specified?
@@ -1421,46 +1364,6 @@ AS_IF([test "$enable_backtrace" = "yes"],
 	 [AC_DEFINE([HAVE_LIBCTRACE], [1], [define if system have backtrace function])]
        )])
 
-AC_ARG_ENABLE(symtable,
-	      AS_HELP_STRING([--enable-symtable],
-			     [use internal symbol table for backtrace
-			      [all|minimal(default)|none]]),
-		want_symtable="$enableval",  want_symtable="minimal")
-case $want_symtable in
-yes|all|minimal)     # "yes" is a hidden value equivalent to "minimal"
-	if test "" = "$PERL"
-	then
-		AC_MSG_ERROR([Internal symbol table requires perl but no perl is found.
-Install perl or explicitly disable the feature by --disable-symtable.])
-	fi
-	if test "yes" = "$use_libtool"; then
-		AC_MSG_WARN([Internal symbol table does not work with libtool.  Disabling symbol table.])
-	else
-		# we generate the internal symbol table only for those systems
-		# known to work to avoid unexpected build failure.  Also, warn
-		# about unsupported systems when the feature is enabled
-		#  manually.
-		case $host_os in
-		freebsd*|netbsd*|openbsd*|linux*|solaris*|darwin*)
-			MKSYMTBL_PROGRAM="$PERL"
-			if test "all" = "$want_symtable"; then
-				ALWAYS_MAKE_SYMTABLE="yes"
-			fi
-			;;
-		*)
-			if test "yes" = "$want_symtable" -o "all" = "$want_symtable"
-			then
-				AC_MSG_WARN([this system is not known to generate internal symbol table safely; disabling it])
-			fi
-		esac
-	fi
-	;;
-*)
-	;;
-esac
-AC_SUBST(MKSYMTBL_PROGRAM)
-AC_SUBST(ALWAYS_MAKE_SYMTABLE)
-
 #
 # File name extension for static archive files, for those few places
 # where they are treated differently from dynamic ones.
@@ -1592,29 +1495,15 @@ fi
 #
 # Use our own SPNEGO implementation?
 #
-AC_ARG_ENABLE(isc-spnego,
+AC_ARG_ENABLE([isc-spnego],
 	      AS_HELP_STRING([--disable-isc-spnego],
 			     [use SPNEGO from GSSAPI library]))
 
-if test -n "$USE_GSSAPI"
-then
-	case "$enable_isc_spnego" in
-		yes|'')
-			USE_ISC_SPNEGO='-DUSE_ISC_SPNEGO'
-			DST_EXTRA_OBJS="$DST_EXTRA_OBJS spnego.$O"
-			DST_EXTRA_SRCS="$DST_EXTRA_SRCS spnego.c"
-			AC_MSG_RESULT(using SPNEGO from lib/dns)
-			;;
-		no)
-			AC_MSG_RESULT(using SPNEGO from GSSAPI library)
-			;;
-	esac
-fi
-
-AC_SUBST(USE_ISC_SPNEGO)
-
-AC_SUBST(DST_EXTRA_OBJS)
-AC_SUBST(DST_EXTRA_SRCS)
+AS_IF([test -n "$USE_GSSAPI"],
+      [AS_IF([test "$enable_isc_spnego" != "no"],
+	     [AC_DEFINE([USE_ISC_SPNEGO], [1], "Use ISC SPNEGO implementation")])],
+      [enable_isc_spnego=no])
+AM_CONDITIONAL([USE_ISC_SPNEGO], [test "$enable_isc_spnego" != "no"])
 
 #
 # Security Stuff
@@ -1840,73 +1729,22 @@ esac
 #
 # Activate dnstap?
 #
-AC_ARG_ENABLE(dnstap,
-	      AS_HELP_STRING([--enable-dnstap],
+AC_ARG_ENABLE([dnstap],
+	      [AS_HELP_STRING([--enable-dnstap],
 			     [enable dnstap support
-				(requires fstrm, protobuf-c)]),
-	      use_dnstap=$enableval, use_dnstap=no)
+				(requires fstrm, protobuf-c)])],
+	      [],[enable_dnstap=no])
 
-DNSTAP=
-DNSTAPSRCS=
-DNSTAPOBJS=
-DNSTAPTARGETS=
-if test "x$use_dnstap" != "xno"; then
-	AC_ARG_WITH([protobuf-c],
-		    AS_HELP_STRING([--with-protobuf-c=path],
-				   [Path where protobuf-c is installed, for dnstap]), [
-	    # workaround for protobuf-c includes at old dir
-	    # before protobuf-c-1.0.0
-	    if test -f $withval/include/google/protobuf-c/protobuf-c.h
-	    then
-		CFLAGS="$CFLAGS -I$withval/include/google"
-	    else
-		CFLAGS="$CFLAGS -I$withval/include"
-	    fi
-	    LDFLAGS="$LDFLAGS -L$withval/lib"
-	    AC_PATH_PROG([PROTOC_C], [protoc-c], [],
-			 [$PATH$PATH_SEPARATOR$withval/bin])
-	], [
-	    # workaround for protobuf-c includes at old dir
-	    # before protobuf-c-1.0.0
-	    if test -f /usr/include/google/protobuf-c/protobuf-c.h
-	    then
-		CFLAGS="$CFLAGS -I/usr/include/google"
-	    else
-		if test -f /usr/local/include/google/protobuf-c/protobuf-c.h
-		then
-		    CFLAGS="$CFLAGS -I/usr/local/include/google"
-		    LDFLAGS="$LDFLAGS -L/usr/local/lib"
-		fi
-	    fi
-	    AC_PATH_PROG([PROTOC_C],[protoc-c])
-	])
-	if test -z "$PROTOC_C"; then
-		AC_MSG_ERROR([The protoc-c program was not found.])
-	fi
-	AC_ARG_WITH([libfstrm], AS_HELP_STRING([--with-libfstrm=path],
-		    [Path where libfstrm is installed, for dnstap]), [
-	    CFLAGS="$CFLAGS -I$withval/include"
-	    LDFLAGS="$LDFLAGS -L$withval/lib"
-	    AC_PATH_PROG([FSTRM_CAPTURE], [fstrm_capture], [], [$PATH$PATH_SEPARATOR$withval/bin])
-	],[
-	    AC_PATH_PROG([FSTRM_CAPTURE], [fstrm_capture])
-	])
+AS_IF([test "$enable_dnstap" != "no"],
+      [PKG_CHECK_MODULES([DNSTAP], [libfstrm libprotobuf-c], [],
+			 [AC_MSG_FAILURE([Required libraries (fstrm, protobuf-c) were not found, please install them.])])
+       AC_PATH_PROG([PROTOC_C], [protoc-c])
+       AC_DEFINE(HAVE_DNSTAP, 1, [Define to 1 to enable dnstap support])
+      ])
 
-	AC_SEARCH_LIBS([fstrm_iothr_init], [fstrm], [],
-		       AC_MSG_ERROR([The fstrm library was not found. Please install fstrm!]))
-	AC_SEARCH_LIBS([protobuf_c_message_pack], [protobuf-c], [],
-		       AC_MSG_ERROR([The protobuf-c library was not found. Please install protobuf-c!]))
-
-	AC_DEFINE(HAVE_DNSTAP, 1, [Define to 1 to enable dnstap support])
-	DNSTAP=dnstap
-	DNSTAPSRCS='${DNSTAPSRCS}'
-	DNSTAPOBJS='${DNSTAPOBJS}'
-	DNSTAPTARGETS='${DNSTAPTARGETS}'
-fi
-AC_SUBST(DNSTAP)
-AC_SUBST(DNSTAPSRCS)
-AC_SUBST(DNSTAPOBJS)
-AC_SUBST(DNSTAPTARGETS)
+AC_SUBST([DNSTAP_CFLAGS])
+AC_SUBST([DNSTAP_LIBS])
+AM_CONDITIONAL([HAVE_DNSTAP], [test "$enable_dnstap" != "no"])
 
 #
 #  The following sets up how non-blocking i/o is established.
@@ -2250,48 +2088,6 @@ else
 	BIND9_BIND9_BUILDINCLUDE=""
 	BIND9_IRS_BUILDINCLUDE=""
 fi
-
-AC_SUBST_FILE(BIND9_MAKE_INCLUDES)
-BIND9_MAKE_INCLUDES=$BIND9_TOP_BUILDDIR/make/includes
-
-AC_SUBST_FILE(BIND9_MAKE_RULES)
-BIND9_MAKE_RULES=$BIND9_TOP_BUILDDIR/make/rules
-
-. "$srcdir/version"
-BIND9_PRODUCT="PRODUCT=\"${PRODUCT}\""
-AC_SUBST(BIND9_PRODUCT)
-BIND9_DESCRIPTION="DESCRIPTION=\"${DESCRIPTION}\""
-AC_SUBST(BIND9_DESCRIPTION)
-BIND9_VERSION="${MAJORVER}.${MINORVER}${PATCHVER:+.}${PATCHVER}${RELEASETYPE}${RELEASEVER}${EXTENSIONS}"
-AC_SUBST(BIND9_VERSION)
-BIND9_MAJOR="MAJOR=${MAJORVER}.${MINORVER}"
-AC_SUBST(BIND9_MAJOR)
-BIND9_VERSIONSTRING="${PRODUCT} ${MAJORVER}.${MINORVER}${PATCHVER:+.}${PATCHVER}${RELEASETYPE}${RELEASEVER}${EXTENSIONS}${DESCRIPTION:+ }${DESCRIPTION}"
-AC_SUBST(BIND9_VERSIONSTRING)
-BIND9_VERSIONSHORT="${PRODUCT} ${MAJORVER}.${MINORVER}${PATCHVER:+.}${PATCHVER}${RELEASETYPE}${RELEASEVER}${EXTENSIONS}"
-AC_SUBST(BIND9_VERSIONSHORT)
-
-BIND9_SRCID="SRCID=unset_id"
-if test -f "${srcdir}/srcid"; then
-	. "${srcdir}/srcid"
-	BIND9_SRCID="SRCID=$SRCID"
-elif test -d "${srcdir}/.git"; then
-	BIND9_SRCID="SRCID="`(cd "${srcdir}";git rev-parse --short HEAD)`
-fi
-
-AC_SUBST(BIND9_SRCID)
-
-if test -z "$ac_configure_args"; then
-	BIND9_CONFIGARGS="defaults"
-else
-	for a in $ac_configure_args
-	do
-		BIND9_CONFIGARGS="$BIND9_CONFIGARGS $a"
-	done
-fi
-BIND9_CONFIGARGS="`echo $BIND9_CONFIGARGS | sed 's/^ //'`"
-BIND9_CONFIGARGS="CONFIGARGS=${BIND9_CONFIGARGS}"
-AC_SUBST(BIND9_CONFIGARGS)
 
 AC_SUBST_FILE(LIBISC_API)
 LIBISC_API="$srcdir/lib/isc/api"
@@ -2699,152 +2495,32 @@ AC_CONFIG_COMMANDS(
 # elsewhere if there's a good reason for doing so.
 #
 
-AC_CONFIG_FILES([
-	make/Makefile
-	make/mkdep
-	Makefile
-	bin/Makefile
-	bin/check/Makefile
-	bin/confgen/Makefile
-	bin/confgen/unix/Makefile
-	bin/delv/Makefile
-	bin/dig/Makefile
-	bin/dnssec/Makefile
-	bin/named/Makefile
-	bin/named/unix/Makefile
-	bin/nsupdate/Makefile
-	bin/pkcs11/Makefile
-	bin/plugins/Makefile
-	bin/python/Makefile
-	bin/python/isc/Makefile
-	bin/python/isc/utils.py
-	bin/python/isc/tests/Makefile
-	bin/python/dnssec-checkds.py
-	bin/python/dnssec-coverage.py
-	bin/python/dnssec-keymgr.py
-	bin/python/isc/__init__.py
-	bin/python/isc/checkds.py
-	bin/python/isc/coverage.py
-	bin/python/isc/dnskey.py
-	bin/python/isc/eventlist.py
-	bin/python/isc/keydict.py
-	bin/python/isc/keyevent.py
-	bin/python/isc/keymgr.py
-	bin/python/isc/keyseries.py
-	bin/python/isc/keyzone.py
-	bin/python/isc/policy.py
-	bin/python/isc/rndc.py
-	bin/python/isc/tests/dnskey_test.py
-	bin/python/isc/tests/policy_test.py
-	bin/rndc/Makefile
-	bin/tests/Makefile
-	bin/tests/headerdep_test.sh
-	bin/tests/optional/Makefile
-	bin/tests/pkcs11/Makefile
-	bin/tests/pkcs11/benchmarks/Makefile
-	bin/tests/system/Makefile
-	bin/tests/system/conf.sh
-	bin/tests/system/dlzexternal/Makefile
-	bin/tests/system/dlzexternal/ns1/dlzs.conf
-	bin/tests/system/dyndb/Makefile
-	bin/tests/system/dyndb/driver/Makefile
-	bin/tests/system/pipelined/Makefile
-	bin/tests/system/rndc/Makefile
-	bin/tests/system/rpz/Makefile
-	bin/tests/system/rsabigexponent/Makefile
-	bin/tests/system/tkey/Makefile
-	bin/tools/Makefile
-	contrib/scripts/check-secure-delegation.pl
-	contrib/scripts/zone-edit.sh
-	doc/Makefile
-	doc/arm/Makefile
-	doc/arm/noteversion.xml
-	doc/arm/pkgversion.xml
-	doc/arm/releaseinfo.xml
-	doc/doxygen/Doxyfile
-	doc/doxygen/Makefile
-	doc/doxygen/doxygen-input-filter
-	doc/misc/Makefile
-	doc/tex/Makefile
-	doc/tex/armstyle.sty
-	doc/xsl/Makefile
-	doc/xsl/isc-docbook-chunk.xsl
-	doc/xsl/isc-docbook-html.xsl
-	doc/xsl/isc-manpage.xsl
-	doc/xsl/isc-notes-html.xsl
-	lib/Makefile
-	lib/bind9/Makefile
-	lib/bind9/include/Makefile
-	lib/bind9/include/bind9/Makefile
-	lib/dns/Makefile
-	lib/dns/include/Makefile
-	lib/dns/include/dns/Makefile
-	lib/dns/include/dst/Makefile
-	lib/dns/tests/Makefile
-	lib/irs/Makefile
-	lib/irs/include/Makefile
-	lib/irs/include/irs/Makefile
-	lib/irs/include/irs/netdb.h
-	lib/irs/include/irs/platform.h
-	lib/irs/tests/Makefile
-	lib/isc/pthreads/Makefile
-	lib/isc/pthreads/include/Makefile
-	lib/isc/pthreads/include/isc/Makefile
-	lib/isc/Makefile
-	lib/isc/include/Makefile
-	lib/isc/include/isc/Makefile
-	lib/isc/include/isc/platform.h
-	lib/isc/include/pk11/Makefile
-	lib/isc/include/pkcs11/Makefile
-	lib/isc/tests/Makefile
-	lib/isc/unix/Makefile
-	lib/isc/unix/include/Makefile
-	lib/isc/unix/include/isc/Makefile
-	lib/isc/unix/include/pkcs11/Makefile
-	lib/isccc/Makefile
-	lib/isccc/include/Makefile
-	lib/isccc/include/isccc/Makefile
-	lib/isccc/tests/Makefile
-	lib/isccfg/Makefile
-	lib/isccfg/include/Makefile
-	lib/isccfg/include/isccfg/Makefile
-	lib/isccfg/tests/Makefile
-	lib/ns/Makefile
-	lib/ns/include/Makefile
-	lib/ns/include/ns/Makefile
-	lib/ns/tests/Makefile
-	lib/samples/Makefile
-	lib/samples/Makefile-postinstall
-	unit/unittest.sh
-	fuzz/Makefile
-])
+AC_CONFIG_FILES([bin/tests/system/conf.sh])
+
+AC_CONFIG_FILES([Makefile
+		 bin/Makefile
+		 bin/named/Makefile
+		 bin/rndc/Makefile
+		 bin/dig/Makefile
+		 bin/delv/Makefile
+		 bin/dnssec/Makefile
+		 bin/tools/Makefile
+		 bin/nsupdate/Makefile
+		 bin/check/Makefile
+		 bin/confgen/Makefile
+		 bin/python/Makefile
+		 lib/Makefile
+		 lib/samples/Makefile
+		 lib/isc/include/isc/platform.h
+		 bin/tests/Makefile
+		 bin/tests/system/Makefile
+		])
 
 #
 # Do it
 #
 
 AC_OUTPUT
-
-#
-# Now that the Makefiles exist we can ensure that everything is rebuilt.
-#
-AC_ARG_WITH(make-clean,
-	    AS_HELP_STRING([--with-make-clean],
-			   [run "make clean" at end of configure [yes|no]]),
-    make_clean="$withval", make_clean="yes")
-case "$make_clean" in
-yes)
-	if test "yes" != "$no_create"
-	then
-		if test "yes" = "$silent"
-		then
-			make clean > /dev/null
-		else
-			make clean
-		fi
-	fi
-	;;
-esac
 
 AC_ARG_ENABLE(full-report,
 	      AS_HELP_STRING([--enable-full-report],
