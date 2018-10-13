@@ -75,6 +75,7 @@
 #include <dns/rpz.h>
 #include <dns/types.h>
 #include <dns/zt.h>
+#include <dns/lowac.h>
 
 ISC_LANG_BEGINDECLS
 
@@ -243,6 +244,7 @@ struct dns_view {
 	void				*hooktable;	/* ns_hooktable */
 	void				(*hooktable_free)(isc_mem_t *, void **);
 
+	dns_lowac_t*	lowac;
 };
 
 #define DNS_VIEW_MAGIC			ISC_MAGIC('V','i','e','w')
