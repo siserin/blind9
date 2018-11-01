@@ -185,6 +185,12 @@ struct ns_client {
 	 * bits will be used as the rcode in the response message.
 	 */
 	int32_t			rcode_override;
+
+	dns_rdataset_t *	dns64_aaaa;
+	dns_rdataset_t *	dns64_sigaaaa;
+	bool *			dns64_aaaaok;
+	unsigned int		dns64_aaaaoklen;
+	unsigned int		dns64_ttl;
 };
 
 typedef ISC_QUEUE(ns_client_t) client_queue_t;
