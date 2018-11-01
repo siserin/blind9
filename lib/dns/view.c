@@ -35,7 +35,6 @@
 #include <dns/db.h>
 #include <dns/dispatch.h>
 #include <dns/dlz.h>
-#include <dns/dns64.h>
 #include <dns/dnssec.h>
 #include <dns/events.h>
 #include <dns/forward.h>
@@ -159,8 +158,6 @@ dns_view_create(isc_mem_t *mctx, dns_rdataclass_t rdclass,
 	view->resstats = NULL;
 	view->resquerystats = NULL;
 	view->cacheshared = false;
-	ISC_LIST_INIT(view->dns64);
-	view->dns64cnt = 0;
 
 	/*
 	 * Initialize configuration data with default values.
@@ -249,6 +246,7 @@ dns_view_create(isc_mem_t *mctx, dns_rdataclass_t rdclass,
 	view->hooktable_free = NULL;
 
 	isc_mutex_init(&view->new_zone_lock);
+	view->zonemgr = NULL;
 
 	result = dns_order_create(view->mctx, &view->order);
 	if (result != ISC_R_SUCCESS) {
@@ -334,7 +332,6 @@ dns_view_create(isc_mem_t *mctx, dns_rdataclass_t rdclass,
 
 static inline void
 destroy(dns_view_t *view) {
-	dns_dns64_t *dns64;
 	dns_dlzdb_t *dlzdb;
 
 	REQUIRE(!ISC_LINK_LINKED(view, link));
@@ -498,12 +495,6 @@ destroy(dns_view_t *view) {
 		dns_keytable_detach(&view->secroots_priv);
 	if (view->ntatable_priv != NULL)
 		dns_ntatable_detach(&view->ntatable_priv);
-	for (dns64 = ISC_LIST_HEAD(view->dns64);
-	     dns64 != NULL;
-	     dns64 = ISC_LIST_HEAD(view->dns64)) {
-		dns_dns64_unlink(&view->dns64, dns64);
-		dns_dns64_destroy(&dns64);
-	}
 	if (view->managed_keys != NULL)
 		dns_zone_detach(&view->managed_keys);
 	if (view->redirect != NULL)
@@ -541,6 +532,9 @@ destroy(dns_view_t *view) {
 	isc_refcount_destroy(&view->weakrefs);
 	isc_mem_free(view->mctx, view->nta_file);
 	isc_mem_free(view->mctx, view->name);
+	if (view->zonemgr != NULL) {
+		dns_zonemgr_detach(&view->zonemgr);
+	}
 	if (view->hooktable != NULL && view->hooktable_free != NULL) {
 		view->hooktable_free(view->mctx, &view->hooktable);
 	}
@@ -2412,4 +2406,11 @@ dns_view_setviewrevert(dns_view_t *view) {
 	if (zonetable != NULL) {
 		dns_zt_setviewrevert(zonetable);
 	}
+}
+
+void
+dns_view_setzonemgr(dns_view_t *view, dns_zonemgr_t *zonemgr) {
+	REQUIRE(DNS_VIEW_VALID(view));
+
+	dns_zonemgr_attach(zonemgr, &view->zonemgr);
 }
