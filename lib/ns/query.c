@@ -5495,7 +5495,7 @@ query_lookup(query_ctx_t *qctx) {
 	/*
 	 * Now look for an answer in the database.
 	 */
-	if (qctx->dns64 && qctx->rpz) {
+	if (qctx->rpz) {
 		rpzqname = qctx->client->query.rpz_st->p_name;
 	} else {
 		rpzqname = qctx->client->query.qname;
@@ -5514,7 +5514,7 @@ query_lookup(query_ctx_t *qctx) {
 	/*
 	 * Fixup fname and sigrdataset.
 	 */
-	if (qctx->dns64 && qctx->rpz) {
+	if (qctx->rpz) {
 		isc_result_t rresult;
 
 		rresult = dns_name_copy(qctx->client->query.qname,
