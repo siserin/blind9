@@ -34,6 +34,8 @@ options {
 	};
 };
 
+plugin query "../../../../plugins/lib/dns64.so";
+
 zone "." {
 	type master;
 	file "root.db";
