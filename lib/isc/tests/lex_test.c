@@ -40,7 +40,7 @@ lex_0xff(void **state) {
 
 	UNUSED(state);
 
-	result = isc_mem_create(0, 0, &mctx);
+	result = isc_mem_create(&mctx);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	result = isc_lex_create(mctx, 1024, &lex);
@@ -74,7 +74,7 @@ lex_setline(void **state) {
 
 	UNUSED(state);
 
-	result = isc_mem_create(0, 0, &mctx);
+	result = isc_mem_create(&mctx);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	result = isc_lex_create(mctx, 1024, &lex);
