@@ -94,7 +94,7 @@ isc_mem_test(void **state) {
 
 	UNUSED(state);
 
-	result = isc_mem_create(0, 0, &localmctx);
+	result = isc_mem_create(&localmctx);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	result = isc_mempool_create(localmctx, 24, &mp1);
@@ -168,9 +168,9 @@ isc_mem_test(void **state) {
 
 	isc_mem_destroy(&localmctx);
 
-	result = isc_mem_createx(0, 0, default_memalloc, default_memfree,
+	result = isc_mem_createx(default_memalloc, default_memfree,
 				 NULL, &localmctx,
-				 ISC_MEMFLAG_FILL | ISC_MEMFLAG_INTERNAL);
+				 ISC_MEMFLAG_FILL);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	result = isc_mempool_create(localmctx, 2, &mp1);
@@ -200,7 +200,7 @@ isc_mem_total_test(void **state) {
 
 	/* Local alloc, free */
 	mctx2 = NULL;
-	result = isc_mem_createx(0, 0, default_memalloc, default_memfree,
+	result = isc_mem_createx(default_memalloc, default_memfree,
 				 NULL, &mctx2, 0);
 	if (result != ISC_R_SUCCESS) {
 		goto out;
@@ -257,7 +257,7 @@ isc_mem_inuse_test(void **state) {
 	UNUSED(state);
 
 	mctx2 = NULL;
-	result = isc_mem_createx(0, 0, default_memalloc, default_memfree,
+	result = isc_mem_createx(default_memalloc, default_memfree,
 				 NULL, &mctx2, 0);
 	if (result != ISC_R_SUCCESS) {
 		goto out;
@@ -295,7 +295,7 @@ isc_mem_noflags_test(void **state) {
 
 	UNUSED(state);
 
-	result = isc_mem_createx(0, 0, default_memalloc, default_memfree,
+	result = isc_mem_createx(default_memalloc, default_memfree,
 				 NULL, &mctx2, 0);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	isc_mem_debugging = 0;
@@ -342,7 +342,7 @@ isc_mem_recordflag_test(void **state) {
 
 	UNUSED(state);
 
-	result = isc_mem_createx(0, 0, default_memalloc, default_memfree,
+	result = isc_mem_createx(default_memalloc, default_memfree,
 				 NULL, &mctx2, 0);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	ptr = isc_mem_get(mctx2, 2048);
@@ -387,7 +387,7 @@ isc_mem_traceflag_test(void **state) {
 
 	UNUSED(state);
 
-	result = isc_mem_createx(0, 0, default_memalloc, default_memfree,
+	result = isc_mem_createx(default_memalloc, default_memfree,
 				 NULL, &mctx2, 0);
 	isc_mem_debugging = ISC_MEM_DEBUGTRACE;
 	assert_int_equal(result, ISC_R_SUCCESS);
