@@ -223,7 +223,7 @@ struct isc_socket {
 
 	/* Locked by socket lock. */
 	ISC_LINK(isc_socket_t)	link;
-	unsigned int		references; /* EXTERNAL references */
+	isc_refcount_t		references; /* EXTERNAL references */
 	SOCKET			fd;	/* file handle */
 	int			pf;	/* protocol family */
 	char			name[16];
@@ -383,7 +383,7 @@ sock_dump(isc_socket_t *sock) {
 
 	printf("\n\t\tSock Dump\n");
 	printf("\t\tfd: %Iu\n", sock->fd);
-	printf("\t\treferences: %u\n", sock->references);
+	printf("\t\treferences: %u\n", isc_refcount_current(sock->references));
 	printf("\t\tpending_accept: %u\n", sock->pending_accept);
 	printf("\t\tconnecting: %u\n", sock->pending_connect);
 	printf("\t\tconnected: %u\n", sock->connected);
@@ -1311,7 +1311,7 @@ allocate_socket(isc_socketmgr_t *manager, isc_sockettype_t type,
 		return (ISC_R_NOMEMORY);
 
 	sock->magic = 0;
-	sock->references = 0;
+	isc_refcount_init(&sock->references, 0);
 
 	sock->manager = manager;
 	sock->type = type;
@@ -1440,7 +1440,7 @@ maybe_free_socket(isc_socket_t **socketp, int lineno) {
 	    || sock->pending_recv > 0
 	    || sock->pending_send > 0
 	    || sock->pending_accept > 0
-	    || sock->references > 0
+	    || isc_refcount_current(sock->references) > 0
 	    || sock->pending_connect == 1
 	    || !ISC_LIST_EMPTY(sock->recv_list)
 	    || !ISC_LIST_EMPTY(sock->send_list)
@@ -1533,7 +1533,7 @@ socket_create(isc_socketmgr_t *manager, int pf, isc_sockettype_t type,
 					"con_reset_fix_failed",
 					sock->pending_recv,
 					sock->pending_send,
-					sock->references);
+					   isc_refcount_current(sock->references));
 				closesocket(sock->fd);
 				_set_state(sock, SOCK_CLOSED);
 				sock->fd = INVALID_SOCKET;
@@ -1581,10 +1581,11 @@ socket_create(isc_socketmgr_t *manager, int pf, isc_sockettype_t type,
 
 	result = make_nonblock(sock->fd);
 	if (result != ISC_R_SUCCESS) {
+
 		socket_log(__LINE__, sock, NULL, EVENT,
-			"closed %d %d %d make_nonblock_failed",
-			sock->pending_recv, sock->pending_send,
-			sock->references);
+			   "closed %d %d %d make_nonblock_failed",
+			   sock->pending_recv, sock->pending_send,
+			   isc_refcount_current(sock->references));
 		closesocket(sock->fd);
 		sock->fd = INVALID_SOCKET;
 		free_socket(&sock, __LINE__);
@@ -1638,7 +1639,7 @@ socket_create(isc_socketmgr_t *manager, int pf, isc_sockettype_t type,
 #endif /* defined(USE_CMSG) || defined(SO_RCVBUF) */
 
 	_set_state(sock, SOCK_OPEN);
-	sock->references = 1;
+	isc_refcount_init(&sock->references, 1);
 	*socketp = sock;
 
 	iocompletionport_update(sock);
@@ -1714,8 +1715,9 @@ isc_socket_attach(isc_socket_t *sock, isc_socket_t **socketp) {
 
 	LOCK(&sock->lock);
 	CONSISTENT(sock);
-	sock->references++;
 	UNLOCK(&sock->lock);
+
+	isc_refcount_increment(&sock->references);
 
 	*socketp = sock;
 }
@@ -1727,6 +1729,7 @@ isc_socket_attach(isc_socket_t *sock, isc_socket_t **socketp) {
 void
 isc_socket_detach(isc_socket_t **socketp) {
 	isc_socket_t *sock;
+	uint32_t refs;
 
 	REQUIRE(socketp != NULL);
 	sock = *socketp;
@@ -1734,21 +1737,21 @@ isc_socket_detach(isc_socket_t **socketp) {
 
 	LOCK(&sock->lock);
 	CONSISTENT(sock);
-	REQUIRE(sock->references > 0);
-	sock->references--;
+
+	references = isc_refcount_decrement(&socket->references);
 
 	socket_log(__LINE__, sock, NULL, EVENT,
-		"detach_socket %d %d %d",
-		sock->pending_recv, sock->pending_send,
-		sock->references);
+		   "detach_socket %d %d %d",
+		   sock->pending_recv, sock->pending_send,
+		   isc_refcount_current(sock->references));
 
-	if (sock->references == 0 && sock->fd != INVALID_SOCKET) {
+	if (references == 1 && sock->fd != INVALID_SOCKET) {
 		closesocket(sock->fd);
 		sock->fd = INVALID_SOCKET;
 		_set_state(sock, SOCK_CLOSED);
 	}
 
-	maybe_free_socket(&sock, __LINE__);
+	maybe_free_socket(&sock, __LINE__); /* Also unlocks the socket lock */
 
 	*socketp = NULL;
 }
@@ -2406,7 +2409,7 @@ SocketIoThread(LPVOID ThreadContext) {
 				if (acceptdone_is_active(sock, lpo->adev)) {
 					closesocket(lpo->adev->newsocket->fd);
 					lpo->adev->newsocket->fd = INVALID_SOCKET;
-					lpo->adev->newsocket->references--;
+					isc_refcount_decrement(&lpo->adev->newsocket->references);
 					free_socket(&lpo->adev->newsocket, __LINE__);
 					lpo->adev->result = isc_result;
 					socket_log(__LINE__, sock, NULL, EVENT,
@@ -3100,7 +3103,7 @@ isc_socket_accept(isc_socket_t *sock,
 		UNLOCK(&sock->lock);
 		return (ISC_R_SHUTTINGDOWN);
 	}
-	nsock->references++;
+	isc_refcount_decrement(&nsock->references);
 
 	adev->ev_sender = ntask;
 	adev->newsocket = nsock;
@@ -3437,7 +3440,7 @@ isc_socket_cancel(isc_socket_t *sock, isc_task_t *task, unsigned int how) {
 
 			if ((task == NULL) || (task == current_task)) {
 
-				dev->newsocket->references--;
+				isc_refcount_decrement(&dev->newsocket->references);
 				closesocket(dev->newsocket->fd);
 				dev->newsocket->fd = INVALID_SOCKET;
 				free_socket(&dev->newsocket, __LINE__);
@@ -3661,7 +3664,7 @@ isc_socketmgr_renderxml(isc_socketmgr_t *mgr, xmlTextWriterPtr writer)
 		TRY0(xmlTextWriterStartElement(writer,
 					       ISC_XMLCHAR "references"));
 		TRY0(xmlTextWriterWriteFormatString(writer, "%d",
-						    sock->references));
+						    isc_refcount_current(sock->references)));
 		TRY0(xmlTextWriterEndElement(writer));
 
 		TRY0(xmlTextWriterWriteElement(writer, ISC_XMLCHAR "type",
@@ -3780,7 +3783,7 @@ isc_socketmgr_renderjson(isc_socketmgr_t *mgr, json_object *stats) {
 			json_object_object_add(entry, "name", obj);
 		}
 
-		obj = json_object_new_int(sock->references);
+		obj = json_object_new_int(isc_refcount_current(&sock->references));
 		CHECKMEM(obj);
 		json_object_object_add(entry, "references", obj);
 

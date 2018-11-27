@@ -33,7 +33,7 @@ typedef atomic_int_fast64_t isc_stat_t;
 struct isc_stats {
 	unsigned int		magic;
 	isc_mem_t		*mctx;
-	isc_refcount_t		refs;
+	isc_refcount_t		references;
 	int			ncounters;
 	isc_stat_t		*counters;
 };
@@ -46,7 +46,7 @@ create_stats(isc_mem_t *mctx, int ncounters, isc_stats_t **statsp) {
 
 	stats = isc_mem_get(mctx, sizeof(*stats));
 	stats->counters = isc_mem_get(mctx, sizeof(isc_stat_t) * ncounters);
-	isc_refcount_init(&stats->refs, 1);
+	isc_refcount_init(&stats->references, 1);
 	memset(stats->counters, 0, sizeof(isc_stat_t) * ncounters);
 	stats->mctx = NULL;
 	isc_mem_attach(mctx, &stats->mctx);
@@ -62,7 +62,7 @@ isc_stats_attach(isc_stats_t *stats, isc_stats_t **statsp) {
 	REQUIRE(ISC_STATS_VALID(stats));
 	REQUIRE(statsp != NULL && *statsp == NULL);
 
-	isc_refcount_increment(&stats->refs);
+	isc_refcount_increment(&stats->references);
 	*statsp = stats;
 }
 
@@ -75,7 +75,7 @@ isc_stats_detach(isc_stats_t **statsp) {
 	stats = *statsp;
 	*statsp = NULL;
 
-	if (isc_refcount_decrement(&stats->refs) == 1) {
+	if (isc_refcount_decrement(&stats->referencess) == 1) {
 		isc_mem_put(stats->mctx, stats->counters,
 			    sizeof(isc_stat_t) * stats->ncounters);
 		isc_mem_putanddetach(&stats->mctx, stats, sizeof(*stats));

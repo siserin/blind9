@@ -11,6 +11,7 @@
 
 #include <stdbool.h>
 
+#include <isc/refcount.h>
 #include <isc/result.h>
 #include <isc/util.h>
 #include <isc/mutex.h>
@@ -43,8 +44,10 @@ typedef struct dns_ecdb {
 	dns_db_t			common;
 	isc_mutex_t			lock;
 
+	/* Atomic */
+	isc_refcount_t			references;
+
 	/* Locked */
-	unsigned int			references;
 	ISC_LIST(struct dns_ecdbnode)	nodes;
 } dns_ecdb_t;
 
@@ -56,9 +59,11 @@ typedef struct dns_ecdbnode {
 	dns_name_t			name;
 	ISC_LINK(struct dns_ecdbnode)	link;
 
+	/* Atomic */
+	isc_refcount_t			references;
+
 	/* Locked */
 	ISC_LIST(struct rdatasetheader)	rdatasets;
-	unsigned int			references;
 } dns_ecdbnode_t;
 
 typedef struct rdatasetheader {
@@ -156,9 +161,7 @@ attach(dns_db_t *source, dns_db_t **targetp) {
 	REQUIRE(VALID_ECDB(ecdb));
 	REQUIRE(targetp != NULL && *targetp == NULL);
 
-	LOCK(&ecdb->lock);
-	ecdb->references++;
-	UNLOCK(&ecdb->lock);
+	isc_refcount_increment(&ecdb->references);
 
 	*targetp = source;
 }
@@ -184,22 +187,17 @@ destroy_ecdb(dns_ecdb_t **ecdbp) {
 static void
 detach(dns_db_t **dbp) {
 	dns_ecdb_t *ecdb;
-	bool need_destroy = false;
 
 	REQUIRE(dbp != NULL);
 	ecdb = (dns_ecdb_t *)*dbp;
 	REQUIRE(VALID_ECDB(ecdb));
 
-	LOCK(&ecdb->lock);
-	ecdb->references--;
-	if (ecdb->references == 0 && ISC_LIST_EMPTY(ecdb->nodes))
-		need_destroy = true;
-	UNLOCK(&ecdb->lock);
-
-	if (need_destroy)
-		destroy_ecdb(&ecdb);
-
 	*dbp = NULL;
+
+	if (isc_refcount_decrement(&ecdb->references) == 1) {
+		destroy_ecdb(&ecdb);
+	}
+
 }
 
 static void
@@ -211,11 +209,7 @@ attachnode(dns_db_t *db, dns_dbnode_t *source, dns_dbnode_t **targetp) {
 	REQUIRE(VALID_ECDBNODE(node));
 	REQUIRE(targetp != NULL && *targetp == NULL);
 
-	LOCK(&node->lock);
-	INSIST(node->references > 0);
-	node->references++;
-	INSIST(node->references != 0);		/* Catch overflow. */
-	UNLOCK(&node->lock);
+	isc_refcount_increment(&node->references);
 
 	*targetp = node;
 }
@@ -231,8 +225,10 @@ destroynode(dns_ecdbnode_t *node) {
 
 	LOCK(&ecdb->lock);
 	ISC_LIST_UNLINK(ecdb->nodes, node, link);
-	if (ecdb->references == 0 && ISC_LIST_EMPTY(ecdb->nodes))
+	if (isc_refcount_current(&ecdb->references) == 0 &&
+	    ISC_LIST_EMPTY(ecdb->nodes)) {
 		need_destroydb = true;
+	}
 	UNLOCK(&ecdb->lock);
 
 	dns_name_free(&node->name, mctx);
@@ -260,26 +256,17 @@ static void
 detachnode(dns_db_t *db, dns_dbnode_t **nodep) {
 	dns_ecdb_t *ecdb = (dns_ecdb_t *)db;
 	dns_ecdbnode_t *node;
-	bool need_destroy = false;
 
 	REQUIRE(VALID_ECDB(ecdb));
 	REQUIRE(nodep != NULL);
 	node = (dns_ecdbnode_t *)*nodep;
 	REQUIRE(VALID_ECDBNODE(node));
 
-	UNUSED(ecdb);		/* in case REQUIRE() is empty */
-
-	LOCK(&node->lock);
-	INSIST(node->references > 0);
-	node->references--;
-	if (node->references == 0)
-		need_destroy = true;
-	UNLOCK(&node->lock);
-
-	if (need_destroy)
-		destroynode(node);
-
 	*nodep = NULL;
+
+	if (isc_refcount_decrement(&node->references) == 1) {
+		destroynode(node);
+	}
 }
 
 static isc_result_t
@@ -362,7 +349,9 @@ findnode(dns_db_t *db, const dns_name_t *name, bool create,
 		return (result);
 	}
 	node->ecdb= ecdb;
-	node->references = 1;
+
+	isc_refcount_init(&node->references, 1);
+
 	ISC_LIST_INIT(node->rdatasets);
 
 	ISC_LINK_INIT(node, link);
@@ -413,8 +402,7 @@ bind_rdataset(dns_ecdb_t *ecdb, dns_ecdbnode_t *node,
 	rdataset->privateuint4 = 0;
 	rdataset->private5 = NULL;
 
-	INSIST(node->references > 0);
-	node->references++;
+	isc_refcount_increment(&node->references);
 }
 
 static isc_result_t
@@ -618,7 +606,8 @@ dns_ecdb_create(isc_mem_t *mctx, const dns_name_t *origin, dns_dbtype_t type,
 
 	isc_mutex_init(&ecdb->lock);
 
-	ecdb->references = 1;
+	isc_refcount_init(&ecdb->references, 1);
+
 	ISC_LIST_INIT(ecdb->nodes);
 
 	ecdb->common.mctx = NULL;
