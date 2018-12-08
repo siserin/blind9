@@ -59,6 +59,7 @@
 
 #include <isc/buffer.h>
 #include <isc/magic.h>
+#include <isc/netmgr.h>
 #include <isc/stdtime.h>
 #include <isc/quota.h>
 #include <isc/queue.h>
@@ -87,10 +88,63 @@ typedef struct ns_tcpconn {
 	bool			pipelined;
 } ns_tcpconn_t;
 
+#define NS_CLIENT_TCP_BUFFER_SIZE			(65535 + 2)
+#define NS_CLIENT_SEND_BUFFER_SIZE		4096
+#define NS_CLIENT_RECV_BUFFER_SIZE		4096
+
+#define CLIENT_NMCTXS				100
+/*%<
+ * Number of 'mctx pools' for clients. (Should this be configurable?)
+ * When enabling threads, we use a pool of memory contexts shared by
+ * client objects, since concurrent access to a shared context would cause
+ * heavy contentions.  The above constant is expected to be enough for
+ * completely avoiding contentions among threads for an authoritative-only
+ * server.
+ */
+
+
+typedef ISC_QUEUE(ns_client_t) client_queue_t;
+typedef ISC_LIST(ns_client_t) client_list_t;
+
+/*% nameserver client manager structure */
+struct ns_clientmgr {
+	/* Unlocked. */
+	unsigned int			magic;
+
+	/* The queue object has its own locks */
+	client_queue_t			inactive;     /*%< To be recycled */
+
+	isc_mem_t *			mctx;
+	ns_server_t *			sctx;
+	isc_taskmgr_t *			taskmgr;
+	isc_timermgr_t *		timermgr;
+	isc_task_t *			excl;
+	ns_interface_t			*interface;
+
+	/* Lock covers manager state. */
+	isc_mutex_t			lock;
+	bool			exiting;
+
+	/* Lock covers the clients list */
+	isc_mutex_t			listlock;
+	client_list_t			clients;      /*%< All active clients */
+
+	/* Lock covers the recursing list */
+	isc_mutex_t			reclock;
+	client_list_t			recursing;    /*%< Recursing clients */
+
+#if CLIENT_NMCTXS > 0
+	/*%< mctx pool for clients. */
+	unsigned int			nextmctx;
+	isc_mem_t *			mctxpool[CLIENT_NMCTXS];
+#endif
+};
+
 /*% nameserver client structure */
 struct ns_client {
 	unsigned int		magic;
 	isc_mem_t		*mctx;
+	bool			allocated;	/* Do we need to free it? */
 	ns_server_t		*sctx;
 	ns_clientmgr_t		*manager;
 	int			state;
@@ -114,19 +168,17 @@ struct ns_client {
 	isc_task_t		*task;
 	dns_view_t		*view;
 	dns_dispatch_t		*dispatch;
+	isc_nmhandle_t		*handle;
 	isc_socket_t		*udpsocket;
 	isc_socket_t		*tcplistener;
 	isc_socket_t		*tcpsocket;
 	unsigned char		*tcpbuf;
 	dns_tcpmsg_t		tcpmsg;
 	bool			tcpmsg_valid;
-	isc_timer_t		*timer;
 	isc_timer_t		*delaytimer;
-	bool 			timerset;
 	dns_message_t		*message;
-	isc_socketevent_t	*sendevent;
-	isc_socketevent_t	*recvevent;
 	unsigned char		*recvbuf;
+	unsigned char		sendbuf[NS_CLIENT_SEND_BUFFER_SIZE];
 	dns_rdataset_t		*opt;
 	uint16_t		udpsize;
 	uint16_t		extflags;
@@ -143,7 +195,6 @@ struct ns_client {
 	bool			mortal;	      /*%< Die after handling request */
 	ns_tcpconn_t		*tcpconn;
 	isc_quota_t		*recursionquota;
-	ns_interface_t		*interface;
 
 	isc_sockaddr_t		peeraddr;
 	bool			peeraddr_valid;
@@ -154,7 +205,6 @@ struct ns_client {
 
 	struct in6_pktinfo	pktinfo;
 	isc_dscp_t		dscp;
-	isc_event_t		ctlevent;
 	/*%
 	 * Information about recent FORMERR response(s), for
 	 * FORMERR loop avoidance.  This is separate for each
@@ -186,9 +236,6 @@ struct ns_client {
 	 */
 	int32_t			rcode_override;
 };
-
-typedef ISC_QUEUE(ns_client_t) client_queue_t;
-typedef ISC_LIST(ns_client_t) client_list_t;
 
 #define NS_CLIENT_MAGIC			ISC_MAGIC('N','S','C','c')
 #define NS_CLIENT_VALID(c)		ISC_MAGIC_VALID(c, NS_CLIENT_MAGIC)
@@ -296,7 +343,8 @@ ns_client_settimeout(ns_client_t *client, unsigned int seconds);
 
 isc_result_t
 ns_clientmgr_create(isc_mem_t *mctx, ns_server_t *sctx, isc_taskmgr_t *taskmgr,
-		    isc_timermgr_t *timermgr, ns_clientmgr_t **managerp);
+		    isc_timermgr_t *timermgr, ns_interface_t *ifp,
+		    ns_clientmgr_t **managerp);
 /*%<
  * Create a client manager.
  */
@@ -306,15 +354,6 @@ ns_clientmgr_destroy(ns_clientmgr_t **managerp);
 /*%<
  * Destroy a client manager and all ns_client_t objects
  * managed by it.
- */
-
-isc_result_t
-ns_clientmgr_createclients(ns_clientmgr_t *manager, unsigned int n,
-			   ns_interface_t *ifp, bool tcp);
-/*%<
- * Create up to 'n' clients listening on interface 'ifp'.
- * If 'tcp' is true, the clients will listen for TCP connections,
- * otherwise for UDP requests.
  */
 
 isc_sockaddr_t *
@@ -427,16 +466,17 @@ isc_result_t
 ns_client_addopt(ns_client_t *client, dns_message_t *message,
 		 dns_rdataset_t **opt);
 
-isc_result_t
-ns__clientmgr_getclient(ns_clientmgr_t *manager, ns_interface_t *ifp,
-			bool tcp, ns_client_t **clientp);
 /*
  * Get a client object from the inactive queue, or create one, as needed.
  * (Not intended for use outside this module and associated tests.)
  */
 
 void
-ns__client_request(isc_task_t *task, isc_event_t *event);
+ns__client_request(void *arg,
+		   isc_nmhandle_t *handle,
+		   struct isc_region *region);
+void
+ns__client_request_old(isc_task_t *task, isc_event_t *event);
 /*
  * Handle client requests.
  * (Not intended for use outside this module and associated tests.)

@@ -97,20 +97,6 @@
 
 #define TCP_CLIENT(c)	(((c)->attributes & NS_CLIENTATTR_TCP) != 0)
 
-#define TCP_BUFFER_SIZE			(65535 + 2)
-#define SEND_BUFFER_SIZE		4096
-#define RECV_BUFFER_SIZE		4096
-
-#define NMCTXS				100
-/*%<
- * Number of 'mctx pools' for clients. (Should this be configurable?)
- * When enabling threads, we use a pool of memory contexts shared by
- * client objects, since concurrent access to a shared context would cause
- * heavy contentions.  The above constant is expected to be enough for
- * completely avoiding contentions among threads for an authoritative-only
- * server.
- */
-
 #define COOKIE_SIZE 24U /* 8 + 4 + 4 + 8 */
 #define ECS_SIZE 20U /* 2 + 1 + 1 + [0..16] */
 
@@ -118,39 +104,6 @@
 #define WANTEXPIRE(x) (((x)->attributes & NS_CLIENTATTR_WANTEXPIRE) != 0)
 #define WANTPAD(x) (((x)->attributes & NS_CLIENTATTR_WANTPAD) != 0)
 #define USEKEEPALIVE(x) (((x)->attributes & NS_CLIENTATTR_USEKEEPALIVE) != 0)
-
-/*% nameserver client manager structure */
-struct ns_clientmgr {
-	/* Unlocked. */
-	unsigned int			magic;
-
-	/* The queue object has its own locks */
-	client_queue_t			inactive;     /*%< To be recycled */
-
-	isc_mem_t *			mctx;
-	ns_server_t *			sctx;
-	isc_taskmgr_t *			taskmgr;
-	isc_timermgr_t *		timermgr;
-	isc_task_t *			excl;
-
-	/* Lock covers manager state. */
-	isc_mutex_t			lock;
-	bool			exiting;
-
-	/* Lock covers the clients list */
-	isc_mutex_t			listlock;
-	client_list_t			clients;      /*%< All active clients */
-
-	/* Lock covers the recursing list */
-	isc_mutex_t			reclock;
-	client_list_t			recursing;    /*%< Recursing clients */
-
-#if NMCTXS > 0
-	/*%< mctx pool for clients. */
-	unsigned int			nextmctx;
-	isc_mem_t *			mctxpool[NMCTXS];
-#endif
-};
 
 #define MANAGER_MAGIC			ISC_MAGIC('N', 'S', 'C', 'm')
 #define VALID_MANAGER(m)		ISC_MAGIC_VALID(m, MANAGER_MAGIC)
@@ -193,13 +146,6 @@ struct ns_clientmgr {
  * and an outstanding UDP receive request.
  */
 
-#define NS_CLIENTSTATE_READING  3
-/*%<
- * The client object is a TCP client object that has received
- * a connection.  It has a tcpsocket, tcpmsg, TCP quota, and an
- * outstanding TCP read request.  This state is not used for
- * UDP client objects.
- */
 
 #define NS_CLIENTSTATE_WORKING  4
 /*%<
@@ -230,22 +176,17 @@ struct ns_clientmgr {
 
 LIBNS_EXTERNAL_DATA unsigned int ns_client_requests;
 
-static void read_settimeout(ns_client_t *client, bool newconn);
-static void client_read(ns_client_t *client, bool newconn);
-static void client_accept(ns_client_t *client);
-static void client_udprecv(ns_client_t *client);
 static void clientmgr_destroy(ns_clientmgr_t *manager);
 static bool exit_check(ns_client_t *client);
 static void ns_client_endrequest(ns_client_t *client);
-static void client_start(isc_task_t *task, isc_event_t *event);
 static void ns_client_dumpmessage(ns_client_t *client, const char *reason);
-static isc_result_t get_client(ns_clientmgr_t *manager, ns_interface_t *ifp,
-			       dns_dispatch_t *disp, bool tcp);
-static isc_result_t get_worker(ns_clientmgr_t *manager, ns_interface_t *ifp,
-			       isc_socket_t *sock, ns_client_t *oldclient);
 static void compute_cookie(ns_client_t *client, uint32_t when,
 			   uint32_t nonce, const unsigned char *secret,
 			   isc_buffer_t *buf);
+static isc_result_t
+get_clientmctx(ns_clientmgr_t *manager, isc_mem_t **mctxp);
+static isc_result_t
+client_setup(ns_clientmgr_t *manager, isc_mem_t *mctx, ns_client_t *client);
 
 void
 ns_client_recursing(ns_client_t *client) {
@@ -275,162 +216,11 @@ ns_client_killoldestquery(ns_client_t *client) {
 
 void
 ns_client_settimeout(ns_client_t *client, unsigned int seconds) {
-	isc_result_t result;
-	isc_interval_t interval;
-
-	isc_interval_set(&interval, seconds, 0);
-	result = isc_timer_reset(client->timer, isc_timertype_once, NULL,
-				 &interval, false);
-	client->timerset = true;
-	if (result != ISC_R_SUCCESS) {
-		ns_client_log(client, NS_LOGCATEGORY_CLIENT,
-			      NS_LOGMODULE_CLIENT, ISC_LOG_ERROR,
-			      "setting timeout: %s",
-			      isc_result_totext(result));
-		/* Continue anyway. */
-	}
+	(void) client;
+	(void) seconds;
+	// XXXWPK TODO use netmgr to set timeout
 }
 
-static void
-read_settimeout(ns_client_t *client, bool newconn) {
-	isc_result_t result;
-	isc_interval_t interval;
-	unsigned int ds;
-
-	if (newconn)
-		ds = client->sctx->initialtimo;
-	else if (USEKEEPALIVE(client))
-		ds = client->sctx->keepalivetimo;
-	else
-		ds = client->sctx->idletimo;
-
-	isc_interval_set(&interval, ds / 10, 100000000 * (ds % 10));
-	result = isc_timer_reset(client->timer, isc_timertype_once, NULL,
-				 &interval, false);
-	client->timerset = true;
-	if (result != ISC_R_SUCCESS) {
-		ns_client_log(client, NS_LOGCATEGORY_CLIENT,
-			      NS_LOGMODULE_CLIENT, ISC_LOG_ERROR,
-			      "setting timeout: %s",
-			      isc_result_totext(result));
-		/* Continue anyway. */
-	}
-}
-
-/*%
- * Allocate a reference-counted object that will maintain a single pointer to
- * the (also reference-counted) TCP client quota, shared between all the
- * clients processing queries on a single TCP connection, so that all
- * clients sharing the one socket will together consume only one slot in
- * the 'tcp-clients' quota.
- */
-static isc_result_t
-tcpconn_init(ns_client_t *client, bool force) {
-	isc_result_t result;
-	isc_quota_t *quota = NULL;
-	ns_tcpconn_t *tconn = NULL;
-
-	REQUIRE(client->tcpconn == NULL);
-
-	/*
-	 * Try to attach to the quota first, so we won't pointlessly
-	 * allocate memory for a tcpconn object if we can't get one.
-	 */
-	if (force) {
-		result = isc_quota_force(&client->sctx->tcpquota, &quota);
-	} else {
-		result = isc_quota_attach(&client->sctx->tcpquota, &quota);
-	}
-	if (result != ISC_R_SUCCESS) {
-		return (result);
-	}
-
-	/*
-	 * A global memory context is used for the allocation as different
-	 * client structures may have different memory contexts assigned and a
-	 * reference counter allocated here might need to be freed by a
-	 * different client.  The performance impact caused by memory context
-	 * contention here is expected to be negligible, given that this code
-	 * is only executed for TCP connections.
-	 */
-	tconn = isc_mem_allocate(client->sctx->mctx, sizeof(*tconn));
-
-	isc_refcount_init(&tconn->refs, 1);
-	tconn->tcpquota = quota;
-	quota = NULL;
-	tconn->pipelined = false;
-
-	client->tcpconn = tconn;
-
-	return (ISC_R_SUCCESS);
-}
-
-/*%
- * Increase the count of client structures sharing the TCP connection
- * that 'source' is associated with; add a pointer to the same tcpconn
- * to 'target', thus associating it with the same TCP connection.
- */
-static void
-tcpconn_attach(ns_client_t *source, ns_client_t *target) {
-	int old_refs;
-
-	REQUIRE(source->tcpconn != NULL);
-	REQUIRE(target->tcpconn == NULL);
-	REQUIRE(source->tcpconn->pipelined);
-
-	old_refs = isc_refcount_increment(&source->tcpconn->refs);
-	INSIST(old_refs > 0);
-	target->tcpconn = source->tcpconn;
-}
-
-/*%
- * Decrease the count of client structures sharing the TCP connection that
- * 'client' is associated with.  If this is the last client using this TCP
- * connection, we detach from the TCP quota and free the tcpconn
- * object. Either way, client->tcpconn is set to NULL.
- */
-static void
-tcpconn_detach(ns_client_t *client) {
-	ns_tcpconn_t *tconn = NULL;
-	int old_refs;
-
-	REQUIRE(client->tcpconn != NULL);
-
-	tconn = client->tcpconn;
-	client->tcpconn = NULL;
-
-	old_refs = isc_refcount_decrement(&tconn->refs);
-	INSIST(old_refs > 0);
-
-	if (old_refs == 1) {
-		isc_quota_detach(&tconn->tcpquota);
-		isc_mem_free(client->sctx->mctx, tconn);
-	}
-}
-
-/*%
- * Mark a client as active and increment the interface's 'ntcpactive'
- * counter, as a signal that there is at least one client servicing
- * TCP queries for the interface. If we reach the TCP client quota at
- * some point, this will be used to determine whether a quota overrun
- * should be permitted.
- *
- * Marking the client active with the 'tcpactive' flag ensures proper
- * accounting, by preventing us from incrementing or decrementing
- * 'ntcpactive' more than once per client.
- */
-static void
-mark_tcp_active(ns_client_t *client, bool active) {
-	if (active && !client->tcpactive) {
-		isc_refcount_increment0(&client->interface->ntcpactive);
-		client->tcpactive = active;
-	} else if (!active && client->tcpactive) {
-		uint32_t old =
-			isc_refcount_decrement(&client->interface->ntcpactive);
-		INSIST(old > 0);
-		client->tcpactive = active;
-	}
-}
 
 /*%
  * Check for a deactivation or shutdown request and take appropriate
@@ -469,7 +259,7 @@ exit_check(ns_client_t *client) {
 	if (client->state == NS_CLIENTSTATE_WORKING ||
 	    client->state == NS_CLIENTSTATE_RECURSING)
 	{
-		INSIST(client->newstate <= NS_CLIENTSTATE_READING);
+		INSIST(client->newstate <= NS_CLIENTSTATE_READY);
 		/*
 		 * Let the update processing complete.
 		 */
@@ -480,13 +270,7 @@ exit_check(ns_client_t *client) {
 		 * We are trying to abort request processing.
 		 */
 		if (client->nsends > 0) {
-			isc_socket_t *sock;
-			if (TCP_CLIENT(client))
-				sock = client->tcpsocket;
-			else
-				sock = client->udpsocket;
-			isc_socket_cancel(sock, client->task,
-					  ISC_SOCKCANCEL_SEND);
+			/* XXXWPK TODO cancel ? */
 		}
 
 		if (! (client->nsends == 0 && client->nrecvs == 0 &&
@@ -517,133 +301,15 @@ exit_check(ns_client_t *client) {
 		}
 		ns_client_endrequest(client);
 
-		client->state = NS_CLIENTSTATE_READING;
-		INSIST(client->recursionquota == NULL);
-
-		if (NS_CLIENTSTATE_READING == client->newstate) {
-			INSIST(client->tcpconn != NULL);
-			if (!client->tcpconn->pipelined) {
-				client_read(client, false);
-				client->newstate = NS_CLIENTSTATE_MAX;
-				return (true); /* We're done. */
-			} else if (client->mortal) {
-				client->newstate = NS_CLIENTSTATE_INACTIVE;
-			} else
-				return (false);
-		}
-	}
-
-	if (client->state == NS_CLIENTSTATE_READING) {
-		/*
-		 * We are trying to abort the current TCP connection,
-		 * if any.
-		 */
-		INSIST(client->recursionquota == NULL);
-		INSIST(client->newstate <= NS_CLIENTSTATE_READY);
-
-		if (client->nreads > 0) {
-			dns_tcpmsg_cancelread(&client->tcpmsg);
-		}
-
-		/* Still waiting for read cancel completion. */
-		if (client->nreads > 0) {
-			return (true);
-		}
-
-		if (client->tcpmsg_valid) {
-			dns_tcpmsg_invalidate(&client->tcpmsg);
-			client->tcpmsg_valid = false;
-		}
-
-		/*
-		 * Soon the client will be ready to accept a new TCP
-		 * connection or UDP request, but we may have enough
-		 * clients doing that already.  Check whether this client
-		 * needs to remain active and allow it go inactive if
-		 * not.
-		 *
-		 * UDP clients always go inactive at this point, but a TCP
-		 * client may need to stay active and return to READY
-		 * state if no other clients are available to listen
-		 * for TCP requests on this interface.
-		 *
-		 * Regardless, if we're going to FREED state, that means
-		 * the system is shutting down and we don't need to
-		 * retain clients.
-		 */
-		if (client->mortal && TCP_CLIENT(client) &&
-		    client->newstate != NS_CLIENTSTATE_FREED &&
-		    (client->sctx->options & NS_SERVER_CLIENTTEST) == 0 &&
-		    isc_refcount_current(&client->interface->ntcpaccepting) == 0)
-		{
-			/* Nobody else is accepting */
-			client->mortal = false;
-			client->newstate = NS_CLIENTSTATE_READY;
-		}
-
-		/*
-		 * Detach from TCP connection and TCP client quota,
-		 * if appropriate. If this is the last reference to
-		 * the TCP connection in our pipeline group, the
-		 * TCP quota slot will be released.
-		 */
-		if (client->tcpconn) {
-			tcpconn_detach(client);
-		}
-
-		if (client->tcpsocket != NULL) {
-			CTRACE("closetcp");
-			isc_socket_detach(&client->tcpsocket);
-			mark_tcp_active(client, false);
-		}
-
-		if (client->timerset) {
-			(void)isc_timer_reset(client->timer,
-					      isc_timertype_inactive,
-					      NULL, NULL, true);
-			client->timerset = false;
-		}
-
-		client->peeraddr_valid = false;
-
 		client->state = NS_CLIENTSTATE_READY;
+		INSIST(client->recursionquota == NULL);
+		return (true);
 
-		/*
-		 * We don't need the client; send it to the inactive
-		 * queue for recycling.
-		 */
-		if (client->mortal) {
-			if (client->newstate > NS_CLIENTSTATE_INACTIVE) {
-				client->newstate = NS_CLIENTSTATE_INACTIVE;
-			}
-		}
-
-		if (NS_CLIENTSTATE_READY == client->newstate) {
-			if (TCP_CLIENT(client)) {
-				client_accept(client);
-			} else {
-				client_udprecv(client);
-			}
-			client->newstate = NS_CLIENTSTATE_MAX;
-			return (true);
-		}
 	}
+
 
 	if (client->state == NS_CLIENTSTATE_READY) {
 		INSIST(client->newstate <= NS_CLIENTSTATE_INACTIVE);
-
-		/*
-		 * We are trying to enter the inactive state.
-		 */
-		if (client->naccepts > 0) {
-			isc_socket_cancel(client->tcplistener, client->task,
-					  ISC_SOCKCANCEL_ACCEPT);
-		}
-
-		/* Still waiting for accept cancel completion. */
-		if (client->naccepts > 0) {
-			return (true);
-		}
 
 		/* Accept cancel is complete. */
 		if (client->nrecvs > 0) {
@@ -652,7 +318,7 @@ exit_check(ns_client_t *client) {
 		}
 
 		/* Still waiting for recv cancel completion. */
-		if (client->nrecvs > 0) {
+		if (! (client->nrecvs == 0)) {
 			return (true);
 		}
 
@@ -665,15 +331,9 @@ exit_check(ns_client_t *client) {
 		INSIST(client->recursionquota == NULL);
 		if (client->tcplistener != NULL) {
 			isc_socket_detach(&client->tcplistener);
-			mark_tcp_active(client, false);
 		}
 		if (client->udpsocket != NULL) {
 			isc_socket_detach(&client->udpsocket);
-		}
-
-		/* Deactivate the client. */
-		if (client->interface != NULL) {
-			ns_interface_detach(&client->interface);
 		}
 
 		if (client->dispatch != NULL) {
@@ -702,15 +362,10 @@ exit_check(ns_client_t *client) {
 
 		if (client->state == client->newstate) {
 			client->newstate = NS_CLIENTSTATE_MAX;
-			if ((client->sctx->options &
-			     NS_SERVER_CLIENTTEST) == 0 &&
-			    manager != NULL && !manager->exiting)
+			if (manager != NULL && !manager->exiting)
 			{
 				ISC_QUEUE_PUSH(manager->inactive, client,
 					       ilink);
-			}
-			if (client->needshutdown) {
-				isc_task_shutdown(client->task);
 			}
 			return (true);
 		}
@@ -727,9 +382,9 @@ exit_check(ns_client_t *client) {
 		 * event at this point.
 		 */
 		REQUIRE(client->state == NS_CLIENTSTATE_INACTIVE);
+		INSIST(!ISC_QLINK_LINKED(client, ilink));
 
 		INSIST(client->recursionquota == NULL);
-		INSIST(!ISC_QLINK_LINKED(client, ilink));
 
 		if (manager != NULL) {
 			LOCK(&manager->listlock);
@@ -743,16 +398,14 @@ exit_check(ns_client_t *client) {
 		}
 
 		ns_query_free(client);
-		isc_mem_put(client->mctx, client->recvbuf, RECV_BUFFER_SIZE);
-		isc_event_free((isc_event_t **)&client->sendevent);
-		isc_event_free((isc_event_t **)&client->recvevent);
-		isc_timer_detach(&client->timer);
+		isc_mem_put(client->mctx, client->recvbuf,
+			    NS_CLIENT_RECV_BUFFER_SIZE);
 		if (client->delaytimer != NULL)
 			isc_timer_detach(&client->delaytimer);
 
 		if (client->tcpbuf != NULL)
 			isc_mem_put(client->mctx, client->tcpbuf,
-				    TCP_BUFFER_SIZE);
+				    NS_CLIENT_TCP_BUFFER_SIZE);
 		if (client->opt != NULL) {
 			INSIST(dns_rdataset_isassociated(client->opt));
 			dns_rdataset_disassociate(client->opt);
@@ -779,18 +432,6 @@ exit_check(ns_client_t *client) {
 		client->magic = 0;
 
 		/*
-		 * Check that there are no other external references to
-		 * the memory context.
-		 */
-		if ((client->sctx->options & NS_SERVER_CLIENTTEST) != 0 &&
-		    isc_mem_references(client->mctx) != 1)
-		{
-			isc_mem_stats(client->mctx, stderr);
-			INSIST(0);
-			ISC_UNREACHABLE();
-		}
-
-		/*
 		 * Destroy the fetchlock mutex that was created in
 		 * ns_query_init().
 		 */
@@ -798,8 +439,11 @@ exit_check(ns_client_t *client) {
 
 		if (client->sctx != NULL)
 			ns_server_detach(&client->sctx);
-
-		isc_mem_putanddetach(&client->mctx, client, sizeof(*client));
+		if (client->allocated) {
+			isc_mem_putanddetach(&client->mctx, client, sizeof(*client));
+		} else {
+			isc_mem_detach(&client->mctx);
+		}
 	}
 
 	if (destroy_manager && manager != NULL)
@@ -809,38 +453,9 @@ exit_check(ns_client_t *client) {
 }
 
 /*%
- * The client's task has received the client's control event
- * as part of the startup process.
- */
-static void
-client_start(isc_task_t *task, isc_event_t *event) {
-	ns_client_t *client = (ns_client_t *) event->ev_arg;
-
-	INSIST(task == client->task);
-
-	UNUSED(task);
-
-	INSIST(client->nctls == 1);
-	client->nctls--;
-
-	if (exit_check(client))
-		return;
-
-	if (TCP_CLIENT(client)) {
-		if (client->tcpconn != NULL) {
-			client_read(client, false);
-		} else {
-			client_accept(client);
-		}
-	} else {
-		client_udprecv(client);
-	}
-}
-
-/*%
  * The client's task has received a shutdown event.
  */
-static void
+/* static void
 client_shutdown(isc_task_t *task, isc_event_t *event) {
 	ns_client_t *client;
 
@@ -862,14 +477,17 @@ client_shutdown(isc_task_t *task, isc_event_t *event) {
 		client->shutdown_arg = NULL;
 	}
 
-	if (ISC_QLINK_LINKED(client, ilink))
+	if (ISC_QLINK_LINKED(client, ilink)) {
 		ISC_QUEUE_UNLINK(client->manager->inactive, client, ilink);
+	}
 
 	client->newstate = NS_CLIENTSTATE_FREED;
-	client->needshutdown = false;
+	if (client->handle != NULL) {
+		isc_nmhandle_detach(&client->handle);
+	}
 	(void)exit_check(client);
 }
-
+*/ 
 static void
 ns_client_endrequest(ns_client_t *client) {
 	INSIST(client->naccepts == 0);
@@ -938,8 +556,7 @@ ns_client_next(ns_client_t *client, isc_result_t result) {
 
 	REQUIRE(NS_CLIENT_VALID(client));
 	REQUIRE(client->state == NS_CLIENTSTATE_WORKING ||
-		client->state == NS_CLIENTSTATE_RECURSING ||
-		client->state == NS_CLIENTSTATE_READING);
+		client->state == NS_CLIENTSTATE_RECURSING);
 
 	CTRACE("next");
 
@@ -953,49 +570,20 @@ ns_client_next(ns_client_t *client, isc_result_t result) {
 	 * the connection out of sync.  To be safe, we always
 	 * sever the connection when result != ISC_R_SUCCESS.
 	 */
-	if (result == ISC_R_SUCCESS && TCP_CLIENT(client))
-		newstate = NS_CLIENTSTATE_READING;
-	else
-		newstate = NS_CLIENTSTATE_READY;
+
+	newstate = NS_CLIENTSTATE_READY;
 
 	if (client->newstate > newstate)
 		client->newstate = newstate;
 	(void)exit_check(client);
 }
 
-
 static void
-client_senddone(isc_task_t *task, isc_event_t *event) {
-	ns_client_t *client;
-	isc_socketevent_t *sevent = (isc_socketevent_t *) event;
-
-	REQUIRE(sevent != NULL);
-	REQUIRE(sevent->ev_type == ISC_SOCKEVENT_SENDDONE);
-	client = sevent->ev_arg;
-	REQUIRE(NS_CLIENT_VALID(client));
-	REQUIRE(task == client->task);
-	REQUIRE(sevent == client->sendevent);
-
-	UNUSED(task);
-
-	CTRACE("senddone");
-
-	if (sevent->result != ISC_R_SUCCESS)
-		ns_client_log(client, NS_LOGCATEGORY_CLIENT,
-			      NS_LOGMODULE_CLIENT, ISC_LOG_WARNING,
-			      "error sending response: %s",
-			      isc_result_totext(sevent->result));
-
-	INSIST(client->nsends > 0);
-	client->nsends--;
-
-	if (client->tcpbuf != NULL) {
-		INSIST(TCP_CLIENT(client));
-		isc_mem_put(client->mctx, client->tcpbuf, TCP_BUFFER_SIZE);
-		client->tcpbuf = NULL;
-	}
-
-	ns_client_next(client, ISC_R_SUCCESS);
+client_senddone(isc_nmhandle_t *handle, isc_result_t result, void *cbarg) {
+	(void) result;
+	ns_client_t *client = cbarg;
+	INSIST(client->handle == handle);
+	isc_nmhandle_detach(&client->handle);
 }
 
 /*%
@@ -1009,7 +597,7 @@ client_senddone(isc_task_t *task, isc_event_t *event) {
 static isc_result_t
 client_allocsendbuf(ns_client_t *client, isc_buffer_t *buffer,
 		    isc_buffer_t *tcpbuffer, uint32_t length,
-		    unsigned char *sendbuf, unsigned char **datap)
+		    unsigned char **datap)
 {
 	unsigned char *data;
 	uint32_t bufsize;
@@ -1021,22 +609,26 @@ client_allocsendbuf(ns_client_t *client, isc_buffer_t *buffer,
 
 	if (TCP_CLIENT(client)) {
 		INSIST(client->tcpbuf == NULL);
-		if (length + 2 > TCP_BUFFER_SIZE) {
+		if (length + 2 > NS_CLIENT_TCP_BUFFER_SIZE) {
 			result = ISC_R_NOSPACE;
 			goto done;
 		}
-		client->tcpbuf = isc_mem_get(client->mctx, TCP_BUFFER_SIZE);
+		client->tcpbuf = isc_mem_get(client->mctx,
+					     NS_CLIENT_TCP_BUFFER_SIZE);
 		data = client->tcpbuf;
 		if (tcpbuffer != NULL) {
-			isc_buffer_init(tcpbuffer, data, TCP_BUFFER_SIZE);
-			isc_buffer_init(buffer, data + 2, TCP_BUFFER_SIZE - 2);
+			isc_buffer_init(tcpbuffer, data,
+					NS_CLIENT_TCP_BUFFER_SIZE);
+			isc_buffer_init(buffer, data + 2,
+				        NS_CLIENT_TCP_BUFFER_SIZE - 2);
 		} else {
-			isc_buffer_init(buffer, data, TCP_BUFFER_SIZE);
+			isc_buffer_init(buffer, data,
+					NS_CLIENT_TCP_BUFFER_SIZE);
 			INSIST(length <= 0xffff);
 			isc_buffer_putuint16(buffer, (uint16_t)length);
 		}
 	} else {
-		data = sendbuf;
+		data = client->sendbuf;
 		if ((client->attributes & NS_CLIENTATTR_HAVECOOKIE) == 0) {
 			if (client->view != NULL)
 				bufsize = client->view->nocookieudp;
@@ -1046,8 +638,8 @@ client_allocsendbuf(ns_client_t *client, isc_buffer_t *buffer,
 			bufsize = client->udpsize;
 		if (bufsize > client->udpsize)
 			bufsize = client->udpsize;
-		if (bufsize > SEND_BUFFER_SIZE)
-			bufsize = SEND_BUFFER_SIZE;
+		if (bufsize > NS_CLIENT_SEND_BUFFER_SIZE)
+			bufsize = NS_CLIENT_SEND_BUFFER_SIZE;
 		if (length > bufsize) {
 			result = ISC_R_NOSPACE;
 			goto done;
@@ -1063,82 +655,12 @@ client_allocsendbuf(ns_client_t *client, isc_buffer_t *buffer,
 
 static isc_result_t
 client_sendpkg(ns_client_t *client, isc_buffer_t *buffer) {
-	struct in6_pktinfo *pktinfo;
-	isc_result_t result;
 	isc_region_t r;
-	isc_sockaddr_t *address;
-	isc_socket_t *sock;
-	isc_netaddr_t netaddr;
-	int match;
-	unsigned int sockflags = ISC_SOCKFLAG_IMMEDIATE;
-	isc_dscp_t dispdscp = -1;
-
-	if (TCP_CLIENT(client)) {
-		sock = client->tcpsocket;
-		address = NULL;
-	} else {
-		dns_aclenv_t *env =
-			ns_interfacemgr_getaclenv(client->interface->mgr);
-
-		sock = client->udpsocket;
-		address = &client->peeraddr;
-
-		isc_netaddr_fromsockaddr(&netaddr, &client->peeraddr);
-		if (client->sctx->blackholeacl != NULL &&
-		    (dns_acl_match(&netaddr, NULL, client->sctx->blackholeacl,
-				   env, &match, NULL) == ISC_R_SUCCESS) &&
-		    match > 0)
-		{
-			return (DNS_R_BLACKHOLED);
-		}
-		sockflags |= ISC_SOCKFLAG_NORETRY;
-	}
-
-	if ((client->attributes & NS_CLIENTATTR_PKTINFO) != 0 &&
-	    (client->attributes & NS_CLIENTATTR_MULTICAST) == 0)
-		pktinfo = &client->pktinfo;
-	else
-		pktinfo = NULL;
-
-	if (client->dispatch != NULL) {
-		dispdscp = dns_dispatch_getdscp(client->dispatch);
-		if (dispdscp != -1)
-			client->dscp = dispdscp;
-	}
-
-	if (client->dscp == -1) {
-		client->sendevent->attributes &= ~ISC_SOCKEVENTATTR_DSCP;
-		client->sendevent->dscp = 0;
-	} else {
-		client->sendevent->attributes |= ISC_SOCKEVENTATTR_DSCP;
-		client->sendevent->dscp = client->dscp;
-	}
 
 	isc_buffer_usedregion(buffer, &r);
 
-	/*
-	 * If this is a UDP client and the IPv6 packet can't be
-	 * encapsulated without generating a PTB on a 1500 octet
-	 * MTU link force fragmentation at 1280 if it is a IPv6
-	 * response.
-	 */
-	client->sendevent->attributes &= ~ISC_SOCKEVENTATTR_USEMINMTU;
-	if (!TCP_CLIENT(client) && r.length > 1432)
-		client->sendevent->attributes |= ISC_SOCKEVENTATTR_USEMINMTU;
-
-	CTRACE("sendto");
-
-	result = isc_socket_sendto2(sock, &r, client->task,
-				    address, pktinfo,
-				    client->sendevent, sockflags);
-	if (result == ISC_R_SUCCESS || result == ISC_R_INPROGRESS) {
-		client->nsends++;
-		if (result == ISC_R_SUCCESS)
-			client_senddone(client->task,
-					(isc_event_t *)client->sendevent);
-		result = ISC_R_SUCCESS;
-	}
-	return (result);
+	INSIST(client->handle != NULL);
+	return (isc_nm_send(client->handle, &r, client_senddone, client));
 }
 
 void
@@ -1148,7 +670,6 @@ ns_client_sendraw(ns_client_t *client, dns_message_t *message) {
 	isc_buffer_t buffer;
 	isc_region_t r;
 	isc_region_t *mr;
-	unsigned char sendbuf[SEND_BUFFER_SIZE];
 
 	REQUIRE(NS_CLIENT_VALID(client));
 
@@ -1160,8 +681,7 @@ ns_client_sendraw(ns_client_t *client, dns_message_t *message) {
 		goto done;
 	}
 
-	result = client_allocsendbuf(client, &buffer, NULL, mr->length,
-				     sendbuf, &data);
+	result = client_allocsendbuf(client, &buffer, NULL, mr->length, &data);
 	if (result != ISC_R_SUCCESS)
 		goto done;
 
@@ -1181,7 +701,8 @@ ns_client_sendraw(ns_client_t *client, dns_message_t *message) {
 
  done:
 	if (client->tcpbuf != NULL) {
-		isc_mem_put(client->mctx, client->tcpbuf, TCP_BUFFER_SIZE);
+		isc_mem_put(client->mctx, client->tcpbuf,
+			    NS_CLIENT_TCP_BUFFER_SIZE);
 		client->tcpbuf = NULL;
 	}
 	ns_client_next(client, result);
@@ -1196,12 +717,11 @@ client_send(ns_client_t *client) {
 	isc_region_t r;
 	dns_compress_t cctx;
 	bool cleanup_cctx = false;
-	unsigned char sendbuf[SEND_BUFFER_SIZE];
 	unsigned int render_opts;
 	unsigned int preferred_glue;
 	bool opt_included = false;
 	size_t respsize;
-	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->interface->mgr);
+	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->manager->interface->mgr);
 #ifdef HAVE_DNSTAP
 	unsigned char zone[DNS_NAME_MAXWIRE];
 	dns_dtmsgtype_t dtmsgtype;
@@ -1248,8 +768,7 @@ client_send(ns_client_t *client) {
 	/*
 	 * XXXRTH  The following doesn't deal with TCP buffer resizing.
 	 */
-	result = client_allocsendbuf(client, &buffer, &tcpbuffer, 0,
-				     sendbuf, &data);
+	result = client_allocsendbuf(client, &buffer, &tcpbuffer, 0, &data);
 	if (result != ISC_R_SUCCESS)
 		goto done;
 
@@ -1452,7 +971,8 @@ client_send(ns_client_t *client) {
 
  done:
 	if (client->tcpbuf != NULL) {
-		isc_mem_put(client->mctx, client->tcpbuf, TCP_BUFFER_SIZE);
+		isc_mem_put(client->mctx, client->tcpbuf,
+			    NS_CLIENT_TCP_BUFFER_SIZE);
 		client->tcpbuf = NULL;
 	}
 
@@ -1462,69 +982,12 @@ client_send(ns_client_t *client) {
 	ns_client_next(client, result);
 }
 
-/*
- * Completes the sending of a delayed client response.
- */
-static void
-client_delay(isc_task_t *task, isc_event_t *event) {
-	ns_client_t *client;
-
-	REQUIRE(event != NULL);
-	REQUIRE(event->ev_type == ISC_TIMEREVENT_LIFE ||
-		event->ev_type == ISC_TIMEREVENT_IDLE);
-	client = event->ev_arg;
-	REQUIRE(NS_CLIENT_VALID(client));
-	REQUIRE(task == client->task);
-	REQUIRE(client->delaytimer != NULL);
-
-	UNUSED(task);
-
-	CTRACE("client_delay");
-
-	isc_event_free(&event);
-	isc_timer_detach(&client->delaytimer);
-
-	client_send(client);
-	ns_client_detach(&client);
-}
-
 void
 ns_client_send(ns_client_t *client) {
 	/*
 	 * Delay the response according to the -T delay option
+	 * XXXWPK TODO
 	 */
-	if (client->sctx->delay != 0) {
-		ns_client_t *dummy = NULL;
-		isc_result_t result;
-		isc_interval_t interval;
-
-		/*
-		 * Replace ourselves if we have not already been replaced.
-		 */
-		if (!client->mortal) {
-			result = ns_client_replace(client);
-			if (result != ISC_R_SUCCESS)
-				goto nodelay;
-		}
-
-		ns_client_attach(client, &dummy);
-		if (client->sctx->delay >= 1000)
-			isc_interval_set(&interval, client->sctx->delay / 1000,
-				 (client->sctx->delay % 1000) * 1000000);
-		else
-			isc_interval_set(&interval, 0,
-					 client->sctx->delay * 1000000);
-		result = isc_timer_create(client->manager->timermgr,
-					  isc_timertype_once, NULL, &interval,
-					  client->task, client_delay,
-					  client, &client->delaytimer);
-		if (result == ISC_R_SUCCESS)
-			return;
-
-		ns_client_detach(&dummy);
-	}
-
- nodelay:
 	client_send(client);
 }
 
@@ -1744,7 +1207,7 @@ ns_client_addopt(ns_client_t *client, dns_message_t *message,
 	unsigned int flags;
 	unsigned char expire[4];
 	unsigned char advtimo[2];
-	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->interface->mgr);
+	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->manager->interface->mgr);
 
 	REQUIRE(NS_CLIENT_VALID(client));
 	REQUIRE(opt != NULL && *opt == NULL);
@@ -2361,14 +1824,51 @@ process_opt(ns_client_t *client, dns_rdataset_t *opt) {
 	return (result);
 }
 
+static void
+client_reset_cb(void *client_) {
+	ns_client_t *client = client_;
+	client->newstate = NS_CLIENTSTATE_READY;
+	if (client->state == NS_CLIENTSTATE_RECURSING) {
+		LOCK(&client->manager->reclock);
+		if (ISC_LINK_LINKED(client, rlink))
+			ISC_LIST_UNLINK(client->manager->recursing,
+					client, rlink);
+		UNLOCK(&client->manager->reclock);
+	}
+	ns_client_endrequest(client);
+
+	client->state = NS_CLIENTSTATE_READY;
+	INSIST(client->recursionquota == NULL);
+}
+
+
+static void
+client_put_cb(void *client_) {
+	ns_client_t *client = client_;
+	if (ISC_QLINK_LINKED(client, ilink)) {
+		ISC_QUEUE_UNLINK(client->manager->inactive, client, ilink);
+	}
+
+	client->newstate = NS_CLIENTSTATE_FREED;
+	if (client->handle != NULL) {
+		isc_nmhandle_detach(&client->handle);
+	}
+	INSIST(exit_check(client) == true);
+}
+
 /*
  * Handle an incoming request event from the socket (UDP case)
  * or tcpmsg (TCP case).
  */
 void
-ns__client_request(isc_task_t *task, isc_event_t *event) {
+ns__client_request(void *arg,
+		   struct isc_nmhandle *handle,
+		   struct isc_region *region)
+{
 	ns_client_t *client;
-	isc_socketevent_t *sevent;
+	bool newclient = false;
+	ns_clientmgr_t *mgr;
+	ns_interface_t *ifp;
 	isc_result_t result;
 	isc_result_t sigresult = ISC_R_SUCCESS;
 	isc_buffer_t *buffer;
@@ -2386,90 +1886,74 @@ ns__client_request(isc_task_t *task, isc_event_t *event) {
 #ifdef HAVE_DNSTAP
 	dns_dtmsgtype_t dtmsgtype;
 #endif
+	ifp = (ns_interface_t*)arg;
 
-	REQUIRE(event != NULL);
-	client = event->ev_arg;
-	REQUIRE(NS_CLIENT_VALID(client));
-	REQUIRE(task == client->task);
+	mgr = ifp->clientmgr;
+	REQUIRE(VALID_MANAGER(mgr));
+
+	client = isc_nmhandle_getdata(handle);
+	if (client == NULL) {
+		isc_mem_t *mctx = NULL;
+		LOCK(&mgr->lock);
+		get_clientmctx(mgr, &mctx);
+		UNLOCK(&mgr->lock);
+		if (mctx == NULL) {
+			return;
+		}
+		client = isc_nmhandle_getextra(handle);
+
+		result = client_setup(mgr, mctx, client);
+		if (result != ISC_R_SUCCESS) {
+			return;
+		}
+		client->manager = mgr;
+		client->state = NS_CLIENTSTATE_READY;
+		INSIST(client->recursionquota == NULL);
+
+		client->dscp = ifp->dscp;
+		client->references++;
+		LOCK(&mgr->listlock);
+		ISC_LIST_APPEND(mgr->clients, client, link);
+		UNLOCK(&mgr->listlock);
+
+//		if (tcp) {
+//			client->attributes |= NS_CLIENTATTR_TCP;
+//		}
+		
+	}
+	if (client->handle == NULL) {
+		isc_nmhandle_setdata(handle, client, client_reset_cb, client_put_cb);
+		isc_nmhandle_attach(handle, &client->handle);
+	}
 
 	INSIST(client->recursionquota == NULL);
 
-	INSIST(client->state == (TCP_CLIENT(client) ?
-				       NS_CLIENTSTATE_READING :
-				       NS_CLIENTSTATE_READY));
+	INSIST(client->state == NS_CLIENTSTATE_READY);
 
 	ns_client_requests++;
 
-	if (event->ev_type == ISC_SOCKEVENT_RECVDONE) {
-		INSIST(!TCP_CLIENT(client));
-		sevent = (isc_socketevent_t *)event;
-		REQUIRE(sevent == client->recvevent);
-		isc_buffer_init(&tbuffer, sevent->region.base, sevent->n);
-		isc_buffer_add(&tbuffer, sevent->n);
-		buffer = &tbuffer;
-		result = sevent->result;
-		if (result == ISC_R_SUCCESS) {
-			client->peeraddr = sevent->address;
-			client->peeraddr_valid = true;
-		}
-		if ((sevent->attributes & ISC_SOCKEVENTATTR_DSCP) != 0) {
-			ns_client_log(client, NS_LOGCATEGORY_CLIENT,
-			      NS_LOGMODULE_CLIENT, ISC_LOG_DEBUG(90),
-			      "received DSCP %d", sevent->dscp);
-			if (client->dscp == -1)
-				client->dscp = sevent->dscp;
-		}
-		if ((sevent->attributes & ISC_SOCKEVENTATTR_PKTINFO) != 0) {
-			client->attributes |= NS_CLIENTATTR_PKTINFO;
-			client->pktinfo = sevent->pktinfo;
-		}
-		if ((sevent->attributes & ISC_SOCKEVENTATTR_MULTICAST) != 0)
-			client->attributes |= NS_CLIENTATTR_MULTICAST;
-		client->nrecvs--;
-	} else {
-		INSIST(TCP_CLIENT(client));
-		INSIST(client->tcpconn != NULL);
-		REQUIRE(event->ev_type == DNS_EVENT_TCPMSG);
-		REQUIRE(event->ev_sender == &client->tcpmsg);
-		buffer = &client->tcpmsg.buffer;
-		result = client->tcpmsg.result;
-		INSIST(client->nreads == 1);
-		/*
-		 * client->peeraddr was set when the connection was accepted.
-		 */
-		client->nreads--;
-	}
+	INSIST(!TCP_CLIENT(client));
+
+	isc_buffer_init(&tbuffer, region->base, region->length);
+	isc_buffer_add(&tbuffer, region->length);
+	buffer = &tbuffer;
+
+	client->peeraddr = isc_nmhandle_peeraddr(client->handle);
+
+	client->peeraddr_valid = true;
 
 	reqsize = isc_buffer_usedlength(buffer);
-	/* don't count the length header */
-	if (TCP_CLIENT(client))
-		reqsize -= 2;
 
 	if (exit_check(client)) {
+		isc_nmhandle_detach(&client->handle);
 		return;
 	}
 	client->state = client->newstate = NS_CLIENTSTATE_WORKING;
 
-	isc_task_getcurrenttimex(task, &client->requesttime);
+//	isc_task_getcurrenttimex(task, &client->requesttime);
+	isc_time_now(&client->requesttime);
 	client->tnow = client->requesttime;
 	client->now = isc_time_seconds(&client->tnow);
-
-	if (result != ISC_R_SUCCESS) {
-		if (TCP_CLIENT(client)) {
-			ns_client_next(client, result);
-		} else {
-			if  (result != ISC_R_CANCELED)
-				isc_log_write(ns_lctx, NS_LOGCATEGORY_CLIENT,
-					      NS_LOGMODULE_CLIENT,
-					      ISC_LOG_ERROR,
-					      "UDP client handler shutting "
-					      "down due to fatal receive "
-					      "error: %s",
-					      isc_result_totext(result));
-			isc_task_shutdown(client->task);
-		}
-		return;
-	}
 
 	isc_netaddr_fromsockaddr(&netaddr, &client->peeraddr);
 
@@ -2479,7 +1963,7 @@ ns__client_request(isc_task_t *task, isc_event_t *event) {
 		ns_client_log(client, DNS_LOGCATEGORY_SECURITY,
 			      NS_LOGMODULE_CLIENT, ISC_LOG_DEBUG(10),
 			      "dropped request: suspicious port");
-		ns_client_next(client, ISC_R_SUCCESS);
+		isc_nmhandle_detach(&client->handle);
 		return;
 	}
 #endif
@@ -2493,8 +1977,8 @@ ns__client_request(isc_task_t *task, isc_event_t *event) {
 	 * Check the blackhole ACL for UDP only, since TCP is done in
 	 * client_newconn.
 	 */
-	env = ns_interfacemgr_getaclenv(client->interface->mgr);
-	if (!TCP_CLIENT(client)) {
+	env = ns_interfacemgr_getaclenv(client->manager->interface->mgr);
+	if (newclient) {
 		if (client->sctx->blackholeacl != NULL &&
 		    (dns_acl_match(&netaddr, NULL, client->sctx->blackholeacl,
 				   env, &match, NULL) == ISC_R_SUCCESS) &&
@@ -2503,21 +1987,9 @@ ns__client_request(isc_task_t *task, isc_event_t *event) {
 			ns_client_log(client, DNS_LOGCATEGORY_SECURITY,
 				      NS_LOGMODULE_CLIENT, ISC_LOG_DEBUG(10),
 				      "blackholed UDP datagram");
-			ns_client_next(client, ISC_R_SUCCESS);
+			isc_nmhandle_detach(&client->handle);
 			return;
 		}
-	}
-
-	/*
-	 * Silently drop multicast requests for the present.
-	 * XXXMPA revisit this as mDNS spec was published.
-	 */
-	if ((client->attributes & NS_CLIENTATTR_MULTICAST) != 0) {
-		ns_client_log(client, NS_LOGCATEGORY_CLIENT,
-			      NS_LOGMODULE_CLIENT, ISC_LOG_DEBUG(2),
-			      "dropping multicast request");
-		ns_client_next(client, DNS_R_REFUSED);
-		return;
 	}
 
 	result = dns_message_peekheader(buffer, &id, &flags);
@@ -2526,7 +1998,7 @@ ns__client_request(isc_task_t *task, isc_event_t *event) {
 		 * There isn't enough header to determine whether
 		 * this was a request or a response.  Drop it.
 		 */
-		ns_client_next(client, result);
+		isc_nmhandle_detach(&client->handle);
 		return;
 	}
 
@@ -2536,15 +2008,9 @@ ns__client_request(isc_task_t *task, isc_event_t *event) {
 	 * If it's a TCP response, discard it here.
 	 */
 	if ((flags & DNS_MESSAGEFLAG_QR) != 0) {
-		if (TCP_CLIENT(client)) {
-			CTRACE("unexpected response");
-			ns_client_next(client, DNS_R_FORMERR);
-			return;
-		} else {
-			dns_dispatch_importrecv(client->dispatch, event);
-			ns_client_next(client, ISC_R_SUCCESS);
-			return;
-		}
+		CTRACE("unexpected response");
+		isc_nmhandle_detach(&client->handle);
+		return;
 	}
 
 	/*
@@ -2617,30 +2083,15 @@ ns__client_request(isc_task_t *task, isc_event_t *event) {
 	/*
 	 * Pipeline TCP query processing.
 	 */
-	if (TCP_CLIENT(client) &&
-	    client->message->opcode != dns_opcode_query)
-	{
-		client->tcpconn->pipelined = false;
-	}
-	if (TCP_CLIENT(client) && client->tcpconn->pipelined) {
-		/*
-		 * We're pipelining. Replace the client; the
-		 * replacement can read the TCP socket looking
-		 * for new messages and this one can process the
-		 * current message asynchronously.
-		 *
-		 * There will now be at least three clients using this
-		 * TCP socket - one accepting new connections,
-		 * one reading an existing connection to get new
-		 * messages, and one answering the message already
-		 * received.
-		 */
-		result = ns_client_replace(client);
+/*	if (client->message->opcode != dns_opcode_query)
+		client->pipelined = false;
+	if (TCP_CLIENT(client) && client->pipelined) {
+		result = isc_quota_reserve(&client->sctx->tcpquota);
 		if (result != ISC_R_SUCCESS) {
 			client->tcpconn->pipelined = false;
 		}
 	}
-
+*/
 	dns_opcodestats_increment(client->sctx->opcodestats,
 				  client->message->opcode);
 	switch (client->message->opcode) {
@@ -2656,10 +2107,6 @@ ns__client_request(isc_task_t *task, isc_event_t *event) {
 	}
 
 	client->message->rcode = dns_rcode_noerror;
-
-	/* RFC1123 section 6.1.3.2 */
-	if ((client->attributes & NS_CLIENTATTR_MULTICAST) != 0)
-		client->message->flags &= ~DNS_MESSAGEFLAG_RD;
 
 	/*
 	 * Deal with EDNS.
@@ -2746,9 +2193,9 @@ ns__client_request(isc_task_t *task, isc_event_t *event) {
 	 * If all the attempts fail (this can happen due to memory shortage,
 	 * etc), we regard this as an error for safety.
 	 */
-	if ((client->interface->flags & NS_INTERFACEFLAG_ANYADDR) == 0)
+	if ((client->manager->interface->flags & NS_INTERFACEFLAG_ANYADDR) == 0)
 		isc_netaddr_fromsockaddr(&client->destaddr,
-					 &client->interface->addr);
+					 &client->manager->interface->addr);
 	else {
 		isc_sockaddr_t sockaddr;
 		result = ISC_R_FAILURE;
@@ -2759,7 +2206,7 @@ ns__client_request(isc_task_t *task, isc_event_t *event) {
 		if (result == ISC_R_SUCCESS)
 			isc_netaddr_fromsockaddr(&client->destaddr, &sockaddr);
 		if (result != ISC_R_SUCCESS &&
-		    client->interface->addr.type.sa.sa_family == AF_INET6 &&
+		    client->manager->interface->addr.type.sa.sa_family == AF_INET6 &&
 		    (client->attributes & NS_CLIENTATTR_PKTINFO) != 0) {
 			/*
 			 * XXXJT technically, we should convert the receiving
@@ -3011,40 +2458,11 @@ ns__client_request(isc_task_t *task, isc_event_t *event) {
 	}
 }
 
-static void
-client_timeout(isc_task_t *task, isc_event_t *event) {
-	ns_client_t *client;
-
-	REQUIRE(event != NULL);
-	REQUIRE(event->ev_type == ISC_TIMEREVENT_LIFE ||
-		event->ev_type == ISC_TIMEREVENT_IDLE);
-	client = event->ev_arg;
-	REQUIRE(NS_CLIENT_VALID(client));
-	REQUIRE(task == client->task);
-	REQUIRE(client->timer != NULL);
-
-	UNUSED(task);
-
-	CTRACE("timeout");
-
-	isc_event_free(&event);
-
-	if (client->shutdown != NULL) {
-		(client->shutdown)(client->shutdown_arg, ISC_R_TIMEDOUT);
-		client->shutdown = NULL;
-		client->shutdown_arg = NULL;
-	}
-
-	if (client->newstate > NS_CLIENTSTATE_READY)
-		client->newstate = NS_CLIENTSTATE_READY;
-	(void)exit_check(client);
-}
-
 static isc_result_t
 get_clientmctx(ns_clientmgr_t *manager, isc_mem_t **mctxp) {
 	isc_mem_t *clientmctx;
 	isc_result_t result;
-#if NMCTXS > 0
+#if CLIENT_NMCTXS > 0
 	unsigned int nextmctx;
 #endif
 
@@ -3053,18 +2471,13 @@ get_clientmctx(ns_clientmgr_t *manager, isc_mem_t **mctxp) {
 	/*
 	 * Caller must be holding the manager lock.
 	 */
-	if ((manager->sctx->options & NS_SERVER_CLIENTTEST) != 0) {
-		result = isc_mem_create(0, 0, mctxp);
-		if (result == ISC_R_SUCCESS)
-			isc_mem_setname(*mctxp, "client", NULL);
-		return (result);
-	}
-#if NMCTXS > 0
+
+#if CLIENT_NMCTXS > 0
 	nextmctx = manager->nextmctx++;
-	if (manager->nextmctx == NMCTXS)
+	if (manager->nextmctx == CLIENT_NMCTXS)
 		manager->nextmctx = 0;
 
-	INSIST(nextmctx < NMCTXS);
+	INSIST(nextmctx < CLIENT_NMCTXS);
 
 	clientmctx = manager->mctxpool[nextmctx];
 	if (clientmctx == NULL) {
@@ -3085,10 +2498,8 @@ get_clientmctx(ns_clientmgr_t *manager, isc_mem_t **mctxp) {
 }
 
 static isc_result_t
-client_create(ns_clientmgr_t *manager, ns_client_t **clientp) {
-	ns_client_t *client;
+client_setup(ns_clientmgr_t *manager, isc_mem_t *mctx, ns_client_t *client) {
 	isc_result_t result;
-	isc_mem_t *mctx = NULL;
 
 	/*
 	 * Caller must be holding the manager lock.
@@ -3098,31 +2509,14 @@ client_create(ns_clientmgr_t *manager, ns_client_t **clientp) {
 	 * The caller is responsible for that.
 	 */
 
-	REQUIRE(clientp != NULL && *clientp == NULL);
+	REQUIRE(client != NULL);
 
-	result = get_clientmctx(manager, &mctx);
-	if (result != ISC_R_SUCCESS)
-		return (result);
-
-	client = isc_mem_get(mctx, sizeof(*client));
 	client->mctx = mctx;
 
 	client->sctx = NULL;
 	ns_server_attach(manager->sctx, &client->sctx);
 
 	client->task = NULL;
-	result = isc_task_create(manager->taskmgr, 0, &client->task);
-	if (result != ISC_R_SUCCESS)
-		goto cleanup_client;
-	isc_task_setname(client->task, "client", client);
-
-	client->timer = NULL;
-	result = isc_timer_create(manager->timermgr, isc_timertype_inactive,
-				  NULL, NULL, client->task, client_timeout,
-				  client, &client->timer);
-	if (result != ISC_R_SUCCESS)
-		goto cleanup_task;
-	client->timerset = false;
 
 	client->delaytimer = NULL;
 
@@ -3134,26 +2528,11 @@ client_create(ns_clientmgr_t *manager, ns_client_t **clientp) {
 
 	/* XXXRTH  Hardwired constants */
 
-	client->sendevent = isc_socket_socketevent(client->mctx, client,
-						   ISC_SOCKEVENT_SENDDONE,
-						   client_senddone, client);
-	if (client->sendevent == NULL) {
-		result = ISC_R_NOMEMORY;
-		goto cleanup_message;
-	}
-
-	client->recvbuf = isc_mem_get(client->mctx, RECV_BUFFER_SIZE);
-
-	client->recvevent = isc_socket_socketevent(client->mctx, client,
-						   ISC_SOCKEVENT_RECVDONE,
-						   ns__client_request, client);
-	if (client->recvevent == NULL) {
-		result = ISC_R_NOMEMORY;
-		goto cleanup_recvbuf;
-	}
+	client->recvbuf = isc_mem_get(client->mctx, NS_CLIENT_RECV_BUFFER_SIZE);
 
 	client->magic = NS_CLIENT_MAGIC;
 	client->manager = NULL;
+	client->allocated = false;
 	client->state = NS_CLIENTSTATE_INACTIVE;
 	client->newstate = NS_CLIENTSTATE_MAX;
 	client->naccepts = 0;
@@ -3167,6 +2546,7 @@ client_create(ns_clientmgr_t *manager, ns_client_t **clientp) {
 	client->view = NULL;
 	client->dispatch = NULL;
 	client->udpsocket = NULL;
+	client->handle = NULL;
 	client->tcplistener = NULL;
 	client->tcpsocket = NULL;
 	client->tcpmsg_valid = false;
@@ -3185,16 +2565,9 @@ client_create(ns_clientmgr_t *manager, ns_client_t **clientp) {
 	client->sendcb = NULL;
 	client->tcpconn = NULL;
 	client->recursionquota = NULL;
-	client->interface = NULL;
 	client->peeraddr_valid = false;
 	dns_ecs_init(&client->ecs);
-	client->needshutdown = ((client->sctx->options &
-				 NS_SERVER_CLIENTTEST) != 0);
-	client->tcpactive = false;
 
-	ISC_EVENT_INIT(&client->ctlevent, sizeof(client->ctlevent), 0, NULL,
-		       NS_EVENT_CLIENTCONTROL, client_start, client, client,
-		       NULL, NULL);
 	/*
 	 * Initialize FORMERR cache to sentinel value that will not match
 	 * any actual FORMERR response.
@@ -3218,316 +2591,22 @@ client_create(ns_clientmgr_t *manager, ns_client_t **clientp) {
 	if (result != ISC_R_SUCCESS)
 		goto cleanup_recvevent;
 
-	result = isc_task_onshutdown(client->task, client_shutdown, client);
-	if (result != ISC_R_SUCCESS)
-		goto cleanup_query;
-
 	CTRACE("create");
-
-	*clientp = client;
 
 	return (ISC_R_SUCCESS);
 
- cleanup_query:
-	ns_query_free(client);
-
  cleanup_recvevent:
-	isc_event_free((isc_event_t **)&client->recvevent);
-
- cleanup_recvbuf:
-	isc_mem_put(client->mctx, client->recvbuf, RECV_BUFFER_SIZE);
-
-	isc_event_free((isc_event_t **)&client->sendevent);
+	isc_mem_put(client->mctx, client->recvbuf, NS_CLIENT_RECV_BUFFER_SIZE);
 
 	client->magic = 0;
 
- cleanup_message:
 	dns_message_destroy(&client->message);
 
  cleanup_timer:
-	isc_timer_detach(&client->timer);
-
- cleanup_task:
-	isc_task_detach(&client->task);
-
- cleanup_client:
-	if (client->sctx != NULL)
-		ns_server_detach(&client->sctx);
-	isc_mem_putanddetach(&client->mctx, client, sizeof(*client));
-
+	if (client->task) {
+		isc_task_detach(&client->task);
+	}
 	return (result);
-}
-
-static void
-client_read(ns_client_t *client, bool newconn) {
-	isc_result_t result;
-
-	CTRACE("read");
-
-	result = dns_tcpmsg_readmessage(&client->tcpmsg, client->task,
-					ns__client_request, client);
-	if (result != ISC_R_SUCCESS)
-		goto fail;
-
-	/*
-	 * Set a timeout to limit the amount of time we will wait
-	 * for a request on this TCP connection.
-	 */
-	read_settimeout(client, newconn);
-
-	client->state = client->newstate = NS_CLIENTSTATE_READING;
-	INSIST(client->nreads == 0);
-	INSIST(client->recursionquota == NULL);
-	client->nreads++;
-
-	return;
- fail:
-	ns_client_next(client, result);
-}
-
-static void
-client_newconn(isc_task_t *task, isc_event_t *event) {
-	isc_result_t result;
-	ns_client_t *client = event->ev_arg;
-	isc_socket_newconnev_t *nevent = (isc_socket_newconnev_t *)event;
-	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->interface->mgr);
-	uint32_t old;
-
-	REQUIRE(event->ev_type == ISC_SOCKEVENT_NEWCONN);
-	REQUIRE(NS_CLIENT_VALID(client));
-	REQUIRE(client->task == task);
-
-	UNUSED(task);
-
-	INSIST(client->state == NS_CLIENTSTATE_READY);
-
-	/*
-	 * The accept() was successful and we're now establishing a new
-	 * connection. We need to make note of it in the client and
-	 * interface objects so client objects can do the right thing
-	 * when going inactive in exit_check() (see comments in
-	 * client_accept() for details).
-	 */
-	INSIST(client->naccepts == 1);
-	client->naccepts--;
-
-	old = isc_refcount_decrement(&client->interface->ntcpaccepting);
-	INSIST(old > 0);
-
-	/*
-	 * We must take ownership of the new socket before the exit
-	 * check to make sure it gets destroyed if we decide to exit.
-	 */
-	if (nevent->result == ISC_R_SUCCESS) {
-		client->tcpsocket = nevent->newsocket;
-		isc_socket_setname(client->tcpsocket, "client-tcp", NULL);
-		client->state = NS_CLIENTSTATE_READING;
-		INSIST(client->recursionquota == NULL);
-
-		(void)isc_socket_getpeername(client->tcpsocket,
-					     &client->peeraddr);
-		client->peeraddr_valid = true;
-		ns_client_log(client, NS_LOGCATEGORY_CLIENT,
-			   NS_LOGMODULE_CLIENT, ISC_LOG_DEBUG(3),
-			   "new TCP connection");
-	} else {
-		/*
-		 * XXXRTH  What should we do?  We're trying to accept but
-		 *	   it didn't work.  If we just give up, then TCP
-		 *	   service may eventually stop.
-		 *
-		 *	   For now, we just go idle.
-		 *
-		 *	   Going idle is probably the right thing if the
-		 *	   I/O was canceled.
-		 */
-		ns_client_log(client, NS_LOGCATEGORY_CLIENT,
-			      NS_LOGMODULE_CLIENT, ISC_LOG_DEBUG(3),
-			      "accept failed: %s",
-			      isc_result_totext(nevent->result));
-		tcpconn_detach(client);
-	}
-
-	if (exit_check(client))
-		goto freeevent;
-
-	if (nevent->result == ISC_R_SUCCESS) {
-		int match;
-		isc_netaddr_t netaddr;
-
-		isc_netaddr_fromsockaddr(&netaddr, &client->peeraddr);
-
-		if (client->sctx->blackholeacl != NULL &&
-		    (dns_acl_match(&netaddr, NULL, client->sctx->blackholeacl,
-				   env, &match, NULL) == ISC_R_SUCCESS) &&
-		    match > 0)
-		{
-			ns_client_log(client, DNS_LOGCATEGORY_SECURITY,
-				      NS_LOGMODULE_CLIENT, ISC_LOG_DEBUG(10),
-				      "blackholed connection attempt");
-			client->newstate = NS_CLIENTSTATE_READY;
-			(void)exit_check(client);
-			goto freeevent;
-		}
-
-		INSIST(client->tcpmsg_valid == false);
-		dns_tcpmsg_init(client->mctx, client->tcpsocket,
-				&client->tcpmsg);
-		client->tcpmsg_valid = true;
-
-		/*
-		 * Let a new client take our place immediately, before
-		 * we wait for a request packet.  If we don't,
-		 * telnetting to port 53 (once per CPU) will
-		 * deny service to legitimate TCP clients.
-		 */
-		result = ns_client_replace(client);
-		if (result == ISC_R_SUCCESS &&
-		    (client->sctx->keepresporder == NULL ||
-		     !dns_acl_allowed(&netaddr, NULL,
-				     client->sctx->keepresporder, env)))
-		{
-			client->tcpconn->pipelined = true;
-		}
-
-		client_read(client, true);
-	}
-
- freeevent:
-	isc_event_free(&event);
-}
-
-static void
-client_accept(ns_client_t *client) {
-	isc_result_t result;
-
-	CTRACE("accept");
-
-	/*
-	 * Set up a new TCP connection. This means try to attach to the
-	 * TCP client quota (tcp-clients), but fail if we're over quota.
-	 */
-	result = tcpconn_init(client, false);
-	if (result != ISC_R_SUCCESS) {
-		bool exit;
-
-		ns_client_log(client, NS_LOGCATEGORY_CLIENT,
-			      NS_LOGMODULE_CLIENT, ISC_LOG_WARNING,
-			      "TCP client quota reached: %s",
-			      isc_result_totext(result));
-
-		/*
-		 * We have exceeded the system-wide TCP client quota.  But,
-		 * we can't just block this accept in all cases, because if
-		 * we did, a heavy TCP load on other interfaces might cause
-		 * this interface to be starved, with no clients able to
-		 * accept new connections.
-		 *
-		 * So, we check here to see if any other clients are
-		 * already servicing TCP queries on this interface (whether
-		 * accepting, reading, or processing). If we find that at
-		 * least one client other than this one is active, then
-		 * it's okay *not* to call accept - we can let this
-		 * client go inactive and another will take over when it's
-		 * done.
-		 *
-		 * If there aren't enough active clients on the interface,
-		 * then we can be a little bit flexible about the quota.
-		 * We'll allow *one* extra client through to ensure we're
-		 * listening on every interface; we do this by setting the
-		 * 'force' option to tcpconn_init().
-		 *
-		 * (Note: In practice this means that the real TCP client
-		 * quota is tcp-clients plus the number of listening
-		 * interfaces plus 1.)
-		 */
-		exit = (isc_refcount_current(&client->interface->ntcpactive) >
-			(client->tcpactive ? 1U : 0U));
-		if (exit) {
-			client->newstate = NS_CLIENTSTATE_INACTIVE;
-			(void)exit_check(client);
-			return;
-		}
-
-		result = tcpconn_init(client, true);
-		RUNTIME_CHECK(result == ISC_R_SUCCESS);
-	}
-
-	/*
-	 * If this client was set up using get_client() or get_worker(),
-	 * then TCP is already marked active. However, if it was restarted
-	 * from exit_check(), it might not be, so we take care of it now.
-	 */
-	mark_tcp_active(client, true);
-
-	result = isc_socket_accept(client->tcplistener, client->task,
-				   client_newconn, client);
-	if (result != ISC_R_SUCCESS) {
-		/*
-		 * XXXRTH  What should we do?  We're trying to accept but
-		 *	   it didn't work.  If we just give up, then TCP
-		 *	   service may eventually stop.
-		 *
-		 *	   For now, we just go idle.
-		 */
-		UNEXPECTED_ERROR(__FILE__, __LINE__,
-				 "isc_socket_accept() failed: %s",
-				 isc_result_totext(result));
-
-		tcpconn_detach(client);
-		mark_tcp_active(client, false);
-		return;
-	}
-
-	/*
-	 * The client's 'naccepts' counter indicates that this client has
-	 * called accept() and is waiting for a new connection. It should
-	 * never exceed 1.
-	 */
-	INSIST(client->naccepts == 0);
-	client->naccepts++;
-
-	/*
-	 * The interface's 'ntcpaccepting' counter is incremented when
-	 * any client calls accept(), and decremented in client_newconn()
-	 * once the connection is established.
-	 *
-	 * When the client object is shutting down after handling a TCP
-	 * request (see exit_check()), if this value is at least one, that
-	 * means another client has called accept() and is waiting to
-	 * establish the next connection. That means the client may be
-	 * be free to become inactive; otherwise it may need to start
-	 * listening for connections itself to prevent the interface
-	 * going dead.
-	 */
-	isc_refcount_increment0(&client->interface->ntcpaccepting);
-}
-
-static void
-client_udprecv(ns_client_t *client) {
-	isc_result_t result;
-	isc_region_t r;
-
-	CTRACE("udprecv");
-
-	r.base = client->recvbuf;
-	r.length = RECV_BUFFER_SIZE;
-	result = isc_socket_recv2(client->udpsocket, &r, 1,
-				  client->task, client->recvevent, 0);
-	if (result != ISC_R_SUCCESS) {
-		UNEXPECTED_ERROR(__FILE__, __LINE__,
-				 "isc_socket_recv2() failed: %s",
-				 isc_result_totext(result));
-		/*
-		 * This cannot happen in the current implementation, since
-		 * isc_socket_recv2() cannot fail if flags == 0.
-		 *
-		 * If this does fail, we just go idle.
-		 */
-		return;
-	}
-	INSIST(client->nrecvs == 0);
-	client->nrecvs++;
 }
 
 void
@@ -3562,46 +2641,13 @@ ns_client_shuttingdown(ns_client_t *client) {
 	return (client->newstate == NS_CLIENTSTATE_FREED);
 }
 
-isc_result_t
-ns_client_replace(ns_client_t *client) {
-	isc_result_t result;
-	bool tcp;
-
-	CTRACE("replace");
-
-	REQUIRE(client != NULL);
-	REQUIRE(client->manager != NULL);
-
-	tcp = TCP_CLIENT(client);
-	if (tcp && client->tcpconn != NULL && client->tcpconn->pipelined) {
-		result = get_worker(client->manager, client->interface,
-				    client->tcpsocket, client);
-	} else {
-		result = get_client(client->manager, client->interface,
-				    client->dispatch, tcp);
-
-	}
-	if (result != ISC_R_SUCCESS) {
-		return (result);
-	}
-
-	/*
-	 * The responsibility for listening for new requests is hereby
-	 * transferred to the new client.  Therefore, the old client
-	 * should refrain from listening for any more requests.
-	 */
-	client->mortal = true;
-
-	return (ISC_R_SUCCESS);
-}
-
 /***
  *** Client Manager
  ***/
 
 static void
 clientmgr_destroy(ns_clientmgr_t *manager) {
-#if NMCTXS > 0
+#if CLIENT_NMCTXS > 0
 	int i;
 #endif
 
@@ -3609,15 +2655,14 @@ clientmgr_destroy(ns_clientmgr_t *manager) {
 
 	MTRACE("clientmgr_destroy");
 
-#if NMCTXS > 0
-	for (i = 0; i < NMCTXS; i++) {
+#if CLIENT_NMCTXS > 0
+	for (i = 0; i < CLIENT_NMCTXS; i++) {
 		if (manager->mctxpool[i] != NULL)
 			isc_mem_detach(&manager->mctxpool[i]);
 	}
 #endif
 
 	ISC_QUEUE_DESTROY(manager->inactive);
-
 	isc_mutex_destroy(&manager->lock);
 	isc_mutex_destroy(&manager->listlock);
 	isc_mutex_destroy(&manager->reclock);
@@ -3633,11 +2678,12 @@ clientmgr_destroy(ns_clientmgr_t *manager) {
 
 isc_result_t
 ns_clientmgr_create(isc_mem_t *mctx, ns_server_t *sctx, isc_taskmgr_t *taskmgr,
-		    isc_timermgr_t *timermgr, ns_clientmgr_t **managerp)
+		    isc_timermgr_t *timermgr, ns_interface_t *interface,
+		    ns_clientmgr_t **managerp)
 {
 	ns_clientmgr_t *manager;
 	isc_result_t result;
-#if NMCTXS > 0
+#if CLIENT_NMCTXS > 0
 	int i;
 #endif
 
@@ -3656,6 +2702,7 @@ ns_clientmgr_create(isc_mem_t *mctx, ns_server_t *sctx, isc_taskmgr_t *taskmgr,
 	manager->mctx = mctx;
 	manager->taskmgr = taskmgr;
 	manager->timermgr = timermgr;
+	manager->interface = interface;
 	manager->exiting = false;
 
 	manager->sctx = NULL;
@@ -3664,9 +2711,9 @@ ns_clientmgr_create(isc_mem_t *mctx, ns_server_t *sctx, isc_taskmgr_t *taskmgr,
 	ISC_LIST_INIT(manager->clients);
 	ISC_LIST_INIT(manager->recursing);
 	ISC_QUEUE_INIT(manager->inactive, ilink);
-#if NMCTXS > 0
+#if CLIENT_NMCTXS > 0
 	manager->nextmctx = 0;
-	for (i = 0; i < NMCTXS; i++)
+	for (i = 0; i < CLIENT_NMCTXS; i++)
 		manager->mctxpool[i] = NULL; /* will be created on-demand */
 #endif
 	manager->magic = MANAGER_MAGIC;
@@ -3700,6 +2747,7 @@ ns_clientmgr_destroy(ns_clientmgr_t **managerp) {
 
 	MTRACE("destroy");
 
+	/* XXXWPK TODO we need to pause netmgr here */
 	/*
 	 * Check for success because we may already be task-exclusive
 	 * at this point.  Only if we succeed at obtaining an exclusive
@@ -3713,9 +2761,11 @@ ns_clientmgr_destroy(ns_clientmgr_t **managerp) {
 
 	for (client = ISC_LIST_HEAD(manager->clients);
 	     client != NULL;
-	     client = ISC_LIST_NEXT(client, link))
+	     client = ISC_LIST_NEXT(client, link)) {
+		     if (client->task != NULL)
 		isc_task_shutdown(client->task);
-
+	}
+	
 	if (ISC_LIST_EMPTY(manager->clients))
 		need_destroy = true;
 
@@ -3726,220 +2776,6 @@ ns_clientmgr_destroy(ns_clientmgr_t **managerp) {
 		clientmgr_destroy(manager);
 
 	*managerp = NULL;
-}
-
-static isc_result_t
-get_client(ns_clientmgr_t *manager, ns_interface_t *ifp,
-	   dns_dispatch_t *disp, bool tcp)
-{
-	isc_result_t result = ISC_R_SUCCESS;
-	isc_event_t *ev;
-	ns_client_t *client;
-	MTRACE("get client");
-
-	REQUIRE(manager != NULL);
-
-	if (manager->exiting)
-		return (ISC_R_SHUTTINGDOWN);
-
-	/*
-	 * Allocate a client.  First try to get a recycled one;
-	 * if that fails, make a new one.
-	 */
-	client = NULL;
-	if ((manager->sctx->options & NS_SERVER_CLIENTTEST) == 0) {
-		ISC_QUEUE_POP(manager->inactive, ilink, client);
-	}
-
-	if (client != NULL) {
-		MTRACE("recycle");
-	} else {
-		MTRACE("create new");
-
-		LOCK(&manager->lock);
-		result = client_create(manager, &client);
-		UNLOCK(&manager->lock);
-		if (result != ISC_R_SUCCESS)
-			return (result);
-
-		LOCK(&manager->listlock);
-		ISC_LIST_APPEND(manager->clients, client, link);
-		UNLOCK(&manager->listlock);
-	}
-
-	client->manager = manager;
-	ns_interface_attach(ifp, &client->interface);
-	client->state = NS_CLIENTSTATE_READY;
-	client->sctx = manager->sctx;
-	INSIST(client->recursionquota == NULL);
-
-	client->dscp = ifp->dscp;
-	client->rcode_override = -1;	/* not set */
-
-	if (tcp) {
-		mark_tcp_active(client, true);
-
-		client->attributes |= NS_CLIENTATTR_TCP;
-		isc_socket_attach(ifp->tcpsocket,
-				  &client->tcplistener);
-
-	} else {
-		isc_socket_t *sock;
-
-		dns_dispatch_attach(disp, &client->dispatch);
-		sock = dns_dispatch_getsocket(client->dispatch);
-		isc_socket_attach(sock, &client->udpsocket);
-	}
-
-	INSIST(client->nctls == 0);
-	client->nctls++;
-	ev = &client->ctlevent;
-	isc_task_send(client->task, &ev);
-
-	return (ISC_R_SUCCESS);
-}
-
-static isc_result_t
-get_worker(ns_clientmgr_t *manager, ns_interface_t *ifp, isc_socket_t *sock,
-	   ns_client_t *oldclient)
-{
-	isc_result_t result = ISC_R_SUCCESS;
-	isc_event_t *ev;
-	ns_client_t *client;
-	MTRACE("get worker");
-
-	REQUIRE(manager != NULL);
-	REQUIRE(oldclient != NULL);
-
-	if (manager->exiting)
-		return (ISC_R_SHUTTINGDOWN);
-
-	/*
-	 * Allocate a client.  First try to get a recycled one;
-	 * if that fails, make a new one.
-	 */
-	client = NULL;
-	if ((manager->sctx->options & NS_SERVER_CLIENTTEST) == 0)
-		ISC_QUEUE_POP(manager->inactive, ilink, client);
-
-	if (client != NULL)
-		MTRACE("recycle");
-	else {
-		MTRACE("create new");
-
-		LOCK(&manager->lock);
-		result = client_create(manager, &client);
-		UNLOCK(&manager->lock);
-		if (result != ISC_R_SUCCESS)
-			return (result);
-
-		LOCK(&manager->listlock);
-		ISC_LIST_APPEND(manager->clients, client, link);
-		UNLOCK(&manager->listlock);
-	}
-
-	client->manager = manager;
-	ns_interface_attach(ifp, &client->interface);
-	client->newstate = client->state = NS_CLIENTSTATE_WORKING;
-	INSIST(client->recursionquota == NULL);
-	client->sctx = manager->sctx;
-
-	client->dscp = ifp->dscp;
-
-	client->attributes |= NS_CLIENTATTR_TCP;
-	client->mortal = true;
-	client->sendcb = NULL;
-	client->rcode_override = -1;	/* not set */
-
-	tcpconn_attach(oldclient, client);
-	mark_tcp_active(client, true);
-
-	isc_socket_attach(ifp->tcpsocket, &client->tcplistener);
-	isc_socket_attach(sock, &client->tcpsocket);
-	isc_socket_setname(client->tcpsocket, "worker-tcp", NULL);
-	(void)isc_socket_getpeername(client->tcpsocket, &client->peeraddr);
-	client->peeraddr_valid = true;
-
-	INSIST(client->tcpmsg_valid == false);
-	dns_tcpmsg_init(client->mctx, client->tcpsocket, &client->tcpmsg);
-	client->tcpmsg_valid = true;
-
-	INSIST(client->nctls == 0);
-	client->nctls++;
-	ev = &client->ctlevent;
-	isc_task_send(client->task, &ev);
-
-	return (ISC_R_SUCCESS);
-}
-
-isc_result_t
-ns__clientmgr_getclient(ns_clientmgr_t *manager, ns_interface_t *ifp,
-			bool tcp, ns_client_t **clientp)
-{
-	isc_result_t result = ISC_R_SUCCESS;
-	ns_client_t *client;
-	MTRACE("getclient");
-
-	REQUIRE(VALID_MANAGER(manager));
-	REQUIRE(clientp != NULL && *clientp == NULL);
-
-	if (manager->exiting)
-		return (ISC_R_SHUTTINGDOWN);
-
-	client = NULL;
-	ISC_QUEUE_POP(manager->inactive, ilink, client);
-	if (client != NULL)
-		MTRACE("getclient (recycle)");
-	else {
-		MTRACE("getclient (create)");
-
-		LOCK(&manager->lock);
-		result = client_create(manager, &client);
-		UNLOCK(&manager->lock);
-		if (result != ISC_R_SUCCESS)
-			return (result);
-
-		LOCK(&manager->listlock);
-		ISC_LIST_APPEND(manager->clients, client, link);
-		UNLOCK(&manager->listlock);
-	}
-
-	client->manager = manager;
-	ns_interface_attach(ifp, &client->interface);
-	client->state = NS_CLIENTSTATE_READY;
-	INSIST(client->recursionquota == NULL);
-
-	client->dscp = ifp->dscp;
-	isc_refcount_increment(&client->references);
-
-	if (tcp) {
-		client->attributes |= NS_CLIENTATTR_TCP;
-	}
-
-	*clientp = client;
-
-	return (ISC_R_SUCCESS);
-}
-
-isc_result_t
-ns_clientmgr_createclients(ns_clientmgr_t *manager, unsigned int n,
-			   ns_interface_t *ifp, bool tcp)
-{
-	isc_result_t result = ISC_R_SUCCESS;
-	unsigned int disp;
-
-	REQUIRE(VALID_MANAGER(manager));
-	REQUIRE(n > 0);
-
-	MTRACE("createclients");
-
-	for (disp = 0; disp < n; disp++) {
-		result = get_client(manager, ifp, ifp->udpdispatch[disp], tcp);
-		if (result != ISC_R_SUCCESS)
-			break;
-	}
-
-	return (result);
 }
 
 isc_sockaddr_t *
@@ -3957,7 +2793,7 @@ ns_client_checkaclsilent(ns_client_t *client, isc_netaddr_t *netaddr,
 			 dns_acl_t *acl, bool default_allow)
 {
 	isc_result_t result;
-	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->interface->mgr);
+	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->manager->interface->mgr);
 	isc_netaddr_t tmpnetaddr;
 	int match;
 

@@ -1202,6 +1202,8 @@ xfrout_ctx_create(isc_mem_t *mctx, ns_client_t *client, unsigned int id,
 		  unsigned int maxtime, unsigned int idletime,
 		  bool many_answers, xfrout_ctx_t **xfrp)
 {
+	(void) maxtime;
+	(void) idletime;
 	xfrout_ctx_t *xfr;
 	isc_result_t result;
 	unsigned int len;
@@ -1271,8 +1273,8 @@ xfrout_ctx_create(isc_mem_t *mctx, ns_client_t *client, unsigned int id,
 	xfr->txmem = mem;
 	xfr->txmemlen = len;
 
-	CHECK(dns_timer_setidle(xfr->client->timer,
-				maxtime, idletime, false));
+//	CHECK(dns_timer_setidle(xfr->client->timer,
+//				maxtime, idletime, false));
 
 	/*
 	 * Register a shutdown callback with the client, so that we
@@ -1676,7 +1678,7 @@ xfrout_senddone(isc_task_t *task, isc_event_t *event) {
 
 	isc_event_free(&event);
 
-	(void)isc_timer_touch(xfr->client->timer);
+//	(void)isc_timer_touch(xfr->client->timer);
 	if (xfr->shuttingdown == true) {
 		xfrout_maybe_destroy(xfr);
 	} else if (evresult != ISC_R_SUCCESS) {

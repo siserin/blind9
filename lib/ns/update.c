@@ -2523,7 +2523,7 @@ update_action(isc_task_t *task, isc_event_t *event) {
 	dns_ttl_t maxttl = 0;
 	uint32_t maxrecords;
 	uint64_t records;
-	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->interface->mgr);
+	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->manager->interface->mgr);
 
 	INSIST(event->ev_type == DNS_EVENT_UPDATE);
 
@@ -3479,12 +3479,6 @@ send_forward_event(ns_client_t *client, dns_zone_t *zone) {
 	update_event_t *event = NULL;
 	isc_task_t *zonetask = NULL;
 	ns_client_t *evclient;
-
-	/*
-	 * This may take some time so replace this client.
-	 */
-	if (!client->mortal && (client->attributes & NS_CLIENTATTR_TCP) == 0)
-		CHECK(ns_client_replace(client));
 
 	event = (update_event_t *)
 		isc_event_allocate(client->mctx, client, DNS_EVENT_UPDATE,

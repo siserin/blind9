@@ -14,6 +14,7 @@
 #include <stdbool.h>
 
 #include <isc/interfaceiter.h>
+#include <isc/netmgr.h>
 #include <isc/os.h>
 #include <isc/random.h>
 #include <isc/string.h>
@@ -72,6 +73,7 @@ struct ns_interfacemgr {
 	isc_task_t *		excl;		/*%< Exclusive task. */
 	isc_timermgr_t *	timermgr;	/*%< Timer manager. */
 	isc_socketmgr_t *	socketmgr;	/*%< Socket manager. */
+	isc_nm_t *		nm;		/*%< Net manager. */
 	dns_dispatchmgr_t *	dispatchmgr;
 	unsigned int		generation;	/*%< Current generation no. */
 	ns_listenlist_t *	listenon4;
@@ -172,6 +174,7 @@ ns_interfacemgr_create(isc_mem_t *mctx,
 		       isc_taskmgr_t *taskmgr,
 		       isc_timermgr_t *timermgr,
 		       isc_socketmgr_t *socketmgr,
+		       isc_nm_t	*nm,
 		       dns_dispatchmgr_t *dispatchmgr,
 		       isc_task_t *task,
 		       unsigned int udpdisp,
@@ -208,6 +211,7 @@ ns_interfacemgr_create(isc_mem_t *mctx,
 	mgr->taskmgr = taskmgr;
 	mgr->timermgr = timermgr;
 	mgr->socketmgr = socketmgr;
+	mgr->nm = nm;
 	mgr->dispatchmgr = dispatchmgr;
 	mgr->generation = 1;
 	mgr->listenon4 = NULL;
@@ -249,8 +253,9 @@ ns_interfacemgr_create(isc_mem_t *mctx,
 	}
 
 	mgr->task = NULL;
-	if (mgr->route != NULL)
+	if (mgr->route != NULL) {
 		isc_task_attach(task, &mgr->task);
+	}
 	isc_refcount_init(&mgr->references, (mgr->route != NULL) ? 2 : 1);
 #else
 	isc_refcount_init(&mgr->references, 1);
@@ -390,7 +395,7 @@ ns_interface_create(ns_interfacemgr_t *mgr, isc_sockaddr_t *addr,
 	isc_mutex_init(&ifp->lock);
 
 	result = ns_clientmgr_create(mgr->mctx, mgr->sctx,
-				     mgr->taskmgr, mgr->timermgr,
+				     mgr->taskmgr, mgr->timermgr, ifp,
 				     &ifp->clientmgr);
 	if (result != ISC_R_SUCCESS) {
 		isc_log_write(IFMGR_COMMON_LOGARGS, ISC_LOG_ERROR,
@@ -439,65 +444,18 @@ ns_interface_create(ns_interfacemgr_t *mgr, isc_sockaddr_t *addr,
 
 static isc_result_t
 ns_interface_listenudp(ns_interface_t *ifp) {
-	isc_result_t result;
-	unsigned int attrs;
-	unsigned int attrmask;
-	int disp, i;
-
-	attrs = 0;
-	attrs |= DNS_DISPATCHATTR_UDP;
-	if (isc_sockaddr_pf(&ifp->addr) == AF_INET)
-		attrs |= DNS_DISPATCHATTR_IPV4;
-	else
-		attrs |= DNS_DISPATCHATTR_IPV6;
-	attrs |= DNS_DISPATCHATTR_NOLISTEN;
-	attrs |= DNS_DISPATCHATTR_CANREUSE;
-	attrmask = 0;
-	attrmask |= DNS_DISPATCHATTR_UDP | DNS_DISPATCHATTR_TCP;
-	attrmask |= DNS_DISPATCHATTR_IPV4 | DNS_DISPATCHATTR_IPV6;
-
-	ifp->nudpdispatch = ISC_MIN(ifp->mgr->udpdisp, MAX_UDP_DISPATCH);
-	for (disp = 0; disp < ifp->nudpdispatch; disp++) {
-		result = dns_dispatch_getudp_dup(ifp->mgr->dispatchmgr,
-						 ifp->mgr->socketmgr,
-						 ifp->mgr->taskmgr, &ifp->addr,
-						 4096, UDPBUFFERS,
-						 32768, 8219, 8237,
-						 attrs, attrmask,
-						 &ifp->udpdispatch[disp],
-						 disp == 0
-						    ? NULL
-						    : ifp->udpdispatch[0]);
-		if (result != ISC_R_SUCCESS) {
-			isc_log_write(IFMGR_COMMON_LOGARGS, ISC_LOG_ERROR,
-				      "could not listen on UDP socket: %s",
-				      isc_result_totext(result));
-			goto udp_dispatch_failure;
-		}
-
-	}
-
-	result = ns_clientmgr_createclients(ifp->clientmgr, ifp->nudpdispatch,
-					    ifp, false);
-	if (result != ISC_R_SUCCESS) {
+	ifp->udplistensocket = isc_nm_udp_listen(ifp->mgr->nm, 
+						 (isc_nmiface_t*) &ifp->addr, /* XXXWPK TODO! */
+						 ns__client_request,
+						 sizeof(ns_client_t),
+						 ifp);
+	if (ifp->udplistensocket == NULL) {
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
-				 "UDP ns_clientmgr_createclients(): %s",
-				 isc_result_totext(result));
-		goto addtodispatch_failure;
+				 "UDP ns_clientmgr_createclients()");
+		return (ISC_R_UNEXPECTED);
 	}
 
 	return (ISC_R_SUCCESS);
-
- addtodispatch_failure:
-	for (i = disp - 1; i >= 0; i--) {
-		dns_dispatch_changeattributes(ifp->udpdispatch[i], 0,
-					      DNS_DISPATCHATTR_NOLISTEN);
-		dns_dispatch_detach(&(ifp->udpdispatch[i]));
-	}
-	ifp->nudpdispatch = 0;
-
- udp_dispatch_failure:
-	return (result);
 }
 
 static isc_result_t
@@ -547,7 +505,9 @@ ns_interface_accepttcp(ns_interface_t *ifp) {
 	 */
 	(void)isc_socket_filter(ifp->tcpsocket, "dataready");
 
-	result = ns_clientmgr_createclients(ifp->clientmgr, 1, ifp, true);
+	result = ISC_R_SUCCESS; /* XXXWPK TODO ns_clientmgr_createclients(ifp->clientmgr,
+					    ifp->ntcptarget,
+					    true); */
 	if (result != ISC_R_SUCCESS) {
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
 				 "TCP ns_clientmgr_createclients(): %s",
@@ -617,8 +577,10 @@ ns_interface_setup(ns_interfacemgr_t *mgr, isc_sockaddr_t *addr,
 
 void
 ns_interface_shutdown(ns_interface_t *ifp) {
-	if (ifp->clientmgr != NULL)
+	isc_nm_udp_stoplistening(ifp->udplistensocket);
+	if (ifp->clientmgr != NULL) {
 		ns_clientmgr_destroy(&ifp->clientmgr);
+	}
 }
 
 static void
@@ -661,6 +623,7 @@ ns_interface_attach(ns_interface_t *source, ns_interface_t **target) {
 void
 ns_interface_detach(ns_interface_t **targetp) {
 	ns_interface_t *target = *targetp;
+	isc_refcount_t oldrefs;
 	REQUIRE(target != NULL);
 	REQUIRE(NS_INTERFACE_VALID(target));
 	if (isc_refcount_decrement(&target->references) == 1) {
