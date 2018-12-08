@@ -44,6 +44,7 @@
 
 #include <isc/magic.h>
 #include <isc/mem.h>
+#include <isc/netmgr.h>
 #include <isc/socket.h>
 #include <isc/refcount.h>
 
@@ -76,6 +77,7 @@ struct ns_interface {
 	dns_dispatch_t *	udpdispatch[MAX_UDP_DISPATCH];
 						/*%< UDP dispatchers. */
 	isc_socket_t *		tcpsocket;	/*%< TCP socket. */
+	isc_nmsocket_t *	udplistensocket;
 	isc_dscp_t		dscp;		/*%< "listen-on" DSCP value */
 	isc_refcount_t		ntcpaccepting;	/*%< Number of clients
 						     ready to accept new
@@ -100,6 +102,7 @@ ns_interfacemgr_create(isc_mem_t *mctx,
 		       isc_taskmgr_t *taskmgr,
 		       isc_timermgr_t *timermgr,
 		       isc_socketmgr_t *socketmgr,
+		       isc_nm_t *nm,
 		       dns_dispatchmgr_t *dispatchmgr,
 		       isc_task_t *task,
 		       unsigned int udpdisp,

@@ -2488,16 +2488,7 @@ query_prefetch(ns_client_t *client, dns_name_t *qname,
 	if (client->recursionquota == NULL) {
 		result = isc_quota_attach(&client->sctx->recursionquota,
 					  &client->recursionquota);
-		if (result == ISC_R_SUCCESS || result == ISC_R_SOFTQUOTA) {
-			ns_stats_increment(client->sctx->nsstats,
-					   ns_statscounter_recursclients);
-		}
-		if (result == ISC_R_SUCCESS && !client->mortal &&
-		    !TCP(client))
-		{
-			result = ns_client_replace(client);
-		}
-		if (result != ISC_R_SUCCESS) {
+		if (result != ISC_R_SUCCESS)
 			return;
 		}
 	}
@@ -2701,16 +2692,7 @@ query_rpzfetch(ns_client_t *client, dns_name_t *qname, dns_rdatatype_t type) {
 	if (client->recursionquota == NULL) {
 		result = isc_quota_attach(&client->sctx->recursionquota,
 					  &client->recursionquota);
-		if (result == ISC_R_SUCCESS || result == ISC_R_SOFTQUOTA) {
-			ns_stats_increment(client->sctx->nsstats,
-					   ns_statscounter_recursclients);
-		}
-		if (result == ISC_R_SUCCESS && !client->mortal &&
-		    !TCP(client))
-		{
-			result = ns_client_replace(client);
-		}
-		if (result != ISC_R_SUCCESS) {
+		if (result != ISC_R_SUCCESS)
 			return;
 		}
 	}
@@ -4629,7 +4611,7 @@ dns64_aaaaok(ns_client_t *client, dns_rdataset_t *rdataset,
 	     dns_rdataset_t *sigrdataset)
 {
 	isc_netaddr_t netaddr;
-	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->interface->mgr);
+	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->manager->interface->mgr);
 	dns_dns64_t *dns64 = ISC_LIST_HEAD(client->view->dns64);
 	unsigned int flags = 0;
 	unsigned int i, count;
@@ -5785,20 +5767,6 @@ ns_query_recurse(ns_client_t *client, dns_rdatatype_t qtype, dns_name_t *qname,
 				      isc_result_totext(result));
 			}
 			ns_client_killoldestquery(client);
-		}
-		if (result == ISC_R_SUCCESS && !client->mortal &&
-		    !TCP(client)) {
-			result = ns_client_replace(client);
-			if (result != ISC_R_SUCCESS) {
-				ns_client_log(client, NS_LOGCATEGORY_CLIENT,
-					      NS_LOGMODULE_QUERY,
-					      ISC_LOG_WARNING,
-					      "ns_client_replace() failed: %s",
-					      isc_result_totext(result));
-				isc_quota_detach(&client->recursionquota);
-				ns_stats_decrement(client->sctx->nsstats,
-					   ns_statscounter_recursclients);
-			}
 		}
 		if (result != ISC_R_SUCCESS)
 			return (result);
@@ -7332,7 +7300,7 @@ query_respond(query_ctx_t *qctx) {
 static isc_result_t
 query_dns64(query_ctx_t *qctx) {
 	ns_client_t *client = qctx->client;
-	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->interface->mgr);
+	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->manager->interface->mgr);
 	dns_name_t *name, *mname;
 	dns_rdata_t *dns64_rdata;
 	dns_rdata_t rdata = DNS_RDATA_INIT;
@@ -10598,7 +10566,7 @@ static void
 query_setup_sortlist(query_ctx_t *qctx) {
 	isc_netaddr_t netaddr;
 	ns_client_t *client = qctx->client;
-	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->interface->mgr);
+	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->manager->interface->mgr);
 	const void *order_arg = NULL;
 
 	isc_netaddr_fromsockaddr(&netaddr, &client->peeraddr);
@@ -10939,22 +10907,6 @@ ns_query_start(ns_client_t *client) {
 	REQUIRE(NS_CLIENT_VALID(client));
 
 	CTRACE(ISC_LOG_DEBUG(3), "ns_query_start");
-
-	/*
-	 * Test only.
-	 */
-	if (((client->sctx->options & NS_SERVER_CLIENTTEST) != 0) &&
-	    !TCP(client))
-	{
-		result = ns_client_replace(client);
-		if (result == ISC_R_SHUTTINGDOWN) {
-			ns_client_next(client, result);
-			return;
-		} else if (result != ISC_R_SUCCESS) {
-			query_error(client, result, __LINE__);
-			return;
-		}
-	}
 
 	/*
 	 * Ensure that appropriate cleanups occur.

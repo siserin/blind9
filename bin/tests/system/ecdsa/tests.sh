@@ -20,7 +20,7 @@ rm -f dig.out.*
 DIGOPTS="+tcp +noau +noadd +nosea +nostat +nocmd +dnssec -p 5300"
 
 # Check the example. domain
-
+sleep 5
 echo "I:checking that positive validation works ($n)"
 ret=0
 $DIG $DIGOPTS . @10.53.0.1 soa > dig.out.ns1.test$n || ret=1
