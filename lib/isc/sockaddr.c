@@ -472,3 +472,26 @@ isc_sockaddr_frompath(isc_sockaddr_t *sockaddr, const char *path) {
 	return (ISC_R_NOTIMPLEMENTED);
 #endif
 }
+
+isc_result_t
+isc_sockaddr_fromsockaddr(isc_sockaddr_t *isa, const struct sockaddr *sa) {
+	unsigned int length = 0;
+	switch (sa->sa_family) {
+		case AF_INET:
+			length = sizeof(isa->type.sin);
+			break;
+		case AF_INET6:
+			length = sizeof(isa->type.sin6);
+			break;
+		case AF_UNIX:
+			length = sizeof(isa->type.sunix);
+			break;
+	}
+	if (length == 0) {
+		return (ISC_R_NOTIMPLEMENTED);
+	}
+	memset(isa, 0, sizeof(isc_sockaddr_t));
+	memcpy(isa, sa, length);
+	isa->length = length;
+	return (ISC_R_SUCCESS);
+}
