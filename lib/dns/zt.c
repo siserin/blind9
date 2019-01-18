@@ -46,10 +46,11 @@ struct dns_zt {
 	void *			loaddone_arg;
 	struct zt_load_params 	*loadparams;
 	/* Locked by lock. */
-	bool		flush;
-	uint32_t		references;
-	unsigned int		loads_pending;
+	bool			flush;
 	dns_rbt_t		*table;
+	/* Atomic */
+	isc_refcount_t		references;
+	atomic_uint_fast32_t	loads_pending;
 };
 
 #define ZTMAGIC			ISC_MAGIC('Z', 'T', 'b', 'l')
@@ -93,14 +94,14 @@ dns_zt_create(isc_mem_t *mctx, dns_rdataclass_t rdclass, dns_zt_t **ztp) {
 
 	zt->mctx = NULL;
 	isc_mem_attach(mctx, &zt->mctx);
-	zt->references = 1;
+	isc_refcount_init(&zt->references, 1);
 	zt->flush = false;
 	zt->rdclass = rdclass;
 	zt->magic = ZTMAGIC;
 	zt->loaddone = NULL;
 	zt->loaddone_arg = NULL;
 	zt->loadparams = NULL;
-	zt->loads_pending = 0;
+	atomic_init(&zt->loads_pending, 0);
 	*ztp = zt;
 
 	return (ISC_R_SUCCESS);
@@ -211,9 +212,7 @@ dns_zt_attach(dns_zt_t *zt, dns_zt_t **ztp) {
 
 	RWLOCK(&zt->rwlock, isc_rwlocktype_write);
 
-	INSIST(zt->references > 0);
-	zt->references++;
-	INSIST(zt->references != 0);
+	INSIST(isc_refcount_increment(&zt->references) > 0);
 
 	RWUNLOCK(&zt->rwlock, isc_rwlocktype_write);
 
@@ -239,6 +238,7 @@ zt_destroy(dns_zt_t *zt) {
 static void
 zt_flushanddetach(dns_zt_t **ztp, bool need_flush) {
 	bool destroy = false;
+	int refs;
 	dns_zt_t *zt;
 
 	REQUIRE(ztp != NULL && VALID_ZT(*ztp));
@@ -247,17 +247,16 @@ zt_flushanddetach(dns_zt_t **ztp, bool need_flush) {
 
 	RWLOCK(&zt->rwlock, isc_rwlocktype_write);
 
-	INSIST(zt->references > 0);
-	zt->references--;
-	if (zt->references == 0)
-		destroy = true;
-	if (need_flush)
-		zt->flush = true;
+	refs = isc_refcount_decrement(&zt->references);
+	INSIST(refs != 0);
+	destroy = (refs == 1);
+	zt->flush = need_flush;
 
 	RWUNLOCK(&zt->rwlock, isc_rwlocktype_write);
 
-	if (destroy)
+	if (destroy) {
 		zt_destroy(zt);
+	}
 
 	*ztp = NULL;
 }
@@ -310,10 +309,10 @@ dns_zt_asyncload(dns_zt_t *zt, bool newonly,
 	zt->loadparams->dl = doneloading;
 	zt->loadparams->newonly = newonly;
 	RWLOCK(&zt->rwlock, isc_rwlocktype_write);
-	INSIST(zt->loads_pending == 0);
+	pending = atomic_load(&zt->loads_pending);
+	INSIST(pending == 0);
 	result = dns_zt_apply(zt, false, NULL, asyncload, zt);
-
-	pending = zt->loads_pending;
+	pending = atomic_load(&zt->loads_pending);
 	if (pending != 0) {
 		zt->loaddone = alldone;
 		zt->loaddone_arg = arg;
@@ -322,7 +321,8 @@ dns_zt_asyncload(dns_zt_t *zt, bool newonly,
 	RWUNLOCK(&zt->rwlock, isc_rwlocktype_write);
 
 	if (pending == 0) {
-		isc_mem_put(zt->mctx, zt->loadparams, sizeof(struct zt_load_params));
+		isc_mem_put(zt->mctx, zt->loadparams,
+			    sizeof(struct zt_load_params));
 		zt->loadparams = NULL;
 		alldone(arg);
 	}
@@ -340,15 +340,14 @@ asyncload(dns_zone_t *zone, void *zt_) {
 	isc_result_t result;
 	struct dns_zt *zt = (dns_zt_t*) zt_;
 	REQUIRE(zone != NULL);
-	INSIST(zt->references > 0);
-	zt->references++;
-	zt->loads_pending++;
+	INSIST(isc_refcount_increment(&zt->references) > 0);
+	atomic_fetch_add(&zt->loads_pending, 1);
 
-	result = dns_zone_asyncload(zone, zt->loadparams->newonly, *zt->loadparams->dl, zt);
+	result = dns_zone_asyncload(zone, zt->loadparams->newonly,
+				    *zt->loadparams->dl, zt);
 	if (result != ISC_R_SUCCESS) {
-		zt->references--;
-		zt->loads_pending--;
-		INSIST(zt->references > 0);
+		INSIST(isc_refcount_decrement(&zt->references) > 1);
+		atomic_fetch_sub(&zt->loads_pending, 1);
 	}
 	return (ISC_R_SUCCESS);
 }
@@ -538,6 +537,7 @@ dns_zt_apply(dns_zt_t *zt, bool stop, isc_result_t *sub,
 static isc_result_t
 doneloading(dns_zt_t *zt, dns_zone_t *zone, isc_task_t *task) {
 	bool destroy = false;
+	uint32_t refs, pending;
 	dns_zt_allloaded_t alldone = NULL;
 	void *arg = NULL;
 
@@ -547,18 +547,20 @@ doneloading(dns_zt_t *zt, dns_zone_t *zone, isc_task_t *task) {
 	REQUIRE(VALID_ZT(zt));
 
 	RWLOCK(&zt->rwlock, isc_rwlocktype_write);
-	INSIST(zt->loads_pending != 0);
-	INSIST(zt->references != 0);
-	zt->references--;
-	if (zt->references == 0)
-		destroy = true;
-	zt->loads_pending--;
-	if (zt->loads_pending == 0) {
+	refs = isc_refcount_decrement(&zt->references);
+	INSIST(refs > 0);
+	destroy = (refs == 1);
+
+	pending = atomic_fetch_sub(&zt->loads_pending, 1);
+	INSIST(pending > 0);
+
+	if (pending == 1) {
 		alldone = zt->loaddone;
 		arg = zt->loaddone_arg;
 		zt->loaddone = NULL;
 		zt->loaddone_arg = NULL;
-		isc_mem_put(zt->mctx, zt->loadparams, sizeof(struct zt_load_params));
+		isc_mem_put(zt->mctx, zt->loadparams,
+			    sizeof(struct zt_load_params));
 		zt->loadparams = NULL;
 	}
 	RWUNLOCK(&zt->rwlock, isc_rwlocktype_write);
