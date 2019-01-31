@@ -15602,14 +15602,14 @@ esac
 #
 # Check whether --enable-pthread_rwlock was given.
 if test "${enable_pthread_rwlock+set}" = set; then :
-  enableval=$enable_pthread_rwlock; use_pthread_rwlock=$enableval
+  enableval=$enable_pthread_rwlock;
 else
-  use_pthread_rwlock=no
+  enable_pthread_rwlock=no
 fi
 
 
-if test "x$use_pthread_rwlock" != "xno"; then
-	for ac_func in pthread_rwlock_rdlock
+if test "$enable_pthread_rwlock" = "yes"; then :
+  for ac_func in pthread_rwlock_rdlock
 do :
   ac_fn_c_check_func "$LINENO" "pthread_rwlock_rdlock" "ac_cv_func_pthread_rwlock_rdlock"
 if test "x$ac_cv_func_pthread_rwlock_rdlock" = xyes; then :
@@ -15617,8 +15617,14 @@ if test "x$ac_cv_func_pthread_rwlock_rdlock" = xyes; then :
 #define HAVE_PTHREAD_RWLOCK_RDLOCK 1
 _ACEOF
 
+else
+  as_fn_error $? "pthread_rwlock_rdlock requested but not found" "$LINENO" 5
 fi
 done
+
+
+$as_echo "#define USE_PTHREAD_RWLOCK 1" >>confdefs.h
+
 
 fi
 
