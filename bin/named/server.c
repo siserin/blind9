@@ -1577,7 +1577,6 @@ configure_peer(const cfg_obj_t *cpeer, isc_mem_t *mctx, dns_peer_t **peerp) {
 	return (result);
 }
 
-#ifdef HAVE_DLOPEN
 static isc_result_t
 configure_dyndb(const cfg_obj_t *dyndb, isc_mem_t *mctx,
 		const dns_dyndbctx_t *dctx)
@@ -1603,7 +1602,6 @@ configure_dyndb(const cfg_obj_t *dyndb, isc_mem_t *mctx,
 			      name, isc_result_totext(result));
 	return (result);
 }
-#endif
 
 
 static isc_result_t
@@ -3717,7 +3715,6 @@ create_mapped_acl(void) {
 	return (result);
 }
 
-#ifdef HAVE_DLOPEN
 /*%
  * A callback for the cfg_pluginlist_foreach() call in configure_view() below.
  * If registering any plugin fails, registering subsequent ones is not
@@ -3756,7 +3753,6 @@ register_one_plugin(const cfg_obj_t *config, const cfg_obj_t *obj,
 
 	return (result);
 }
-#endif
 
 /*
  * Configure 'view' according to 'vconfig', taking defaults from 'config'
@@ -5323,7 +5319,6 @@ configure_view(dns_view_t *view, dns_viewlist_t *viewlist,
 		(void)cfg_map_get(config, "dyndb", &dyndb_list);
 	}
 
-#ifdef HAVE_DLOPEN
 	for (element = cfg_list_first(dyndb_list);
 	     element != NULL;
 	     element = cfg_list_next(element))
@@ -5341,7 +5336,6 @@ configure_view(dns_view_t *view, dns_viewlist_t *viewlist,
 
 		CHECK(configure_dyndb(dyndb, mctx, dctx));
 	}
-#endif
 
 	/*
 	 * Load plugins.
@@ -5353,7 +5347,6 @@ configure_view(dns_view_t *view, dns_viewlist_t *viewlist,
 		(void)cfg_map_get(config, "plugin", &plugin_list);
 	}
 
-#ifdef HAVE_DLOPEN
 	if (plugin_list != NULL) {
 		INSIST(view->hooktable == NULL);
 		CHECK(ns_hooktable_create(view->mctx,
@@ -5366,7 +5359,6 @@ configure_view(dns_view_t *view, dns_viewlist_t *viewlist,
 		CHECK(cfg_pluginlist_foreach(config, plugin_list, named_g_lctx,
 					     register_one_plugin, view));
 	}
-#endif
 
 	/*
 	 * Setup automatic empty zones.  If recursion is off then

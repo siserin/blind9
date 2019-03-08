@@ -3552,7 +3552,6 @@ check_rpz_catz(const char *rpz_catz, const cfg_obj_t *rpz_obj,
 	return (result);
 }
 
-#ifdef HAVE_DLOPEN
 /*%
  * Data structure used for the 'callback_data' argument to check_one_plugin().
  */
@@ -3601,7 +3600,6 @@ check_one_plugin(const cfg_obj_t *config, const cfg_obj_t *obj,
 
 	return (ISC_R_SUCCESS);
 }
-#endif
 
 static isc_result_t
 check_viewconf(const cfg_obj_t *config, const cfg_obj_t *voptions,
@@ -3615,9 +3613,6 @@ check_viewconf(const cfg_obj_t *config, const cfg_obj_t *voptions,
 	const cfg_obj_t *view_dkeys = NULL, *global_dkeys = NULL;
 	const cfg_obj_t *check_keys[2] = { NULL, NULL };
 	const cfg_obj_t *keys = NULL;
-#ifndef HAVE_DLOPEN
-	const cfg_obj_t *dyndb = NULL;
-#endif
 	const cfg_listelt_t *element, *element2;
 	isc_symtab_t *symtab = NULL;
 	isc_result_t result = ISC_R_SUCCESS;
@@ -3672,20 +3667,6 @@ check_viewconf(const cfg_obj_t *config, const cfg_obj_t *voptions,
 		if (tresult != ISC_R_SUCCESS)
 			result = ISC_R_FAILURE;
 	}
-
-#ifndef HAVE_DLOPEN
-	if (voptions != NULL)
-		(void)cfg_map_get(voptions, "dyndb", &dyndb);
-	else
-		(void)cfg_map_get(config, "dyndb", &dyndb);
-
-	if (dyndb != NULL) {
-		cfg_obj_log(dyndb, logctx, ISC_LOG_ERROR,
-			    "dynamic loading of databases is not supported");
-		if (tresult != ISC_R_SUCCESS)
-			result = ISC_R_NOTIMPLEMENTED;
-	}
-#endif
 
 	/*
 	 * Check that the response-policy and catalog-zones options
@@ -3998,7 +3979,6 @@ check_viewconf(const cfg_obj_t *config, const cfg_obj_t *voptions,
 		}
 	}
 
-#ifdef HAVE_DLOPEN
 	{
 		struct check_one_plugin_data check_one_plugin_data = {
 			.mctx = mctx,
@@ -4014,7 +3994,6 @@ check_viewconf(const cfg_obj_t *config, const cfg_obj_t *voptions,
 			result = tresult;
 		}
 	}
-#endif /* HAVE_DLOPEN */
 
  cleanup:
 	if (symtab != NULL)
