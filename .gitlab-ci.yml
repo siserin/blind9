@@ -244,6 +244,7 @@ docs:sid:amd64:
   <<: *debian_sid_amd64_image
   stage: build
   script:
+    - autoreconf -fi
     - ./configure || cat config.log
     - make -C doc/misc docbook
     - make -C doc/arm Bv9ARM.html
