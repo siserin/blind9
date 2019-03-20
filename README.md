@@ -265,7 +265,7 @@ defaults to `$prefix/etc` and `--localstatedir` defaults to `$prefix/var`.
 
 ### <a name="testing"/> Automated testing
 
-A system test suite can be run with `make test`.  The system tests require
+A system test suite can be run with `make check`.  The system tests require
 you to configure a set of virtual IP addresses on your system (this allows
 multiple servers to run locally and communicate with one another).  These
 IP addresses can be configured by running the command
@@ -276,10 +276,9 @@ and will be skipped if these are not available. Some tests require Python
 and the 'dnspython' module and will be skipped if these are not available.
 See bin/tests/system/README for further details.
 
-Unit tests are implemented using the CMocka unit testing framework.
-To build them, use `configure --with-cmocka`. Execution of tests is done
-by the Kyua test execution engine; if the `kyua` command is available,
-then unit tests can be run via `make test` or `make unit`.
+Unit tests are implemented using the CMocka unit testing framework.  To build
+them, use `configure --with-cmocka`. Execution of tests is done by the automake
+parallel test driver; the unit tests can be run via `make check`.
 
 ### <a name="doc"/> Documentation
 

@@ -190,14 +190,10 @@ stages:
   before_script:
     - *setup_softhsm
   script:
-    - make unit
-  after_script:
-    - *kyua_report_html
+    - cd lib && make check
   artifacts:
     paths:
-      - kyua.log
-      - kyua.results
-      - kyua_html/
+      - lib/*/tests/*.log
     expire_in: "1 week"
     when: on_failure
 
