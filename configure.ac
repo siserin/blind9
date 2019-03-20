@@ -254,33 +254,6 @@ AS_IF([test "$enable_dnssec_keymgr" != "no"],
 
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ":"])
 
-AS_IF([test "$PYTHON" != ":"],
-      [AC_CONFIG_FILES([bin/python/isc/__init__.py
-			bin/python/isc/checkds.py
-			bin/python/isc/coverage.py
-			bin/python/isc/dnskey.py
-			bin/python/isc/eventlist.py
-			bin/python/isc/keydict.py
-			bin/python/isc/keyevent.py
-			bin/python/isc/keymgr.py
-			bin/python/isc/keyseries.py
-			bin/python/isc/keyzone.py
-			bin/python/isc/policy.py
-			bin/python/isc/rndc.py
-			bin/python/isc/utils.py
-		       ])
-       AC_CONFIG_FILES([bin/python/dnssec-checkds:bin/python/dnssec-checkds.py.in]
-		       [bin/python/dnssec-coverage:bin/python/dnssec-coverage.py.in]
-		       [bin/python/dnssec-keymgr:bin/python/dnssec-keymgr.py.in],
-		       [chmod +x bin/python/dnssec-checkds bin/python/dnssec-coverage bin/python/dnssec-keymgr])
-      ])
-
-#
-# expanded_sysconfdir is needed for replacement in the python utilities
-#
-expanded_sysconfdir=`eval echo $sysconfdir`
-AC_SUBST(expanded_sysconfdir)
-
 #
 # Make sure INSTALL uses an absolute path, else it will be wrong in all
 # Makefiles, since they use make/rules.in and INSTALL will be adjusted by
