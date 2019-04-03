@@ -28,5 +28,4 @@ libbind9_la_CPPFLAGS =			\
 libbind9_la_LIBADD =			\
 	libisc.la			\
 	libdns.la			\
-	libns.la			\
 	libisccfg.la
