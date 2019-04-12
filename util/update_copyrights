@@ -434,7 +434,13 @@ foreach $file (keys %file_types) {
 
         $first = "" if ! defined($first);
 
-        open(TARGET, ">$file.new") || die "can't open $file.new: $!";
+        # Match .gitattribute entries:
+        # win32utils/**.txt eol=crlf
+        if ($file =~ /\/win32utils\/[^\/]*\.txt$/ ) {
+                open(TARGET, ">:crlf", "$file.new") || die "can't open $file.new: $!";
+        } else {
+                open(TARGET, ">", "$file.new") || die "can't open $file.new: $!";
+        }
         print TARGET $before_copyright if $before_copyright;
         print TARGET $start_comment if $start_comment;
 
