@@ -163,7 +163,12 @@ misc:sid:amd64:
     - perl -w util/merge_copyrights
     - diff -urNap util/copyrights util/newcopyrights
     - rm util/newcopyrights
+    - echo XXXXX
+    - od -c win32utils/build.txt
     - perl -w util/update_copyrights < util/copyrights
+    - echo YYYYY
+    - od -c win32utils/build.txt
+    - echo ZZZZZ
     - git diff
     - cat .gitattributes
     - if test "$(git status --porcelain | grep -Ev '\?\?' | wc -l)" -gt "0"; then git status --short; exit 1; fi
