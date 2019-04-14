@@ -98,6 +98,7 @@ typedef struct dns_totext_ctx {
 	bool 		current_ttl_valid;
 	dns_ttl_t		serve_stale_ttl;
 	unsigned int	rdata_size;
+	bool			dumptruncated;
 } dns_totext_ctx_t;
 
 LIBDNS_EXTERNAL_DATA const dns_master_style_t
@@ -235,6 +236,7 @@ struct dns_dumpctx {
 	dns_totext_ctx_t	tctx;
 	isc_task_t		*task;
 	dns_dumpdonefunc_t	done;
+	bool			dumptruncated;
 	void			*done_arg;
 	unsigned int		nodes;
 	/* dns_master_dumpinc() */
@@ -685,7 +687,6 @@ rdataset_totext(dns_rdataset_t *rdataset,
 						   ctx->linebreak,
 						   target));
 			rdata_chunk_size+=target->used;
-
 			isc_buffer_availableregion(target, &r);
 			if (r.length < 1)
 				return (ISC_R_NOSPACE);
@@ -695,6 +696,7 @@ rdataset_totext(dns_rdataset_t *rdataset,
 
 		first = false;
 		result = dns_rdataset_next(rdataset);
+		ctx->rdata_size+=rdata_chunk_size;
 	}
 
 	if (result != ISC_R_NOMORE)
@@ -710,7 +712,6 @@ rdataset_totext(dns_rdataset_t *rdataset,
 	ctx->class_printed = true;
 	ctx->current_ttl= current_ttl;
 	ctx->current_ttl_valid = current_ttl_valid;
-	ctx->rdata_size+=rdata_chunk_size;
 
 	return (ISC_R_SUCCESS);
 }
@@ -874,7 +875,6 @@ dump_rdataset(isc_mem_t *mctx, const dns_name_t *name,
 	isc_result_t result;
 	unsigned int reductR;
 	struct dns_dumpctx *dctx;
-	struct isTrunc *itrc;
 
 	REQUIRE(buffer->length > 0);
 
@@ -932,16 +932,17 @@ dump_rdataset(isc_mem_t *mctx, const dns_name_t *name,
 	 * Write the buffer contents to the master file.
 	 */
 
-	if ((itrc->dumptrunc) && (ctx->rdata_size > 5000)) {
+	if ((ctx->dumptruncated) && (ctx->rdata_size > 5000)) {
 		fprintf(f, "\n The size of this RR reached: %u KB and was truncated at 5.5 KB.\n",
 		(unsigned int) ctx->rdata_size);
 		reductR = ctx->rdata_size - 5500;
 		buffer -= reductR;
 		isc_buffer_usedregion(buffer, &r);
 		result = isc_stdio_write(r.base, 1, (size_t)r.length, f, NULL);
-	}
+	} else {
 	isc_buffer_usedregion(buffer, &r);
 	result = isc_stdio_write(r.base, 1, (size_t)r.length, f, NULL);
+	}
 
 	if (result != ISC_R_SUCCESS) {
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
@@ -1656,7 +1657,6 @@ dumptostreaminc(dns_dumpctx_t *dctx) {
 	unsigned int nodes;
 	isc_time_t start;
 	dctx->tctx.rdata_size=0;
-	struct isTrunc			*itrc;
 
 	bufmem = isc_mem_get(dctx->mctx, initial_buffer_length);
 	if (bufmem == NULL)
@@ -1715,10 +1715,11 @@ dumptostreaminc(dns_dumpctx_t *dctx) {
 			dns_db_detachnode(dctx->db, &node);
 			goto cleanup;
 		}
-		if (itrc->dumptrunc) {
+		if (dctx->dumptruncated) {
 			fprintf(dctx->f, "\n size t50 is: %u\n", (unsigned int) dctx->tctx.rdata_size);
-		}
+		} else {
 		fprintf(dctx->f, "\n size t60 is: %u\n", (unsigned int) dctx->tctx.rdata_size);
+		}
 
 		result = (dctx->dumpsets)(dctx->mctx, name, rdsiter,
 					  &dctx->tctx, &buffer, dctx->f);
