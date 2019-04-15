@@ -874,7 +874,7 @@ dump_rdataset(isc_mem_t *mctx, const dns_name_t *name,
 	isc_region_t r;
 	isc_result_t result;
 	unsigned int reductR;
-	struct dns_dumpctx *dctx;
+	struct dns_dumpctx dctx;
 
 	REQUIRE(buffer->length > 0);
 
@@ -932,7 +932,8 @@ dump_rdataset(isc_mem_t *mctx, const dns_name_t *name,
 	 * Write the buffer contents to the master file.
 	 */
 
-	if ((ctx->dumptruncated) && (ctx->rdata_size > 5000)) {
+	if ((ctx->dumptruncated) && (ctx->rdata_size > 5000)) {//neither -zones -trunc 
+// 	if ((dctx.dumptruncated = true) && (ctx->rdata_size > 5000)) {	//both -z -t but test breaks
 		fprintf(f, "\n The size of this RR reached: %u KB and was truncated at 5.5 KB.\n",
 		(unsigned int) ctx->rdata_size);
 		reductR = ctx->rdata_size - 5500;
@@ -1715,7 +1716,8 @@ dumptostreaminc(dns_dumpctx_t *dctx) {
 			dns_db_detachnode(dctx->db, &node);
 			goto cleanup;
 		}
-		if (dctx->dumptruncated) {
+		if (dctx->dumptruncated = true) { //-z n -t t50
+// 		if (dctx->dumptruncated) { //-z n -t t6
 			fprintf(dctx->f, "\n size t50 is: %u\n", (unsigned int) dctx->tctx.rdata_size);
 		} else {
 		fprintf(dctx->f, "\n size t60 is: %u\n", (unsigned int) dctx->tctx.rdata_size);

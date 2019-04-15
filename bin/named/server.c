@@ -10689,6 +10689,7 @@ add_view_tolist(struct dumpcontext *dctx, dns_view_t *view) {
 		result = dns_zt_apply(view->zonetable, true, NULL,
 				      add_zone_tolist, dctx);
 	if (dctx->dumptruncated){
+// 		dctx->mdctx->dumptruncated = true;	//forward declaration ofc
 		result = dns_zt_apply(view->zonetable, true, NULL,
 				      add_zone_tolist, dctx);
 	}
