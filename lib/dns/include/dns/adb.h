@@ -14,8 +14,8 @@
 #define DNS_ADB_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/adb.h
  *\brief
@@ -83,9 +83,9 @@ ISC_LANG_BEGINDECLS
  *** Magic number checks
  ***/
 
-#define DNS_ADBFIND_MAGIC	  ISC_MAGIC('a','d','b','H')
-#define DNS_ADBFIND_VALID(x)	  ISC_MAGIC_VALID(x, DNS_ADBFIND_MAGIC)
-#define DNS_ADBADDRINFO_MAGIC	  ISC_MAGIC('a','d','A','I')
+#define DNS_ADBFIND_MAGIC         ISC_MAGIC('a', 'd', 'b', 'H')
+#define DNS_ADBFIND_VALID(x)      ISC_MAGIC_VALID(x, DNS_ADBFIND_MAGIC)
+#define DNS_ADBADDRINFO_MAGIC     ISC_MAGIC('a', 'd', 'A', 'I')
 #define DNS_ADBADDRINFO_VALID(x)  ISC_MAGIC_VALID(x, DNS_ADBADDRINFO_MAGIC)
 
 
@@ -93,7 +93,7 @@ ISC_LANG_BEGINDECLS
  *** TYPES
  ***/
 
-typedef struct dns_adbname		dns_adbname_t;
+typedef struct dns_adbname dns_adbname_t;
 
 /*!
  *\brief
@@ -105,24 +105,26 @@ typedef struct dns_adbname		dns_adbname_t;
  */
 struct dns_adbfind {
 	/* Public */
-	unsigned int			magic;		/*%< RO: magic */
-	dns_adbaddrinfolist_t		list;		/*%< RO: list of addrs */
-	unsigned int			query_pending;	/*%< RO: partial list */
-	unsigned int			partial_result;	/*%< RO: addrs missing */
-	unsigned int			options;	/*%< RO: options */
-	isc_result_t			result_v4;	/*%< RO: v4 result */
-	isc_result_t			result_v6;	/*%< RO: v6 result */
-	ISC_LINK(dns_adbfind_t)		publink;	/*%< RW: client use */
+	unsigned int		     magic;             /*%< RO: magic */
+	dns_adbaddrinfolist_t	     list;              /*%< RO: list of addrs
+	                                                 * */
+	unsigned int		     query_pending;     /*%< RO: partial list */
+	unsigned int		     partial_result;    /*%< RO: addrs missing
+	                                                 * */
+	unsigned int		     options;           /*%< RO: options */
+	isc_result_t		     result_v4;         /*%< RO: v4 result */
+	isc_result_t		     result_v6;         /*%< RO: v6 result */
+	ISC_LINK(dns_adbfind_t)         publink;        /*%< RW: client use */
 
 	/* Private */
-	isc_mutex_t			lock;		/* locks all below */
-	in_port_t			port;
-	int				name_bucket;
-	unsigned int			flags;
-	dns_adbname_t		       *adbname;
-	dns_adb_t		       *adb;
-	isc_event_t			event;
-	ISC_LINK(dns_adbfind_t)		plink;
+	isc_mutex_t	     lock;                      /* locks all below */
+	in_port_t	     port;
+	int		     name_bucket;
+	unsigned int	     flags;
+	dns_adbname_t *	     adbname;
+	dns_adb_t *	     adb;
+	isc_event_t	     event;
+	ISC_LINK(dns_adbfind_t)         plink;
 };
 
 /*
@@ -159,68 +161,68 @@ struct dns_adbfind {
  *	This bit will NEVER be set if _RETURNLAME is set in the createfind().
  */
 /*% Return addresses of type INET. */
-#define DNS_ADBFIND_INET		0x00000001
+#define DNS_ADBFIND_INET                0x00000001
 /*% Return addresses of type INET6. */
-#define DNS_ADBFIND_INET6		0x00000002
-#define DNS_ADBFIND_ADDRESSMASK		0x00000003
+#define DNS_ADBFIND_INET6               0x00000002
+#define DNS_ADBFIND_ADDRESSMASK         0x00000003
 /*%
  *      Only schedule an event if no addresses are known.
  *      Must set _WANTEVENT for this to be meaningful.
  */
-#define DNS_ADBFIND_EMPTYEVENT		0x00000004
+#define DNS_ADBFIND_EMPTYEVENT          0x00000004
 /*%
  *	An event is desired.  Check this bit in the returned find to see
  *	if one will actually be generated.
  */
-#define DNS_ADBFIND_WANTEVENT		0x00000008
+#define DNS_ADBFIND_WANTEVENT           0x00000008
 /*%
  *	If set, fetches will not be generated unless no addresses are
  *	available in any of the address families requested.
  */
-#define DNS_ADBFIND_AVOIDFETCHES	0x00000010
+#define DNS_ADBFIND_AVOIDFETCHES        0x00000010
 /*%
  *	Fetches will start using the closest zone data or use the root servers.
  *	This is useful for reestablishing glue that has expired.
  */
-#define DNS_ADBFIND_STARTATZONE		0x00000020
+#define DNS_ADBFIND_STARTATZONE         0x00000020
 /*%
  *	Glue or hints are ok.  These are used when matching names already
  *	in the adb, and when dns databases are searched.
  */
-#define DNS_ADBFIND_GLUEOK		0x00000040
+#define DNS_ADBFIND_GLUEOK              0x00000040
 /*%
  *	Glue or hints are ok.  These are used when matching names already
  *	in the adb, and when dns databases are searched.
  */
-#define DNS_ADBFIND_HINTOK		0x00000080
+#define DNS_ADBFIND_HINTOK              0x00000080
 /*%
  *	Return lame servers in a find, so that all addresses are returned.
  */
-#define DNS_ADBFIND_RETURNLAME		0x00000100
+#define DNS_ADBFIND_RETURNLAME          0x00000100
 /*%
  *      Only schedule an event if no addresses are known.
  *      Must set _WANTEVENT for this to be meaningful.
  */
-#define DNS_ADBFIND_LAMEPRUNED		0x00000200
+#define DNS_ADBFIND_LAMEPRUNED          0x00000200
 /*%
  *      The server's fetch quota is exceeded; it will be treated as
  *      lame for this query.
  */
-#define DNS_ADBFIND_OVERQUOTA		0x00000400
+#define DNS_ADBFIND_OVERQUOTA           0x00000400
 
 /*%
  * The answers to queries come back as a list of these.
  */
 struct dns_adbaddrinfo {
-	unsigned int			magic;		/*%< private */
+	unsigned int	      magic;                    /*%< private */
 
-	isc_sockaddr_t			sockaddr;	/*%< [rw] */
-	unsigned int			srtt;		/*%< [rw] microsecs */
-	isc_dscp_t			dscp;
+	isc_sockaddr_t	      sockaddr;                 /*%< [rw] */
+	unsigned int	      srtt;                     /*%< [rw] microsecs */
+	isc_dscp_t	      dscp;
 
-	unsigned int			flags;		/*%< [rw] */
-	dns_adbentry_t		       *entry;		/*%< private */
-	ISC_LINK(dns_adbaddrinfo_t)	publink;
+	unsigned int	      flags;                    /*%< [rw] */
+	dns_adbentry_t *      entry;                    /*%< private */
+	ISC_LINK(dns_adbaddrinfo_t)     publink;
 };
 
 /*!<
@@ -247,13 +249,16 @@ struct dns_adbaddrinfo {
  */
 
 /****
- **** FUNCTIONS
- ****/
+**** FUNCTIONS
+****/
 
 
 isc_result_t
-dns_adb_create(isc_mem_t *mem, dns_view_t *view, isc_timermgr_t *tmgr,
-	       isc_taskmgr_t *taskmgr, dns_adb_t **newadb);
+dns_adb_create(isc_mem_t *mem,
+	       dns_view_t *view,
+	       isc_timermgr_t *tmgr,
+	       isc_taskmgr_t *taskmgr,
+	       dns_adb_t **newadb);
 /*%<
  * Create a new ADB.
  *
@@ -332,11 +337,19 @@ dns_adb_shutdown(dns_adb_t *adb);
  */
 
 isc_result_t
-dns_adb_createfind(dns_adb_t *adb, isc_task_t *task, isc_taskaction_t action,
-		   void *arg, const dns_name_t *name, const dns_name_t *qname,
-		   dns_rdatatype_t qtype, unsigned int options,
-		   isc_stdtime_t now, dns_name_t *target, in_port_t port,
-		   unsigned int depth, isc_counter_t *qc,
+dns_adb_createfind(dns_adb_t *adb,
+		   isc_task_t *task,
+		   isc_taskaction_t action,
+		   void *arg,
+		   const dns_name_t *name,
+		   const dns_name_t *qname,
+		   dns_rdatatype_t qtype,
+		   unsigned int options,
+		   isc_stdtime_t now,
+		   dns_name_t *target,
+		   in_port_t port,
+		   unsigned int depth,
+		   isc_counter_t *qc,
 		   dns_adbfind_t **find);
 /*%<
  * Main interface for clients. The adb will look up the name given in
@@ -492,8 +505,10 @@ dns_adb_dumpfind(dns_adbfind_t *find, FILE *f);
  */
 
 isc_result_t
-dns_adb_marklame(dns_adb_t *adb, dns_adbaddrinfo_t *addr,
-		 const dns_name_t *qname, dns_rdatatype_t type,
+dns_adb_marklame(dns_adb_t *adb,
+		 dns_adbaddrinfo_t *addr,
+		 const dns_name_t *qname,
+		 dns_rdatatype_t type,
 		 isc_stdtime_t expire_time);
 /*%<
  * Mark the given address as lame for the <qname,qtype>.  expire_time should
@@ -522,13 +537,15 @@ dns_adb_marklame(dns_adb_t *adb, dns_adbaddrinfo_t *addr,
  * Adjusting the scaling factors is fine, as long as they all remain
  * unique values.)
  */
-#define DNS_ADB_RTTADJDEFAULT		7	/*%< default scale */
-#define DNS_ADB_RTTADJREPLACE		0	/*%< replace with our rtt */
-#define DNS_ADB_RTTADJAGE		10	/*%< age this rtt */
+#define DNS_ADB_RTTADJDEFAULT           7       /*%< default scale */
+#define DNS_ADB_RTTADJREPLACE           0       /*%< replace with our rtt */
+#define DNS_ADB_RTTADJAGE               10      /*%< age this rtt */
 
 void
-dns_adb_adjustsrtt(dns_adb_t *adb, dns_adbaddrinfo_t *addr,
-		   unsigned int rtt, unsigned int factor);
+dns_adb_adjustsrtt(dns_adb_t *adb,
+		   dns_adbaddrinfo_t *addr,
+		   unsigned int rtt,
+		   unsigned int factor);
 /*%<
  * Mix the round trip time into the existing smoothed rtt.
  *
@@ -565,8 +582,10 @@ dns_adb_agesrtt(dns_adb_t *adb, dns_adbaddrinfo_t *addr, isc_stdtime_t now);
  */
 
 void
-dns_adb_changeflags(dns_adb_t *adb, dns_adbaddrinfo_t *addr,
-		    unsigned int bits, unsigned int mask);
+dns_adb_changeflags(dns_adb_t *adb,
+		    dns_adbaddrinfo_t *addr,
+		    unsigned int bits,
+		    unsigned int mask);
 /*%
  * Change Flags.
  *
@@ -670,8 +689,10 @@ dns_adb_noedns(dns_adb_t *adb, dns_adbaddrinfo_t *addr);
 
 
 isc_result_t
-dns_adb_findaddrinfo(dns_adb_t *adb, const isc_sockaddr_t *sa,
-		     dns_adbaddrinfo_t **addrp, isc_stdtime_t now);
+dns_adb_findaddrinfo(dns_adb_t *adb,
+		     const isc_sockaddr_t *sa,
+		     dns_adbaddrinfo_t **addrp,
+		     isc_stdtime_t now);
 /*%<
  * Return a dns_adbaddrinfo_t that is associated with address 'sa'.
  *
@@ -707,7 +728,7 @@ dns_adb_flush(dns_adb_t *adb);
  * Flushes all cached data from the adb.
  *
  * Requires:
- *\li 	adb is valid.
+ *\li   adb is valid.
  */
 
 void
@@ -744,8 +765,10 @@ dns_adb_flushnames(dns_adb_t *adb, const dns_name_t *name);
  */
 
 void
-dns_adb_setcookie(dns_adb_t *adb, dns_adbaddrinfo_t *addr,
-		  const unsigned char *cookie, size_t len);
+dns_adb_setcookie(dns_adb_t *adb,
+		  dns_adbaddrinfo_t *addr,
+		  const unsigned char *cookie,
+		  size_t len);
 /*%<
  * Record the COOKIE associated with this addresss.  If
  * cookie is NULL or len is zero the recorded COOKIE is cleared.
@@ -756,8 +779,10 @@ dns_adb_setcookie(dns_adb_t *adb, dns_adbaddrinfo_t *addr,
  */
 
 size_t
-dns_adb_getcookie(dns_adb_t *adb, dns_adbaddrinfo_t *addr,
-		  unsigned char *cookie, size_t len);
+dns_adb_getcookie(dns_adb_t *adb,
+		  dns_adbaddrinfo_t *addr,
+		  unsigned char *cookie,
+		  size_t len);
 /*
  * Retieve the saved COOKIE value and store it in 'cookie' which has
  * size 'len'.
@@ -772,8 +797,12 @@ dns_adb_getcookie(dns_adb_t *adb, dns_adbaddrinfo_t *addr,
  */
 
 void
-dns_adb_setquota(dns_adb_t *adb, uint32_t quota, uint32_t freq,
-		 double low, double high, double discount);
+dns_adb_setquota(dns_adb_t *adb,
+		 uint32_t quota,
+		 uint32_t freq,
+		 double low,
+		 double high,
+		 double discount);
 /*%<
  * Set the baseline ADB quota, and configure parameters for the
  * quota adjustment algorithm.

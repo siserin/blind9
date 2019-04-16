@@ -13,15 +13,15 @@
 #define DNS_BADCACHE_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/badcache.h
  * \brief
  * Defines dns_badcache_t, the "bad cache" object.
  *
  * Notes:
- *\li 	A bad cache object is a hash table of name/type tuples,
+ *\li   A bad cache object is a hash table of name/type tuples,
  *	indicating whether a given tuple known to be "bad" in some
  *	sense (e.g., queries for that name and type have been
  *	returning SERVFAIL). This is used for both the "bad server
@@ -73,9 +73,12 @@ dns_badcache_destroy(dns_badcache_t **bcp);
  */
 
 void
-dns_badcache_add(dns_badcache_t *bc, const dns_name_t *name,
-		 dns_rdatatype_t type, bool update,
-		 uint32_t flags, isc_time_t *expire);
+dns_badcache_add(dns_badcache_t *bc,
+		 const dns_name_t *name,
+		 dns_rdatatype_t type,
+		 bool update,
+		 uint32_t flags,
+		 isc_time_t *expire);
 /*%
  * Adds a badcache entry to the badcache 'bc' for name 'name' and
  * type 'type'.  If an entry already exists, then it will be updated if
@@ -89,8 +92,10 @@ dns_badcache_add(dns_badcache_t *bc, const dns_name_t *name,
  */
 
 bool
-dns_badcache_find(dns_badcache_t *bc, const dns_name_t *name,
-		  dns_rdatatype_t type, uint32_t *flagp,
+dns_badcache_find(dns_badcache_t *bc,
+		  const dns_name_t *name,
+		  dns_rdatatype_t type,
+		  uint32_t *flagp,
 		  isc_time_t *now);
 /*%
  * Returns true if a record is found in the badcache 'bc' matching

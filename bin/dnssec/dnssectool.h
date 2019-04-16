@@ -41,7 +41,8 @@ version(const char *program) ISC_PLATFORM_NORETURN_POST;
 
 void
 sig_format(dns_rdata_rrsig_t *sig, char *cp, unsigned int size);
-#define SIG_FORMATSIZE (DNS_NAME_FORMATSIZE + DNS_SECALG_FORMATSIZE + sizeof("65535"))
+#define SIG_FORMATSIZE (DNS_NAME_FORMATSIZE + DNS_SECALG_FORMATSIZE + \
+			sizeof("65535"))
 
 void
 setup_logging(isc_mem_t *mctx, isc_log_t **logp);
@@ -52,8 +53,7 @@ cleanup_logging(isc_log_t **logp);
 dns_ttl_t strtottl(const char *str);
 
 isc_stdtime_t
-strtotime(const char *str, int64_t now, int64_t base,
-	  bool *setp);
+strtotime(const char *str, int64_t now, int64_t base, bool *setp);
 
 unsigned int
 strtodsdigest(const char *str);
@@ -71,8 +71,11 @@ void
 set_keyversion(dst_key_t *key);
 
 bool
-key_collision(dst_key_t *key, dns_name_t *name, const char *dir,
-	      isc_mem_t *mctx, bool *exact);
+key_collision(dst_key_t *key,
+	      dns_name_t *name,
+	      const char *dir,
+	      isc_mem_t *mctx,
+	      bool *exact);
 
 bool
 isoptarg(const char *arg, char **argv, void (*usage)(void));
@@ -80,6 +83,6 @@ isoptarg(const char *arg, char **argv, void (*usage)(void));
 #ifdef _WIN32
 void InitSockets(void);
 void DestroySockets(void);
-#endif
+#endif /* ifdef _WIN32 */
 
 #endif /* DNSSEC_DNSSECTOOL_H */

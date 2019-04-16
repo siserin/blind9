@@ -14,8 +14,8 @@
 #define DNS_LOOKUP_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/lookup.h
  * \brief
@@ -57,18 +57,24 @@ ISC_LANG_BEGINDECLS
  */
 typedef struct dns_lookupevent {
 	ISC_EVENT_COMMON(struct dns_lookupevent);
-	isc_result_t			result;
-	dns_name_t			*name;
-	dns_rdataset_t			*rdataset;
-	dns_rdataset_t			*sigrdataset;
-	dns_db_t			*db;
-	dns_dbnode_t			*node;
+	isc_result_t	      result;
+	dns_name_t *	      name;
+	dns_rdataset_t *      rdataset;
+	dns_rdataset_t *      sigrdataset;
+	dns_db_t *	      db;
+	dns_dbnode_t *	      node;
 } dns_lookupevent_t;
 
 isc_result_t
-dns_lookup_create(isc_mem_t *mctx, const dns_name_t *name, dns_rdatatype_t type,
-		  dns_view_t *view, unsigned int options, isc_task_t *task,
-		  isc_taskaction_t action, void *arg, dns_lookup_t **lookupp);
+dns_lookup_create(isc_mem_t *mctx,
+		  const dns_name_t *name,
+		  dns_rdatatype_t type,
+		  dns_view_t *view,
+		  unsigned int options,
+		  isc_task_t *task,
+		  isc_taskaction_t action,
+		  void *arg,
+		  dns_lookup_t **lookupp);
 /*%<
  * Finds the rrsets matching 'name' and 'type'.
  *

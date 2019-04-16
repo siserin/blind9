@@ -22,12 +22,12 @@
  * store masters for a slave zone, created by parsing config options.
  */
 struct dns_ipkeylist {
-	isc_sockaddr_t		*addrs;
-	isc_dscp_t		*dscps;
-	dns_name_t		**keys;
-	dns_name_t		**labels;
-	uint32_t		count;
-	uint32_t		allocated;
+	isc_sockaddr_t *      addrs;
+	isc_dscp_t *	      dscps;
+	dns_name_t **	      keys;
+	dns_name_t **	      labels;
+	uint32_t	      count;
+	uint32_t	      allocated;
 };
 
 void
@@ -53,7 +53,8 @@ dns_ipkeylist_clear(isc_mem_t *mctx, dns_ipkeylist_t *ipkl);
  */
 
 isc_result_t
-dns_ipkeylist_copy(isc_mem_t *mctx, const dns_ipkeylist_t *src,
+dns_ipkeylist_copy(isc_mem_t *mctx,
+		   const dns_ipkeylist_t *src,
 		   dns_ipkeylist_t *dst);
 /*%<
  * Deep copy `src` into empty `dst`, allocating `dst`'s contents.
@@ -84,4 +85,4 @@ dns_ipkeylist_resize(isc_mem_t *mctx, dns_ipkeylist_t *ipkl, unsigned int n);
  * \li	#ISC_R_NOMEMORY if there's no memory, ipkeylist is left untoched
  */
 
-#endif
+#endif /* ifndef DNS_IPKEYLIST_H */

@@ -199,7 +199,7 @@ test_ht_iterator() {
 	isc_ht_t *ht = NULL;
 	isc_result_t result;
 	isc_mem_t *mctx = NULL;
-	isc_ht_iter_t * iter = NULL;
+	isc_ht_iter_t *iter = NULL;
 	uintptr_t i;
 	uintptr_t count = 10000;
 	uint32_t walked;
@@ -293,7 +293,7 @@ test_ht_iterator() {
 		walked++;
 	}
 	assert_int_equal(result, ISC_R_NOMORE);
-	assert_int_equal(walked, count/2);
+	assert_int_equal(walked, count / 2);
 
 	walked = 0;
 	for (result = isc_ht_iter_first(iter);
@@ -366,4 +366,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

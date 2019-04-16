@@ -41,69 +41,70 @@ ISC_LANG_BEGINDECLS
  * to set attributes, new accessor functions will be written.
  */
 
-typedef struct dst_key		dst_key_t;
-typedef struct dst_context 	dst_context_t;
+typedef struct dst_key dst_key_t;
+typedef struct dst_context dst_context_t;
 
 /* DST algorithm codes */
-#define DST_ALG_UNKNOWN		0
-#define DST_ALG_RSA		1 /* Used for parsing RSASHA1, RSASHA256 and RSASHA512 */
-#define DST_ALG_RSAMD5		1
-#define DST_ALG_DH		2
-#define DST_ALG_DSA		3
-#define DST_ALG_ECC		4
-#define DST_ALG_RSASHA1		5
-#define DST_ALG_NSEC3DSA	6
-#define DST_ALG_NSEC3RSASHA1	7
-#define DST_ALG_RSASHA256	8
-#define DST_ALG_RSASHA512	10
-#define DST_ALG_ECCGOST		12
-#define DST_ALG_ECDSA256	13
-#define DST_ALG_ECDSA384	14
-#define DST_ALG_ED25519		15
-#define DST_ALG_ED448		16
-#define DST_ALG_HMACMD5		157
-#define DST_ALG_GSSAPI		160
-#define DST_ALG_HMACSHA1	161	/* XXXMPA */
-#define DST_ALG_HMACSHA224	162	/* XXXMPA */
-#define DST_ALG_HMACSHA256	163	/* XXXMPA */
-#define DST_ALG_HMACSHA384	164	/* XXXMPA */
-#define DST_ALG_HMACSHA512	165	/* XXXMPA */
-#define DST_ALG_INDIRECT	252
-#define DST_ALG_PRIVATE		254
-#define DST_MAX_ALGS		256
+#define DST_ALG_UNKNOWN         0
+#define DST_ALG_RSA             1 /* Used for parsing RSASHA1, RSASHA256 and
+	                           * RSASHA512 */
+#define DST_ALG_RSAMD5          1
+#define DST_ALG_DH              2
+#define DST_ALG_DSA             3
+#define DST_ALG_ECC             4
+#define DST_ALG_RSASHA1         5
+#define DST_ALG_NSEC3DSA        6
+#define DST_ALG_NSEC3RSASHA1    7
+#define DST_ALG_RSASHA256       8
+#define DST_ALG_RSASHA512       10
+#define DST_ALG_ECCGOST         12
+#define DST_ALG_ECDSA256        13
+#define DST_ALG_ECDSA384        14
+#define DST_ALG_ED25519         15
+#define DST_ALG_ED448           16
+#define DST_ALG_HMACMD5         157
+#define DST_ALG_GSSAPI          160
+#define DST_ALG_HMACSHA1        161     /* XXXMPA */
+#define DST_ALG_HMACSHA224      162     /* XXXMPA */
+#define DST_ALG_HMACSHA256      163     /* XXXMPA */
+#define DST_ALG_HMACSHA384      164     /* XXXMPA */
+#define DST_ALG_HMACSHA512      165     /* XXXMPA */
+#define DST_ALG_INDIRECT        252
+#define DST_ALG_PRIVATE         254
+#define DST_MAX_ALGS            256
 
 /*% A buffer of this size is large enough to hold any key */
-#define DST_KEY_MAXSIZE		1280
+#define DST_KEY_MAXSIZE         1280
 
 /*%
  * A buffer of this size is large enough to hold the textual representation
  * of any key
  */
-#define DST_KEY_MAXTEXTSIZE	2048
+#define DST_KEY_MAXTEXTSIZE     2048
 
 /*% 'Type' for dst_read_key() */
-#define DST_TYPE_KEY		0x1000000	/* KEY key */
-#define DST_TYPE_PRIVATE	0x2000000
-#define DST_TYPE_PUBLIC		0x4000000
+#define DST_TYPE_KEY            0x1000000       /* KEY key */
+#define DST_TYPE_PRIVATE        0x2000000
+#define DST_TYPE_PUBLIC         0x4000000
 
 /* Key timing metadata definitions */
-#define DST_TIME_CREATED	0
-#define DST_TIME_PUBLISH	1
-#define DST_TIME_ACTIVATE	2
-#define DST_TIME_REVOKE 	3
-#define DST_TIME_INACTIVE	4
-#define DST_TIME_DELETE 	5
-#define DST_TIME_DSPUBLISH 	6
-#define DST_TIME_SYNCPUBLISH 	7
-#define DST_TIME_SYNCDELETE 	8
-#define DST_MAX_TIMES		8
+#define DST_TIME_CREATED        0
+#define DST_TIME_PUBLISH        1
+#define DST_TIME_ACTIVATE       2
+#define DST_TIME_REVOKE         3
+#define DST_TIME_INACTIVE       4
+#define DST_TIME_DELETE         5
+#define DST_TIME_DSPUBLISH      6
+#define DST_TIME_SYNCPUBLISH    7
+#define DST_TIME_SYNCDELETE     8
+#define DST_MAX_TIMES           8
 
 /* Numeric metadata definitions */
-#define DST_NUM_PREDECESSOR	0
-#define DST_NUM_SUCCESSOR	1
-#define DST_NUM_MAXTTL		2
-#define DST_NUM_ROLLPERIOD	3
-#define DST_MAX_NUMERIC		3
+#define DST_NUM_PREDECESSOR     0
+#define DST_NUM_SUCCESSOR       1
+#define DST_NUM_MAXTTL          2
+#define DST_NUM_ROLLPERIOD      3
+#define DST_MAX_NUMERIC         3
 
 /*
  * Current format version number of the private key parser.
@@ -124,8 +125,8 @@ typedef struct dst_context 	dst_context_t;
  * of a currently mandatory field, or a new field added which would
  * alter the functioning of the key if it were absent.
  */
-#define DST_MAJOR_VERSION	1
-#define DST_MINOR_VERSION	3
+#define DST_MAJOR_VERSION       1
+#define DST_MINOR_VERSION       3
 
 /***
  *** Functions
@@ -136,7 +137,7 @@ dst_lib_init(isc_mem_t *mctx, const char *engine);
  * Initializes the DST subsystem.
  *
  * Requires:
- * \li 	"mctx" is a valid memory context
+ * \li  "mctx" is a valid memory context
  *
  * Returns:
  * \li	ISC_R_SUCCESS
@@ -174,9 +175,12 @@ dst_ds_digest_supported(unsigned int digest_type);
  */
 
 isc_result_t
-dst_context_create(dst_key_t *key, isc_mem_t *mctx,
-		   isc_logcategory_t *category, bool useforsigning,
-		   int maxbits, dst_context_t **dctxp);
+dst_context_create(dst_key_t *key,
+		   isc_mem_t *mctx,
+		   isc_logcategory_t *category,
+		   bool useforsigning,
+		   int maxbits,
+		   dst_context_t **dctxp);
 /*%<
  * Creates a context to be used for a sign or verify operation.
  *
@@ -243,7 +247,8 @@ isc_result_t
 dst_context_verify(dst_context_t *dctx, isc_region_t *sig);
 
 isc_result_t
-dst_context_verify2(dst_context_t *dctx, unsigned int maxbits,
+dst_context_verify2(dst_context_t *dctx,
+		    unsigned int maxbits,
 		    isc_region_t *sig);
 /*%<
  * Verifies the signature using the data and key stored in the context.
@@ -264,7 +269,8 @@ dst_context_verify2(dst_context_t *dctx, unsigned int maxbits,
  */
 
 isc_result_t
-dst_key_computesecret(const dst_key_t *pub, const dst_key_t *priv,
+dst_key_computesecret(const dst_key_t *pub,
+		      const dst_key_t *priv,
 		      isc_buffer_t *secret);
 /*%<
  * Computes a shared secret from two (Diffie-Hellman) keys.
@@ -283,9 +289,13 @@ dst_key_computesecret(const dst_key_t *pub, const dst_key_t *priv,
  */
 
 isc_result_t
-dst_key_getfilename(dns_name_t *name, dns_keytag_t id, unsigned int alg,
-		    int type, const char *directory,
-		    isc_mem_t *mctx, isc_buffer_t *buf);
+dst_key_getfilename(dns_name_t *name,
+		    dns_keytag_t id,
+		    unsigned int alg,
+		    int type,
+		    const char *directory,
+		    isc_mem_t *mctx,
+		    isc_buffer_t *buf);
 /*%<
  * Generates a key filename for the name, algorithm, and
  * id, and places it in the buffer 'buf'. If directory is NULL, the
@@ -306,8 +316,13 @@ dst_key_getfilename(dns_name_t *name, dns_keytag_t id, unsigned int alg,
  */
 
 isc_result_t
-dst_key_fromfile(dns_name_t *name, dns_keytag_t id, unsigned int alg, int type,
-		 const char *directory, isc_mem_t *mctx, dst_key_t **keyp);
+dst_key_fromfile(dns_name_t *name,
+		 dns_keytag_t id,
+		 unsigned int alg,
+		 int type,
+		 const char *directory,
+		 isc_mem_t *mctx,
+		 dst_key_t **keyp);
 /*%<
  * Reads a key from permanent storage.  The key can either be a public or
  * private key, and is specified by name, algorithm, and id.  If a private key
@@ -332,8 +347,11 @@ dst_key_fromfile(dns_name_t *name, dns_keytag_t id, unsigned int alg, int type,
  */
 
 isc_result_t
-dst_key_fromnamedfile(const char *filename, const char *dirname,
-		      int type, isc_mem_t *mctx, dst_key_t **keyp);
+dst_key_fromnamedfile(const char *filename,
+		      const char *dirname,
+		      int type,
+		      isc_mem_t *mctx,
+		      dst_key_t **keyp);
 /*%<
  * Reads a key from permanent storage.  The key can either be a public or
  * key, and is specified by filename.  If a private key is specified, the
@@ -360,8 +378,10 @@ dst_key_fromnamedfile(const char *filename, const char *dirname,
 
 
 isc_result_t
-dst_key_read_public(const char *filename, int type,
-		    isc_mem_t *mctx, dst_key_t **keyp);
+dst_key_read_public(const char *filename,
+		    int type,
+		    isc_mem_t *mctx,
+		    dst_key_t **keyp);
 /*%<
  * Reads a public key from permanent storage.  The key must be a public key.
  *
@@ -399,8 +419,11 @@ dst_key_tofile(const dst_key_t *key, int type, const char *directory);
  */
 
 isc_result_t
-dst_key_fromdns(const dns_name_t *name, dns_rdataclass_t rdclass,
-		isc_buffer_t *source, isc_mem_t *mctx, dst_key_t **keyp);
+dst_key_fromdns(const dns_name_t *name,
+		dns_rdataclass_t rdclass,
+		isc_buffer_t *source,
+		isc_mem_t *mctx,
+		dst_key_t **keyp);
 /*%<
  * Converts a DNS KEY record into a DST key.
  *
@@ -437,10 +460,14 @@ dst_key_todns(const dst_key_t *key, isc_buffer_t *target);
  */
 
 isc_result_t
-dst_key_frombuffer(const dns_name_t *name, unsigned int alg,
-		   unsigned int flags, unsigned int protocol,
+dst_key_frombuffer(const dns_name_t *name,
+		   unsigned int alg,
+		   unsigned int flags,
+		   unsigned int protocol,
 		   dns_rdataclass_t rdclass,
-		   isc_buffer_t *source, isc_mem_t *mctx, dst_key_t **keyp);
+		   isc_buffer_t *source,
+		   isc_mem_t *mctx,
+		   dst_key_t **keyp);
 /*%<
  * Converts a buffer containing DNS KEY RDATA into a DST key.
  *
@@ -452,7 +479,7 @@ dst_key_frombuffer(const dns_name_t *name, unsigned int alg,
  *\li	"keyp" is not NULL and "*keyp" is NULL.
  *
  * Returns:
- *\li 	ISC_R_SUCCESS
+ *\li   ISC_R_SUCCESS
  * \li	any other result indicates failure
  *
  * Ensures:
@@ -470,7 +497,7 @@ dst_key_tobuffer(const dst_key_t *key, isc_buffer_t *target);
  *\li	"target" is a valid buffer.
  *
  * Returns:
- *\li 	ISC_R_SUCCESS
+ *\li   ISC_R_SUCCESS
  * \li	any other result indicates failure
  *
  * Ensures:
@@ -489,7 +516,7 @@ dst_key_privatefrombuffer(dst_key_t *key, isc_buffer_t *buffer);
  *\li	"buffer" is not NULL.
  *
  * Returns:
- *\li 	ISC_R_SUCCESS
+ *\li   ISC_R_SUCCESS
  * \li	any other result indicates failure
  *
  * Ensures:
@@ -510,8 +537,11 @@ dst_key_getgssctx(const dst_key_t *key);
  */
 
 isc_result_t
-dst_key_fromgssapi(const dns_name_t *name, gss_ctx_id_t gssctx, isc_mem_t *mctx,
-		   dst_key_t **keyp, isc_region_t *intoken);
+dst_key_fromgssapi(const dns_name_t *name,
+		   gss_ctx_id_t gssctx,
+		   isc_mem_t *mctx,
+		   dst_key_t **keyp,
+		   isc_region_t *intoken);
 /*%<
  * Converts a GSSAPI opaque context id into a DST key.
  *
@@ -522,7 +552,7 @@ dst_key_fromgssapi(const dns_name_t *name, gss_ctx_id_t gssctx, isc_mem_t *mctx,
  *\li	"keyp" is not NULL and "*keyp" is NULL.
  *
  * Returns:
- *\li 	ISC_R_SUCCESS
+ *\li   ISC_R_SUCCESS
  * \li	any other result indicates failure
  *
  * Ensures:
@@ -532,39 +562,54 @@ dst_key_fromgssapi(const dns_name_t *name, gss_ctx_id_t gssctx, isc_mem_t *mctx,
 
 #ifdef DST_KEY_INTERNAL
 isc_result_t
-dst_key_buildinternal(const dns_name_t *name, unsigned int alg,
-		      unsigned int bits, unsigned int flags,
-		      unsigned int protocol, dns_rdataclass_t rdclass,
-		      void *data, isc_mem_t *mctx, dst_key_t **keyp);
-#endif
+dst_key_buildinternal(const dns_name_t *name,
+		      unsigned int alg,
+		      unsigned int bits,
+		      unsigned int flags,
+		      unsigned int protocol,
+		      dns_rdataclass_t rdclass,
+		      void *data,
+		      isc_mem_t *mctx,
+		      dst_key_t **keyp);
+#endif /* ifdef DST_KEY_INTERNAL */
 
 isc_result_t
-dst_key_fromlabel(const dns_name_t *name, int alg, unsigned int flags,
-		  unsigned int protocol, dns_rdataclass_t rdclass,
-		  const char *engine, const char *label, const char *pin,
-		  isc_mem_t *mctx, dst_key_t **keyp);
+dst_key_fromlabel(const dns_name_t *name,
+		  int alg,
+		  unsigned int flags,
+		  unsigned int protocol,
+		  dns_rdataclass_t rdclass,
+		  const char *engine,
+		  const char *label,
+		  const char *pin,
+		  isc_mem_t *mctx,
+		  dst_key_t **keyp);
 
 isc_result_t
-dst_key_generate(const dns_name_t *name, unsigned int alg,
-		 unsigned int bits, unsigned int param,
-		 unsigned int flags, unsigned int protocol,
+dst_key_generate(const dns_name_t *name,
+		 unsigned int alg,
+		 unsigned int bits,
+		 unsigned int param,
+		 unsigned int flags,
+		 unsigned int protocol,
 		 dns_rdataclass_t rdclass,
-		 isc_mem_t *mctx, dst_key_t **keyp,
+		 isc_mem_t *mctx,
+		 dst_key_t **keyp,
 		 void (*callback)(int));
 
 /*%<
  * Generate a DST key (or keypair) with the supplied parameters.  The
  * interpretation of the "param" field depends on the algorithm:
  * \code
- * 	RSA:	exponent
- * 		0	use exponent 3
- * 		!0	use Fermat4 (2^16 + 1)
- * 	DH:	generator
- * 		0	default - use well known prime if bits == 768 or 1024,
- * 			otherwise use 2 as the generator.
- * 		!0	use this value as the generator.
- * 	DSA:	unused
- * 	HMACMD5: entropy
+ *      RSA:	exponent
+ *              0	use exponent 3
+ *              !0	use Fermat4 (2^16 + 1)
+ *      DH:	generator
+ *              0	default - use well known prime if bits == 768 or 1024,
+ *                      otherwise use 2 as the generator.
+ *              !0	use this value as the generator.
+ *      DSA:	unused
+ *      HMACMD5: entropy
  *		0	default - require good entropy
  *		!0	lack of good entropy is ok
  *\endcode
@@ -574,7 +619,7 @@ dst_key_generate(const dns_name_t *name, unsigned int alg,
  *\li	"keyp" is not NULL and "*keyp" is NULL.
  *
  * Returns:
- *\li 	ISC_R_SUCCESS
+ *\li   ISC_R_SUCCESS
  * \li	any other result indicates failure
  *
  * Ensures:
@@ -594,12 +639,13 @@ dst_key_compare(const dst_key_t *key1, const dst_key_t *key2);
  *\li	"key2" is a valid key.
  *
  * Returns:
- *\li 	true
+ *\li   true
  * \li	false
  */
 
 bool
-dst_key_pubcompare(const dst_key_t *key1, const dst_key_t *key2,
+dst_key_pubcompare(const dst_key_t *key1,
+		   const dst_key_t *key2,
 		   bool match_revoked_key);
 /*%<
  * Compares only the public portions of two DST keys.  Returns true
@@ -615,7 +661,7 @@ dst_key_pubcompare(const dst_key_t *key1, const dst_key_t *key2,
  *\li	"key2" is a valid key.
  *
  * Returns:
- *\li 	true
+ *\li   true
  * \li	false
  */
 
@@ -630,7 +676,7 @@ dst_key_paramcompare(const dst_key_t *key1, const dst_key_t *key2);
  *\li	"key2" is a valid key.
  *
  * Returns:
- *\li 	true
+ *\li   true
  * \li	false
  */
 
@@ -699,8 +745,10 @@ bool
 dst_key_isnullkey(const dst_key_t *key);
 
 isc_result_t
-dst_key_buildfilename(const dst_key_t *key, int type,
-		      const char *directory, isc_buffer_t *out);
+dst_key_buildfilename(const dst_key_t *key,
+		      int type,
+		      const char *directory,
+		      isc_buffer_t *out);
 /*%<
  * Generates the filename used by dst to store the specified key.
  * If directory is NULL, the current directory is assumed.
@@ -761,7 +809,7 @@ dst_region_computerid(const isc_region_t *source);
  *\li	"source" contains a valid, non-NULL region.
  *
  * Returns:
- *\li 	the key id
+ *\li   the key id
  */
 
 uint16_t
@@ -937,9 +985,14 @@ dst_key_dump(dst_key_t *key, isc_mem_t *mctx, char **buffer, int *length);
  */
 
 isc_result_t
-dst_key_restore(dns_name_t *name, unsigned int alg, unsigned int flags,
-		unsigned int protocol, dns_rdataclass_t rdclass,
-		isc_mem_t *mctx, const char *keystr, dst_key_t **keyp);
+dst_key_restore(dns_name_t *name,
+		unsigned int alg,
+		unsigned int flags,
+		unsigned int protocol,
+		dns_rdataclass_t rdclass,
+		isc_mem_t *mctx,
+		const char *keystr,
+		dst_key_t **keyp);
 
 bool
 dst_key_inactive(const dst_key_t *key);

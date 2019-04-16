@@ -95,7 +95,7 @@ sig_fromfile(const char *path, isc_buffer_t *buf) {
 			--len;
 			continue;
 		} else if (len < 2U) {
-		       goto err;
+			goto err;
 		}
 		if (('0' <= *p) && (*p <= '9')) {
 			val = *p - '0';
@@ -129,8 +129,13 @@ sig_fromfile(const char *path, isc_buffer_t *buf) {
 }
 
 static void
-check_sig(const char *datapath, const char *sigpath, const char *keyname,
-	  dns_keytag_t id, dns_secalg_t alg, int type, bool expect)
+check_sig(const char *datapath,
+	  const char *sigpath,
+	  const char *keyname,
+	  dns_keytag_t id,
+	  dns_secalg_t alg,
+	  int type,
+	  bool expect)
 {
 	isc_result_t result;
 	size_t rval, len;
@@ -209,8 +214,12 @@ check_sig(const char *datapath, const char *sigpath, const char *keyname,
 
 	if (expect && result != ISC_R_SUCCESS) {
 		isc_result_t result2;
-		result2 = dst_context_create(key, mctx, DNS_LOGCATEGORY_GENERAL,
-					    false, 0, &ctx);
+		result2 = dst_context_create(key,
+					     mctx,
+					     DNS_LOGCATEGORY_GENERAL,
+					     false,
+					     0,
+					     &ctx);
 		assert_int_equal(result2, ISC_R_SUCCESS);
 
 		result2 = dst_context_adddata(ctx, &datareg);
@@ -252,12 +261,12 @@ sig_test(void **state) {
 	UNUSED(state);
 
 	struct {
-		const char *datapath;
-		const char *sigpath;
-		const char *keyname;
-		dns_keytag_t keyid;
-		dns_secalg_t alg;
-		bool expect;
+		const char *	    datapath;
+		const char *	    sigpath;
+		const char *	    keyname;
+		dns_keytag_t	    keyid;
+		dns_secalg_t	    alg;
+		bool		    expect;
 	} testcases[] = {
 		{
 			"testdata/dst/test1.data",
@@ -284,7 +293,7 @@ sig_test(void **state) {
 	};
 	unsigned int i;
 
-	for (i = 0; i < (sizeof(testcases)/sizeof(testcases[0])); i++) {
+	for (i = 0; i < (sizeof(testcases) / sizeof(testcases[0])); i++) {
 		if (!dst_algorithm_supported(testcases[i].alg)) {
 			continue;
 		}
@@ -294,7 +303,7 @@ sig_test(void **state) {
 			  testcases[i].keyname,
 			  testcases[i].keyid,
 			  testcases[i].alg,
-			  DST_TYPE_PRIVATE|DST_TYPE_PUBLIC,
+			  DST_TYPE_PRIVATE | DST_TYPE_PUBLIC,
 			  testcases[i].expect);
 	}
 }
@@ -318,4 +327,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

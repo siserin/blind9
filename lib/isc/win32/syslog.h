@@ -16,24 +16,24 @@
 #include <stdio.h>
 
 /* Constant definitions for openlog() */
-#define LOG_PID		1
-#define LOG_CONS	2
+#define LOG_PID         1
+#define LOG_CONS        2
 /* NT event log does not support facility level */
-#define LOG_KERN	0
-#define LOG_USER	0
-#define LOG_MAIL	0
-#define LOG_DAEMON	0
-#define LOG_AUTH	0
-#define LOG_SYSLOG	0
-#define LOG_LPR		0
-#define LOG_LOCAL0	0
-#define LOG_LOCAL1	0
-#define LOG_LOCAL2	0
-#define LOG_LOCAL3	0
-#define LOG_LOCAL4	0
-#define LOG_LOCAL5	0
-#define LOG_LOCAL6	0
-#define LOG_LOCAL7	0
+#define LOG_KERN        0
+#define LOG_USER        0
+#define LOG_MAIL        0
+#define LOG_DAEMON      0
+#define LOG_AUTH        0
+#define LOG_SYSLOG      0
+#define LOG_LPR         0
+#define LOG_LOCAL0      0
+#define LOG_LOCAL1      0
+#define LOG_LOCAL2      0
+#define LOG_LOCAL3      0
+#define LOG_LOCAL4      0
+#define LOG_LOCAL5      0
+#define LOG_LOCAL6      0
+#define LOG_LOCAL7      0
 
 #define LOG_EMERG       0       /* system is unusable */
 #define LOG_ALERT       1       /* action must be taken immediately */
@@ -45,10 +45,10 @@
 #define LOG_DEBUG       7       /* debug-level messages */
 
 void
-syslog(int level, const char *fmt, ...);
+syslog(int level,const char*fmt,...);
 
 void
-openlog(const char *, int, ...);
+openlog(const char*,int,...);
 
 void
 closelog(void);
@@ -57,13 +57,13 @@ void
 ModifyLogLevel(int level);
 
 void
-InitNTLogging(FILE *, int);
+InitNTLogging(FILE*,int);
 
 void
-NTReportError(const char *, const char *);
+NTReportError(const char*,const char*);
 /*
  * Include the event codes required for logging.
  */
 #include <isc/bindevt.h>
 
-#endif
+#endif /* ifndef _SYSLOG_H */

@@ -23,8 +23,10 @@ ISC_LANG_BEGINDECLS
  */
 
 int
-isc_win32os_versioncheck(unsigned int major, unsigned int minor,
-		     unsigned int updatemajor, unsigned int updateminor);
+isc_win32os_versioncheck(unsigned int major,
+			 unsigned int minor,
+			 unsigned int updatemajor,
+			 unsigned int updateminor);
 
 /*
  * Checks the current version of the operating system with the

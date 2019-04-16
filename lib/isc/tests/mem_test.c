@@ -69,12 +69,12 @@ _teardown(void **state) {
 	return (0);
 }
 
-#define	MP1_FREEMAX	10
-#define	MP1_FILLCNT	10
-#define	MP1_MAXALLOC	30
+#define MP1_FREEMAX     10
+#define MP1_FILLCNT     10
+#define MP1_MAXALLOC    30
 
-#define	MP2_FREEMAX	25
-#define	MP2_FILLCNT	25
+#define MP2_FREEMAX     25
+#define MP2_FILLCNT     25
 
 /* general memory system tests */
 static void
@@ -180,7 +180,6 @@ isc_mem_test(void **state) {
 	isc_mempool_destroy(&mp1);
 
 	isc_mem_destroy(&localmctx);
-
 }
 
 /* test TotalUse calculation */
@@ -238,7 +237,6 @@ isc_mem_total_test(void **state) {
 	if (mctx2 != NULL) {
 		isc_mem_destroy(&mctx2);
 	}
-
 }
 
 /* test InUse calculation */
@@ -272,7 +270,6 @@ isc_mem_inuse_test(void **state) {
 	if (mctx2 != NULL) {
 		isc_mem_destroy(&mctx2);
 	}
-
 }
 
 #if ISC_MEM_TRACKLINES
@@ -365,7 +362,6 @@ isc_mem_recordflag_test(void **state) {
 	p = strchr(p + 1, '\n');
 	assert_non_null(p);
 	assert_int_equal(strlen(p), 1);
-
 }
 
 /* test mem with trace flag */
@@ -420,7 +416,7 @@ isc_mem_traceflag_test(void **state) {
 
 	isc_mem_debugging = ISC_MEM_DEBUGRECORD;
 }
-#endif
+#endif /* if ISC_MEM_TRACKLINES */
 
 /*
  * Main
@@ -430,20 +426,20 @@ int
 main(void) {
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test_setup_teardown(isc_mem_test,
-				_setup, _teardown),
+						_setup, _teardown),
 		cmocka_unit_test_setup_teardown(isc_mem_total_test,
-				_setup, _teardown),
+						_setup, _teardown),
 		cmocka_unit_test_setup_teardown(isc_mem_inuse_test,
-				_setup, _teardown),
+						_setup, _teardown),
 
 #if ISC_MEM_TRACKLINES
 		cmocka_unit_test_setup_teardown(isc_mem_noflags_test,
-				_setup, _teardown),
+						_setup, _teardown),
 		cmocka_unit_test_setup_teardown(isc_mem_recordflag_test,
-				_setup, _teardown),
+						_setup, _teardown),
 		cmocka_unit_test_setup_teardown(isc_mem_traceflag_test,
-				_setup, _teardown),
-#endif
+						_setup, _teardown),
+#endif /* if ISC_MEM_TRACKLINES */
 	};
 
 	return (cmocka_run_group_tests(tests, NULL, NULL));
@@ -455,9 +451,8 @@ main(void) {
 
 int
 main(void) {
-		printf("1..0 # Skipped: cmocka not available\n");
-			return (0);
-
+	printf("1..0 # Skipped: cmocka not available\n");
+	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

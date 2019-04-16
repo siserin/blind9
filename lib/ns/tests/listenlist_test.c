@@ -36,19 +36,19 @@
 #include "nstest.h"
 
 static int
-_setup(void **state) {
+_setup(void**state) {
 	isc_result_t result;
 
 	UNUSED(state);
 
-	result = ns_test_begin(NULL, true);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = ns_test_begin(NULL,true);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	return (0);
 }
 
 static int
-_teardown(void **state) {
+_teardown(void**state) {
 	UNUSED(state);
 
 	ns_test_end();
@@ -58,16 +58,16 @@ _teardown(void **state) {
 
 /* test that ns_listenlist_default() works */
 static void
-ns_listenlist_default_test(void **state) {
+ns_listenlist_default_test(void**state) {
 	isc_result_t result;
-	ns_listenlist_t *list = NULL;
-	ns_listenelt_t *elt;
+	ns_listenlist_t*list = NULL;
+	ns_listenelt_t*elt;
 	int count;
 
 	UNUSED(state);
 
-	result = ns_listenlist_default(mctx, 5300, -1, false, &list);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = ns_listenlist_default(mctx,5300,-1,false,&list);
+	assert_int_equal(result,ISC_R_SUCCESS);
 	assert_non_null(list);
 
 	assert_false(ISC_LIST_EMPTY(list->elts));
@@ -75,11 +75,11 @@ ns_listenlist_default_test(void **state) {
 	count = 0;
 	elt = ISC_LIST_HEAD(list->elts);
 	while (elt != NULL) {
-		ns_listenelt_t *next = ISC_LIST_NEXT(elt, link);
-		dns_acl_t *acl = NULL;
+		ns_listenelt_t*next = ISC_LIST_NEXT(elt,link);
+		dns_acl_t*acl = NULL;
 
-		dns_acl_attach(elt->acl, &acl);
-		ISC_LIST_UNLINK(list->elts, elt, link);
+		dns_acl_attach(elt->acl,&acl);
+		ISC_LIST_UNLINK(list->elts,elt,link);
 		ns_listenelt_destroy(elt);
 		elt = next;
 
@@ -89,12 +89,12 @@ ns_listenlist_default_test(void **state) {
 	}
 
 	assert_true(ISC_LIST_EMPTY(list->elts));
-	assert_int_equal(count, 1);
+	assert_int_equal(count,1);
 
 	ns_listenlist_detach(&list);
 
-	result = ns_listenlist_default(mctx, 5300, -1, true, &list);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = ns_listenlist_default(mctx,5300,-1,true,&list);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	assert_false(ISC_LIST_EMPTY(list->elts));
 
@@ -102,13 +102,13 @@ ns_listenlist_default_test(void **state) {
 	count = 0;
 	elt = ISC_LIST_HEAD(list->elts);
 	while (elt != NULL) {
-		ns_listenelt_t *next = ISC_LIST_NEXT(elt, link);
+		ns_listenelt_t*next = ISC_LIST_NEXT(elt,link);
 		assert_true(dns_acl_isany(elt->acl));
 		elt = next;
 		count++;
 	}
 
-	assert_int_equal(count, 1);
+	assert_int_equal(count,1);
 
 	ns_listenlist_detach(&list);
 }
@@ -117,10 +117,10 @@ int
 main(void) {
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test_setup_teardown(ns_listenlist_default_test,
-						_setup, _teardown),
+						_setup,_teardown),
 	};
 
-	return (cmocka_run_group_tests(tests, NULL, NULL));
+	return (cmocka_run_group_tests(tests,NULL,NULL));
 }
 #else /* HAVE_CMOCKA */
 

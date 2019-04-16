@@ -14,8 +14,8 @@
 #define DNS_KEYDATA_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/keydata.h
  * \brief
@@ -38,13 +38,16 @@ ISC_LANG_BEGINDECLS
 
 isc_result_t
 dns_keydata_todnskey(dns_rdata_keydata_t *keydata,
-		     dns_rdata_dnskey_t *dnskey, isc_mem_t *mctx);
+		     dns_rdata_dnskey_t *dnskey,
+		     isc_mem_t *mctx);
 
 isc_result_t
 dns_keydata_fromdnskey(dns_rdata_keydata_t *keydata,
 		       dns_rdata_dnskey_t *dnskey,
-		       uint32_t refresh, uint32_t addhd,
-		       uint32_t removehd, isc_mem_t *mctx);
+		       uint32_t refresh,
+		       uint32_t addhd,
+		       uint32_t removehd,
+		       isc_mem_t *mctx);
 
 ISC_LANG_ENDDECLS
 

@@ -31,7 +31,7 @@
 
 #include "../md.c"
 
-#define TEST_INPUT(x) (x), sizeof(x)-1
+#define TEST_INPUT(x) (x), sizeof(x) - 1
 
 static int
 _setup(void **state) {
@@ -83,8 +83,12 @@ isc_md_free_test(void **state) {
 }
 
 static void
-isc_md_test(isc_md_t *md, isc_md_type_t type, const char *buf, size_t buflen,
-	    const char *result, const int repeats)
+isc_md_test(isc_md_t *md,
+	    isc_md_type_t type,
+	    const char *buf,
+	    size_t buflen,
+	    const char *result,
+	    const int repeats)
 {
 	assert_non_null(md);
 	assert_int_equal(isc_md_init(md, type), ISC_R_SUCCESS);
@@ -109,7 +113,7 @@ isc_md_test(isc_md_t *md, isc_md_type_t type, const char *buf, size_t buflen,
 
 	assert_return_code(isc_hex_totext(&r, 0, "", &b), ISC_R_SUCCESS);
 
-	assert_memory_equal(hexdigest, result, (result?strlen(result):0));
+	assert_memory_equal(hexdigest, result, (result ? strlen(result) : 0));
 	assert_int_equal(isc_md_reset(md), ISC_R_SUCCESS);
 }
 
@@ -177,7 +181,7 @@ isc_md_reset_test(void **state) {
 	 * segfault when called by hand
 	 */
 	expect_assert_failure(isc_md_final(md, digest, &digestlen));
-#endif
+#endif /* if 0 */
 }
 
 static void
@@ -586,4 +590,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

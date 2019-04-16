@@ -98,9 +98,9 @@ fuzz_thread_client(void *arg) {
 	 */
 #ifdef __AFL_LOOP
 	for (int loop = 0; loop < 100000; loop++) {
-#else
+#else  /* ifdef __AFL_LOOP */
 	{
-#endif
+#endif /* ifdef __AFL_LOOP */
 		ssize_t length;
 		ssize_t sent;
 
@@ -144,11 +144,12 @@ fuzz_thread_client(void *arg) {
 		 */
 		recvfrom(sockfd, buf, 65536, MSG_DONTWAIT, NULL, NULL);
 
-		while (!ready)
+		while (!ready) {
 			pthread_cond_wait(&cond, &mutex);
+		}
 
 		RUNTIME_CHECK(pthread_mutex_unlock(&mutex) == 0);
-	next: ;
+ next:          ;
 	}
 
 	free(buf);
@@ -186,12 +187,12 @@ fuzz_thread_resolver(void *arg) {
 	 * will be updated for each query.
 	 */
 	char respacket[] = {
-		 0x88, 0x0c, 0x01, 0x20, 0x00, 0x01, 0x00, 0x00,
-		 0x00, 0x00, 0x00, 0x01, 0x0a, 0x61, 0x61, 0x61,
-		 0x61, 0x61, 0x61, 0x61, 0x61, 0x61, 0x61, 0x07,
-		 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x00,
-		 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x29, 0x10,
-		 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00
+		0x88, 0x0c, 0x01, 0x20, 0x00, 0x01, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x01, 0x0a, 0x61, 0x61, 0x61,
+		0x61, 0x61, 0x61, 0x61, 0x61, 0x61, 0x61, 0x07,
+		0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x00,
+		0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x29, 0x10,
+		0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00
 	};
 	/*
 	 * Response for example./DNSKEY in wire format. Note that RRSIGs
@@ -395,7 +396,7 @@ fuzz_thread_resolver(void *arg) {
 		}
 
 		if (length < 12) {
-		    length = 12;
+			length = 12;
 		}
 
 		RUNTIME_CHECK(pthread_mutex_lock(&mutex) == 0);
@@ -413,7 +414,7 @@ fuzz_thread_resolver(void *arg) {
 		 */
 		socklen = sizeof(recvaddr);
 		sent = recvfrom(listenfd, rbuf, 65536, MSG_DONTWAIT,
-			(struct sockaddr *) &recvaddr, &socklen);
+				(struct sockaddr *) &recvaddr, &socklen);
 
 		/*
 		 * Send a fixed client query to named(resolver) of
@@ -421,7 +422,7 @@ fuzz_thread_resolver(void *arg) {
 		 * driver.
 		 */
 		sent = sendto(sockfd, respacket, sizeof(respacket), 0,
-		       (struct sockaddr *) &servaddr, sizeof(servaddr));
+			      (struct sockaddr *) &servaddr, sizeof(servaddr));
 		RUNTIME_CHECK(sent == sizeof(respacket));
 
 		/*
@@ -465,7 +466,9 @@ fuzz_thread_resolver(void *arg) {
 		while (((llen = nameptr[i]) != 0) &&
 		       (i < 255) &&
 		       (((nameptr + i + 1 + llen) - buf) < length))
+		{
 			i += 1 + llen;
+		}
 
 		if (i <= 255) {
 			nameptr += 1 + i;
@@ -500,7 +503,7 @@ fuzz_thread_resolver(void *arg) {
 			FD_SET(sockfd, &fds);
 			tv.tv_sec = 10;
 			tv.tv_usec = 0;
-			max = (listenfd > sockfd ? listenfd : sockfd)+1;
+			max = (listenfd > sockfd ? listenfd : sockfd) + 1;
 
 			rv = select(max, &fds, NULL, NULL, &tv);
 			RUNTIME_CHECK(rv > 0);
@@ -520,8 +523,12 @@ fuzz_thread_resolver(void *arg) {
 			 * CNAME). Bounce it - setting QR flag and
 			 * NOERROR rcode and sending it back.
 			 */
-			length = recvfrom(listenfd, buf, 65536, 0,
-				   (struct sockaddr *) &recvaddr, &socklen);
+			length = recvfrom(listenfd,
+					  buf,
+					  65536,
+					  0,
+					  (struct sockaddr *) &recvaddr,
+					  &socklen);
 
 			/*
 			 * If this is a DNSKEY query, send the DNSKEY,
@@ -536,7 +543,9 @@ fuzz_thread_resolver(void *arg) {
 			while (((llen = nameptr[i]) != 0) &&
 			       (i < 255) &&
 			       (((nameptr + i + 1 + llen) - buf) < length))
+			{
 				i += 1 + llen;
+			}
 
 			if (i <= 255) {
 				nameptr += 1 + i;
@@ -557,7 +566,8 @@ fuzz_thread_resolver(void *arg) {
 
 					if (qtype == 48) {
 						memmove(buf + 2, dnskey_wf + 2,
-							sizeof (dnskey_wf) - 2);
+							sizeof (dnskey_wf) -
+							2);
 						length = sizeof (dnskey_wf);
 					}
 				}
@@ -571,8 +581,9 @@ fuzz_thread_resolver(void *arg) {
 			RUNTIME_CHECK(sent == length);
 		}
 
-		while (!ready)
+		while (!ready) {
 			pthread_cond_wait(&cond, &mutex);
+		}
 
 		RUNTIME_CHECK(pthread_mutex_unlock(&mutex) == 0);
 	}
@@ -593,7 +604,7 @@ fuzz_thread_resolver(void *arg) {
 	 * in persistent mode if it's present.
 	 */
 	__AFL_LOOP(0);
-#endif
+#endif /* ifdef __AFL_LOOP */
 
 	return (NULL);
 }
@@ -662,7 +673,7 @@ fuzz_thread_tcp(void *arg) {
 			 * To fuzz DNS TCP client we have to put 16-bit
 			 * message length preceding the start of packet.
 			 */
-			length = read(0, buf+2, 65535);
+			length = read(0, buf + 2, 65535);
 			buf[0] = (length >> 8) & 0xff;
 			buf[1] = length & 0xff;
 			length += 2;
@@ -682,10 +693,10 @@ fuzz_thread_tcp(void *arg) {
 			 * processed.
 			 */
 			INSIST(length <= 65535);
-			buf[length++]='\r';
-			buf[length++]='\n';
-			buf[length++]='\r';
-			buf[length++]='\n';
+			buf[length++] = '\r';
+			buf[length++] = '\n';
+			buf[length++] = '\r';
+			buf[length++] = '\n';
 		}
 
 		RUNTIME_CHECK(pthread_mutex_lock(&mutex) == 0);
@@ -701,8 +712,9 @@ fuzz_thread_tcp(void *arg) {
 		do {
 			r = connect(sockfd, (struct sockaddr*)&servaddr,
 				    sizeof(servaddr));
-			if (r != 0)
+			if (r != 0) {
 				usleep(10000);
+			}
 		} while (r != 0);
 
 		/*
@@ -713,8 +725,9 @@ fuzz_thread_tcp(void *arg) {
 
 		close(sockfd);
 
-		while (!ready)
+		while (!ready) {
 			pthread_cond_wait(&cond, &mutex);
+		}
 
 		RUNTIME_CHECK(pthread_mutex_unlock(&mutex) == 0);
 	}

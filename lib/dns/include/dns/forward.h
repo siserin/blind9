@@ -23,16 +23,16 @@
 ISC_LANG_BEGINDECLS
 
 struct dns_forwarder {
-	isc_sockaddr_t			addr;
-	isc_dscp_t			dscp;
-	ISC_LINK(dns_forwarder_t)	link;
+	isc_sockaddr_t	      addr;
+	isc_dscp_t	      dscp;
+	ISC_LINK(dns_forwarder_t)       link;
 };
 
-typedef ISC_LIST(struct dns_forwarder)	dns_forwarderlist_t;
+typedef ISC_LIST (struct dns_forwarder)  dns_forwarderlist_t;
 
 struct dns_forwarders {
-	dns_forwarderlist_t	fwdrs;
-	dns_fwdpolicy_t		fwdpolicy;
+	dns_forwarderlist_t	   fwdrs;
+	dns_fwdpolicy_t		   fwdpolicy;
 };
 
 isc_result_t
@@ -41,7 +41,7 @@ dns_fwdtable_create(isc_mem_t *mctx, dns_fwdtable_t **fwdtablep);
  * Creates a new forwarding table.
  *
  * Requires:
- * \li 	mctx is a valid memory context.
+ * \li  mctx is a valid memory context.
  * \li	fwdtablep != NULL && *fwdtablep == NULL
  *
  * Returns:
@@ -50,11 +50,15 @@ dns_fwdtable_create(isc_mem_t *mctx, dns_fwdtable_t **fwdtablep);
  */
 
 isc_result_t
-dns_fwdtable_addfwd(dns_fwdtable_t *fwdtable, const dns_name_t *name,
-		    dns_forwarderlist_t *fwdrs, dns_fwdpolicy_t policy);
+dns_fwdtable_addfwd(dns_fwdtable_t *fwdtable,
+		    const dns_name_t *name,
+		    dns_forwarderlist_t *fwdrs,
+		    dns_fwdpolicy_t policy);
 isc_result_t
-dns_fwdtable_add(dns_fwdtable_t *fwdtable, const dns_name_t *name,
-		 isc_sockaddrlist_t *addrs, dns_fwdpolicy_t policy);
+dns_fwdtable_add(dns_fwdtable_t *fwdtable,
+		 const dns_name_t *name,
+		 isc_sockaddrlist_t *addrs,
+		 dns_fwdpolicy_t policy);
 /*%<
  * Adds an entry to the forwarding table.  The entry associates
  * a domain with a list of forwarders and a forwarding policy.  The
@@ -88,8 +92,10 @@ dns_fwdtable_delete(dns_fwdtable_t *fwdtable, const dns_name_t *name);
  */
 
 isc_result_t
-dns_fwdtable_find(dns_fwdtable_t *fwdtable, const dns_name_t *name,
-		  dns_name_t *foundname, dns_forwarders_t **forwardersp);
+dns_fwdtable_find(dns_fwdtable_t *fwdtable,
+		  const dns_name_t *name,
+		  dns_name_t *foundname,
+		  dns_forwarders_t **forwardersp);
 /*%<
  * Finds a domain in the forwarding table.  The closest matching parent
  * domain is returned.

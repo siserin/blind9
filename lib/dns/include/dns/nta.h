@@ -13,8 +13,8 @@
 #define DNS_NTA_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file
  * \brief
@@ -44,23 +44,24 @@ ISC_LANG_BEGINDECLS
 
 struct dns_ntatable {
 	/* Unlocked. */
-	unsigned int		magic;
-	dns_view_t		*view;
-	isc_rwlock_t		rwlock;
-	isc_taskmgr_t		*taskmgr;
-	isc_timermgr_t		*timermgr;
-	isc_task_t		*task;
+	unsigned int	      magic;
+	dns_view_t *	      view;
+	isc_rwlock_t	      rwlock;
+	isc_taskmgr_t *	      taskmgr;
+	isc_timermgr_t *      timermgr;
+	isc_task_t *	      task;
 	/* Locked by rwlock. */
-	uint32_t		references;
-	dns_rbt_t		*table;
+	uint32_t	      references;
+	dns_rbt_t *	      table;
 };
 
-#define NTATABLE_MAGIC		ISC_MAGIC('N', 'T', 'A', 't')
-#define VALID_NTATABLE(nt) 	ISC_MAGIC_VALID(nt, NTATABLE_MAGIC)
+#define NTATABLE_MAGIC          ISC_MAGIC('N', 'T', 'A', 't')
+#define VALID_NTATABLE(nt)      ISC_MAGIC_VALID(nt, NTATABLE_MAGIC)
 
 isc_result_t
 dns_ntatable_create(dns_view_t *view,
-		    isc_taskmgr_t *taskmgr, isc_timermgr_t *timermgr,
+		    isc_taskmgr_t *taskmgr,
+		    isc_timermgr_t *timermgr,
 		    dns_ntatable_t **ntatablep);
 /*%<
  * Create an NTA table in view 'view'.
@@ -117,8 +118,10 @@ dns_ntatable_detach(dns_ntatable_t **ntatablep);
  */
 
 isc_result_t
-dns_ntatable_add(dns_ntatable_t *ntatable, const dns_name_t *name,
-		 bool force, isc_stdtime_t now,
+dns_ntatable_add(dns_ntatable_t *ntatable,
+		 const dns_name_t *name,
+		 bool force,
+		 isc_stdtime_t now,
 		 uint32_t lifetime);
 /*%<
  * Add a negative trust anchor to 'ntatable' for name 'name',
@@ -166,8 +169,10 @@ dns_ntatable_delete(dns_ntatable_t *ntatable, const dns_name_t *keyname);
  */
 
 bool
-dns_ntatable_covered(dns_ntatable_t *ntatable, isc_stdtime_t now,
-		     const dns_name_t *name, const dns_name_t *anchor);
+dns_ntatable_covered(dns_ntatable_t *ntatable,
+		     isc_stdtime_t now,
+		     const dns_name_t *name,
+		     const dns_name_t *anchor);
 /*%<
  * Return true if 'name' is below a non-expired negative trust
  * anchor which in turn is at or below 'anchor'.
@@ -182,7 +187,8 @@ dns_ntatable_covered(dns_ntatable_t *ntatable, isc_stdtime_t now,
  */
 
 isc_result_t
-dns_ntatable_totext(dns_ntatable_t *ntatable, const char *view,
+dns_ntatable_totext(dns_ntatable_t *ntatable,
+		    const char *view,
 		    isc_buffer_t **buf);
 /*%<
  * Dump the NTA table to buffer at 'buf', with view names

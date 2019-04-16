@@ -89,7 +89,8 @@ dns_dbiterator_next(dns_dbiterator_t *iterator) {
 }
 
 isc_result_t
-dns_dbiterator_current(dns_dbiterator_t *iterator, dns_dbnode_t **nodep,
+dns_dbiterator_current(dns_dbiterator_t *iterator,
+		       dns_dbnode_t **nodep,
 		       dns_name_t *name)
 {
 	/*
@@ -116,7 +117,6 @@ dns_dbiterator_pause(dns_dbiterator_t *iterator) {
 
 isc_result_t
 dns_dbiterator_origin(dns_dbiterator_t *iterator, dns_name_t *name) {
-
 	/*
 	 * Return the origin to which returned node names are relative.
 	 */

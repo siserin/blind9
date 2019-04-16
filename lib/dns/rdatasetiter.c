@@ -65,7 +65,7 @@ dns_rdatasetiter_current(dns_rdatasetiter_t *iterator,
 
 	REQUIRE(DNS_RDATASETITER_VALID(iterator));
 	REQUIRE(DNS_RDATASET_VALID(rdataset));
-	REQUIRE(! dns_rdataset_isassociated(rdataset));
+	REQUIRE(!dns_rdataset_isassociated(rdataset));
 
 	iterator->methods->current(iterator, rdataset);
 }

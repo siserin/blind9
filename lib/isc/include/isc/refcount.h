@@ -40,7 +40,7 @@ typedef atomic_uint_fast32_t isc_refcount_t;
  *
  *  \warning No memory barrier are being imposed here.
  */
-#define isc_refcount_init(target, value)			\
+#define isc_refcount_init(target, value)                        \
 	atomic_init(target, value)
 
 /** \def isc_refcount_current(ref)
@@ -52,7 +52,7 @@ typedef atomic_uint_fast32_t isc_refcount_t;
  *   atomic_load_explicit() by casting to uint_fast32_t.
  */
 
-#define isc_refcount_current(target)				\
+#define isc_refcount_current(target)                            \
 	(uint_fast32_t)atomic_load_explicit(target, memory_order_acquire)
 
 /** \def isc_refcount_destroy(ref)
@@ -60,7 +60,7 @@ typedef atomic_uint_fast32_t isc_refcount_t;
  *  \param[in] ref pointer to reference counter.
  *  \returns nothing.
  */
-#define isc_refcount_destroy(target)				\
+#define isc_refcount_destroy(target)                            \
 	ISC_REQUIRE(isc_refcount_current(target) == 0)
 
 /** \def isc_refcount_increment0(ref)
@@ -68,7 +68,7 @@ typedef atomic_uint_fast32_t isc_refcount_t;
  *  \param[in] ref pointer to reference counter.
  *  \returns previous value of reference counter.
  */
-#define isc_refcount_increment0(target)				\
+#define isc_refcount_increment0(target)                         \
 	isc_refcount_increment(target)
 
 /** \def isc_refcount_increment(ref)
@@ -76,7 +76,7 @@ typedef atomic_uint_fast32_t isc_refcount_t;
  *  \param[in] ref pointer to reference counter.
  *  \returns previous value of reference counter.
  */
-#define isc_refcount_increment(target)				\
+#define isc_refcount_increment(target)                          \
 	atomic_fetch_add_explicit(target, 1, memory_order_relaxed)
 
 /** \def isc_refcount_decrement(ref)
@@ -84,7 +84,7 @@ typedef atomic_uint_fast32_t isc_refcount_t;
  *  \param[in] ref pointer to reference counter.
  *  \returns previous value of reference counter.
  */
-#define isc_refcount_decrement(target)				\
+#define isc_refcount_decrement(target)                          \
 	atomic_fetch_sub_explicit(target, 1, memory_order_release)
 
 ISC_LANG_ENDDECLS

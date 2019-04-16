@@ -11,7 +11,7 @@
 
 #ifndef HAVE_LMDB
 #error This program requires the LMDB library.
-#endif
+#endif /* ifndef HAVE_LMDB */
 
 #include <stdio.h>
 #include <stdlib.h>

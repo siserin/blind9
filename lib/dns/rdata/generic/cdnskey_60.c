@@ -20,7 +20,6 @@
 
 static inline isc_result_t
 fromtext_cdnskey(ARGS_FROMTEXT) {
-
 	REQUIRE(type == dns_rdatatype_cdnskey);
 
 	return (generic_fromtext_key(rdclass, type, lexer, origin,
@@ -29,7 +28,6 @@ fromtext_cdnskey(ARGS_FROMTEXT) {
 
 static inline isc_result_t
 totext_cdnskey(ARGS_TOTEXT) {
-
 	REQUIRE(rdata != NULL);
 	REQUIRE(rdata->type == dns_rdatatype_cdnskey);
 
@@ -38,7 +36,6 @@ totext_cdnskey(ARGS_TOTEXT) {
 
 static inline isc_result_t
 fromwire_cdnskey(ARGS_FROMWIRE) {
-
 	REQUIRE(type == dns_rdatatype_cdnskey);
 
 	return (generic_fromwire_key(rdclass, type, source, dctx,
@@ -78,7 +75,6 @@ compare_cdnskey(ARGS_COMPARE) {
 
 static inline isc_result_t
 fromstruct_cdnskey(ARGS_FROMSTRUCT) {
-
 	REQUIRE(type == dns_rdatatype_cdnskey);
 
 	return (generic_fromstruct_key(rdclass, type, source, target));
@@ -134,7 +130,6 @@ digest_cdnskey(ARGS_DIGEST) {
 
 static inline bool
 checkowner_cdnskey(ARGS_CHECKOWNER) {
-
 	REQUIRE(type == dns_rdatatype_cdnskey);
 
 	UNUSED(name);
@@ -147,7 +142,6 @@ checkowner_cdnskey(ARGS_CHECKOWNER) {
 
 static inline bool
 checknames_cdnskey(ARGS_CHECKNAMES) {
-
 	REQUIRE(rdata != NULL);
 	REQUIRE(rdata->type == dns_rdatatype_cdnskey);
 
@@ -160,11 +154,10 @@ checknames_cdnskey(ARGS_CHECKNAMES) {
 
 static inline int
 casecompare_cdnskey(ARGS_COMPARE) {
-
 	/*
 	 * Treat ALG 253 (private DNS) subtype name case sensistively.
 	 */
 	return (compare_cdnskey(rdata1, rdata2));
 }
 
-#endif	/* RDATA_GENERIC_CDNSKEY_60_C */
+#endif  /* RDATA_GENERIC_CDNSKEY_60_C */

@@ -30,45 +30,45 @@
  * \brief Severity levels, patterned after Unix's syslog levels.
  *
  */
-#define ISC_LOG_DEBUG(level)	(level)
+#define ISC_LOG_DEBUG(level)    (level)
 /*!
  * #ISC_LOG_DYNAMIC can only be used for defining channels with
  * isc_log_createchannel(), not to specify a level in isc_log_write().
  */
-#define ISC_LOG_DYNAMIC	  	  0
-#define ISC_LOG_INFO		(-1)
-#define ISC_LOG_NOTICE		(-2)
-#define ISC_LOG_WARNING 	(-3)
-#define ISC_LOG_ERROR		(-4)
-#define ISC_LOG_CRITICAL	(-5)
+#define ISC_LOG_DYNAMIC           0
+#define ISC_LOG_INFO            (-1)
+#define ISC_LOG_NOTICE          (-2)
+#define ISC_LOG_WARNING         (-3)
+#define ISC_LOG_ERROR           (-4)
+#define ISC_LOG_CRITICAL        (-5)
 /*@}*/
 
 /*@{*/
 /*!
  * \brief Destinations.
  */
-#define ISC_LOG_TONULL		1
-#define ISC_LOG_TOSYSLOG	2
-#define ISC_LOG_TOFILE		3
-#define ISC_LOG_TOFILEDESC	4
+#define ISC_LOG_TONULL          1
+#define ISC_LOG_TOSYSLOG        2
+#define ISC_LOG_TOFILE          3
+#define ISC_LOG_TOFILEDESC      4
 /*@}*/
 
 /*@{*/
 /*%
  * Channel flags.
  */
-#define ISC_LOG_PRINTTIME	0x00001
-#define ISC_LOG_PRINTLEVEL	0x00002
-#define ISC_LOG_PRINTCATEGORY	0x00004
-#define ISC_LOG_PRINTMODULE	0x00008
-#define ISC_LOG_PRINTTAG	0x00010		/* tag and ":" */
-#define ISC_LOG_PRINTPREFIX	0x00020		/* tag only, no colon */
-#define ISC_LOG_PRINTALL	0x0003F
-#define ISC_LOG_BUFFERED	0x00040
-#define ISC_LOG_DEBUGONLY	0x01000
-#define ISC_LOG_OPENERR		0x08000		/* internal */
-#define ISC_LOG_ISO8601		0x10000		/* if PRINTTIME, use ISO8601 */
-#define ISC_LOG_UTC		0x20000		/* if PRINTTIME, use UTC */
+#define ISC_LOG_PRINTTIME       0x00001
+#define ISC_LOG_PRINTLEVEL      0x00002
+#define ISC_LOG_PRINTCATEGORY   0x00004
+#define ISC_LOG_PRINTMODULE     0x00008
+#define ISC_LOG_PRINTTAG        0x00010         /* tag and ":" */
+#define ISC_LOG_PRINTPREFIX     0x00020         /* tag only, no colon */
+#define ISC_LOG_PRINTALL        0x0003F
+#define ISC_LOG_BUFFERED        0x00040
+#define ISC_LOG_DEBUGONLY       0x01000
+#define ISC_LOG_OPENERR         0x08000         /* internal */
+#define ISC_LOG_ISO8601         0x10000         /* if PRINTTIME, use ISO8601 */
+#define ISC_LOG_UTC             0x20000         /* if PRINTTIME, use UTC */
 /*@}*/
 
 /*@{*/
@@ -79,9 +79,9 @@
  *   since I am intend to make large number of versions work efficiently,
  *   INFINITE is going to be trivial to add to that.
  */
-#define ISC_LOG_ROLLINFINITE	(-1)
-#define ISC_LOG_ROLLNEVER	(-2)
-#define ISC_LOG_MAX_VERSIONS	256
+#define ISC_LOG_ROLLINFINITE    (-1)
+#define ISC_LOG_ROLLNEVER       (-2)
+#define ISC_LOG_MAX_VERSIONS    256
 /*@}*/
 
 /*@{*/
@@ -102,16 +102,16 @@ typedef enum {
  * isc_log_registercategories.
  */
 struct isc_logcategory {
-	const char *name;
-	unsigned int id;
+	const char *	    name;
+	unsigned int	    id;
 };
 
 /*%
  * Similar to isc_logcategory, but for all the modules a library defines.
  */
 struct isc_logmodule {
-	const char *name;
-	unsigned int id;
+	const char *	    name;
+	unsigned int	    id;
 };
 
 /*%
@@ -126,10 +126,12 @@ struct isc_logmodule {
  * Setting maximum_size to zero implies no maximum.
  */
 typedef struct isc_logfile {
-	FILE *stream;		/*%< Initialized to NULL for #ISC_LOG_TOFILE. */
-	const char *name;	/*%< NULL for #ISC_LOG_TOFILEDESC. */
-	int versions;	/* >= 0, #ISC_LOG_ROLLNEVER, #ISC_LOG_ROLLINFINITE. */
-	isc_log_rollsuffix_t suffix;
+	FILE *			    stream; /*%< Initialized to NULL for
+	                                     * #ISC_LOG_TOFILE. */
+	const char *		    name; /*%< NULL for #ISC_LOG_TOFILEDESC. */
+	int			    versions; /* >= 0, #ISC_LOG_ROLLNEVER,
+	                                       * #ISC_LOG_ROLLINFINITE. */
+	isc_log_rollsuffix_t	    suffix;
 	/*%
 	 * stdio's ftell is standardized to return a long, which may well not
 	 * be big enough for the largest file supportable by the operating
@@ -137,8 +139,8 @@ typedef struct isc_logfile {
 	 * anyone would want).  st_size returned by fstat should be typedef'd
 	 * to a size large enough for the largest possible file on a system.
 	 */
-	isc_offset_t maximum_size;
-	bool maximum_reached; /*%< Private. */
+	isc_offset_t	    maximum_size;
+	bool		    maximum_reached; /*%< Private. */
 } isc_logfile_t;
 
 /*%
@@ -146,8 +148,8 @@ typedef struct isc_logfile {
  * a stdio or a syslog log.
  */
 typedef union isc_logdestination {
-	isc_logfile_t file;
-	int facility;		/* XXXDCL NT */
+	isc_logfile_t	     file;
+	int		     facility; /* XXXDCL NT */
 } isc_logdestination_t;
 
 /*@{*/
@@ -168,8 +170,8 @@ LIBISC_EXTERNAL_DATA extern isc_logmodule_t isc_modules[];
  * Do not log directly to DEFAULT.  Use another category.  When in doubt,
  * use GENERAL.
  */
-#define ISC_LOGCATEGORY_DEFAULT	(&isc_categories[0])
-#define ISC_LOGCATEGORY_GENERAL	(&isc_categories[1])
+#define ISC_LOGCATEGORY_DEFAULT (&isc_categories[0])
+#define ISC_LOGCATEGORY_GENERAL (&isc_categories[1])
 /*@}*/
 
 #define ISC_LOGMODULE_SOCKET (&isc_modules[0])
@@ -218,7 +220,7 @@ isc_logconfig_create(isc_log_t *lctx, isc_logconfig_t **lcfgp);
  *
  * Notes:
  *\li	It is necessary to specify the logging context the configuration
- * 	will be used with because the number of categories and modules
+ *      will be used with because the number of categories and modules
  *	needs to be known in order to set the configuration.  However,
  *	the configuration is not used by the logging context until the
  *	isc_logconfig_use function is called.
@@ -229,7 +231,7 @@ isc_logconfig_create(isc_log_t *lctx, isc_logconfig_t **lcfgp);
  *
  *\li	Four default channels are established:
  *\verbatim
- *	    	default_syslog
+ *	        default_syslog
  *		 - log to syslog's daemon facility #ISC_LOG_INFO or higher
  *		default_stderr
  *		 - log to stderr #ISC_LOG_INFO or higher
@@ -240,7 +242,7 @@ isc_logconfig_create(isc_log_t *lctx, isc_logconfig_t **lcfgp);
  *\endverbatim
  *
  * Requires:
- *\li 	lctx is a valid logging context.
+ *\li   lctx is a valid logging context.
  *\li	lcftp is not null and *lcfgp is null.
  *
  * Ensures:
@@ -365,7 +367,7 @@ isc_log_registercategories(isc_log_t *lctx, isc_logcategory_t categories[]);
  *
  * Ensures:
  * \li	There are references to each category in the logging context,
- * 	so they can be used with isc_log_usechannel() and isc_log_write().
+ *      so they can be used with isc_log_usechannel() and isc_log_write().
  */
 
 void
@@ -407,8 +409,10 @@ isc_log_registermodules(isc_log_t *lctx, isc_logmodule_t modules[]);
  */
 
 isc_result_t
-isc_log_createchannel(isc_logconfig_t *lcfg, const char *name,
-		      unsigned int type, int level,
+isc_log_createchannel(isc_logconfig_t *lcfg,
+		      const char *name,
+		      unsigned int type,
+		      int level,
 		      const isc_logdestination_t *destination,
 		      unsigned int flags);
 /*%<
@@ -476,7 +480,8 @@ isc_log_createchannel(isc_logconfig_t *lcfg, const char *name,
  */
 
 isc_result_t
-isc_log_usechannel(isc_logconfig_t *lcfg, const char *name,
+isc_log_usechannel(isc_logconfig_t *lcfg,
+		   const char *name,
 		   const isc_logcategory_t *category,
 		   const isc_logmodule_t *module);
 /*%<
@@ -508,7 +513,7 @@ isc_log_usechannel(isc_logconfig_t *lcfg, const char *name,
  *	has no effect on any other channels associated with that pair,
  *	regardless of ordering.  Thus you cannot use it to "mask out" one
  *	category/module pair when you have specified some other channel that
- * 	is also used by that category/module pair.
+ *      is also used by that category/module pair.
  *
  * Requires:
  *\li	lcfg is a valid logging configuration.
@@ -573,9 +578,12 @@ isc_log_usechannel(isc_logconfig_t *lcfg, const char *name,
  *	meaningful error.
  */
 void
-isc_log_write(isc_log_t *lctx, isc_logcategory_t *category,
-	       isc_logmodule_t *module, int level,
-	      const char *format, ...)
+isc_log_write(isc_log_t *lctx,
+	      isc_logcategory_t *category,
+	      isc_logmodule_t *module,
+	      int level,
+	      const char *format,
+	      ...)
 
 ISC_FORMAT_PRINTF(5, 6);
 
@@ -612,9 +620,12 @@ ISC_FORMAT_PRINTF(5, 6);
  *	meaningful error.
  */
 void
-isc_log_vwrite(isc_log_t *lctx, isc_logcategory_t *category,
-	       isc_logmodule_t *module, int level,
-	       const char *format, va_list args)
+isc_log_vwrite(isc_log_t *lctx,
+	       isc_logcategory_t *category,
+	       isc_logmodule_t *module,
+	       int level,
+	       const char *format,
+	       va_list args)
 
 ISC_FORMAT_PRINTF(5, 0);
 
@@ -624,8 +635,12 @@ ISC_FORMAT_PRINTF(5, 0);
  * This function is otherwise identical to isc_log_write().
  */
 void
-isc_log_write1(isc_log_t *lctx, isc_logcategory_t *category,
-	       isc_logmodule_t *module, int level, const char *format, ...)
+isc_log_write1(isc_log_t *lctx,
+	       isc_logcategory_t *category,
+	       isc_logmodule_t *module,
+	       int level,
+	       const char *format,
+	       ...)
 
 ISC_FORMAT_PRINTF(5, 6);
 
@@ -635,8 +650,11 @@ ISC_FORMAT_PRINTF(5, 6);
  * This function is otherwise identical to isc_log_vwrite().
  */
 void
-isc_log_vwrite1(isc_log_t *lctx, isc_logcategory_t *category,
-		isc_logmodule_t *module, int level, const char *format,
+isc_log_vwrite1(isc_log_t *lctx,
+		isc_logcategory_t *category,
+		isc_logmodule_t *module,
+		int level,
+		const char *format,
 		va_list args)
 
 ISC_FORMAT_PRINTF(5, 0);

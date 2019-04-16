@@ -25,15 +25,17 @@ ISC_LANG_BEGINDECLS
  ***/
 
 isc_result_t
-isc_hex_totext(isc_region_t *source, int wordlength,
-	       const char *wordbreak, isc_buffer_t *target);
+isc_hex_totext(isc_region_t *source,
+	       int wordlength,
+	       const char *wordbreak,
+	       isc_buffer_t *target);
 /*!<
  * \brief Convert data into hex encoded text.
  *
  * Notes:
  *\li	The hex encoded text in 'target' will be divided into
  *	words of at most 'wordlength' characters, separated by
- * 	the 'wordbreak' string.  No parentheses will surround
+ *      the 'wordbreak' string.  No parentheses will surround
  *	the text.
  *
  * Requires:
@@ -62,7 +64,7 @@ isc_hex_decodestring(const char *cstr, isc_buffer_t *target);
  *			   fit in 'target'.
  *\li	#ISC_R_BADHEX -- 'cstr' is not a valid hex encoding.
  *
- * 	Other error returns are any possible error code from:
+ *      Other error returns are any possible error code from:
  *		isc_lex_create(),
  *		isc_lex_openbuffer(),
  *		isc_hex_tobuffer().

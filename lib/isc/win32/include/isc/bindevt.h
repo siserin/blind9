@@ -61,7 +61,7 @@
  *
  *  %1
  */
-#define BIND_ERR_MSG		((DWORD)0xC0000001L)
+#define BIND_ERR_MSG            ((DWORD)0xC0000001L)
 
 /*
  * MessageId: BIND_WARN_MSG
@@ -70,7 +70,7 @@
  *
  *  %1
  */
-#define BIND_WARN_MSG		((DWORD)0x80000002L)
+#define BIND_WARN_MSG           ((DWORD)0x80000002L)
 
 /*
  * MessageId: BIND_INFO_MSG
@@ -79,6 +79,6 @@
  *
  *  %1
  */
-#define BIND_INFO_MSG		((DWORD)0x40000003L)
+#define BIND_INFO_MSG           ((DWORD)0x40000003L)
 
 #endif /* ISC_BINDEVT_H */

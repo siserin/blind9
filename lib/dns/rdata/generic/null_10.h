@@ -15,10 +15,10 @@
 
 
 typedef struct dns_rdata_null {
-	dns_rdatacommon_t	common;
-	isc_mem_t		*mctx;
-	uint16_t		length;
-	unsigned char		*data;
+	dns_rdatacommon_t	 common;
+	isc_mem_t *		 mctx;
+	uint16_t		 length;
+	unsigned char *		 data;
 } dns_rdata_null_t;
 
 

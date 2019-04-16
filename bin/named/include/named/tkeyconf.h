@@ -22,10 +22,11 @@
 ISC_LANG_BEGINDECLS
 
 isc_result_t
-named_tkeyctx_fromconfig(const cfg_obj_t *options, isc_mem_t *mctx,
+named_tkeyctx_fromconfig(const cfg_obj_t *options,
+			 isc_mem_t *mctx,
 			 dns_tkeyctx_t **tctxp);
 /*%<
- * 	Create a TKEY context and configure it, including the default DH key
+ *      Create a TKEY context and configure it, including the default DH key
  *	and default domain, according to 'options'.
  *
  *	Requires:

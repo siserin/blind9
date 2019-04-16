@@ -35,7 +35,7 @@
 #include <named/server.h>
 #ifdef HAVE_LIBSCF
 #include <named/smf_globals.h>
-#endif
+#endif /* ifdef HAVE_LIBSCF */
 
 static isc_result_t
 getcommand(isc_lex_t *lex, char **cmdp) {
@@ -45,13 +45,15 @@ getcommand(isc_lex_t *lex, char **cmdp) {
 	REQUIRE(cmdp != NULL && *cmdp == NULL);
 
 	result = isc_lex_gettoken(lex, ISC_LEXOPT_EOF, &token);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	isc_lex_ungettoken(lex, &token);
 
-	if (token.type != isc_tokentype_string)
+	if (token.type != isc_tokentype_string) {
 		return (ISC_R_FAILURE);
+	}
 
 	*cmdp = token.value.as_textregion.base;
 
@@ -68,7 +70,8 @@ command_compare(const char *str, const char *command) {
  * when a control channel message is received.
  */
 isc_result_t
-named_control_docommand(isccc_sexpr_t *message, bool readonly,
+named_control_docommand(isccc_sexpr_t *message,
+			bool readonly,
 			isc_buffer_t **text)
 {
 	isccc_sexpr_t *data;
@@ -80,7 +83,7 @@ named_control_docommand(isccc_sexpr_t *message, bool readonly,
 	isc_lex_t *lex = NULL;
 #ifdef HAVE_LIBSCF
 	named_smf_want_disable = 0;
-#endif
+#endif /* ifdef HAVE_LIBSCF */
 
 	data = isccc_alist_lookup(message, "_data");
 	if (!isccc_alist_alistp(data)) {
@@ -99,18 +102,21 @@ named_control_docommand(isccc_sexpr_t *message, bool readonly,
 	}
 
 	result = isc_lex_create(named_g_mctx, strlen(cmdline), &lex);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	isc_buffer_init(&src, cmdline, strlen(cmdline));
 	isc_buffer_add(&src, strlen(cmdline));
 	result = isc_lex_openbuffer(lex, &src);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	result = getcommand(lex, &command);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	/*
 	 * Compare the 'command' parameter against all known control commands.
@@ -169,14 +175,15 @@ named_control_docommand(isccc_sexpr_t *message, bool readonly,
 		 * If we are managed by smf(5) but not in chroot,
 		 * try to disable ourselves the smf way.
 		 */
-		if (named_smf_got_instance == 1 && named_smf_chroot == 0)
+		if (named_smf_got_instance == 1 && named_smf_chroot == 0) {
 			named_smf_want_disable = 1;
+		}
 		/*
 		 * If named_smf_got_instance = 0, named_smf_chroot
 		 * is not relevant and we fall through to
 		 * isc_app_shutdown below.
 		 */
-#endif
+#endif /* ifdef HAVE_LIBSCF */
 		/* Do not flush master files */
 		named_server_flushonshutdown(named_g_server, false);
 		named_os_shutdownmsg(cmdline, *text);
@@ -192,20 +199,24 @@ named_control_docommand(isccc_sexpr_t *message, bool readonly,
 			result = named_smf_add_message(text);
 			goto cleanup;
 		}
-		if (named_smf_got_instance == 1 && named_smf_chroot == 0)
+		if (named_smf_got_instance == 1 && named_smf_chroot == 0) {
 			named_smf_want_disable = 1;
-#endif
+		}
+#endif /* ifdef HAVE_LIBSCF */
 		named_server_flushonshutdown(named_g_server, true);
 		named_os_shutdownmsg(cmdline, *text);
 		isc_app_shutdown();
 		result = ISC_R_SUCCESS;
 	} else if (command_compare(command, NAMED_COMMAND_ADDZONE) ||
-		   command_compare(command, NAMED_COMMAND_MODZONE)) {
-		result = named_server_changezone(named_g_server, cmdline, text);
+		   command_compare(command, NAMED_COMMAND_MODZONE))
+	{
+		result =
+			named_server_changezone(named_g_server, cmdline, text);
 	} else if (command_compare(command, NAMED_COMMAND_DELZONE)) {
 		result = named_server_delzone(named_g_server, lex, text);
 	} else if (command_compare(command, NAMED_COMMAND_DNSTAP) ||
-		   command_compare(command, NAMED_COMMAND_DNSTAPREOPEN)) {
+		   command_compare(command, NAMED_COMMAND_DNSTAPREOPEN))
+	{
 		result = named_server_dnstap(named_g_server, lex, text);
 	} else if (command_compare(command, NAMED_COMMAND_DUMPDB)) {
 		named_server_dumpdb(named_g_server, lex, text);
@@ -221,7 +232,8 @@ named_control_docommand(isccc_sexpr_t *message, bool readonly,
 	} else if (command_compare(command, NAMED_COMMAND_FREEZE)) {
 		result = named_server_freeze(named_g_server, true, lex, text);
 	} else if (command_compare(command, NAMED_COMMAND_LOADKEYS) ||
-		   command_compare(command, NAMED_COMMAND_SIGN)) {
+		   command_compare(command, NAMED_COMMAND_SIGN))
+	{
 		result = named_server_rekey(named_g_server, lex, text);
 	} else if (command_compare(command, NAMED_COMMAND_MKEYS)) {
 		result = named_server_mkeys(named_g_server, lex, text);
@@ -242,7 +254,8 @@ named_control_docommand(isccc_sexpr_t *message, bool readonly,
 	} else if (command_compare(command, NAMED_COMMAND_RECURSING)) {
 		result = named_server_dumprecursing(named_g_server);
 	} else if (command_compare(command, NAMED_COMMAND_REFRESH)) {
-		result = named_server_refreshcommand(named_g_server, lex, text);
+		result =
+			named_server_refreshcommand(named_g_server, lex, text);
 	} else if (command_compare(command, NAMED_COMMAND_RELOAD)) {
 		result = named_server_reloadcommand(named_g_server, lex, text);
 	} else if (command_compare(command, NAMED_COMMAND_RETRANSFER)) {
@@ -268,7 +281,8 @@ named_control_docommand(isccc_sexpr_t *message, bool readonly,
 	} else if (command_compare(command, NAMED_COMMAND_TESTGEN)) {
 		result = named_server_testgen(lex, text);
 	} else if (command_compare(command, NAMED_COMMAND_THAW) ||
-		   command_compare(command, NAMED_COMMAND_UNFREEZE)) {
+		   command_compare(command, NAMED_COMMAND_UNFREEZE))
+	{
 		result = named_server_freeze(named_g_server, false, lex, text);
 	} else if (command_compare(command, NAMED_COMMAND_TIMERPOKE)) {
 		isc_timermgr_poke(named_g_timermgr);
@@ -292,8 +306,9 @@ named_control_docommand(isccc_sexpr_t *message, bool readonly,
 	}
 
  cleanup:
-	if (lex != NULL)
+	if (lex != NULL) {
 		isc_lex_destroy(&lex);
+	}
 
 	return (result);
 }

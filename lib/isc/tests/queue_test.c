@@ -51,11 +51,11 @@ _teardown(void **state) {
 
 typedef struct item item_t;
 struct item {
-	int 			value;
-	ISC_QLINK(item_t)	qlink;
+	int        value;
+	ISC_QLINK(item_t)       qlink;
 };
 
-typedef ISC_QUEUE(item_t) item_queue_t;
+typedef ISC_QUEUE (item_t) item_queue_t;
 
 static void
 item_init(item_t *item, int value) {
@@ -161,4 +161,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

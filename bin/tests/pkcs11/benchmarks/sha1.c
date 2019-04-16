@@ -60,7 +60,7 @@
 
 #ifndef CLOCK_REALTIME
 #define CLOCK_REALTIME 0
-#endif
+#endif /* ifndef CLOCK_REALTIME */
 
 static int clock_gettime(int32_t id, struct timespec *tp);
 
@@ -73,13 +73,14 @@ clock_gettime(int32_t id, struct timespec *tp)
 	UNUSED(id);
 
 	result = gettimeofday(&tv, NULL);
-	if (result)
+	if (result) {
 		return (result);
+	}
 	tp->tv_sec = tv.tv_sec;
 	tp->tv_nsec = (long) tv.tv_usec * 1000;
 	return (result);
 }
-#endif
+#endif /* ifndef HAVE_CLOCK_GETTIME */
 
 CK_BYTE buf[1024];
 
@@ -137,8 +138,9 @@ main(int argc, char *argv[]) {
 	pk11_result_register();
 
 	/* Initialize the CRYPTOKI library */
-	if (lib_name != NULL)
+	if (lib_name != NULL) {
 		pk11_set_lib_name(lib_name);
+	}
 
 	result = pk11_get_session(&pctx, op_type, false, false,
 				  false, NULL, slot);
@@ -187,8 +189,9 @@ main(int argc, char *argv[]) {
 	/* Finalize Digest (unconditionally) */
 	len = 20U;
 	rv = pkcs_C_DigestFinal(hSession, buf, &len);
-	if ((rv != CKR_OK) && !error)
+	if ((rv != CKR_OK) && !error) {
 		fprintf(stderr, "C_DigestFinal: Error = 0x%.8lX\n", rv);
+	}
 
 	if (clock_gettime(CLOCK_REALTIME, &endtime) < 0) {
 		perror("clock_gettime(end)");
@@ -203,12 +206,13 @@ main(int argc, char *argv[]) {
 	}
 	printf("%uK digested bytes in %ld.%09lds\n", i,
 	       endtime.tv_sec, endtime.tv_nsec);
-	if (i > 0)
+	if (i > 0) {
 		printf("%g digested bytes/s\n",
 		       1024 * i / ((double) endtime.tv_sec +
 				   (double) endtime.tv_nsec / 1000000000.));
+	}
 
-    exit_session:
+ exit_session:
 	pk11_return_session(&pctx);
 	(void) pk11_finalize();
 

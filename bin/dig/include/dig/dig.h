@@ -34,10 +34,10 @@
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
-#endif
+#endif /* ifdef __APPLE__ */
 
 #define MXSERV 20
-#define MXNAME (DNS_NAME_MAXTEXT+1)
+#define MXNAME (DNS_NAME_MAXTEXT + 1)
 #define MXRD 32
 /*% Buffer Size */
 #define BUFSIZE 512
@@ -45,7 +45,7 @@
 #ifndef RESOLV_CONF
 /*% location of resolve.conf */
 #define RESOLV_CONF "/etc/resolv.conf"
-#endif
+#endif /* ifndef RESOLV_CONF */
 /*% output buffer */
 #define OUTPUTBUF 32767
 /*% Max RR Limit */
@@ -79,12 +79,12 @@ ISC_LANG_BEGINDECLS
 typedef struct dig_lookup dig_lookup_t;
 typedef struct dig_query dig_query_t;
 typedef struct dig_server dig_server_t;
-typedef ISC_LIST(dig_server_t) dig_serverlist_t;
+typedef ISC_LIST (dig_server_t) dig_serverlist_t;
 typedef struct dig_searchlist dig_searchlist_t;
 
-#define DIG_QUERY_MAGIC		ISC_MAGIC('D','i','g','q')
+#define DIG_QUERY_MAGIC         ISC_MAGIC('D', 'i', 'g', 'q')
 
-#define DIG_VALID_QUERY(x)	ISC_MAGIC_VALID((x), DIG_QUERY_MAGIC)
+#define DIG_VALID_QUERY(x)      ISC_MAGIC_VALID((x), DIG_QUERY_MAGIC)
 
 
 /*% The dig_lookup structure */
@@ -96,7 +96,7 @@ struct dig_lookup {
 		ns_search_only, /*%< dig +nssearch, host -C */
 		identify, /*%< Append an "on server <foo>" message */
 		identify_previous_line, /*% Prepend a "Nameserver <foo>:"
-					   message, with newline and tab */
+	                                 * message, with newline and tab */
 		ignore,
 		recurse,
 		aaonly,
@@ -141,103 +141,104 @@ struct dig_lookup {
 		idnin,
 		idnout,
 		qr;
-	char textname[MXNAME]; /*% Name we're going to be looking up */
-	char cmdline[MXNAME];
-	dns_rdatatype_t rdtype;
-	dns_rdatatype_t qrdtype;
-	dns_rdataclass_t rdclass;
-	bool rdtypeset;
-	bool rdclassset;
-	char name_space[BUFSIZE];
-	char oname_space[BUFSIZE];
-	isc_buffer_t namebuf;
-	isc_buffer_t onamebuf;
-	isc_buffer_t renderbuf;
-	char *sendspace;
-	dns_name_t *name;
-	isc_interval_t interval;
-	dns_message_t *sendmsg;
-	dns_name_t *oname;
+	char			textname[MXNAME]; /*% Name we're going to be
+	                                           * looking up */
+	char			cmdline[MXNAME];
+	dns_rdatatype_t		rdtype;
+	dns_rdatatype_t		qrdtype;
+	dns_rdataclass_t	rdclass;
+	bool			rdtypeset;
+	bool			rdclassset;
+	char			name_space[BUFSIZE];
+	char			oname_space[BUFSIZE];
+	isc_buffer_t		namebuf;
+	isc_buffer_t		onamebuf;
+	isc_buffer_t		renderbuf;
+	char *			sendspace;
+	dns_name_t *		name;
+	isc_interval_t		interval;
+	dns_message_t *		sendmsg;
+	dns_name_t *		oname;
 	ISC_LINK(dig_lookup_t) link;
 	ISC_LIST(dig_query_t) q;
 	ISC_LIST(dig_query_t) connecting;
-	dig_query_t *current_query;
-	dig_serverlist_t my_server_list;
-	dig_searchlist_t *origin;
-	dig_query_t *xfr_q;
-	uint32_t retries;
-	int nsfound;
-	uint16_t udpsize;
-	int16_t edns;
-	int16_t padding;
-	uint32_t ixfr_serial;
-	isc_buffer_t rdatabuf;
-	char rdatastore[MXNAME];
-	dst_context_t *tsigctx;
-	isc_buffer_t *querysig;
-	uint32_t msgcounter;
-	dns_fixedname_t fdomain;
-	isc_sockaddr_t *ecs_addr;
-	char *cookie;
-	dns_ednsopt_t *ednsopts;
-	unsigned int ednsoptscnt;
-	isc_dscp_t dscp;
-	unsigned int ednsflags;
-	dns_opcode_t opcode;
-	int rrcomments;
-	unsigned int eoferr;
+	dig_query_t *		current_query;
+	dig_serverlist_t	my_server_list;
+	dig_searchlist_t *	origin;
+	dig_query_t *		xfr_q;
+	uint32_t		retries;
+	int			nsfound;
+	uint16_t		udpsize;
+	int16_t			edns;
+	int16_t			padding;
+	uint32_t		ixfr_serial;
+	isc_buffer_t		rdatabuf;
+	char			rdatastore[MXNAME];
+	dst_context_t *		tsigctx;
+	isc_buffer_t *		querysig;
+	uint32_t		msgcounter;
+	dns_fixedname_t		fdomain;
+	isc_sockaddr_t *	ecs_addr;
+	char *			cookie;
+	dns_ednsopt_t *		ednsopts;
+	unsigned int		ednsoptscnt;
+	isc_dscp_t		dscp;
+	unsigned int		ednsflags;
+	dns_opcode_t		opcode;
+	int			rrcomments;
+	unsigned int		eoferr;
 };
 
 /*% The dig_query structure */
 struct dig_query {
-	unsigned int magic;
-	dig_lookup_t *lookup;
-	bool waiting_connect,
-		pending_free,
-		waiting_senddone,
-		first_pass,
-		first_soa_rcvd,
-		second_rr_rcvd,
-		first_repeat_rcvd,
-		recv_made,
-		warn_id,
-		timedout;
-	uint32_t first_rr_serial;
-	uint32_t second_rr_serial;
-	uint32_t msg_count;
-	uint32_t rr_count;
-	bool ixfr_axfr;
-	char *servname;
-	char *userarg;
-	isc_buffer_t recvbuf,
-		lengthbuf,
-		tmpsendbuf,
-		sendbuf;
-	char *recvspace, *tmpsendspace,
-		lengthspace[4];
-	isc_socket_t *sock;
+	unsigned int	    magic;
+	dig_lookup_t *	    lookup;
+	bool		    waiting_connect,
+			    pending_free,
+			    waiting_senddone,
+			    first_pass,
+			    first_soa_rcvd,
+			    second_rr_rcvd,
+			    first_repeat_rcvd,
+			    recv_made,
+			    warn_id,
+			    timedout;
+	uint32_t	    first_rr_serial;
+	uint32_t	    second_rr_serial;
+	uint32_t	    msg_count;
+	uint32_t	    rr_count;
+	bool		    ixfr_axfr;
+	char *		    servname;
+	char *		    userarg;
+	isc_buffer_t	    recvbuf,
+			    lengthbuf,
+			    tmpsendbuf,
+			    sendbuf;
+	char *		      recvspace, *tmpsendspace,
+	     lengthspace[4];
+	isc_socket_t *	      sock;
 	ISC_LINK(dig_query_t) link;
 	ISC_LINK(dig_query_t) clink;
-	isc_sockaddr_t sockaddr;
-	isc_time_t time_sent;
-	isc_time_t time_recv;
-	uint64_t byte_count;
-	isc_timer_t *timer;
+	isc_sockaddr_t	      sockaddr;
+	isc_time_t	      time_sent;
+	isc_time_t	      time_recv;
+	uint64_t	      byte_count;
+	isc_timer_t *	      timer;
 };
 
 struct dig_server {
-	char servername[MXNAME];
-	char userarg[MXNAME];
+	char	    servername[MXNAME];
+	char	    userarg[MXNAME];
 	ISC_LINK(dig_server_t) link;
 };
 
 struct dig_searchlist {
-	char origin[MXNAME];
+	char        origin[MXNAME];
 	ISC_LINK(dig_searchlist_t) link;
 };
 
-typedef ISC_LIST(dig_searchlist_t) dig_searchlistlist_t;
-typedef ISC_LIST(dig_lookup_t) dig_lookuplist_t;
+typedef ISC_LIST (dig_searchlist_t) dig_searchlistlist_t;
+typedef ISC_LIST (dig_lookup_t) dig_lookuplist_t;
 
 /*
  * Externals from dighost.c
@@ -249,7 +250,7 @@ extern dig_searchlistlist_t search_list;
 extern unsigned int extrabytes;
 
 extern bool check_ra, have_ipv4, have_ipv6, specified_source,
-	usesearch, showsearch;
+	    usesearch, showsearch;
 extern in_port_t port;
 extern unsigned int timeout;
 extern isc_mem_t *mctx;
@@ -330,12 +331,10 @@ void
 setup_system(bool ipv4only, bool ipv6only);
 
 isc_result_t
-parse_uint(uint32_t *uip, const char *value, uint32_t max,
-	   const char *desc);
+parse_uint(uint32_t *uip, const char *value, uint32_t max, const char *desc);
 
 isc_result_t
-parse_xint(uint32_t *uip, const char *value, uint32_t max,
-	   const char *desc);
+parse_xint(uint32_t *uip, const char *value, uint32_t max, const char *desc);
 
 isc_result_t
 parse_netprefix(isc_sockaddr_t **sap, const char *value);
@@ -362,8 +361,7 @@ void
 set_nameserver(char *opt);
 
 void
-clone_server_list(dig_serverlist_t src,
-		  dig_serverlist_t *dest);
+clone_server_list(dig_serverlist_t src, dig_serverlist_t *dest);
 
 void
 cancel_all(void);
@@ -385,7 +383,8 @@ extern isc_result_t
  */
 
 extern void
-(*dighost_received)(unsigned int bytes, isc_sockaddr_t *from, dig_query_t *query);
+(*dighost_received)(unsigned int bytes, isc_sockaddr_t *from,
+		    dig_query_t *query);
 /*%<
  * Print a message about where and when the response
  * was received from, like the final comment in the
@@ -443,4 +442,4 @@ dig_shutdown(void);
 
 ISC_LANG_ENDDECLS
 
-#endif
+#endif /* ifndef DIG_H */

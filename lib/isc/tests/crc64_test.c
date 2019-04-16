@@ -28,13 +28,13 @@
 #include <isc/util.h>
 #include <isc/print.h>
 
-#define TEST_INPUT(x) (x), sizeof(x)-1
+#define TEST_INPUT(x) (x), sizeof(x) - 1
 
 typedef struct hash_testcase {
-	const char *input;
-	size_t input_len;
-	const char *result;
-	int repeats;
+	const char *	  input;
+	size_t		  input_len;
+	const char *	  result;
+	int		  repeats;
 } hash_testcase_t;
 
 static void
@@ -48,8 +48,7 @@ isc_crc64_init_test(void **state) {
 }
 
 static void
-_crc64(const char *buf, size_t buflen,
-       const char *result, const int repeats)
+_crc64(const char *buf, size_t buflen, const char *result, const int repeats)
 {
 	uint64_t crc;
 
@@ -65,7 +64,7 @@ _crc64(const char *buf, size_t buflen,
 	char hex[16 + 1];
 	snprintf(hex, sizeof(hex), "%016" PRIX64, crc);
 
-	assert_memory_equal(hex, result, (result?strlen(result):0));
+	assert_memory_equal(hex, result, (result ? strlen(result) : 0));
 }
 
 /* 64-bit cyclic redundancy check */
@@ -107,4 +106,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

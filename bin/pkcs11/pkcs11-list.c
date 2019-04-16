@@ -111,15 +111,17 @@ main(int argc, char *argv[]) {
 	if (errflg) {
 		fprintf(stderr, "Usage:\n");
 		fprintf(stderr, "\tpkcs11-list [-P] [-m module] [-s slot] "
-				"[-i id | -l label] [-p pin]\n");
+			"[-i id | -l label] [-p pin]\n");
 		exit(1);
 	}
 
-	if (!id && (label == NULL))
+	if (!id && (label == NULL)) {
 		all = true;
+	}
 
-	if (slot)
+	if (slot) {
 		printf("slot %lu\n", slot);
+	}
 
 	if (id) {
 		printf("id %u\n", id);
@@ -135,8 +137,9 @@ main(int argc, char *argv[]) {
 	pk11_result_register();
 
 	/* Initialize the CRYPTOKI library */
-	if (lib_name != NULL)
+	if (lib_name != NULL) {
 		pk11_set_lib_name(lib_name);
+	}
 
 	if (logon && pin == NULL) {
 		pin = getpass("Enter Pin: ");
@@ -149,17 +152,18 @@ main(int argc, char *argv[]) {
 	    result == PK11_R_NOAESSERVICE) {
 		fprintf(stderr, "Warning: %s\n", isc_result_totext(result));
 		fprintf(stderr, "This HSM will not work with BIND 9 "
-				"using native PKCS#11.\n");
+			"using native PKCS#11.\n");
 	} else if (result != ISC_R_SUCCESS) {
 		fprintf(stderr, "Unrecoverable error initializing "
 			"PKCS#11: %s\n", isc_result_totext(result));
 		fprintf(stderr, "Unrecoverable error initializing "
-				"PKCS#11: %s\n", isc_result_totext(result));
+			"PKCS#11: %s\n", isc_result_totext(result));
 		exit(1);
 	}
 
-	if (pin != NULL)
+	if (pin != NULL) {
 		memset(pin, 0, strlen(pin));
+	}
 
 	hSession = pctx.session;
 
@@ -202,19 +206,20 @@ main(int argc, char *argv[]) {
 			memset(idbuf, 0, sizeof(idbuf));
 
 			rv = pkcs_C_GetAttributeValue(hSession, akey[i],
-						 template, 3);
+						      template, 3);
 			if (rv != CKR_OK) {
 				fprintf(stderr,
 					"C_GetAttributeValue[%u]: "
 					"rv = 0x%.8lX\n",
 					i, rv);
-				if (rv == CKR_BUFFER_TOO_SMALL)
+				if (rv == CKR_BUFFER_TOO_SMALL) {
 					fprintf(stderr,
 						"%u too small: %lu %lu %lu\n",
 						i,
 						template[0].ulValueLen,
 						template[1].ulValueLen,
 						template[2].ulValueLen);
+				}
 				error = 1;
 				continue;
 			}
@@ -231,19 +236,23 @@ main(int argc, char *argv[]) {
 				id |= idbuf[1] & 0xff;
 				printf("%u", id);
 			} else {
-				if (len > 8)
+				if (len > 8) {
 					len = 8;
-				if (len > 0)
+				}
+				if (len > 0) {
 					printf("0x");
+				}
 				for (j = 0; j < len; j++)
 					printf("%02x", idbuf[j]);
-				if (template[2].ulValueLen > len)
+				if (template[2].ulValueLen > len) {
 					printf("...");
+				}
 			}
 			if ((oclass == CKO_PRIVATE_KEY ||
 			     oclass == CKO_SECRET_KEY) &&
 			    pkcs_C_GetAttributeValue(hSession, akey[i],
-					priv_template, 2) == CKR_OK) {
+						     priv_template,
+						     2) == CKR_OK) {
 				printf(" E:%s",
 				       extract ? "true" :
 				       (never ? "never" : "false"));

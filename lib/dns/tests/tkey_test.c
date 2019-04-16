@@ -30,8 +30,7 @@ static isc_mem_t mock_mctx = {
 };
 
 static void *
-__wrap_isc__mem_get(isc_mem_t *mctx __attribute__ ((unused)),
-		   size_t size)
+__wrap_isc__mem_get(isc_mem_t *mctx __attribute__ ((unused)), size_t size)
 {
 	bool has_enough_memory = mock_type(bool);
 	if (!has_enough_memory) {
@@ -42,8 +41,8 @@ __wrap_isc__mem_get(isc_mem_t *mctx __attribute__ ((unused)),
 
 static void
 __wrap_isc__mem_put(isc_mem_t *ctx0 __attribute__ ((unused)),
-		   void *ptr,
-		   size_t size __attribute__ ((unused)))
+		    void *ptr,
+		    size_t size __attribute__ ((unused)))
 {
 	free(ptr);
 }
@@ -84,7 +83,8 @@ dns_tkeyctx_create_test(void **state) {
 
 	tctx = NULL;
 	will_return(__wrap_isc__mem_get, false);
-	assert_int_equal(dns_tkeyctx_create(&mock_mctx, &tctx), ISC_R_NOMEMORY);
+	assert_int_equal(dns_tkeyctx_create(&mock_mctx, &tctx),
+			 ISC_R_NOMEMORY);
 
 	tctx = NULL;
 	will_return(__wrap_isc__mem_get, true);
@@ -117,15 +117,15 @@ main(void) {
 		cmocka_unit_test(dns_tkey_processgssresponse_test),
 		cmocka_unit_test(dns_tkey_processdeleteresponse_test),
 		cmocka_unit_test(dns_tkey_gssnegotiate_test),
-#endif
+#endif /* if 0 */
 	};
 	return (cmocka_run_group_tests(tkey_tests, NULL, NULL));
-#else
+#else  /* if LD_WRAP */
 	print_message("1..0 # Skip tkey_test requires LD_WRAP\n");
 #endif /* LD_WRAP */
 }
 
-#else
+#else  /* if HAVE_CMOCKA */
 
 #include <stdio.h>
 
@@ -135,4 +135,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

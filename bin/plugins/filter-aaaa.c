@@ -46,12 +46,12 @@
 #include <dns/types.h>
 #include <dns/view.h>
 
-#define CHECK(op)						\
-	do {							\
-		result = (op);					\
-		if (result != ISC_R_SUCCESS) {			\
-			goto cleanup;				\
-		}						\
+#define CHECK(op)                                               \
+	do {                                                    \
+		result = (op);                                  \
+		if (result != ISC_R_SUCCESS) {                  \
+			goto cleanup;                           \
+		}                                               \
 	} while (0)
 
 /*
@@ -71,44 +71,44 @@ typedef enum {
  * accessible until the client object is detached.
  */
 typedef struct filter_data {
-	filter_aaaa_t mode;
-	uint32_t flags;
+	filter_aaaa_t	     mode;
+	uint32_t	     flags;
 } filter_data_t;
 
 typedef struct filter_instance {
-	ns_plugin_t *module;
-	isc_mem_t *mctx;
+	ns_plugin_t *	   module;
+	isc_mem_t *	   mctx;
 
 	/*
 	 * Memory pool for use with persistent data.
 	 */
-	isc_mempool_t *datapool;
+	isc_mempool_t *      datapool;
 
 	/*
 	 * Hash table associating a client object with its persistent data.
 	 */
-	isc_ht_t *ht;
+	isc_ht_t *      ht;
 
 	/*
 	 * Values configured when the module is loaded.
 	 */
-	filter_aaaa_t v4_aaaa;
-	filter_aaaa_t v6_aaaa;
-	dns_acl_t *aaaa_acl;
+	filter_aaaa_t	     v4_aaaa;
+	filter_aaaa_t	     v6_aaaa;
+	dns_acl_t *	     aaaa_acl;
 } filter_instance_t;
 
 /*
  * Per-client flags set by this module
  */
-#define FILTER_AAAA_RECURSING	0x0001	/* Recursing for A */
-#define FILTER_AAAA_FILTERED	0x0002	/* AAAA was removed from answer */
+#define FILTER_AAAA_RECURSING   0x0001  /* Recursing for A */
+#define FILTER_AAAA_FILTERED    0x0002  /* AAAA was removed from answer */
 
 /*
  * Client attribute tests.
  */
-#define WANTDNSSEC(c)	(((c)->attributes & NS_CLIENTATTR_WANTDNSSEC) != 0)
-#define RECURSIONOK(c)	(((c)->query.attributes & \
-				  NS_QUERYATTR_RECURSIONOK) != 0)
+#define WANTDNSSEC(c)   (((c)->attributes & NS_CLIENTATTR_WANTDNSSEC) != 0)
+#define RECURSIONOK(c)  (((c)->query.attributes & \
+			  NS_QUERYATTR_RECURSIONOK) != 0)
 
 /*
  * Forward declarations of functions referenced in install_hooks().
@@ -133,7 +133,8 @@ filter_qctx_destroy(void *arg, void *cbdata, isc_result_t *resp);
  * argument to every callback.
  */
 static void
-install_hooks(ns_hooktable_t *hooktable, isc_mem_t *mctx,
+install_hooks(ns_hooktable_t *hooktable,
+	      isc_mem_t *mctx,
 	      filter_instance_t *inst)
 {
 	const ns_hook_t filter_init = {
@@ -181,8 +182,8 @@ install_hooks(ns_hooktable_t *hooktable, isc_mem_t *mctx,
 }
 
 /**
- ** Support for parsing of parameters and configuration of the module.
- **/
+** Support for parsing of parameters and configuration of the module.
+**/
 
 /*
  * Support for parsing of parameters.
@@ -190,7 +191,8 @@ install_hooks(ns_hooktable_t *hooktable, isc_mem_t *mctx,
 static const char *filter_aaaa_enums[] = { "break-dnssec", NULL };
 
 static isc_result_t
-parse_filter_aaaa(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret) {
+parse_filter_aaaa(cfg_parser_t *pctx, const cfg_type_t *type,
+		  cfg_obj_t **ret) {
 	return (cfg_parse_enum_or_other(pctx, type, &cfg_type_boolean, ret));
 }
 
@@ -221,7 +223,8 @@ static cfg_type_t cfg_type_parameters = {
 };
 
 static isc_result_t
-parse_filter_aaaa_on(const cfg_obj_t *param_obj, const char *param_name,
+parse_filter_aaaa_on(const cfg_obj_t *param_obj,
+		     const char *param_name,
 		     filter_aaaa_t *dstp)
 {
 	const cfg_obj_t *obj = NULL;
@@ -248,8 +251,11 @@ parse_filter_aaaa_on(const cfg_obj_t *param_obj, const char *param_name,
 }
 
 static isc_result_t
-check_syntax(cfg_obj_t *fmap, const void *cfg,
-	     isc_mem_t *mctx, isc_log_t *lctx, void *actx)
+check_syntax(cfg_obj_t *fmap,
+	     const void *cfg,
+	     isc_mem_t *mctx,
+	     isc_log_t *lctx,
+	     void *actx)
 {
 	isc_result_t result = ISC_R_SUCCESS;
 	const cfg_obj_t *aclobj = NULL;
@@ -291,9 +297,14 @@ check_syntax(cfg_obj_t *fmap, const void *cfg,
 }
 
 static isc_result_t
-parse_parameters(filter_instance_t *inst, const char *parameters,
-		 const void *cfg, const char *cfg_file, unsigned long cfg_line,
-		 isc_mem_t *mctx, isc_log_t *lctx, void *actx)
+parse_parameters(filter_instance_t *inst,
+		 const char *parameters,
+		 const void *cfg,
+		 const char *cfg_file,
+		 unsigned long cfg_line,
+		 isc_mem_t *mctx,
+		 isc_log_t *lctx,
+		 void *actx)
 {
 	isc_result_t result = ISC_R_SUCCESS;
 	cfg_parser_t *parser = NULL;
@@ -335,13 +346,13 @@ parse_parameters(filter_instance_t *inst, const char *parameters,
 }
 
 /**
- ** Mandatory plugin API functions:
- **
- ** - plugin_destroy
- ** - plugin_register
- ** - plugin_version
- ** - plugin_check
- **/
+** Mandatory plugin API functions:
+**
+** - plugin_destroy
+** - plugin_register
+** - plugin_version
+** - plugin_check
+**/
 
 /*
  * Called by ns_plugin_register() to initialize the plugin and
@@ -349,9 +360,14 @@ parse_parameters(filter_instance_t *inst, const char *parameters,
  */
 isc_result_t
 plugin_register(const char *parameters,
-		const void *cfg, const char *cfg_file, unsigned long cfg_line,
-		isc_mem_t *mctx, isc_log_t *lctx, void *actx,
-		ns_hooktable_t *hooktable, void **instp)
+		const void *cfg,
+		const char *cfg_file,
+		unsigned long cfg_line,
+		isc_mem_t *mctx,
+		isc_log_t *lctx,
+		void *actx,
+		ns_hooktable_t *hooktable,
+		void **instp)
 {
 	filter_instance_t *inst = NULL;
 	isc_result_t result;
@@ -406,8 +422,12 @@ plugin_register(const char *parameters,
 
 isc_result_t
 plugin_check(const char *parameters,
-	     const void *cfg, const char *cfg_file, unsigned long cfg_line,
-	     isc_mem_t *mctx, isc_log_t *lctx, void *actx)
+	     const void *cfg,
+	     const char *cfg_file,
+	     unsigned long cfg_line,
+	     isc_mem_t *mctx,
+	     isc_log_t *lctx,
+	     void *actx)
 {
 	isc_result_t result = ISC_R_SUCCESS;
 	cfg_parser_t *parser = NULL;
@@ -466,15 +486,15 @@ plugin_version(void) {
 }
 
 /**
- ** "filter-aaaa" feature implementation begins here.
- **/
+** "filter-aaaa" feature implementation begins here.
+**/
 
 /*%
  * Structure describing the filtering to be applied by process_section().
  */
 typedef struct section_filter {
 	query_ctx_t *		qctx;
-	filter_aaaa_t 		mode;
+	filter_aaaa_t		mode;
 	dns_section_t		section;
 	const dns_name_t *	name;
 	dns_rdatatype_t		type;
@@ -579,8 +599,11 @@ mark_as_rendered(dns_rdataset_t *rdataset, dns_rdataset_t *sigrdataset) {
  * above processing to happen.
  */
 static bool
-process_name(query_ctx_t *qctx, filter_aaaa_t mode, const dns_name_t *name,
-	     dns_rdatatype_t type, bool only_if_a_exists)
+process_name(query_ctx_t *qctx,
+	     filter_aaaa_t mode,
+	     const dns_name_t *name,
+	     dns_rdatatype_t type,
+	     bool only_if_a_exists)
 {
 	dns_rdataset_t *rdataset = NULL, *sigrdataset = NULL;
 	isc_result_t result;

@@ -25,7 +25,7 @@
 
 #include <iphlpapi.h>
 
-#define TCPIP_SUBKEY	\
+#define TCPIP_SUBKEY    \
 	"SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters"
 
 isc_result_t

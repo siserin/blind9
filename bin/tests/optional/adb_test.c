@@ -34,10 +34,10 @@
 
 typedef struct client client_t;
 struct client {
-	dns_name_t		name;
-	const char	       *target;
-	ISC_LINK(client_t)	link;
-	dns_adbfind_t	       *find;
+	dns_name_t	     name;
+	const char *	     target;
+	ISC_LINK(client_t)      link;
+	dns_adbfind_t *	     find;
 };
 
 static isc_mem_t *mctx = NULL;
@@ -58,14 +58,15 @@ static dns_adb_t *adb;
 
 static void
 check_result(isc_result_t result, const char *format, ...)
-     ISC_FORMAT_PRINTF(2, 3);
+ISC_FORMAT_PRINTF(2, 3);
 
 static void
 check_result(isc_result_t result, const char *format, ...) {
 	va_list args;
 
-	if (result == ISC_R_SUCCESS)
+	if (result == ISC_R_SUCCESS) {
 		return;
+	}
 
 	va_start(args, format);
 	vfprintf(stderr, format, args);
@@ -119,11 +120,16 @@ lookup_callback(isc_task_t *task, isc_event_t *ev) {
 	client = ev->ev_arg;
 	INSIST(client->find == ev->ev_sender);
 
-	printf("NAME %s:\n\tTask %p got event %p type %08x from %p, client %p\n\terr4: %s  err6: %s\n",
-	       client->target,
-	       task, ev, ev->ev_type, client->find, client,
-	       isc_result_totext(client->find->result_v4),
-	       isc_result_totext(client->find->result_v6));
+	printf(
+		"NAME %s:\n\tTask %p got event %p type %08x from %p, client %p\n\terr4: %s  err6: %s\n",
+		client->target,
+		task,
+		ev,
+		ev->ev_type,
+		client->find,
+		client,
+		isc_result_totext(client->find->result_v4),
+		isc_result_totext(client->find->result_v6));
 
 	isc_event_free(&ev);
 	ev = NULL;
@@ -213,7 +219,7 @@ create_view(void) {
 						      timermgr, 0,
 						      dispatchmgr,
 						      disp4, disp6) ==
-		      ISC_R_SUCCESS);
+			      ISC_R_SUCCESS);
 	}
 
 	rootdb = NULL;
@@ -257,8 +263,10 @@ lookup(const char *target) {
 				    &client->name, dns_rootname, 0, options,
 				    now, NULL, view->dstport, 0, NULL,
 				    &client->find);
-	if (result != ISC_R_SUCCESS)
-		printf("DNS_ADB_CREATEFIND -> %s\n", dns_result_totext(result));
+	if (result != ISC_R_SUCCESS) {
+		printf("DNS_ADB_CREATEFIND -> %s\n",
+		       dns_result_totext(result));
+	}
 	dns_adb_dumpfind(client->find, stderr);
 
 	if ((client->find->options & DNS_ADBFIND_WANTEVENT) != 0) {
@@ -349,17 +357,17 @@ main(int argc, char **argv) {
 	 * for found names to block as well.
 	 */
 	CLOCK();
-	lookup("f.root-servers.net.");		/* Should be in hints */
-	lookup("www.iengines.com");		/* should fetch */
-	lookup("www.isc.org");			/* should fetch */
-	lookup("www.flame.org");		/* should fetch */
-	lookup("kechara.flame.org.");		/* should fetch */
-	lookup("moghedien.flame.org.");		/* should fetch */
-	lookup("mailrelay.flame.org.");		/* should fetch */
-	lookup("ipv4v6.flame.org.");		/* should fetch */
-	lookup("nonexistant.flame.org.");	/* should fail to be found */
-	lookup("foobar.badns.flame.org.");	/* should fail utterly (NS) */
-	lookup("i.root-servers.net.");		/* Should be in hints */
+	lookup("f.root-servers.net.");          /* Should be in hints */
+	lookup("www.iengines.com");             /* should fetch */
+	lookup("www.isc.org");                  /* should fetch */
+	lookup("www.flame.org");                /* should fetch */
+	lookup("kechara.flame.org.");           /* should fetch */
+	lookup("moghedien.flame.org.");         /* should fetch */
+	lookup("mailrelay.flame.org.");         /* should fetch */
+	lookup("ipv4v6.flame.org.");            /* should fetch */
+	lookup("nonexistant.flame.org.");       /* should fail to be found */
+	lookup("foobar.badns.flame.org.");      /* should fail utterly (NS) */
+	lookup("i.root-servers.net.");          /* Should be in hints */
 	lookup("www.firstcard.com.");
 	lookup("dns04.flame.org.");
 	CUNLOCK();
@@ -371,17 +379,17 @@ main(int argc, char **argv) {
 	sleep(10);
 
 	CLOCK();
-	lookup("f.root-servers.net.");		/* Should be in hints */
-	lookup("www.iengines.com");		/* should fetch */
-	lookup("www.isc.org");			/* should fetch */
-	lookup("www.flame.org");		/* should fetch */
-	lookup("kechara.flame.org.");		/* should fetch */
-	lookup("moghedien.flame.org.");		/* should fetch */
-	lookup("mailrelay.flame.org.");		/* should fetch */
-	lookup("ipv4v6.flame.org.");		/* should fetch */
-	lookup("nonexistant.flame.org.");	/* should fail to be found */
-	lookup("foobar.badns.flame.org.");	/* should fail utterly (NS) */
-	lookup("i.root-servers.net.");		/* Should be in hints */
+	lookup("f.root-servers.net.");          /* Should be in hints */
+	lookup("www.iengines.com");             /* should fetch */
+	lookup("www.isc.org");                  /* should fetch */
+	lookup("www.flame.org");                /* should fetch */
+	lookup("kechara.flame.org.");           /* should fetch */
+	lookup("moghedien.flame.org.");         /* should fetch */
+	lookup("mailrelay.flame.org.");         /* should fetch */
+	lookup("ipv4v6.flame.org.");            /* should fetch */
+	lookup("nonexistant.flame.org.");       /* should fail to be found */
+	lookup("foobar.badns.flame.org.");      /* should fail utterly (NS) */
+	lookup("i.root-servers.net.");          /* Should be in hints */
 	CUNLOCK();
 
 	sleep(20);

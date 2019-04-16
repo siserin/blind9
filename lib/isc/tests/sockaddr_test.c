@@ -87,8 +87,8 @@ sockaddr_isnetzero(void **state) {
 	int ret;
 	size_t i;
 	struct {
-		const char *string;
-		bool expect;
+		const char *	  string;
+		bool		  expect;
 	} data4[] = {
 		{ "0.0.0.0", true },
 		{ "0.0.0.1", true },
@@ -104,8 +104,8 @@ sockaddr_isnetzero(void **state) {
 	 * Mapped addresses are currently not netzero.
 	 */
 	struct {
-		const char *string;
-		bool expect;
+		const char *	  string;
+		bool		  expect;
 	} data6[] = {
 		{ "::ffff:0.0.0.0", false },
 		{ "::ffff:0.0.0.1", false },
@@ -117,14 +117,14 @@ sockaddr_isnetzero(void **state) {
 
 	UNUSED(state);
 
-	for (i = 0; i < sizeof(data4)/sizeof(data4[0]); i++) {
+	for (i = 0; i < sizeof(data4) / sizeof(data4[0]); i++) {
 		in.s_addr = inet_addr(data4[i].string);
 		isc_sockaddr_fromin(&addr, &in, 1);
 		r = isc_sockaddr_isnetzero(&addr);
 		assert_int_equal(r, data4[i].expect);
 	}
 
-	for (i = 0; i < sizeof(data6)/sizeof(data6[0]); i++) {
+	for (i = 0; i < sizeof(data6) / sizeof(data6[0]); i++) {
 		ret = inet_pton(AF_INET6, data6[i].string, &in6);
 		assert_int_equal(ret, 1);
 		isc_sockaddr_fromin6(&addr, &in6, 1);
@@ -187,4 +187,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

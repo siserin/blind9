@@ -26,8 +26,9 @@ extern const char *impname;
  * until it is explicitly added to a view.
  */
 isc_result_t
-create_zone(sample_instance_t * const inst, dns_name_t * const name,
-	    dns_zone_t ** const rawp)
+create_zone(sample_instance_t *const inst,
+	    dns_name_t *const name,
+	    dns_zone_t **const rawp)
 {
 	isc_result_t result;
 	dns_zone_t *raw = NULL;
@@ -88,17 +89,19 @@ create_zone(sample_instance_t * const inst, dns_name_t * const name,
 	*rawp = raw;
 	return (ISC_R_SUCCESS);
 
-cleanup:
+ cleanup:
 	dns_name_format(name, zone_name, DNS_NAME_FORMATSIZE);
 	log_error_r("failed to create new zone '%s'", zone_name);
 
 	if (raw != NULL) {
-		if (dns_zone_getmgr(raw) != NULL)
+		if (dns_zone_getmgr(raw) != NULL) {
 			dns_zonemgr_releasezone(inst->zmgr, raw);
+		}
 		dns_zone_detach(&raw);
 	}
-	if (acl_any != NULL)
+	if (acl_any != NULL) {
 		dns_acl_detach(&acl_any);
+	}
 
 	return (result);
 }
@@ -121,8 +124,9 @@ publish_zone(sample_instance_t *inst, dns_zone_t *zone) {
 	/* Return success if the zone is already in the view as expected. */
 	result = dns_view_findzone(inst->view, dns_zone_getorigin(zone),
 				   &zone_in_view);
-	if (result != ISC_R_SUCCESS && result != ISC_R_NOTFOUND)
+	if (result != ISC_R_SUCCESS && result != ISC_R_NOTFOUND) {
 		goto cleanup;
+	}
 
 	view_in_zone = dns_zone_getview(zone);
 	if (view_in_zone != NULL) {
@@ -165,11 +169,13 @@ publish_zone(sample_instance_t *inst, dns_zone_t *zone) {
 		goto cleanup;
 	}
 
-cleanup:
-	if (zone_in_view != NULL)
+ cleanup:
+	if (zone_in_view != NULL) {
 		dns_zone_detach(&zone_in_view);
-	if (freeze)
+	}
+	if (freeze) {
 		dns_view_freeze(inst->view);
+	}
 	run_exclusive_exit(inst, lock_state);
 
 	return (result);
@@ -186,9 +192,10 @@ load_zone(dns_zone_t *zone) {
 	uint32_t serial;
 
 	result = dns_zone_load(zone, false);
-	if (result != ISC_R_SUCCESS && result != DNS_R_UPTODATE
-	    && result != DNS_R_DYNAMIC && result != DNS_R_CONTINUE)
+	if (result != ISC_R_SUCCESS && result != DNS_R_UPTODATE &&
+	    result != DNS_R_DYNAMIC && result != DNS_R_CONTINUE) {
 		goto cleanup;
+	}
 	zone_dynamic = (result == DNS_R_DYNAMIC);
 
 	result = dns_zone_getserial(zone, &serial);
@@ -200,10 +207,11 @@ load_zone(dns_zone_t *zone) {
 	}
 	dns_zone_log(zone, ISC_LOG_INFO, "loaded serial %u", serial);
 
-	if (zone_dynamic)
+	if (zone_dynamic) {
 		dns_zone_notify(zone);
+	}
 
-cleanup:
+ cleanup:
 	return (result);
 }
 
@@ -235,6 +243,6 @@ activate_zone(sample_instance_t *inst, dns_zone_t *raw) {
 		goto cleanup;
 	}
 
-cleanup:
+ cleanup:
 	return (result);
 }

@@ -13,8 +13,8 @@
 #define DNS_GEOIP_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/acl.h
  * \brief
@@ -38,9 +38,9 @@
 
 #ifdef HAVE_GEOIP
 #include <GeoIP.h>
-#else
+#else /* ifdef HAVE_GEOIP */
 typedef void GeoIP;
-#endif
+#endif /* ifdef HAVE_GEOIP */
 
 /***
  *** Types
@@ -77,25 +77,25 @@ typedef enum {
 } dns_geoip_subtype_t;
 
 typedef struct dns_geoip_elem {
-	dns_geoip_subtype_t subtype;
-	GeoIP *db;
+	dns_geoip_subtype_t	   subtype;
+	GeoIP *			   db;
 	union {
-		char as_string[256];
-		int as_int;
+		char	    as_string[256];
+		int	    as_int;
 	};
 } dns_geoip_elem_t;
 
 typedef struct dns_geoip_databases {
-	GeoIP *country_v4;			/* DB 1        */
-	GeoIP *city_v4;				/* DB 2 or 6   */
-	GeoIP *region;				/* DB 3 or 7   */
-	GeoIP *isp;				/* DB 4        */
-	GeoIP *org;				/* DB 5        */
-	GeoIP *as;				/* DB 9        */
-	GeoIP *netspeed;			/* DB 10       */
-	GeoIP *domain;				/* DB 11       */
-	GeoIP *country_v6;			/* DB 12       */
-	GeoIP *city_v6;				/* DB 30 or 31 */
+	GeoIP *	     country_v4;                /* DB 1        */
+	GeoIP *	     city_v4;                   /* DB 2 or 6   */
+	GeoIP *	     region;                    /* DB 3 or 7   */
+	GeoIP *	     isp;                       /* DB 4        */
+	GeoIP *	     org;                       /* DB 5        */
+	GeoIP *	     as;                        /* DB 9        */
+	GeoIP *	     netspeed;                  /* DB 10       */
+	GeoIP *	     domain;                    /* DB 11       */
+	GeoIP *	     country_v6;                /* DB 12       */
+	GeoIP *	     city_v6;                   /* DB 30 or 31 */
 } dns_geoip_databases_t;
 
 /***

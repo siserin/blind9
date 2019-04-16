@@ -13,8 +13,8 @@
 #define NS_XFROUT_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file
  * \brief
@@ -26,6 +26,6 @@
  ***/
 
 void
-ns_xfr_start(ns_client_t *client, dns_rdatatype_t xfrtype);
+ns_xfr_start(ns_client_t*client,dns_rdatatype_t xfrtype);
 
 #endif /* NS_XFROUT_H */

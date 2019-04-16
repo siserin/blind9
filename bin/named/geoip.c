@@ -24,8 +24,11 @@ static dns_geoip_databases_t geoip_table = {
 };
 
 static void
-init_geoip_db(GeoIP **dbp, GeoIPDBTypes edition, GeoIPDBTypes fallback,
-	      GeoIPOptions method, const char *name)
+init_geoip_db(GeoIP **dbp,
+	      GeoIPDBTypes edition,
+	      GeoIPDBTypes fallback,
+	      GeoIPOptions method,
+	      const char *name)
 {
 	char *info;
 	GeoIP *db;
@@ -39,24 +42,32 @@ init_geoip_db(GeoIP **dbp, GeoIPDBTypes edition, GeoIPDBTypes fallback,
 		db = *dbp = NULL;
 	}
 
-	if (! GeoIP_db_avail(edition)) {
-		isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
-			NAMED_LOGMODULE_SERVER, ISC_LOG_INFO,
-			"GeoIP %s (type %d) DB not available", name, edition);
+	if (!GeoIP_db_avail(edition)) {
+		isc_log_write(named_g_lctx,
+			      NAMED_LOGCATEGORY_GENERAL,
+			      NAMED_LOGMODULE_SERVER,
+			      ISC_LOG_INFO,
+			      "GeoIP %s (type %d) DB not available",
+			      name,
+			      edition);
 		goto fail;
 	}
 
 	isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
-		NAMED_LOGMODULE_SERVER, ISC_LOG_INFO,
-		"initializing GeoIP %s (type %d) DB", name, edition);
+		      NAMED_LOGMODULE_SERVER, ISC_LOG_INFO,
+		      "initializing GeoIP %s (type %d) DB", name, edition);
 
 	db = GeoIP_open_type(edition, method);
 	if (db == NULL) {
-		isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
-			NAMED_LOGMODULE_SERVER, ISC_LOG_ERROR,
-			"failed to initialize GeoIP %s (type %d) DB%s",
-			name, edition, fallback == 0
-			 ? "geoip matches using this database will fail" : "");
+		isc_log_write(named_g_lctx,
+			      NAMED_LOGCATEGORY_GENERAL,
+			      NAMED_LOGMODULE_SERVER,
+			      ISC_LOG_ERROR,
+			      "failed to initialize GeoIP %s (type %d) DB%s",
+			      name,
+			      edition,
+			      fallback == 0
+			      ? "geoip matches using this database will fail" : "");
 		goto fail;
 	}
 
@@ -71,9 +82,9 @@ init_geoip_db(GeoIP **dbp, GeoIPDBTypes edition, GeoIPDBTypes fallback,
 	*dbp = db;
 	return;
  fail:
-	if (fallback != 0)
+	if (fallback != 0) {
 		init_geoip_db(dbp, fallback, 0, method, name);
-
+	}
 }
 #endif /* HAVE_GEOIP */
 
@@ -81,11 +92,12 @@ void
 named_geoip_init(void) {
 #ifndef HAVE_GEOIP
 	return;
-#else
+#else  /* ifndef HAVE_GEOIP */
 	GeoIP_cleanup();
-	if (named_g_geoip == NULL)
+	if (named_g_geoip == NULL) {
 		named_g_geoip = &geoip_table;
-#endif
+	}
+#endif /* ifndef HAVE_GEOIP */
 }
 
 void
@@ -95,14 +107,14 @@ named_geoip_load(char *dir) {
 	UNUSED(dir);
 
 	return;
-#else
+#else  /* ifndef HAVE_GEOIP */
 	GeoIPOptions method;
 
 #ifdef _WIN32
 	method = GEOIP_STANDARD;
-#else
+#else  /* ifdef _WIN32 */
 	method = GEOIP_MMAP_CACHE;
-#endif
+#endif /* ifdef _WIN32 */
 
 	named_geoip_init();
 	if (dir != NULL) {
@@ -117,14 +129,14 @@ named_geoip_load(char *dir) {
 #ifdef HAVE_GEOIP_V6
 	init_geoip_db(&named_g_geoip->country_v6, GEOIP_COUNTRY_EDITION_V6, 0,
 		      method, "Country (IPv6)");
-#endif
+#endif /* ifdef HAVE_GEOIP_V6 */
 
 	init_geoip_db(&named_g_geoip->city_v4, GEOIP_CITY_EDITION_REV1,
 		      GEOIP_CITY_EDITION_REV0, method, "City (IPv4)");
 #if defined(HAVE_GEOIP_V6) && defined(HAVE_GEOIP_CITY_V6)
 	init_geoip_db(&named_g_geoip->city_v6, GEOIP_CITY_EDITION_REV1_V6,
 		      GEOIP_CITY_EDITION_REV0_V6, method, "City (IPv6)");
-#endif
+#endif /* if defined(HAVE_GEOIP_V6) && defined(HAVE_GEOIP_CITY_V6) */
 
 	init_geoip_db(&named_g_geoip->region, GEOIP_REGION_EDITION_REV1,
 		      GEOIP_REGION_EDITION_REV0, method, "Region");

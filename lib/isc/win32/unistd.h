@@ -26,27 +26,27 @@
  */
 #undef F_DUPFD
 
-int fcntl(int, int, ...);
+int fcntl(int,int,...);
 
 /*
  * access() related definitions for winXP
  */
 #include <io.h>
 #ifndef F_OK
-#define	F_OK	0
-#endif
+#define F_OK    0
+#endif /* ifndef F_OK */
 
 #ifndef X_OK
-#define	X_OK	1
-#endif
+#define X_OK    1
+#endif /* ifndef X_OK */
 
 #ifndef W_OK
 #define W_OK 2
-#endif
+#endif /* ifndef W_OK */
 
 #ifndef R_OK
 #define R_OK 4
-#endif
+#endif /* ifndef R_OK */
 
 #define access _access
 

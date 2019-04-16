@@ -14,8 +14,8 @@
 #define ISC_TIMER_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file isc/timer.h
  * \brief Provides timers which are event sources in the task system.
@@ -81,11 +81,11 @@ ISC_LANG_BEGINDECLS
 
 /*% Timer Type */
 typedef enum {
-	isc_timertype_undefined = -1,	/*%< Undefined */
-	isc_timertype_ticker = 0, 	/*%< Ticker */
-	isc_timertype_once = 1, 	/*%< Once */
-	isc_timertype_limited = 2, 	/*%< Limited */
-	isc_timertype_inactive = 3 	/*%< Inactive */
+	isc_timertype_undefined = -1,   /*%< Undefined */
+	isc_timertype_ticker = 0,       /*%< Ticker */
+	isc_timertype_once = 1,         /*%< Once */
+	isc_timertype_limited = 2,      /*%< Limited */
+	isc_timertype_inactive = 3      /*%< Inactive */
 } isc_timertype_t;
 
 typedef struct isc_timerevent {
@@ -93,11 +93,11 @@ typedef struct isc_timerevent {
 	isc_time_t		due;
 } isc_timerevent_t;
 
-#define ISC_TIMEREVENT_FIRSTEVENT	(ISC_EVENTCLASS_TIMER + 0)
-#define ISC_TIMEREVENT_TICK		(ISC_EVENTCLASS_TIMER + 1)
-#define ISC_TIMEREVENT_IDLE		(ISC_EVENTCLASS_TIMER + 2)
-#define ISC_TIMEREVENT_LIFE		(ISC_EVENTCLASS_TIMER + 3)
-#define ISC_TIMEREVENT_LASTEVENT	(ISC_EVENTCLASS_TIMER + 65535)
+#define ISC_TIMEREVENT_FIRSTEVENT       (ISC_EVENTCLASS_TIMER + 0)
+#define ISC_TIMEREVENT_TICK             (ISC_EVENTCLASS_TIMER + 1)
+#define ISC_TIMEREVENT_IDLE             (ISC_EVENTCLASS_TIMER + 2)
+#define ISC_TIMEREVENT_LIFE             (ISC_EVENTCLASS_TIMER + 3)
+#define ISC_TIMEREVENT_LASTEVENT        (ISC_EVENTCLASS_TIMER + 65535)
 
 /*%
  * This structure is actually just the common prefix of a timer manager
@@ -109,12 +109,12 @@ typedef struct isc_timerevent {
  * all timer invariants.
  */
 struct isc_timermgr {
-	unsigned int		impmagic;
-	unsigned int		magic;
+	unsigned int	    impmagic;
+	unsigned int	    magic;
 };
 
-#define ISCAPI_TIMERMGR_MAGIC		ISC_MAGIC('A','t','m','g')
-#define ISCAPI_TIMERMGR_VALID(m)	((m) != NULL && \
+#define ISCAPI_TIMERMGR_MAGIC           ISC_MAGIC('A', 't', 'm', 'g')
+#define ISCAPI_TIMERMGR_VALID(m)        ((m) != NULL && \
 					 (m)->magic == ISCAPI_TIMERMGR_MAGIC)
 
 /*%
@@ -122,12 +122,12 @@ struct isc_timermgr {
  * that for the timermgr structure applies.
  */
 struct isc_timer {
-	unsigned int		impmagic;
-	unsigned int		magic;
+	unsigned int	    impmagic;
+	unsigned int	    magic;
 };
 
-#define ISCAPI_TIMER_MAGIC	ISC_MAGIC('A','t','m','r')
-#define ISCAPI_TIMER_VALID(s)	((s) != NULL && \
+#define ISCAPI_TIMER_MAGIC      ISC_MAGIC('A', 't', 'm', 'r')
+#define ISCAPI_TIMER_VALID(s)   ((s) != NULL && \
 				 (s)->magic == ISCAPI_TIMER_MAGIC)
 
 /***
@@ -316,7 +316,8 @@ isc_timer_gettype(isc_timer_t *timer);
  */
 
 isc_result_t
-isc_timermgr_createinctx(isc_mem_t *mctx, isc_appctx_t *actx,
+isc_timermgr_createinctx(isc_mem_t *mctx,
+			 isc_appctx_t *actx,
 			 isc_timermgr_t **managerp);
 
 isc_result_t

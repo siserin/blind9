@@ -29,8 +29,8 @@
  * Check tables are populated.
  */
 static void
-tables(void **state) {
-	const char *str;
+tables(void**state) {
+	const char*str;
 	isc_result_t result;
 
 	UNUSED(state);
@@ -54,11 +54,11 @@ tables(void **state) {
 
 	str = isc_result_toid(result);
 	assert_non_null(str);
-	assert_string_equal(str, "(result code text not available)");
+	assert_string_equal(str,"(result code text not available)");
 
 	str = isc_result_totext(result);
 	assert_non_null(str);
-	assert_string_equal(str, "(result code text not available)");
+	assert_string_equal(str,"(result code text not available)");
 }
 
 int
@@ -67,7 +67,7 @@ main(void) {
 		cmocka_unit_test(tables),
 	};
 
-	return (cmocka_run_group_tests(tests, NULL, NULL));
+	return (cmocka_run_group_tests(tests,NULL,NULL));
 }
 
 #else /* HAVE_CMOCKA */
@@ -80,4 +80,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

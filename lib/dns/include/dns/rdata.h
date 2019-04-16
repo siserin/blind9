@@ -14,8 +14,8 @@
 #define DNS_RDATA_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/rdata.h
  * \brief
@@ -110,12 +110,12 @@ ISC_LANG_BEGINDECLS
  * purpose the client desires.
  */
 struct dns_rdata {
-	unsigned char *			data;
-	unsigned int			length;
-	dns_rdataclass_t		rdclass;
-	dns_rdatatype_t			type;
-	unsigned int			flags;
-	ISC_LINK(dns_rdata_t)		link;
+	unsigned char *		data;
+	unsigned int		length;
+	dns_rdataclass_t	rdclass;
+	dns_rdatatype_t		type;
+	unsigned int		flags;
+	ISC_LINK(dns_rdata_t)           link;
 };
 
 #define DNS_RDATA_INIT { NULL, 0, 0, 0, 0, {(void*)(-1), (void *)(-1)}}
@@ -126,20 +126,20 @@ struct dns_rdata {
 	((rdata)->data == NULL && (rdata)->length == 0 && \
 	 (rdata)->rdclass == 0 && (rdata)->type == 0 && (rdata)->flags == 0 && \
 	 !ISC_LINK_LINKED((rdata), link))
-#else
+#else /* ifdef DNS_RDATA_CHECKINITIALIZED */
 #ifdef ISC_LIST_CHECKINIT
 #define DNS_RDATA_INITIALIZED(rdata) \
 	(!ISC_LINK_LINKED((rdata), link))
-#else
+#else /* ifdef ISC_LIST_CHECKINIT */
 #define DNS_RDATA_INITIALIZED(rdata) true
-#endif
-#endif
+#endif /* ifdef ISC_LIST_CHECKINIT */
+#endif /* ifdef DNS_RDATA_CHECKINITIALIZED */
 
-#define DNS_RDATA_UPDATE	0x0001		/*%< update pseudo record. */
-#define DNS_RDATA_OFFLINE	0x0002		/*%< RRSIG has a offline key. */
+#define DNS_RDATA_UPDATE        0x0001          /*%< update pseudo record. */
+#define DNS_RDATA_OFFLINE       0x0002          /*%< RRSIG has a offline key. */
 
 #define DNS_RDATA_VALIDFLAGS(rdata) \
-	(((rdata)->flags & ~(DNS_RDATA_UPDATE|DNS_RDATA_OFFLINE)) == 0)
+	(((rdata)->flags & ~(DNS_RDATA_UPDATE | DNS_RDATA_OFFLINE)) == 0)
 
 /*
  * The maximum length of a RDATA that can be sent on the wire.
@@ -150,7 +150,7 @@ struct dns_rdata {
  * this and all new types are to be sent uncompressed.
  */
 
-#define DNS_RDATA_MAXLENGTH	65512U
+#define DNS_RDATA_MAXLENGTH     65512U
 
 /*
  * Flags affecting rdata formatting style.  Flags 0xFFFF0000
@@ -159,26 +159,26 @@ struct dns_rdata {
  */
 
 /*% Split the rdata into multiple lines to try to keep it
- within the "width". */
-#define DNS_STYLEFLAG_MULTILINE		0x00000001ULL
+ * within the "width". */
+#define DNS_STYLEFLAG_MULTILINE         0x00000001ULL
 
 /*% Output explanatory comments. */
-#define DNS_STYLEFLAG_COMMENT		0x00000002ULL
-#define DNS_STYLEFLAG_RRCOMMENT		0x00000004ULL
+#define DNS_STYLEFLAG_COMMENT           0x00000002ULL
+#define DNS_STYLEFLAG_RRCOMMENT         0x00000004ULL
 
 /*% Output KEYDATA in human readable format. */
-#define DNS_STYLEFLAG_KEYDATA		0x00000008ULL
+#define DNS_STYLEFLAG_KEYDATA           0x00000008ULL
 
 /*% Output textual RR type and RDATA in RFC 3597 unknown format */
-#define DNS_STYLEFLAG_UNKNOWNFORMAT	0x00000010ULL
+#define DNS_STYLEFLAG_UNKNOWNFORMAT     0x00000010ULL
 
-#define DNS_RDATA_DOWNCASE		DNS_NAME_DOWNCASE
-#define DNS_RDATA_CHECKNAMES		DNS_NAME_CHECKNAMES
-#define DNS_RDATA_CHECKNAMESFAIL	DNS_NAME_CHECKNAMESFAIL
-#define DNS_RDATA_CHECKREVERSE		DNS_NAME_CHECKREVERSE
-#define DNS_RDATA_CHECKMX		DNS_NAME_CHECKMX
-#define DNS_RDATA_CHECKMXFAIL		DNS_NAME_CHECKMXFAIL
-#define DNS_RDATA_UNKNOWNESCAPE		0x80000000
+#define DNS_RDATA_DOWNCASE              DNS_NAME_DOWNCASE
+#define DNS_RDATA_CHECKNAMES            DNS_NAME_CHECKNAMES
+#define DNS_RDATA_CHECKNAMESFAIL        DNS_NAME_CHECKNAMESFAIL
+#define DNS_RDATA_CHECKREVERSE          DNS_NAME_CHECKREVERSE
+#define DNS_RDATA_CHECKMX               DNS_NAME_CHECKMX
+#define DNS_RDATA_CHECKMXFAIL           DNS_NAME_CHECKMXFAIL
+#define DNS_RDATA_UNKNOWNESCAPE         0x80000000
 
 /***
  *** Initialization
@@ -258,8 +258,10 @@ dns_rdata_casecompare(const dns_rdata_t *rdata1, const dns_rdata_t *rdata2);
  ***/
 
 void
-dns_rdata_fromregion(dns_rdata_t *rdata, dns_rdataclass_t rdclass,
-		     dns_rdatatype_t type, isc_region_t *r);
+dns_rdata_fromregion(dns_rdata_t *rdata,
+		     dns_rdataclass_t rdclass,
+		     dns_rdatatype_t type,
+		     isc_region_t *r);
 /*%<
  * Make 'rdata' refer to region 'r'.
  *
@@ -275,9 +277,12 @@ dns_rdata_toregion(const dns_rdata_t *rdata, isc_region_t *r);
  */
 
 isc_result_t
-dns_rdata_fromwire(dns_rdata_t *rdata, dns_rdataclass_t rdclass,
-		   dns_rdatatype_t type, isc_buffer_t *source,
-		   dns_decompress_t *dctx, unsigned int options,
+dns_rdata_fromwire(dns_rdata_t *rdata,
+		   dns_rdataclass_t rdclass,
+		   dns_rdatatype_t type,
+		   isc_buffer_t *source,
+		   dns_decompress_t *dctx,
+		   unsigned int options,
 		   isc_buffer_t *target);
 /*%<
  * Copy the possibly-compressed rdata at source into the target region.
@@ -302,7 +307,7 @@ dns_rdata_fromwire(dns_rdata_t *rdata, dns_rdataclass_t rdclass,
  *
  * Ensures,
  *	if result is success:
- *	\li 	If 'rdata' is not NULL, it is attached to the target.
+ *	\li     If 'rdata' is not NULL, it is attached to the target.
  *	\li	The conditions dns_name_fromwire() ensures for names hold
  *		for all names in the rdata.
  *	\li	The current location in source is advanced, and the used space
@@ -346,11 +351,15 @@ dns_rdata_towire(dns_rdata_t *rdata, dns_compress_t *cctx,
  */
 
 isc_result_t
-dns_rdata_fromtext(dns_rdata_t *rdata, dns_rdataclass_t rdclass,
-		   dns_rdatatype_t type, isc_lex_t *lexer,
-		   const dns_name_t *origin, unsigned int options,
+dns_rdata_fromtext(dns_rdata_t *rdata,
+		   dns_rdataclass_t rdclass,
+		   dns_rdatatype_t type,
+		   isc_lex_t *lexer,
+		   const dns_name_t *origin,
+		   unsigned int options,
 		   isc_mem_t *mctx,
-		   isc_buffer_t *target, dns_rdatacallbacks_t *callbacks);
+		   isc_buffer_t *target,
+		   dns_rdatacallbacks_t *callbacks);
 /*%<
  * Convert the textual representation of a DNS rdata into uncompressed wire
  * form stored in the target region.  Tokens constituting the text of the rdata
@@ -364,7 +373,7 @@ dns_rdata_fromtext(dns_rdata_t *rdata, dns_rdataclass_t rdclass,
  *	'options'
  *\li	DNS_RDATA_DOWNCASE	downcase domain names when they are copied
  *				into target.
- *\li	DNS_RDATA_CHECKNAMES 	perform checknames checks.
+ *\li	DNS_RDATA_CHECKNAMES    perform checknames checks.
  *\li	DNS_RDATA_CHECKNAMESFAIL fail if the checknames check fail.  If
  *				not set a warning will be issued.
  *\li	DNS_RDATA_CHECKREVERSE  this should set if the owner name ends
@@ -387,11 +396,11 @@ dns_rdata_fromtext(dns_rdata_t *rdata, dns_rdataclass_t rdclass,
  *
  * Ensures,
  *	if result is success:
- *\li	 	If 'rdata' is not NULL, it is attached to the target.
-
+ *\li	        If 'rdata' is not NULL, it is attached to the target.
+ *
  *\li		The conditions dns_name_fromtext() ensures for names hold
  *		for all names in the rdata.
-
+ *
  *\li		The used space in target is updated.
  *
  * Result:
@@ -404,7 +413,8 @@ dns_rdata_fromtext(dns_rdata_t *rdata, dns_rdataclass_t rdclass,
  */
 
 isc_result_t
-dns_rdata_totext(dns_rdata_t *rdata, const dns_name_t *origin,
+dns_rdata_totext(dns_rdata_t *rdata,
+		 const dns_name_t *origin,
 		 isc_buffer_t *target);
 /*%<
  * Convert 'rdata' into text format, storing the result in 'target'.
@@ -438,9 +448,12 @@ dns_rdata_totext(dns_rdata_t *rdata, const dns_name_t *origin,
  */
 
 isc_result_t
-dns_rdata_tofmttext(dns_rdata_t *rdata, const dns_name_t *origin,
-		    dns_masterstyle_flags_t flags, unsigned int width,
-		    unsigned int split_width, const char *linebreak,
+dns_rdata_tofmttext(dns_rdata_t *rdata,
+		    const dns_name_t *origin,
+		    dns_masterstyle_flags_t flags,
+		    unsigned int width,
+		    unsigned int split_width,
+		    const char *linebreak,
 		    isc_buffer_t *target);
 /*%<
  * Like dns_rdata_totext, but do formatted output suitable for
@@ -471,8 +484,11 @@ dns_rdata_tofmttext(dns_rdata_t *rdata, const dns_name_t *origin,
  */
 
 isc_result_t
-dns_rdata_fromstruct(dns_rdata_t *rdata, dns_rdataclass_t rdclass,
-		     dns_rdatatype_t type, void *source, isc_buffer_t *target);
+dns_rdata_fromstruct(dns_rdata_t *rdata,
+		     dns_rdataclass_t rdclass,
+		     dns_rdatatype_t type,
+		     void *source,
+		     isc_buffer_t *target);
 /*%<
  * Convert the C structure representation of an rdata into uncompressed wire
  * format in 'target'.
@@ -492,7 +508,7 @@ dns_rdata_fromstruct(dns_rdata_t *rdata, dns_rdataclass_t rdclass,
  *
  * Ensures,
  *	if result is success:
- *	\li 	If 'rdata' is not NULL, it is attached to the target.
+ *	\li     If 'rdata' is not NULL, it is attached to the target.
  *
  *	\li	The used space in 'target' is updated.
  *
@@ -591,7 +607,8 @@ dns_rdatatype_isknown(dns_rdatatype_t type);
  */
 
 isc_result_t
-dns_rdata_additionaldata(dns_rdata_t *rdata, dns_additionaldatafunc_t add,
+dns_rdata_additionaldata(dns_rdata_t *rdata,
+			 dns_additionaldatafunc_t add,
 			 void *arg);
 /*%<
  * Call 'add' for each name and type from 'rdata' which is subject to
@@ -705,27 +722,27 @@ dns_rdatatype_attributes(dns_rdatatype_t rdtype);
  */
 
 /*% only one may exist for a name */
-#define DNS_RDATATYPEATTR_SINGLETON		0x00000001U
+#define DNS_RDATATYPEATTR_SINGLETON             0x00000001U
 /*% requires no other data be present */
-#define DNS_RDATATYPEATTR_EXCLUSIVE		0x00000002U
+#define DNS_RDATATYPEATTR_EXCLUSIVE             0x00000002U
 /*% Is a meta type */
-#define DNS_RDATATYPEATTR_META			0x00000004U
+#define DNS_RDATATYPEATTR_META                  0x00000004U
 /*% Is a DNSSEC type, like RRSIG or NSEC */
-#define DNS_RDATATYPEATTR_DNSSEC		0x00000008U
+#define DNS_RDATATYPEATTR_DNSSEC                0x00000008U
 /*% Is a zone cut authority type */
-#define DNS_RDATATYPEATTR_ZONECUTAUTH		0x00000010U
+#define DNS_RDATATYPEATTR_ZONECUTAUTH           0x00000010U
 /*% Is reserved (unusable) */
-#define DNS_RDATATYPEATTR_RESERVED		0x00000020U
+#define DNS_RDATATYPEATTR_RESERVED              0x00000020U
 /*% Is an unknown type */
-#define DNS_RDATATYPEATTR_UNKNOWN		0x00000040U
+#define DNS_RDATATYPEATTR_UNKNOWN               0x00000040U
 /*% Is META, and can only be in a question section */
-#define DNS_RDATATYPEATTR_QUESTIONONLY		0x00000080U
+#define DNS_RDATATYPEATTR_QUESTIONONLY          0x00000080U
 /*% Is META, and can NOT be in a question section */
-#define DNS_RDATATYPEATTR_NOTQUESTION		0x00000100U
+#define DNS_RDATATYPEATTR_NOTQUESTION           0x00000100U
 /*% Is present at zone cuts in the parent, not the child */
-#define DNS_RDATATYPEATTR_ATPARENT		0x00000200U
+#define DNS_RDATATYPEATTR_ATPARENT              0x00000200U
 /*% Can exist along side a CNAME */
-#define DNS_RDATATYPEATTR_ATCNAME		0x00000400U
+#define DNS_RDATATYPEATTR_ATCNAME               0x00000400U
 
 dns_rdatatype_t
 dns_rdata_covers(dns_rdata_t *rdata);
@@ -742,8 +759,10 @@ dns_rdata_covers(dns_rdata_t *rdata);
  */
 
 bool
-dns_rdata_checkowner(const dns_name_t *name, dns_rdataclass_t rdclass,
-		     dns_rdatatype_t type, bool wildcard);
+dns_rdata_checkowner(const dns_name_t *name,
+		     dns_rdataclass_t rdclass,
+		     dns_rdatatype_t type,
+		     bool wildcard);
 /*
  * Returns whether this is a valid ownername for this <type,class>.
  * If wildcard is true allow the first label to be a wildcard if
@@ -754,7 +773,8 @@ dns_rdata_checkowner(const dns_name_t *name, dns_rdataclass_t rdclass,
  */
 
 bool
-dns_rdata_checknames(dns_rdata_t *rdata, const dns_name_t *owner,
+dns_rdata_checknames(dns_rdata_t *rdata,
+		     const dns_name_t *owner,
 		     dns_name_t *bad);
 /*
  * Returns whether 'rdata' contains valid domain names.  The checks are

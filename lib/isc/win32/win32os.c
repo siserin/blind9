@@ -13,21 +13,23 @@
 
 #ifndef TESTVERSION
 #include <isc/win32os.h>
-#else
+#else  /* ifndef TESTVERSION */
 #include <stdio.h>
 #include <isc/util.h>
-#endif
+#endif /* ifndef TESTVERSION */
 #include <isc/print.h>
 
 int
-isc_win32os_versioncheck(unsigned int major, unsigned int minor,
-			 unsigned int spmajor, unsigned int spminor)
+isc_win32os_versioncheck(unsigned int major,
+			 unsigned int minor,
+			 unsigned int spmajor,
+			 unsigned int spminor)
 {
 	OSVERSIONINFOEX osVer;
 	DWORD typeMask;
 	ULONGLONG conditionMask;
 
-	memset(&osVer, 0, sizeof(OSVERSIONINFOEX));
+	memset(&osVer,0,sizeof(OSVERSIONINFOEX));
 	osVer.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
 	typeMask = 0;
 	conditionMask = 0;
@@ -53,8 +55,9 @@ isc_win32os_versioncheck(unsigned int major, unsigned int minor,
 	conditionMask = VerSetConditionMask(conditionMask,
 					    VER_SERVICEPACKMINOR,
 					    VER_GREATER);
-	if (VerifyVersionInfo(&osVer, typeMask, conditionMask))
+	if (VerifyVersionInfo(&osVer,typeMask,conditionMask)) {
 		return (1);
+	}
 
 	/* Failed: retry with equal */
 	conditionMask = 0;
@@ -70,15 +73,16 @@ isc_win32os_versioncheck(unsigned int major, unsigned int minor,
 	conditionMask = VerSetConditionMask(conditionMask,
 					    VER_SERVICEPACKMINOR,
 					    VER_EQUAL);
-	if (VerifyVersionInfo(&osVer, typeMask, conditionMask))
+	if (VerifyVersionInfo(&osVer,typeMask,conditionMask)) {
 		return (0);
-	else
+	} else {
 		return (-1);
+	}
 }
 
 #ifdef TESTVERSION
 int
-main(int argc, char **argv) {
+main(int argc,char**argv) {
 	unsigned int major = 0;
 	unsigned int minor = 0;
 	unsigned int spmajor = 0;
@@ -107,11 +111,11 @@ main(int argc, char **argv) {
 		spminor = (unsigned int) atoi(argv[0]);
 	}
 
-	ret = isc_win32os_versioncheck(major, minor, spmajor, spminor);
+	ret = isc_win32os_versioncheck(major,minor,spmajor,spminor);
 
 	printf("%s major %u minor %u SP major %u SP minor %u\n",
 	       ret > 0 ? "greater" : (ret == 0 ? "equal" : "less"),
-	       major, minor, spmajor, spminor);
+	       major,minor,spmajor,spminor);
 	return (ret);
 }
-#endif
+#endif /* ifdef TESTVERSION */

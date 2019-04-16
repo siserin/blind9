@@ -13,8 +13,8 @@
 #define NS_UPDATE_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file
  * \brief
@@ -37,6 +37,6 @@
  ***/
 
 void
-ns_update_start(ns_client_t *client, isc_result_t sigresult);
+ns_update_start(ns_client_t*client,isc_result_t sigresult);
 
 #endif /* NS_UPDATE_H */

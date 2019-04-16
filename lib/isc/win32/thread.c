@@ -15,13 +15,14 @@
 #include <isc/util.h>
 
 isc_result_t
-isc_thread_create(isc_threadfunc_t start, isc_threadarg_t arg,
-		  isc_thread_t *threadp)
+isc_thread_create(isc_threadfunc_t start,
+		  isc_threadarg_t arg,
+		  isc_thread_t*threadp)
 {
 	isc_thread_t thread;
 	unsigned int id;
 
-	thread = (isc_thread_t)_beginthreadex(NULL, 0, start, arg, 0, &id);
+	thread = (isc_thread_t)_beginthreadex(NULL,0,start,arg,0,&id);
 	if (thread == NULL) {
 		/* XXX */
 		return (ISC_R_UNEXPECTED);
@@ -33,15 +34,15 @@ isc_thread_create(isc_threadfunc_t start, isc_threadarg_t arg,
 }
 
 isc_result_t
-isc_thread_join(isc_thread_t thread, isc_threadresult_t *rp) {
+isc_thread_join(isc_thread_t thread,isc_threadresult_t*rp) {
 	DWORD result;
 
-	result = WaitForSingleObject(thread, INFINITE);
+	result = WaitForSingleObject(thread,INFINITE);
 	if (result != WAIT_OBJECT_0) {
 		/* XXX */
 		return (ISC_R_UNEXPECTED);
 	}
-	if (rp != NULL && !GetExitCodeThread(thread, rp)) {
+	if (rp != NULL && !GetExitCodeThread(thread,rp)) {
 		/* XXX */
 		return (ISC_R_UNEXPECTED);
 	}
@@ -59,7 +60,7 @@ isc_thread_setconcurrency(unsigned int level) {
 }
 
 void
-isc_thread_setname(isc_thread_t thread, const char *name) {
+isc_thread_setname(isc_thread_t thread,const char*name) {
 	UNUSED(thread);
 	UNUSED(name);
 }
@@ -70,18 +71,18 @@ isc_thread_setaffinity(int cpu) {
 	return (ISC_R_SUCCESS);
 }
 
-void *
+void*
 isc_thread_key_getspecific(isc_thread_key_t key) {
 	return(TlsGetValue(key));
 }
 
 int
-isc_thread_key_setspecific(isc_thread_key_t key, void *value) {
-	return (TlsSetValue(key, value) ? 0 : GetLastError());
+isc_thread_key_setspecific(isc_thread_key_t key,void*value) {
+	return (TlsSetValue(key,value) ? 0 : GetLastError());
 }
 
 int
-isc_thread_key_create(isc_thread_key_t *key, void (*func)(void *)) {
+isc_thread_key_create(isc_thread_key_t*key,void (*func)(void*)) {
 	*key = TlsAlloc();
 
 	return ((*key != -1) ? 0 : GetLastError());

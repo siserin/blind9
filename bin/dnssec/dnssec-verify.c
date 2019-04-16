@@ -62,7 +62,7 @@
 
 #if USE_PKCS11
 #include <pk11/result.h>
-#endif
+#endif /* if USE_PKCS11 */
 
 #include "dnssectool.h"
 
@@ -72,10 +72,10 @@ int verbose;
 static isc_stdtime_t now;
 static isc_mem_t *mctx = NULL;
 static dns_masterformat_t inputformat = dns_masterformat_text;
-static dns_db_t *gdb;			/* The database */
-static dns_dbversion_t *gversion;	/* The database version */
-static dns_rdataclass_t gclass;		/* The class */
-static dns_name_t *gorigin;		/* The database origin */
+static dns_db_t *gdb;                   /* The database */
+static dns_dbversion_t *gversion;       /* The database version */
+static dns_rdataclass_t gclass;         /* The class */
+static dns_name_t *gorigin;             /* The database origin */
 static bool ignore_kskflag = false;
 static bool keyset_kskonly = false;
 
@@ -96,9 +96,10 @@ loadzone(char *file, char *origin, dns_rdataclass_t rdclass, dns_db_t **db) {
 
 	name = dns_fixedname_initname(&fname);
 	result = dns_name_fromtext(name, &b, dns_rootname, 0, NULL);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("failed converting name '%s' to dns format: %s",
 		      origin, isc_result_totext(result));
+	}
 
 	result = dns_db_create(mctx, "rbt", name, dns_dbtype_zone,
 			       rdclass, 0, NULL, db);
@@ -120,7 +121,7 @@ loadzone(char *file, char *origin, dns_rdataclass_t rdclass, dns_db_t **db) {
 			      "use -o to specify a different zone origin",
 			      origin, file);
 		}
-		/* FALLTHROUGH */
+	/* FALLTHROUGH */
 	default:
 		fatal("failed loading zone from '%s': %s",
 		      file, isc_result_totext(result));
@@ -151,11 +152,11 @@ usage(void) {
 #if USE_PKCS11
 	fprintf(stderr, "\t\tpath to PKCS#11 provider library "
 		"(default is %s)\n", PK11_LIB_LOCATION);
-#else
+#else  /* if USE_PKCS11 */
 	fprintf(stderr, "\t\tname of an OpenSSL engine to use\n");
-#endif
+#endif /* if USE_PKCS11 */
 	fprintf(stderr, "\t-x:\tDNSKEY record signed with KSKs only, "
-			"not ZSKs\n");
+		"not ZSKs\n");
 	fprintf(stderr, "\t-z:\tAll records signed with KSKs\n");
 	exit(0);
 }
@@ -181,16 +182,26 @@ main(int argc, char *argv[]) {
 	while ((ch = isc_commandline_parse(argc, argv, CMDLINE_FLAGS)) != -1) {
 		switch (ch) {
 		case 'm':
-			if (strcasecmp(isc_commandline_argument, "record") == 0)
+			if (strcasecmp(isc_commandline_argument,
+				       "record") == 0) {
 				isc_mem_debugging |= ISC_MEM_DEBUGRECORD;
-			if (strcasecmp(isc_commandline_argument, "trace") == 0)
+			}
+			if (strcasecmp(isc_commandline_argument,
+				       "trace") == 0) {
 				isc_mem_debugging |= ISC_MEM_DEBUGTRACE;
-			if (strcasecmp(isc_commandline_argument, "usage") == 0)
+			}
+			if (strcasecmp(isc_commandline_argument,
+				       "usage") == 0) {
 				isc_mem_debugging |= ISC_MEM_DEBUGUSAGE;
-			if (strcasecmp(isc_commandline_argument, "size") == 0)
+			}
+			if (strcasecmp(isc_commandline_argument,
+				       "size") == 0) {
 				isc_mem_debugging |= ISC_MEM_DEBUGSIZE;
-			if (strcasecmp(isc_commandline_argument, "mctx") == 0)
+			}
+			if (strcasecmp(isc_commandline_argument,
+				       "mctx") == 0) {
 				isc_mem_debugging |= ISC_MEM_DEBUGCTX;
+			}
 			break;
 		default:
 			break;
@@ -200,12 +211,13 @@ main(int argc, char *argv[]) {
 	check_result(isc_app_start(), "isc_app_start");
 
 	result = isc_mem_create(0, 0, &mctx);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("out of memory");
+	}
 
 #if USE_PKCS11
 	pk11_result_register();
-#endif
+#endif /* if USE_PKCS11 */
 	dns_result_register();
 
 	isc_commandline_errprint = false;
@@ -234,8 +246,9 @@ main(int argc, char *argv[]) {
 		case 'v':
 			endp = NULL;
 			verbose = strtol(isc_commandline_argument, &endp, 0);
-			if (*endp != '\0')
+			if (*endp != '\0') {
 				fatal("verbose level must be numeric");
+			}
 			break;
 
 		case 'x':
@@ -247,10 +260,11 @@ main(int argc, char *argv[]) {
 			break;
 
 		case '?':
-			if (isc_commandline_option != '?')
+			if (isc_commandline_option != '?') {
 				fprintf(stderr, "%s: invalid argument -%c\n",
 					program, isc_commandline_option);
-			/* FALLTHROUGH */
+			}
+		/* FALLTHROUGH */
 
 		case 'h':
 			/* Does not return. */
@@ -268,9 +282,10 @@ main(int argc, char *argv[]) {
 	}
 
 	result = dst_lib_init(mctx, engine);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("could not initialize dst: %s",
 		      isc_result_totext(result));
+	}
 
 	isc_stdtime_get(&now);
 
@@ -281,8 +296,9 @@ main(int argc, char *argv[]) {
 	argc -= isc_commandline_index;
 	argv += isc_commandline_index;
 
-	if (argc < 1)
+	if (argc < 1) {
 		usage();
+	}
 
 	file = argv[0];
 
@@ -292,16 +308,18 @@ main(int argc, char *argv[]) {
 	POST(argc);
 	POST(argv);
 
-	if (origin == NULL)
+	if (origin == NULL) {
 		origin = file;
+	}
 
 	if (inputformatstr != NULL) {
-		if (strcasecmp(inputformatstr, "text") == 0)
+		if (strcasecmp(inputformatstr, "text") == 0) {
 			inputformat = dns_masterformat_text;
-		else if (strcasecmp(inputformatstr, "raw") == 0)
+		} else if (strcasecmp(inputformatstr, "raw") == 0) {
 			inputformat = dns_masterformat_raw;
-		else
+		} else {
 			fatal("unknown file format: %s\n", inputformatstr);
+		}
 	}
 
 	gdb = NULL;
@@ -323,8 +341,9 @@ main(int argc, char *argv[]) {
 	cleanup_logging(&log);
 	dst_lib_destroy();
 	dns_name_destroy();
-	if (verbose > 10)
+	if (verbose > 10) {
 		isc_mem_stats(mctx, stdout);
+	}
 	isc_mem_destroy(&mctx);
 
 	(void) isc_app_finish();

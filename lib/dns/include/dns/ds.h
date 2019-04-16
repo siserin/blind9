@@ -30,8 +30,10 @@
 ISC_LANG_BEGINDECLS
 
 isc_result_t
-dns_ds_buildrdata(dns_name_t *owner, dns_rdata_t *key,
-		  dns_dsdigest_t digest_type, unsigned char *buffer,
+dns_ds_buildrdata(dns_name_t *owner,
+		  dns_rdata_t *key,
+		  dns_dsdigest_t digest_type,
+		  unsigned char *buffer,
 		  dns_rdata_t *rdata);
 /*%<
  * Build the rdata of a DS record.
@@ -39,7 +41,7 @@ dns_ds_buildrdata(dns_name_t *owner, dns_rdata_t *key,
  * Requires:
  *\li	key	Points to a valid DNSKEY or CDNSKEY record.
  *\li	buffer	Points to a temporary buffer of at least
- * 		#DNS_DS_BUFFERSIZE bytes.
+ *              #DNS_DS_BUFFERSIZE bytes.
  *\li	rdata	Points to an initialized dns_rdata_t.
  *
  * Ensures:

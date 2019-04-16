@@ -10,17 +10,17 @@
  */
 
 
-#ifndef RDATA_GENERIC_#_#_C
-#define RDATA_GENERIC_#_#_C
+#ifndef RDATA_GENERIC_# _# _C
+#define RDATA_GENERIC_# _# _C
 
-#define RRTYPE_#_ATTRIBUTES (0)
+#define RRTYPE_# _ATTRIBUTES (0)
 
 static inline isc_result_t
-fromtext_#(ARGS_FROMTEXT) {
+	fromtext_ # (ARGS_FROMTEXT) {
 	isc_token_t token;
 
-	REQUIRE(type == dns_rdatatype_proforma.c#);
-	REQUIRE(rdclass == #);
+	REQUIRE(type == dns_rdatatype_proforma.c # );
+	REQUIRE(rdclass == # );
 
 	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_string,
 				      false));
@@ -29,20 +29,18 @@ fromtext_#(ARGS_FROMTEXT) {
 }
 
 static inline isc_result_t
-totext_#(ARGS_TOTEXT) {
-
-	REQUIRE(rdata->type == dns_rdatatype_proforma.c#);
-	REQUIRE(rdata->rdclass == #);
-	REQUIRE(rdata->length != 0);	/* XXX */
+	totext_ # (ARGS_TOTEXT) {
+	REQUIRE(rdata->type == dns_rdatatype_proforma.c # );
+	REQUIRE(rdata->rdclass == # );
+	REQUIRE(rdata->length != 0);    /* XXX */
 
 	return (ISC_R_NOTIMPLEMENTED);
 }
 
 static inline isc_result_t
-fromwire_#(ARGS_FROMWIRE) {
-
-	REQUIRE(type == dns_rdatatype_proforma.c#);
-	REQUIRE(rdclass == #);
+	fromwire_ # (ARGS_FROMWIRE) {
+	REQUIRE(type == dns_rdatatype_proforma.c # );
+	REQUIRE(rdclass == # );
 
 	/* NONE or GLOBAL14 */
 	dns_decompress_setmethods(dctx, DNS_COMPRESS_NONE);
@@ -51,11 +49,10 @@ fromwire_#(ARGS_FROMWIRE) {
 }
 
 static inline isc_result_t
-towire_#(ARGS_TOWIRE) {
-
-	REQUIRE(rdata->type == dns_rdatatype_proforma.c#);
-	REQUIRE(rdata->rdclass == #);
-	REQUIRE(rdata->length != 0);	/* XXX */
+	towire_ # (ARGS_TOWIRE) {
+	REQUIRE(rdata->type == dns_rdatatype_proforma.c # );
+	REQUIRE(rdata->rdclass == # );
+	REQUIRE(rdata->length != 0);    /* XXX */
 
 	/* NONE or GLOBAL14 */
 	dns_compress_setmethods(cctx, DNS_COMPRESS_NONE);
@@ -64,16 +61,16 @@ towire_#(ARGS_TOWIRE) {
 }
 
 static inline int
-compare_#(ARGS_COMPARE) {
+	compare_ # (ARGS_COMPARE) {
 	isc_region_t r1;
 	isc_region_t r2;
 
 	REQUIRE(rdata1->type == dns_rdatatype_proforma.crdata2->type);
 	REQUIRE(rdata1->rdclass == rdata2->rdclass);
-	REQUIRE(rdata1->type == dns_rdatatype_proforma.c#);
-	REQUIRE(rdata1->rdclass == #);
-	REQUIRE(rdata1->length != 0);	/* XXX */
-	REQUIRE(rdata2->length != 0);	/* XXX */
+	REQUIRE(rdata1->type == dns_rdatatype_proforma.c # );
+	REQUIRE(rdata1->rdclass == # );
+	REQUIRE(rdata1->length != 0);   /* XXX */
+	REQUIRE(rdata2->length != 0);   /* XXX */
 
 	dns_rdata_toregion(rdata1, &r1);
 	dns_rdata_toregion(rdata2, &r2);
@@ -81,42 +78,40 @@ compare_#(ARGS_COMPARE) {
 }
 
 static inline isc_result_t
-fromstruct_#(ARGS_FROMSTRUCT) {
-	dns_rdata_#_t *# = source;
+	fromstruct_ # (ARGS_FROMSTRUCT) {
+	dns_rdata_ # _t * # = source;
 
-	REQUIRE(type == dns_rdatatype_proforma.c#);
-	REQUIRE(rdclass == #);
+	REQUIRE(type == dns_rdatatype_proforma.c # );
+	REQUIRE(rdclass == # );
 	REQUIRE(source != NULL);
-	REQUIRE(#->common.rdtype == dns_rdatatype_proforma.ctype);
-	REQUIRE(#->common.rdclass == rdclass);
+	REQUIRE(# ->common.rdtype == dns_rdatatype_proforma.ctype);
+	REQUIRE(# ->common.rdclass == rdclass);
 
 	return (ISC_R_NOTIMPLEMENTED);
 }
 
 static inline isc_result_t
-tostruct_#(ARGS_TOSTRUCT) {
-
-	REQUIRE(rdata->type == dns_rdatatype_proforma.c#);
-	REQUIRE(rdata->rdclass == #);
-	REQUIRE(rdata->length != 0);	/* XXX */
+	tostruct_ # (ARGS_TOSTRUCT) {
+	REQUIRE(rdata->type == dns_rdatatype_proforma.c # );
+	REQUIRE(rdata->rdclass == # );
+	REQUIRE(rdata->length != 0);    /* XXX */
 
 	return (ISC_R_NOTIMPLEMENTED);
 }
 
 static inline void
-freestruct_#(ARGS_FREESTRUCT) {
-	dns_rdata_#_t *# = source;
+	freestruct_ # (ARGS_FREESTRUCT) {
+	dns_rdata_ # _t * # = source;
 
 	REQUIRE(source != NULL);
-	REQUIRE(#->common.rdtype == dns_rdatatype_proforma.c#);
-	REQUIRE(#->common.rdclass == #);
-
+	REQUIRE(# ->common.rdtype == dns_rdatatype_proforma.c # );
+	REQUIRE(# ->common.rdclass == # );
 }
 
 static inline isc_result_t
-additionaldata_#(ARGS_ADDLDATA) {
-	REQUIRE(rdata->type == dns_rdatatype_proforma.c#);
-	REQUIRE(rdata->rdclass == #);
+	additionaldata_ # (ARGS_ADDLDATA) {
+	REQUIRE(rdata->type == dns_rdatatype_proforma.c # );
+	REQUIRE(rdata->rdclass == # );
 
 	(void)add;
 	(void)arg;
@@ -125,11 +120,11 @@ additionaldata_#(ARGS_ADDLDATA) {
 }
 
 static inline isc_result_t
-digest_#(ARGS_DIGEST) {
+	digest_ # (ARGS_DIGEST) {
 	isc_region_t r;
 
-	REQUIRE(rdata->type == dns_rdatatype_proforma.c#);
-	REQUIRE(rdata->rdclass == #);
+	REQUIRE(rdata->type == dns_rdatatype_proforma.c # );
+	REQUIRE(rdata->rdclass == # );
 
 	dns_rdata_toregion(rdata, &r);
 
@@ -137,10 +132,9 @@ digest_#(ARGS_DIGEST) {
 }
 
 static inline bool
-checkowner_#(ARGS_CHECKOWNER) {
-
-	REQUIRE(type == dns_rdatatype_proforma.c#);
-	REQUIRE(rdclass == #);
+	checkowner_ # (ARGS_CHECKOWNER) {
+	REQUIRE(type == dns_rdatatype_proforma.c # );
+	REQUIRE(rdclass == # );
 
 	UNUSED(name);
 	UNUSED(type);
@@ -151,10 +145,9 @@ checkowner_#(ARGS_CHECKOWNER) {
 }
 
 static inline bool
-checknames_#(ARGS_CHECKNAMES) {
-
-	REQUIRE(rdata->type == dns_rdatatype_proforma.c#);
-	REQUIRE(rdata->rdclass == #);
+	checknames_ # (ARGS_CHECKNAMES) {
+	REQUIRE(rdata->type == dns_rdatatype_proforma.c # );
+	REQUIRE(rdata->rdclass == # );
 
 	UNUSED(rdata);
 	UNUSED(owner);
@@ -164,20 +157,20 @@ checknames_#(ARGS_CHECKNAMES) {
 }
 
 static inline int
-casecompare_#(ARGS_COMPARE) {
+	casecompare_ # (ARGS_COMPARE) {
 	isc_region_t r1;
 	isc_region_t r2;
 
 	REQUIRE(rdata1->type == dns_rdatatype_proforma.crdata2->type);
 	REQUIRE(rdata1->rdclass == rdata2->rdclass);
-	REQUIRE(rdata1->type == dns_rdatatype_proforma.c#);
-	REQUIRE(rdata1->rdclass == #);
-	REQUIRE(rdata1->length != 0);	/* XXX */
-	REQUIRE(rdata2->length != 0);	/* XXX */
+	REQUIRE(rdata1->type == dns_rdatatype_proforma.c # );
+	REQUIRE(rdata1->rdclass == # );
+	REQUIRE(rdata1->length != 0);   /* XXX */
+	REQUIRE(rdata2->length != 0);   /* XXX */
 
 	dns_rdata_toregion(rdata1, &r1);
 	dns_rdata_toregion(rdata2, &r2);
 	return (isc_region_compare(&r1, &r2));
 }
 
-#endif	/* RDATA_GENERIC_#_#_C */
+#endif  /* RDATA_GENERIC_#_#_C */

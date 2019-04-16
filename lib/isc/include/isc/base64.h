@@ -25,15 +25,17 @@ ISC_LANG_BEGINDECLS
  ***/
 
 isc_result_t
-isc_base64_totext(isc_region_t *source, int wordlength,
-		  const char *wordbreak, isc_buffer_t *target);
+isc_base64_totext(isc_region_t *source,
+		  int wordlength,
+		  const char *wordbreak,
+		  isc_buffer_t *target);
 /*!<
  * \brief Convert data into base64 encoded text.
  *
  * Notes:
  *\li	The base64 encoded text in 'target' will be divided into
  *	words of at most 'wordlength' characters, separated by
- * 	the 'wordbreak' string.  No parentheses will surround
+ *      the 'wordbreak' string.  No parentheses will surround
  *	the text.
  *
  * Requires:
@@ -62,7 +64,7 @@ isc_base64_decodestring(const char *cstr, isc_buffer_t *target);
  *			   fit in 'target'.
  *\li	#ISC_R_BADBASE64 -- 'cstr' is not a valid base64 encoding.
  *
- * 	Other error returns are any possible error code from:
+ *      Other error returns are any possible error code from:
  *\li		isc_lex_create(),
  *\li		isc_lex_openbuffer(),
  *\li		isc_base64_tobuffer().

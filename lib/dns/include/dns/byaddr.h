@@ -14,8 +14,8 @@
 #define DNS_BYADDR_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/byaddr.h
  * \brief
@@ -56,14 +56,19 @@ ISC_LANG_BEGINDECLS
  */
 typedef struct dns_byaddrevent {
 	ISC_EVENT_COMMON(struct dns_byaddrevent);
-	isc_result_t			result;
-	dns_namelist_t			names;
+	isc_result_t	      result;
+	dns_namelist_t	      names;
 } dns_byaddrevent_t;
 
 isc_result_t
-dns_byaddr_create(isc_mem_t *mctx, const isc_netaddr_t *address,
-		  dns_view_t *view, unsigned int options, isc_task_t *task,
-		  isc_taskaction_t action, void *arg, dns_byaddr_t **byaddrp);
+dns_byaddr_create(isc_mem_t *mctx,
+		  const isc_netaddr_t *address,
+		  dns_view_t *view,
+		  unsigned int options,
+		  isc_task_t *task,
+		  isc_taskaction_t action,
+		  void *arg,
+		  dns_byaddr_t **byaddrp);
 /*%<
  * Find the domain name of 'address'.
  *
@@ -131,7 +136,8 @@ dns_byaddr_destroy(dns_byaddr_t **byaddrp);
  */
 
 isc_result_t
-dns_byaddr_createptrname(const isc_netaddr_t *address, unsigned int options,
+dns_byaddr_createptrname(const isc_netaddr_t *address,
+			 unsigned int options,
 			 dns_name_t *name);
 /*%<
  * Creates a name that would be used in a PTR query for this address.  The

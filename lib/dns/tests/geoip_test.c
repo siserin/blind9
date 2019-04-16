@@ -68,8 +68,11 @@ static dns_geoip_databases_t geoip = {
 };
 
 static void
-init_geoip_db(GeoIP **dbp, GeoIPDBTypes edition, GeoIPDBTypes fallback,
-	      GeoIPOptions method, const char *name)
+init_geoip_db(GeoIP **dbp,
+	      GeoIPDBTypes edition,
+	      GeoIPDBTypes fallback,
+	      GeoIPOptions method,
+	      const char *name)
 {
 	GeoIP *db;
 
@@ -82,7 +85,7 @@ init_geoip_db(GeoIP **dbp, GeoIPDBTypes edition, GeoIPDBTypes fallback,
 		db = *dbp = NULL;
 	}
 
-	if (! GeoIP_db_avail(edition)) {
+	if (!GeoIP_db_avail(edition)) {
 		goto fail;
 	}
 
@@ -106,9 +109,9 @@ load_geoip(const char *dir) {
 
 #ifdef _WIN32
 	method = GEOIP_STANDARD;
-#else
+#else  /* ifdef _WIN32 */
 	method = GEOIP_MMAP_CACHE;
-#endif
+#endif /* ifdef _WIN32 */
 
 	if (dir != NULL) {
 		char *p;
@@ -121,14 +124,14 @@ load_geoip(const char *dir) {
 #ifdef HAVE_GEOIP_V6
 	init_geoip_db(&geoip.country_v6, GEOIP_COUNTRY_EDITION_V6, 0,
 		      method, "Country (IPv6)");
-#endif
+#endif /* ifdef HAVE_GEOIP_V6 */
 
 	init_geoip_db(&geoip.city_v4, GEOIP_CITY_EDITION_REV1,
 		      GEOIP_CITY_EDITION_REV0, method, "City (IPv4)");
 #if defined(HAVE_GEOIP_V6) && defined(HAVE_GEOIP_CITY_V6)
 	init_geoip_db(&geoip.city_v6, GEOIP_CITY_EDITION_REV1_V6,
 		      GEOIP_CITY_EDITION_REV0_V6, method, "City (IPv6)");
-#endif
+#endif /* if defined(HAVE_GEOIP_V6) && defined(HAVE_GEOIP_CITY_V6) */
 
 	init_geoip_db(&geoip.region, GEOIP_REGION_EDITION_REV1,
 		      GEOIP_REGION_EDITION_REV0, method, "Region");
@@ -145,7 +148,8 @@ load_geoip(const char *dir) {
 }
 
 static bool
-do_lookup_string(const char *addr, dns_geoip_subtype_t subtype,
+do_lookup_string(const char *addr,
+		 dns_geoip_subtype_t subtype,
 		 const char *string)
 {
 	dns_geoip_elem_t elt;
@@ -162,7 +166,8 @@ do_lookup_string(const char *addr, dns_geoip_subtype_t subtype,
 }
 
 static bool
-do_lookup_string_v6(const char *addr, dns_geoip_subtype_t subtype,
+do_lookup_string_v6(const char *addr,
+		    dns_geoip_subtype_t subtype,
 		    const char *string)
 {
 	dns_geoip_elem_t elt;
@@ -579,7 +584,7 @@ main(void) {
 	};
 
 	return (cmocka_run_group_tests(tests, NULL, NULL));
-#else
+#else  /* ifdef HAVE_GEOIP */
 	print_message("1..0 # Skip geoip not enabled\n");
 #endif /* HAVE_GEOIP */
 }

@@ -24,14 +24,14 @@
 #include <dns/tcpmsg.h>
 
 #ifdef TCPMSG_DEBUG
-#include <stdio.h>		/* Required for printf. */
+#include <stdio.h>              /* Required for printf. */
 #define XDEBUG(x) printf x
-#else
+#else  /* ifdef TCPMSG_DEBUG */
 #define XDEBUG(x)
-#endif
+#endif /* ifdef TCPMSG_DEBUG */
 
-#define TCPMSG_MAGIC		ISC_MAGIC('T', 'C', 'P', 'm')
-#define VALID_TCPMSG(foo)	ISC_MAGIC_VALID(foo, TCPMSG_MAGIC)
+#define TCPMSG_MAGIC            ISC_MAGIC('T', 'C', 'P', 'm')
+#define VALID_TCPMSG(foo)       ISC_MAGIC_VALID(foo, TCPMSG_MAGIC)
 
 static void recv_length(isc_task_t *, isc_event_t *);
 static void recv_message(isc_task_t *, isc_event_t *);
@@ -133,11 +133,11 @@ dns_tcpmsg_init(isc_mem_t *mctx, isc_socket_t *sock, dns_tcpmsg_t *tcpmsg) {
 	tcpmsg->size = 0;
 	tcpmsg->buffer.base = NULL;
 	tcpmsg->buffer.length = 0;
-	tcpmsg->maxsize = 65535;		/* Largest message possible. */
+	tcpmsg->maxsize = 65535;                /* Largest message possible. */
 	tcpmsg->mctx = mctx;
 	tcpmsg->sock = sock;
-	tcpmsg->task = NULL;			/* None yet. */
-	tcpmsg->result = ISC_R_UNEXPECTED;	/* None yet. */
+	tcpmsg->task = NULL;                    /* None yet. */
+	tcpmsg->result = ISC_R_UNEXPECTED;      /* None yet. */
 	/*
 	 * Should probably initialize the event here, but it can wait.
 	 */
@@ -155,7 +155,9 @@ dns_tcpmsg_setmaxsize(dns_tcpmsg_t *tcpmsg, unsigned int maxsize) {
 
 isc_result_t
 dns_tcpmsg_readmessage(dns_tcpmsg_t *tcpmsg,
-		       isc_task_t *task, isc_taskaction_t action, void *arg)
+		       isc_task_t *task,
+		       isc_taskaction_t action,
+		       void *arg)
 {
 	isc_result_t result;
 	isc_region_t region;
@@ -185,8 +187,9 @@ dns_tcpmsg_readmessage(dns_tcpmsg_t *tcpmsg,
 	result = isc_socket_recv(tcpmsg->sock, &region, 0,
 				 tcpmsg->task, recv_length, tcpmsg);
 
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		tcpmsg->task = NULL;
+	}
 
 	return (result);
 }
@@ -213,14 +216,15 @@ void
 dns_tcpmsg_freebuffer(dns_tcpmsg_t *tcpmsg) {
 	REQUIRE(VALID_TCPMSG(tcpmsg));
 
-	if (tcpmsg->buffer.base == NULL)
+	if (tcpmsg->buffer.base == NULL) {
 		return;
+	}
 
 	isc_mem_put(tcpmsg->mctx, tcpmsg->buffer.base, tcpmsg->buffer.length);
 	tcpmsg->buffer.base = NULL;
 	tcpmsg->buffer.length = 0;
 }
-#endif
+#endif /* if 0 */
 
 void
 dns_tcpmsg_invalidate(dns_tcpmsg_t *tcpmsg) {

@@ -14,8 +14,8 @@
 #define DNS_SDB_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/sdb.h
  * \brief
@@ -79,12 +79,12 @@ typedef void
 
 
 typedef struct dns_sdbmethods {
-	dns_sdblookupfunc_t	lookup;
-	dns_sdbauthorityfunc_t	authority;
-	dns_sdballnodesfunc_t	allnodes;
-	dns_sdbcreatefunc_t	create;
-	dns_sdbdestroyfunc_t	destroy;
-	dns_sdblookup2func_t	lookup2;
+	dns_sdblookupfunc_t	      lookup;
+	dns_sdbauthorityfunc_t	      authority;
+	dns_sdballnodesfunc_t	      allnodes;
+	dns_sdbcreatefunc_t	      create;
+	dns_sdbdestroyfunc_t	      destroy;
+	dns_sdblookup2func_t	      lookup2;
 } dns_sdbmethods_t;
 
 /***
@@ -99,8 +99,11 @@ ISC_LANG_BEGINDECLS
 #define DNS_SDBFLAG_DNS64 0x00000008U
 
 isc_result_t
-dns_sdb_register(const char *drivername, const dns_sdbmethods_t *methods,
-		 void *driverdata, unsigned int flags, isc_mem_t *mctx,
+dns_sdb_register(const char *drivername,
+		 const dns_sdbmethods_t *methods,
+		 void *driverdata,
+		 unsigned int flags,
+		 isc_mem_t *mctx,
 		 dns_sdbimplementation_t **sdbimp);
 /*%<
  * Register a simple database driver for the database type 'drivername',
@@ -170,11 +173,16 @@ dns_sdb_unregister(dns_sdbimplementation_t **sdbimp);
 
 /*% See dns_sdb_putradata() */
 isc_result_t
-dns_sdb_putrr(dns_sdblookup_t *lookup, const char *type, dns_ttl_t ttl,
+dns_sdb_putrr(dns_sdblookup_t *lookup,
+	      const char *type,
+	      dns_ttl_t ttl,
 	      const char *data);
 isc_result_t
-dns_sdb_putrdata(dns_sdblookup_t *lookup, dns_rdatatype_t type, dns_ttl_t ttl,
-		 const unsigned char *rdata, unsigned int rdlen);
+dns_sdb_putrdata(dns_sdblookup_t *lookup,
+		 dns_rdatatype_t type,
+		 dns_ttl_t ttl,
+		 const unsigned char *rdata,
+		 unsigned int rdlen);
 /*%<
  * Add a single resource record to the lookup structure to be
  * returned in the query response.  dns_sdb_putrr() takes the
@@ -185,12 +193,18 @@ dns_sdb_putrdata(dns_sdblookup_t *lookup, dns_rdatatype_t type, dns_ttl_t ttl,
 
 /*% See dns_sdb_putnamerdata() */
 isc_result_t
-dns_sdb_putnamedrr(dns_sdballnodes_t *allnodes, const char *name,
-		   const char *type, dns_ttl_t ttl, const char *data);
+dns_sdb_putnamedrr(dns_sdballnodes_t *allnodes,
+		   const char *name,
+		   const char *type,
+		   dns_ttl_t ttl,
+		   const char *data);
 isc_result_t
-dns_sdb_putnamedrdata(dns_sdballnodes_t *allnodes, const char *name,
-		      dns_rdatatype_t type, dns_ttl_t ttl,
-		      const void *rdata, unsigned int rdlen);
+dns_sdb_putnamedrdata(dns_sdballnodes_t *allnodes,
+		      const char *name,
+		      dns_rdatatype_t type,
+		      dns_ttl_t ttl,
+		      const void *rdata,
+		      unsigned int rdlen);
 /*%<
  * Add a single resource record to the allnodes structure to be
  * included in a zone transfer response, in text or wire
@@ -198,7 +212,9 @@ dns_sdb_putnamedrdata(dns_sdballnodes_t *allnodes, const char *name,
  */
 
 isc_result_t
-dns_sdb_putsoa(dns_sdblookup_t *lookup, const char *mname, const char *rname,
+dns_sdb_putsoa(dns_sdblookup_t *lookup,
+	       const char *mname,
+	       const char *rname,
 	       uint32_t serial);
 /*%<
  * This function may optionally be called from the 'authority' callback

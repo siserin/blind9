@@ -14,8 +14,8 @@
 #define ISC_INTERFACEITER_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file isc/interfaceiter.h
  * \brief Iterates over the list of network interfaces.
@@ -44,20 +44,21 @@
  */
 
 struct isc_interface {
-	char name[32];			/*%< Interface name, null-terminated. */
-	unsigned int af;		/*%< Address family. */
-	isc_netaddr_t address;		/*%< Local address. */
-	isc_netaddr_t netmask;		/*%< Network mask. */
-	isc_netaddr_t dstaddress; 	/*%< Destination address (point-to-point only). */
-	uint32_t flags;		/*%< Flags; see INTERFACE flags. */
+	char		     name[32];  /*%< Interface name, null-terminated. */
+	unsigned int	     af;        /*%< Address family. */
+	isc_netaddr_t	     address;   /*%< Local address. */
+	isc_netaddr_t	     netmask;   /*%< Network mask. */
+	isc_netaddr_t	     dstaddress; /*%< Destination address
+	                                  * (point-to-point only). */
+	uint32_t	     flags; /*%< Flags; see INTERFACE flags. */
 };
 
 /*@{*/
 /*! Interface flags. */
 
-#define INTERFACE_F_UP			0x00000001U
-#define INTERFACE_F_POINTTOPOINT	0x00000002U
-#define INTERFACE_F_LOOPBACK		0x00000004U
+#define INTERFACE_F_UP                  0x00000001U
+#define INTERFACE_F_POINTTOPOINT        0x00000002U
+#define INTERFACE_F_LOOPBACK            0x00000004U
 /*@}*/
 
 /***
@@ -89,15 +90,14 @@ isc_interfaceiter_first(isc_interfaceiter_t *iter);
  */
 
 isc_result_t
-isc_interfaceiter_current(isc_interfaceiter_t *iter,
-			  isc_interface_t *ifdata);
+isc_interfaceiter_current(isc_interfaceiter_t *iter, isc_interface_t *ifdata);
 /*!<
  * \brief Get information about the interface the iterator is currently
  * positioned at and store it at *ifdata.
  *
  * Requires:
- *\li 	The iterator has been successfully positioned using
- * 	isc_interface_iter_first() / isc_interface_iter_next().
+ *\li   The iterator has been successfully positioned using
+ *      isc_interface_iter_first() / isc_interface_iter_next().
  *
  * Returns:
  *\li	#ISC_R_SUCCESS		Success.
@@ -110,7 +110,7 @@ isc_interfaceiter_next(isc_interfaceiter_t *iter);
  *
  * Requires:
  * \li	The iterator has been successfully positioned using
- * 	isc_interface_iter_first() / isc_interface_iter_next().
+ *      isc_interface_iter_first() / isc_interface_iter_next().
  *
  * Returns:
  *\li	#ISC_R_SUCCESS		Success.

@@ -29,8 +29,10 @@
 #include <dst/dst.h>
 
 isc_result_t
-dns_ds_buildrdata(dns_name_t *owner, dns_rdata_t *key,
-		  dns_dsdigest_t digest_type, unsigned char *buffer,
+dns_ds_buildrdata(dns_name_t *owner,
+		  dns_rdata_t *key,
+		  dns_dsdigest_t digest_type,
+		  unsigned char *buffer,
 		  dns_rdata_t *rdata)
 {
 	dns_fixedname_t fname;
@@ -117,7 +119,7 @@ dns_ds_buildrdata(dns_name_t *owner, dns_rdata_t *key,
 
 	ret = dns_rdata_fromstruct(rdata, key->rdclass, dns_rdatatype_ds,
 				   &ds, &b);
-end:
+ end:
 	if (md != NULL) {
 		isc_md_free(md);
 	}

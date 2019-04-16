@@ -57,11 +57,15 @@ soa_get(dns_rdata_t *rdata, int offset) {
 }
 
 isc_result_t
-dns_soa_buildrdata(const dns_name_t *origin, const dns_name_t *contact,
+dns_soa_buildrdata(const dns_name_t *origin,
+		   const dns_name_t *contact,
 		   dns_rdataclass_t rdclass,
-		   uint32_t serial, uint32_t refresh,
-		   uint32_t retry, uint32_t expire,
-		   uint32_t minimum, unsigned char *buffer,
+		   uint32_t serial,
+		   uint32_t refresh,
+		   uint32_t retry,
+		   uint32_t expire,
+		   uint32_t minimum,
+		   unsigned char *buffer,
 		   dns_rdata_t *rdata) {
 	dns_rdata_soa_t soa;
 	isc_buffer_t rdatabuf;
@@ -86,28 +90,28 @@ dns_soa_buildrdata(const dns_name_t *origin, const dns_name_t *contact,
 	dns_name_clone(contact, &soa.contact);
 
 	return (dns_rdata_fromstruct(rdata, rdclass, dns_rdatatype_soa,
-				      &soa, &rdatabuf));
+				     &soa, &rdatabuf));
 }
 
 uint32_t
 dns_soa_getserial(dns_rdata_t *rdata) {
-	return soa_get(rdata, 0);
+	return(soa_get(rdata, 0));
 }
 uint32_t
 dns_soa_getrefresh(dns_rdata_t *rdata) {
-	return soa_get(rdata, 4);
+	return(soa_get(rdata, 4));
 }
 uint32_t
 dns_soa_getretry(dns_rdata_t *rdata) {
-	return soa_get(rdata, 8);
+	return(soa_get(rdata, 8));
 }
 uint32_t
 dns_soa_getexpire(dns_rdata_t *rdata) {
-	return soa_get(rdata, 12);
+	return(soa_get(rdata, 12));
 }
 uint32_t
 dns_soa_getminimum(dns_rdata_t *rdata) {
-	return soa_get(rdata, 16);
+	return(soa_get(rdata, 16));
 }
 
 static void

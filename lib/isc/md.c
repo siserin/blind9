@@ -129,8 +129,11 @@ isc_md_type_get_block_size(isc_md_type_t md_type) {
 }
 
 isc_result_t
-isc_md(isc_md_type_t md_type, const unsigned char *buf, const size_t len,
-	unsigned char *digest, unsigned int *digestlen)
+isc_md(isc_md_type_t md_type,
+       const unsigned char *buf,
+       const size_t len,
+       unsigned char *digest,
+       unsigned int *digestlen)
 {
 	isc_md_t *md;
 	isc_result_t res;

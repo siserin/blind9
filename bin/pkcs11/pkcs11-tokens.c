@@ -73,8 +73,9 @@ main(int argc, char *argv[]) {
 	pk11_result_register();
 
 	/* Initialize the CRYPTOKI library */
-	if (lib_name != NULL)
+	if (lib_name != NULL) {
 		pk11_set_lib_name(lib_name);
+	}
 
 	result = pk11_get_session(&pctx, OP_ANY, true, false,
 				  false, NULL, 0);
@@ -83,17 +84,18 @@ main(int argc, char *argv[]) {
 	    result == PK11_R_NOAESSERVICE) {
 		fprintf(stderr, "Warning: %s\n", isc_result_totext(result));
 		fprintf(stderr, "This HSM will not work with BIND 9 "
-				"using native PKCS#11.\n\n");
+			"using native PKCS#11.\n\n");
 	} else if ((result != ISC_R_SUCCESS) && (result != ISC_R_NOTFOUND)) {
 		fprintf(stderr, "Unrecoverable error initializing "
-				"PKCS#11: %s\n", isc_result_totext(result));
+			"PKCS#11: %s\n", isc_result_totext(result));
 		exit(1);
 	}
 
 	pk11_dump_tokens();
 
-	if (pctx.handle != NULL)
+	if (pctx.handle != NULL) {
 		pk11_return_session(&pctx);
+	}
 	(void) pk11_finalize();
 
 	isc_mem_destroy(&mctx);

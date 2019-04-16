@@ -22,13 +22,15 @@
 #include <dns/timer.h>
 
 #define CHECK(op) \
-	do { result = (op);					\
-		if (result != ISC_R_SUCCESS) goto failure;	\
+	do { result = (op);                                     \
+	     if (result != ISC_R_SUCCESS) { goto failure;}      \
 	} while (0)
 
 isc_result_t
-dns_timer_setidle(isc_timer_t *timer, unsigned int maxtime,
-		  unsigned int idletime, bool purge)
+dns_timer_setidle(isc_timer_t *timer,
+		  unsigned int maxtime,
+		  unsigned int idletime,
+		  bool purge)
 {
 	isc_result_t result;
 	isc_interval_t maxinterval, idleinterval;

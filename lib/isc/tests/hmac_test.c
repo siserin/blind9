@@ -31,7 +31,7 @@
 
 #include "../hmac.c"
 
-#define TEST_INPUT(x) (x), sizeof(x)-1
+#define TEST_INPUT(x) (x), sizeof(x) - 1
 
 static int
 _setup(void **state) {
@@ -83,12 +83,18 @@ isc_hmac_free_test(void **state) {
 }
 
 static void
-isc_hmac_test(isc_hmac_t *hmac, const void *key, size_t keylen,
-	      isc_md_type_t type, const char *buf, size_t buflen,
-	      const char *result, const int repeats)
+isc_hmac_test(isc_hmac_t *hmac,
+	      const void *key,
+	      size_t keylen,
+	      isc_md_type_t type,
+	      const char *buf,
+	      size_t buflen,
+	      const char *result,
+	      const int repeats)
 {
 	assert_non_null(hmac);
-	assert_int_equal(isc_hmac_init(hmac, key, keylen, type), ISC_R_SUCCESS);
+	assert_int_equal(isc_hmac_init(hmac, key, keylen, type),
+			 ISC_R_SUCCESS);
 
 	int i;
 
@@ -106,14 +112,13 @@ isc_hmac_test(isc_hmac_t *hmac, const void *key, size_t keylen,
 
 	char hexdigest[ISC_MAX_MD_SIZE * 2 + 3];
 	isc_region_t r = { .base = digest,
-			   .length = digestlen
-	};
+			   .length = digestlen};
 	isc_buffer_t b;
 	isc_buffer_init(&b, hexdigest, sizeof(hexdigest));
 
 	assert_return_code(isc_hex_totext(&r, 0, "", &b), ISC_R_SUCCESS);
 
-	assert_memory_equal(hexdigest, result, (result?strlen(result):0));
+	assert_memory_equal(hexdigest, result, (result ? strlen(result) : 0));
 	assert_int_equal(isc_hmac_reset(hmac), ISC_R_SUCCESS);
 }
 
@@ -129,7 +134,8 @@ isc_hmac_init_test(void **state) {
 
 	expect_assert_failure(isc_hmac_init(hmac, NULL, 0, ISC_MD_MD5));
 
-	assert_int_equal(isc_hmac_init(hmac, "", 0, ISC_MD_MD5), ISC_R_SUCCESS);
+	assert_int_equal(isc_hmac_init(hmac, "", 0, ISC_MD_MD5),
+			 ISC_R_SUCCESS);
 	assert_int_equal(isc_hmac_reset(hmac), ISC_R_SUCCESS);
 
 	assert_int_equal(isc_hmac_init(hmac, "", 0, ISC_MD_SHA1),
@@ -190,7 +196,7 @@ isc_hmac_reset_test(void **state) {
 	 * segfault when called by hand
 	 */
 	expect_assert_failure(isc_hmac_final(hmac, digest, &digestlen));
-#endif
+#endif /* if 0 */
 }
 
 static void
@@ -313,7 +319,7 @@ isc_hmac_md5_test(void **state) {
 				 "Larger Than One Block-Size Data"),
 		      "E8E99D0F45237D786D6BBAA7965C7808BBFF1A91",
 		      1);
-#endif
+#endif /* if 0 */
 }
 
 static void
@@ -376,7 +382,7 @@ isc_hmac_sha1_test(void **state) {
 		      TEST_INPUT("Test With Truncation"),
 		      "4C1A03424B55E07FE7F27BE1",
 		      1);
-#endif
+#endif /* if 0 */
 	/* Test 6 */
 	isc_hmac_test(hmac,
 		      TEST_INPUT("\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
@@ -473,7 +479,7 @@ isc_hmac_sha224_test(void **state) {
 		      TEST_INPUT("Test With Truncation"),
 		      "4C1A03424B55E07FE7F27BE1",
 		      1);
-#endif
+#endif /* if 0 */
 	/* Test 6 */
 	isc_hmac_test(hmac,
 		      TEST_INPUT("\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
@@ -597,7 +603,7 @@ isc_hmac_sha256_test(void **state) {
 		      TEST_INPUT("Test With Truncation"),
 		      "4C1A03424B55E07FE7F27BE1",
 		      1);
-#endif
+#endif /* if 0 */
 	/* Test 6 */
 	isc_hmac_test(hmac,
 		      TEST_INPUT("\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
@@ -725,7 +731,7 @@ isc_hmac_sha384_test(void **state) {
 		      TEST_INPUT("Test With Truncation"),
 		      "4C1A03424B55E07FE7F27BE1",
 		      1);
-#endif
+#endif /* if 0 */
 	/* Test 6 */
 	isc_hmac_test(hmac,
 		      TEST_INPUT("\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
@@ -855,7 +861,7 @@ isc_hmac_sha512_test(void **state) {
 		      TEST_INPUT("Test With Truncation"),
 		      "4C1A03424B55E07FE7F27BE1",
 		      1);
-#endif
+#endif /* if 0 */
 	/* Test 6 */
 	isc_hmac_test(hmac,
 		      TEST_INPUT("\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
@@ -959,4 +965,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

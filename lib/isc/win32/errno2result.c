@@ -25,8 +25,7 @@
  * not already there.
  */
 isc_result_t
-isc__errno2resultx(int posixerrno, bool dolog,
-		   const char *file, int line)
+isc__errno2resultx(int posixerrno,bool dolog,const char*file,int line)
 {
 	char strbuf[ISC_STRERRORSIZE];
 
@@ -34,7 +33,7 @@ isc__errno2resultx(int posixerrno, bool dolog,
 	case ENOTDIR:
 	case WSAELOOP:
 	case WSAEINVAL:
-	case EINVAL:		/* XXX sometimes this is not for files */
+	case EINVAL:            /* XXX sometimes this is not for files */
 	case ENAMETOOLONG:
 	case WSAENAMETOOLONG:
 	case EBADF:
@@ -55,7 +54,7 @@ isc__errno2resultx(int posixerrno, bool dolog,
 #ifdef EOVERFLOW
 	case EOVERFLOW:
 		return (ISC_R_RANGE);
-#endif
+#endif /* ifdef EOVERFLOW */
 	case ENFILE:
 	case EMFILE:
 	case WSAEMFILE:
@@ -101,11 +100,11 @@ isc__errno2resultx(int posixerrno, bool dolog,
 		return (ISC_R_NORESOURCES);
 	default:
 		if (dolog) {
-			strerror_r(posixerrno, strbuf, sizeof(strbuf));
-			UNEXPECTED_ERROR(file, line,
+			strerror_r(posixerrno,strbuf,sizeof(strbuf));
+			UNEXPECTED_ERROR(file,line,
 					 "unable to convert errno "
 					 "to isc_result: %d: %s",
-					 posixerrno, strbuf);
+					 posixerrno,strbuf);
 		}
 		/*
 		 * XXXDCL would be nice if perhaps this function could

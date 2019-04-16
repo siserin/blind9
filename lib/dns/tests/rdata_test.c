@@ -40,10 +40,10 @@ static bool debug = false;
  * An array of these structures is passed to compare_ok().
  */
 struct compare_ok {
-	const char *text1;		/* text passed to fromtext_*() */
-	const char *text2;		/* text passed to fromtext_*() */
-	int answer;			/* -1, 0, 1 */
-	int lineno;			/* source line defining this RDATA */
+	const char *	  text1;        /* text passed to fromtext_*() */
+	const char *	  text2;        /* text passed to fromtext_*() */
+	int		  answer;       /* -1, 0, 1 */
+	int		  lineno;       /* source line defining this RDATA */
 };
 typedef struct compare_ok compare_ok_t;
 
@@ -72,18 +72,18 @@ _teardown(void **state) {
  * An array of these structures is passed to check_text_ok().
  */
 typedef struct text_ok {
-	const char *text_in;		/* text passed to fromtext_*() */
-	const char *text_out;		/* text expected from totext_*();
-					   NULL indicates text_in is invalid */
+	const char *	  text_in;      /* text passed to fromtext_*() */
+	const char *	  text_out;     /* text expected from totext_*();
+	                                 * NULL indicates text_in is invalid */
 } text_ok_t;
 
 /*
  * An array of these structures is passed to check_wire_ok().
  */
 typedef struct wire_ok {
-	unsigned char data[512];	/* RDATA in wire format */
-	size_t len;			/* octets of data to parse */
-	bool ok;			/* is this RDATA valid? */
+	unsigned char	     data[512]; /* RDATA in wire format */
+	size_t		     len;       /* octets of data to parse */
+	bool		     ok;        /* is this RDATA valid? */
 } wire_ok_t;
 
 #define COMPARE(r1, r2, answer) \
@@ -92,17 +92,17 @@ typedef struct wire_ok {
 	{ NULL, NULL, 0, __LINE__ }
 
 #define TEXT_VALID_CHANGED(data_in, data_out) \
-				{ data_in, data_out }
-#define TEXT_VALID(data)	{ data, data }
-#define TEXT_INVALID(data)	{ data, NULL }
-#define TEXT_SENTINEL()		TEXT_INVALID(NULL)
+	{ data_in, data_out }
+#define TEXT_VALID(data)        { data, data }
+#define TEXT_INVALID(data)      { data, NULL }
+#define TEXT_SENTINEL()         TEXT_INVALID(NULL)
 
-#define VARGC(...)		(sizeof((unsigned char[]){ __VA_ARGS__ }))
-#define WIRE_TEST(ok, ...)	{					      \
-					{ __VA_ARGS__ }, VARGC(__VA_ARGS__),  \
-					ok				      \
-				}
-#define WIRE_VALID(...)		WIRE_TEST(true, __VA_ARGS__)
+#define VARGC(...)              (sizeof((unsigned char[]){ __VA_ARGS__ }))
+#define WIRE_TEST(ok, ...)      {                                             \
+		{ __VA_ARGS__ }, VARGC(__VA_ARGS__),  \
+		ok                                    \
+}
+#define WIRE_VALID(...)         WIRE_TEST(true, __VA_ARGS__)
 /*
  * WIRE_INVALID() test cases must always have at least one octet specified to
  * distinguish them from WIRE_SENTINEL().  Use the 'empty_ok' parameter passed
@@ -110,8 +110,8 @@ typedef struct wire_ok {
  * RR type or not.
  */
 #define WIRE_INVALID(FIRST, ...) \
-				WIRE_TEST(false, FIRST, __VA_ARGS__)
-#define WIRE_SENTINEL()		WIRE_TEST(false)
+	WIRE_TEST(false, FIRST, __VA_ARGS__)
+#define WIRE_SENTINEL()         WIRE_TEST(false)
 
 /*
  * Call dns_rdata_fromwire() for data in 'src', which is 'srclen' octets in
@@ -120,9 +120,13 @@ typedef struct wire_ok {
  * 'rdata' refer to that uncompressed wire form.
  */
 static isc_result_t
-wire_to_rdata(const unsigned char *src, size_t srclen,
-	      dns_rdataclass_t rdclass, dns_rdatatype_t type,
-	      unsigned char *dst, size_t dstlen, dns_rdata_t *rdata)
+wire_to_rdata(const unsigned char *src,
+	      size_t srclen,
+	      dns_rdataclass_t rdclass,
+	      dns_rdatatype_t type,
+	      unsigned char *dst,
+	      size_t dstlen,
+	      dns_rdata_t *rdata)
 {
 	isc_buffer_t source, target;
 	dns_decompress_t dctx;
@@ -202,8 +206,10 @@ check_struct_conversions(dns_rdata_t *rdata, size_t structsize) {
  * form and see if it results in the original text (tests totext_*()).
  */
 static void
-check_text_ok_single(const text_ok_t *text_ok, dns_rdataclass_t rdclass,
-		     dns_rdatatype_t type, size_t structsize)
+check_text_ok_single(const text_ok_t *text_ok,
+		     dns_rdataclass_t rdclass,
+		     dns_rdatatype_t type,
+		     size_t structsize)
 {
 	unsigned char buf_fromtext[1024], buf_fromwire[1024];
 	dns_rdata_t rdata = DNS_RDATA_INIT, rdata2 = DNS_RDATA_INIT;
@@ -376,8 +382,10 @@ check_multiline_text_conversions(dns_rdata_t *rdata) {
  * valid or invalid for an RR of given rdclass and type.
  */
 static void
-check_wire_ok_single(const wire_ok_t *wire_ok, dns_rdataclass_t rdclass,
-		     dns_rdatatype_t type, size_t structsize)
+check_wire_ok_single(const wire_ok_t *wire_ok,
+		     dns_rdataclass_t rdclass,
+		     dns_rdatatype_t type,
+		     size_t structsize)
 {
 	unsigned char buf[1024];
 	isc_result_t result;
@@ -422,8 +430,10 @@ check_wire_ok_single(const wire_ok_t *wire_ok, dns_rdataclass_t rdclass,
  * tested.
  */
 static void
-check_text_ok(const text_ok_t *text_ok, dns_rdataclass_t rdclass,
-	      dns_rdatatype_t type, size_t structsize)
+check_text_ok(const text_ok_t *text_ok,
+	      dns_rdataclass_t rdclass,
+	      dns_rdatatype_t type,
+	      size_t structsize)
 {
 	size_t i;
 
@@ -443,8 +453,10 @@ check_text_ok(const text_ok_t *text_ok, dns_rdataclass_t rdclass,
  * for given RR class and type behaves as expected.
  */
 static void
-check_wire_ok(const wire_ok_t *wire_ok, bool empty_ok,
-	      dns_rdataclass_t rdclass, dns_rdatatype_t type,
+check_wire_ok(const wire_ok_t *wire_ok,
+	      bool empty_ok,
+	      dns_rdataclass_t rdclass,
+	      dns_rdatatype_t type,
 	      size_t structsize)
 {
 	wire_ok_t empty_wire = WIRE_TEST(empty_ok);
@@ -468,7 +480,8 @@ check_wire_ok(const wire_ok_t *wire_ok, bool empty_ok,
  */
 static void
 check_compare_ok_single(const compare_ok_t *compare_ok,
-			dns_rdataclass_t rdclass, dns_rdatatype_t type)
+			dns_rdataclass_t rdclass,
+			dns_rdatatype_t type)
 {
 	dns_rdata_t rdata1 = DNS_RDATA_INIT, rdata2 = DNS_RDATA_INIT;
 	unsigned char buf1[1024], buf2[1024];
@@ -522,7 +535,8 @@ check_compare_ok_single(const compare_ok_t *compare_ok,
  */
 static void
 check_compare_ok(const compare_ok_t *compare_ok,
-		 dns_rdataclass_t rdclass, dns_rdatatype_t type)
+		 dns_rdataclass_t rdclass,
+		 dns_rdatatype_t type)
 {
 	size_t i;
 	/*
@@ -544,10 +558,13 @@ check_compare_ok(const compare_ok_t *compare_ok,
  * for the given RR class and type.
  */
 static void
-check_rdata(const text_ok_t *text_ok, const wire_ok_t *wire_ok,
+check_rdata(const text_ok_t *text_ok,
+	    const wire_ok_t *wire_ok,
 	    const compare_ok_t *compare_ok,
-	    bool empty_ok, dns_rdataclass_t rdclass,
-	    dns_rdatatype_t type, size_t structsize)
+	    bool empty_ok,
+	    dns_rdataclass_t rdclass,
+	    dns_rdatatype_t type,
+	    size_t structsize)
 {
 	if (text_ok != NULL) {
 		check_text_ok(text_ok, rdclass, type, structsize);
@@ -772,27 +789,27 @@ amtrelay(void **state) {
 		/* gatway type 0 */
 		TEXT_VALID("0 0 0"),
 		TEXT_VALID("0 1 0"),
-		TEXT_INVALID("0 2 0"),		/* discovery out of range */
-		TEXT_VALID("255 1 0"),		/* max precendence */
-		TEXT_INVALID("256 1 0"),	/* precedence out of range */
+		TEXT_INVALID("0 2 0"),          /* discovery out of range */
+		TEXT_VALID("255 1 0"),          /* max precendence */
+		TEXT_INVALID("256 1 0"),        /* precedence out of range */
 
 		/* IPv4 gateway */
-		TEXT_INVALID("0 0 1"),		/* no addresss */
+		TEXT_INVALID("0 0 1"),          /* no addresss */
 		TEXT_VALID("0 0 1 0.0.0.0"),
 		TEXT_INVALID("0 0 1 0.0.0.0 x"), /* extra */
 		TEXT_INVALID("0 0 1 0.0.0.0.0"), /* bad addresss */
-		TEXT_INVALID("0 0 1 ::"),	/* bad addresss */
-		TEXT_INVALID("0 0 1 ."),	/* bad addresss */
+		TEXT_INVALID("0 0 1 ::"),       /* bad addresss */
+		TEXT_INVALID("0 0 1 ."),        /* bad addresss */
 
 		/* IPv6 gateway */
-		TEXT_INVALID("0 0 2"),		/* no addresss */
+		TEXT_INVALID("0 0 2"),          /* no addresss */
 		TEXT_VALID("0 0 2 ::"),
-		TEXT_INVALID("0 0 2 :: xx"),	/* extra */
-		TEXT_INVALID("0 0 2 0.0.0.0"),	/* bad addresss */
-		TEXT_INVALID("0 0 2 ."),	/* bad addresss */
+		TEXT_INVALID("0 0 2 :: xx"),    /* extra */
+		TEXT_INVALID("0 0 2 0.0.0.0"),  /* bad addresss */
+		TEXT_INVALID("0 0 2 ."),        /* bad addresss */
 
 		/* hostname gateway */
-		TEXT_INVALID("0 0 3"),		/* no name */
+		TEXT_INVALID("0 0 3"),          /* no name */
 		/* IPv4 is a valid name */
 		TEXT_VALID_CHANGED("0 0 3 0.0.0.0", "0 0 3 0.0.0.0."),
 		/* IPv6 is a valid name */
@@ -839,7 +856,7 @@ amtrelay(void **state) {
 
 		WIRE_INVALID(0x00, 0x03),
 		WIRE_VALID(0x00, 0x03, 0x00),
-		WIRE_INVALID(0x00, 0x03, 0x00, 0x00),	/* extra */
+		WIRE_INVALID(0x00, 0x03, 0x00, 0x00),   /* extra */
 
 		WIRE_VALID(0x00, 0x04),
 		WIRE_VALID(0x00, 0x04, 0x00),
@@ -857,7 +874,8 @@ amtrelay(void **state) {
 
 static void
 cdnskey(void **state) {
-	key_required(state, dns_rdatatype_cdnskey, sizeof(dns_rdata_cdnskey_t));
+	key_required(state, dns_rdatatype_cdnskey,
+		     sizeof(dns_rdata_cdnskey_t));
 }
 
 /*
@@ -1317,10 +1335,10 @@ ds(void **state) {
 		 * Valid, 32-octet SHA-256 digest.
 		 */
 		TEXT_VALID_CHANGED(
-			   "0 0 2 D001BD422FFDA9B745425B71DC17D007E691869B"
-			   "D59C5F237D9BF85434C3133F",
-			   "0 0 2 D001BD422FFDA9B745425B71DC17D007E691869B"
-			   "D59C5F237D9BF854 34C3133F"),
+			"0 0 2 D001BD422FFDA9B745425B71DC17D007E691869B"
+			"D59C5F237D9BF85434C3133F",
+			"0 0 2 D001BD422FFDA9B745425B71DC17D007E691869B"
+			"D59C5F237D9BF854 34C3133F"),
 		/*
 		 * Invalid, excessively long SHA-256 digest.
 		 */
@@ -1341,12 +1359,12 @@ ds(void **state) {
 		 * Valid, 48-octet SHA-384 digest.
 		 */
 		TEXT_VALID_CHANGED(
-			   "0 0 4 AC748D6C5AA652904A8763D64B7DFFFFA98152BE"
-			   "12128D238BEBB4814B648F5A841E15CAA2DE348891A37A"
-			   "699F65E54D",
-			   "0 0 4 AC748D6C5AA652904A8763D64B7DFFFFA98152BE"
-			   "12128D238BEBB481 4B648F5A841E15CAA2DE348891A37A"
-			   "699F65E54D"),
+			"0 0 4 AC748D6C5AA652904A8763D64B7DFFFFA98152BE"
+			"12128D238BEBB4814B648F5A841E15CAA2DE348891A37A"
+			"699F65E54D",
+			"0 0 4 AC748D6C5AA652904A8763D64B7DFFFFA98152BE"
+			"12128D238BEBB481 4B648F5A841E15CAA2DE348891A37A"
+			"699F65E54D"),
 		/*
 		 * Invalid, excessively long SHA-384 digest.
 		 */
@@ -1679,9 +1697,10 @@ eid(void **state) {
 static void
 hip(void **state) {
 	unsigned char hipwire[DNS_RDATA_MAXLENGTH] = {
-				    0x01, 0x00, 0x00, 0x01, 0x00, 0x00,
-				    0x04, 0x41, 0x42, 0x43, 0x44, 0x00 };
-	unsigned char buf[1024*1024];
+		0x01, 0x00, 0x00, 0x01, 0x00, 0x00,
+		0x04, 0x41, 0x42, 0x43, 0x44, 0x00
+	};
+	unsigned char buf[1024 * 1024];
 	dns_rdata_t rdata = DNS_RDATA_INIT;
 	isc_result_t result;
 	size_t i;
@@ -1693,7 +1712,7 @@ hip(void **state) {
 	 */
 	for (i = 12; i < sizeof(hipwire) - 2; i += 2) {
 		hipwire[i] = 0xc0;
-		hipwire[i+1] = 0x06;
+		hipwire[i + 1] = 0x06;
 	}
 
 	result = wire_to_rdata(hipwire, sizeof(hipwire), dns_rdataclass_in,
@@ -1964,8 +1983,10 @@ nsec3(void **state) {
 		TEXT_INVALID(". RRSIG"),
 		TEXT_INVALID("1 0 10 76931F"),
 		TEXT_INVALID("1 0 10 76931F IMQ912BREQP1POLAH3RMONG&UED541AS"),
-		TEXT_INVALID("1 0 10 76931F IMQ912BREQP1POLAH3RMONGAUED541AS A RRSIG BADTYPE"),
-		TEXT_VALID("1 0 10 76931F AJHVGTICN6K0VDA53GCHFMT219SRRQLM A RRSIG"),
+		TEXT_INVALID(
+			"1 0 10 76931F IMQ912BREQP1POLAH3RMONGAUED541AS A RRSIG BADTYPE"),
+		TEXT_VALID(
+			"1 0 10 76931F AJHVGTICN6K0VDA53GCHFMT219SRRQLM A RRSIG"),
 		TEXT_VALID("1 0 10 76931F AJHVGTICN6K0VDA53GCHFMT219SRRQLM"),
 		TEXT_VALID("1 0 10 - AJHVGTICN6K0VDA53GCHFMT219SRRQLM"),
 		TEXT_SENTINEL()
@@ -2185,8 +2206,8 @@ zonemd(void **state) {
 		TEXT_VALID("2019020700 2 255 DEADBEEF"),
 		TEXT_INVALID("2019020700 2 256 DEADBEEF"),
 		TEXT_VALID("2019020700 1 0 7162D2BB75C047A53DE98767C9192BEB"
-					  "14DB01E7E2267135DAF0230A 19BA4A31"
-					  "6AF6BF64AA5C7BAE24B2992850300509"),
+			   "14DB01E7E2267135DAF0230A 19BA4A31"
+			   "6AF6BF64AA5C7BAE24B2992850300509"),
 		TEXT_SENTINEL()
 	};
 	wire_ok_t wire_ok[] = {
@@ -2296,7 +2317,6 @@ atcname(void **state) {
 			assert_false(tf);
 			break;
 		}
-
 	}
 #undef UNR
 }
@@ -2322,7 +2342,6 @@ atparent(void **state) {
 			assert_false(tf);
 			break;
 		}
-
 	}
 #undef UNR
 }
@@ -2331,7 +2350,8 @@ static void
 iszonecutauth(void **state) {
 	unsigned int i;
 	UNUSED(state);
-#define UNR "# Unexpected result from dns_rdatatype_iszonecutauth for type %u\n"
+#define UNR \
+	"# Unexpected result from dns_rdatatype_iszonecutauth for type %u\n"
 	for (i = 0; i < 0xffffU; i++) {
 		bool tf = dns_rdatatype_iszonecutauth((dns_rdatatype_t)i);
 		switch (i) {
@@ -2352,7 +2372,6 @@ iszonecutauth(void **state) {
 			assert_false(tf);
 			break;
 		}
-
 	}
 #undef UNR
 }
@@ -2405,4 +2424,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

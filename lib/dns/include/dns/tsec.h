@@ -14,8 +14,8 @@
 #define DNS_TSEC_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file
  *
@@ -59,7 +59,9 @@ typedef enum {
 } dns_tsectype_t;
 
 isc_result_t
-dns_tsec_create(isc_mem_t *mctx, dns_tsectype_t type, dst_key_t *key,
+dns_tsec_create(isc_mem_t *mctx,
+		dns_tsectype_t type,
+		dst_key_t *key,
 		dns_tsec_t **tsecp);
 /*%<
  * Create a TSEC structure and stores a type-dependent key structure in it.

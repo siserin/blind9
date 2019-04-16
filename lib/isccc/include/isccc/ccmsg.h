@@ -42,11 +42,11 @@ typedef struct isccc_ccmsg {
 	uint32_t		size;
 	isc_buffer_t		buffer;
 	unsigned int		maxsize;
-	isc_mem_t	       *mctx;
-	isc_socket_t	       *sock;
-	isc_task_t	       *task;
+	isc_mem_t*		mctx;
+	isc_socket_t*		sock;
+	isc_task_t*		task;
 	isc_taskaction_t	action;
-	void		       *arg;
+	void*			arg;
 	isc_event_t		event;
 	/* public (read-only) */
 	isc_result_t		result;
@@ -56,7 +56,7 @@ typedef struct isccc_ccmsg {
 ISC_LANG_BEGINDECLS
 
 void
-isccc_ccmsg_init(isc_mem_t *mctx, isc_socket_t *sock, isccc_ccmsg_t *ccmsg);
+isccc_ccmsg_init(isc_mem_t*mctx,isc_socket_t*sock,isccc_ccmsg_t*ccmsg);
 /*%
  * Associate a cc message state with a given memory context and
  * TCP socket.
@@ -75,7 +75,7 @@ isccc_ccmsg_init(isc_mem_t *mctx, isc_socket_t *sock, isccc_ccmsg_t *ccmsg);
  */
 
 void
-isccc_ccmsg_setmaxsize(isccc_ccmsg_t *ccmsg, unsigned int maxsize);
+isccc_ccmsg_setmaxsize(isccc_ccmsg_t*ccmsg,unsigned int maxsize);
 /*%
  * Set the maximum packet size to "maxsize"
  *
@@ -87,8 +87,10 @@ isccc_ccmsg_setmaxsize(isccc_ccmsg_t *ccmsg, unsigned int maxsize);
  */
 
 isc_result_t
-isccc_ccmsg_readmessage(isccc_ccmsg_t *ccmsg,
-		       isc_task_t *task, isc_taskaction_t action, void *arg);
+isccc_ccmsg_readmessage(isccc_ccmsg_t*ccmsg,
+			isc_task_t*task,
+			isc_taskaction_t action,
+			void*arg);
 /*%
  * Schedule an event to be delivered when a command channel message is
  * readable, or when an error occurs on the socket.
@@ -113,7 +115,7 @@ isccc_ccmsg_readmessage(isccc_ccmsg_t *ccmsg,
  */
 
 void
-isccc_ccmsg_cancelread(isccc_ccmsg_t *ccmsg);
+isccc_ccmsg_cancelread(isccc_ccmsg_t*ccmsg);
 /*%
  * Cancel a readmessage() call.  The event will still be posted with a
  * CANCELED result code.
@@ -124,7 +126,7 @@ isccc_ccmsg_cancelread(isccc_ccmsg_t *ccmsg);
  */
 
 void
-isccc_ccmsg_invalidate(isccc_ccmsg_t *ccmsg);
+isccc_ccmsg_invalidate(isccc_ccmsg_t*ccmsg);
 /*%
  * Clean up all allocated state, and invalidate the structure.
  *

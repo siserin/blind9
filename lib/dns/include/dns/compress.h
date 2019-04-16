@@ -38,11 +38,12 @@ ISC_LANG_BEGINDECLS
  * used by a nameserver's configuration manager.
  */
 
-#define DNS_COMPRESS_NONE		0x00	/*%< no compression */
-#define DNS_COMPRESS_GLOBAL14		0x01	/*%< "normal" compression. */
-#define DNS_COMPRESS_ALL		0x01	/*%< all compression. */
-#define DNS_COMPRESS_CASESENSITIVE	0x02	/*%< case sensitive compression. */
-#define DNS_COMPRESS_ENABLED		0x04
+#define DNS_COMPRESS_NONE               0x00    /*%< no compression */
+#define DNS_COMPRESS_GLOBAL14           0x01    /*%< "normal" compression. */
+#define DNS_COMPRESS_ALL                0x01    /*%< all compression. */
+#define DNS_COMPRESS_CASESENSITIVE      0x02    /*%< case sensitive compression.
+	                                         * */
+#define DNS_COMPRESS_ENABLED            0x04
 
 /*
  * DNS_COMPRESS_TABLESIZE must be a power of 2. The compress code
@@ -56,36 +57,36 @@ ISC_LANG_BEGINDECLS
 typedef struct dns_compressnode dns_compressnode_t;
 
 struct dns_compressnode {
-	dns_compressnode_t	*next;
-	uint16_t		offset;
-	uint16_t		count;
-	isc_region_t            r;
-	dns_name_t              name;
+	dns_compressnode_t *	  next;
+	uint16_t		  offset;
+	uint16_t		  count;
+	isc_region_t		  r;
+	dns_name_t		  name;
 };
 
 struct dns_compress {
-	unsigned int		magic;		/*%< Magic number. */
-	unsigned int		allowed;	/*%< Allowed methods. */
-	int			edns;		/*%< Edns version or -1. */
+	unsigned int		  magic;        /*%< Magic number. */
+	unsigned int		  allowed;      /*%< Allowed methods. */
+	int			  edns;         /*%< Edns version or -1. */
 	/*% Global compression table. */
-	dns_compressnode_t	*table[DNS_COMPRESS_TABLESIZE];
+	dns_compressnode_t *	  table[DNS_COMPRESS_TABLESIZE];
 	/*% Preallocated nodes for the table. */
-	dns_compressnode_t	initialnodes[DNS_COMPRESS_INITIALNODES];
-	uint16_t		count;		/*%< Number of nodes. */
-	isc_mem_t		*mctx;		/*%< Memory context. */
+	dns_compressnode_t	  initialnodes[DNS_COMPRESS_INITIALNODES];
+	uint16_t		  count;        /*%< Number of nodes. */
+	isc_mem_t *		  mctx;         /*%< Memory context. */
 };
 
 typedef enum {
-	DNS_DECOMPRESS_ANY,			/*%< Any compression */
-	DNS_DECOMPRESS_STRICT,			/*%< Allowed compression */
-	DNS_DECOMPRESS_NONE			/*%< No compression */
+	DNS_DECOMPRESS_ANY,                     /*%< Any compression */
+	DNS_DECOMPRESS_STRICT,                  /*%< Allowed compression */
+	DNS_DECOMPRESS_NONE                     /*%< No compression */
 } dns_decompresstype_t;
 
 struct dns_decompress {
-	unsigned int		magic;		/*%< Magic number. */
-	unsigned int		allowed;	/*%< Allowed methods. */
-	int			edns;		/*%< Edns version or -1. */
-	dns_decompresstype_t	type;		/*%< Strict checking */
+	unsigned int		    magic;      /*%< Magic number. */
+	unsigned int		    allowed;    /*%< Allowed methods. */
+	int			    edns;       /*%< Edns version or -1. */
+	dns_decompresstype_t	    type;       /*%< Strict checking */
 };
 
 isc_result_t
@@ -184,8 +185,10 @@ dns_compress_getedns(dns_compress_t *cctx);
  */
 
 bool
-dns_compress_findglobal(dns_compress_t *cctx, const dns_name_t *name,
-			dns_name_t *prefix, uint16_t *offset);
+dns_compress_findglobal(dns_compress_t *cctx,
+			const dns_name_t *name,
+			dns_name_t *prefix,
+			uint16_t *offset);
 /*%<
  *	Finds longest possible match of 'name' in the global compression table.
  *
@@ -196,15 +199,17 @@ dns_compress_findglobal(dns_compress_t *cctx, const dns_name_t *name,
  *\li		'offset' to point to an uint16_t.
  *
  *	Ensures:
- *\li		'prefix' and 'offset' are valid if true is 	returned.
+ *\li		'prefix' and 'offset' are valid if true is      returned.
  *
  *	Returns:
  *\li		#true / #false
  */
 
 void
-dns_compress_add(dns_compress_t *cctx, const dns_name_t *name,
-		 const dns_name_t *prefix, uint16_t offset);
+dns_compress_add(dns_compress_t *cctx,
+		 const dns_name_t *name,
+		 const dns_name_t *prefix,
+		 uint16_t offset);
 /*%<
  *	Add compression pointers for 'name' to the compression table,
  *	not replacing existing pointers.

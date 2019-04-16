@@ -23,10 +23,11 @@
 
 #include <named/types.h>
 
-#define NAMED_STATSCHANNEL_HTTPPORT		80
+#define NAMED_STATSCHANNEL_HTTPPORT             80
 
 isc_result_t
-named_statschannels_configure(named_server_t *server, const cfg_obj_t *config,
+named_statschannels_configure(named_server_t *server,
+			      const cfg_obj_t *config,
 			      cfg_aclconfctx_t *aclconfctx);
 /*%<
  * [Re]configure the statistics channels.
@@ -51,4 +52,4 @@ named_stats_dump(named_server_t *server, FILE *fp);
  * Dump statistics counters managed by the server to the file fp.
  */
 
-#endif	/* NAMED_STATSCHANNEL_H */
+#endif  /* NAMED_STATSCHANNEL_H */

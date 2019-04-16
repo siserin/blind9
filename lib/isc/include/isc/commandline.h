@@ -37,14 +37,17 @@ LIBISC_EXTERNAL_DATA extern bool isc_commandline_reset;
 ISC_LANG_BEGINDECLS
 
 int
-isc_commandline_parse(int argc, char * const *argv, const char *options);
+isc_commandline_parse(int argc, char *const *argv, const char *options);
 /*%<
  * Parse a command line (similar to getopt())
  */
 
 isc_result_t
-isc_commandline_strtoargv(isc_mem_t *mctx, char *s, unsigned int *argcp,
-			  char ***argvp, unsigned int n);
+isc_commandline_strtoargv(isc_mem_t *mctx,
+			  char *s,
+			  unsigned int *argcp,
+			  char ***argvp,
+			  unsigned int n);
 /*%<
  * Tokenize the string "s" into whitespace-separated words,
  * returning the number of words in '*argcp' and an array

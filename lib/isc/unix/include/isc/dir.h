@@ -14,7 +14,7 @@
 
 /*! \file */
 
-#include <sys/types.h>		/* Required on some systems. */
+#include <sys/types.h>          /* Required on some systems. */
 #include <dirent.h>
 
 #include <isc/lang.h>
@@ -22,51 +22,51 @@
 
 #ifndef NAME_MAX
 #define NAME_MAX 256
-#endif
+#endif /* ifndef NAME_MAX */
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
-#endif
+#endif /* ifndef PATH_MAX */
 
 /*% Directory Entry */
 typedef struct isc_direntry {
-	char 		name[NAME_MAX];
-	unsigned int	length;
+	char		    name[NAME_MAX];
+	unsigned int	    length;
 } isc_direntry_t;
 
 /*% Directory */
 typedef struct isc_dir {
-	unsigned int	magic;
-	char		dirname[PATH_MAX];
-	isc_direntry_t	entry;
-	DIR *		handle;
+	unsigned int	      magic;
+	char		      dirname[PATH_MAX];
+	isc_direntry_t	      entry;
+	DIR*		      handle;
 } isc_dir_t;
 
 ISC_LANG_BEGINDECLS
 
 void
-isc_dir_init(isc_dir_t *dir);
+isc_dir_init(isc_dir_t*dir);
 
 isc_result_t
-isc_dir_open(isc_dir_t *dir, const char *dirname);
+isc_dir_open(isc_dir_t*dir,const char*dirname);
 
 isc_result_t
-isc_dir_read(isc_dir_t *dir);
+isc_dir_read(isc_dir_t*dir);
 
 isc_result_t
-isc_dir_reset(isc_dir_t *dir);
+isc_dir_reset(isc_dir_t*dir);
 
 void
-isc_dir_close(isc_dir_t *dir);
+isc_dir_close(isc_dir_t*dir);
 
 isc_result_t
-isc_dir_chdir(const char *dirname);
+isc_dir_chdir(const char*dirname);
 
 isc_result_t
-isc_dir_chroot(const char *dirname);
+isc_dir_chroot(const char*dirname);
 
 isc_result_t
-isc_dir_createunique(char *templet);
+isc_dir_createunique(char*templet);
 /*!<
  * Use a templet (such as from isc_file_mktemplate()) to create a uniquely
  * named, empty directory.  The templet string is modified in place.

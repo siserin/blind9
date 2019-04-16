@@ -27,8 +27,9 @@ fromtext_talink(ARGS_FROMTEXT) {
 	UNUSED(rdclass);
 	UNUSED(callbacks);
 
-	if (origin == NULL)
+	if (origin == NULL) {
 		origin = dns_rootname;
+	}
 
 	for (i = 0; i < 2; i++) {
 		RETERR(isc_lex_getmastertoken(lexer, &token,
@@ -184,15 +185,17 @@ tostruct_talink(ARGS_TOSTRUCT) {
 	isc_region_consume(&region, name_length(&name));
 	dns_name_init(&talink->next, NULL);
 	result = name_duporclone(&name, mctx, &talink->next);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	talink->mctx = mctx;
 	return (ISC_R_SUCCESS);
 
  cleanup:
-	if (mctx != NULL)
+	if (mctx != NULL) {
 		dns_name_free(&talink->prev, mctx);
+	}
 	return (ISC_R_NOMEMORY);
 }
 
@@ -203,8 +206,9 @@ freestruct_talink(ARGS_FREESTRUCT) {
 	REQUIRE(source != NULL);
 	REQUIRE(talink->common.rdtype == dns_rdatatype_talink);
 
-	if (talink->mctx == NULL)
+	if (talink->mctx == NULL) {
 		return;
+	}
 
 	dns_name_free(&talink->prev, talink->mctx);
 	dns_name_free(&talink->next, talink->mctx);
@@ -234,7 +238,6 @@ digest_talink(ARGS_DIGEST) {
 
 static inline bool
 checkowner_talink(ARGS_CHECKOWNER) {
-
 	REQUIRE(type == dns_rdatatype_talink);
 
 	UNUSED(name);
@@ -247,7 +250,6 @@ checkowner_talink(ARGS_CHECKOWNER) {
 
 static inline bool
 checknames_talink(ARGS_CHECKNAMES) {
-
 	REQUIRE(rdata->type == dns_rdatatype_talink);
 
 	UNUSED(bad);
@@ -261,4 +263,4 @@ casecompare_talink(ARGS_COMPARE) {
 	return (compare_talink(rdata1, rdata2));
 }
 
-#endif	/* RDATA_GENERIC_TALINK_58_C */
+#endif  /* RDATA_GENERIC_TALINK_58_C */

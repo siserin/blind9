@@ -69,12 +69,15 @@ main(int argc, char *argv[]) {
 
 	if (argc > 1) {
 		workers = atoi(argv[1]);
-		if (workers < 1)
+		if (workers < 1) {
 			workers = 1;
-		if (workers > 8192)
+		}
+		if (workers > 8192) {
 			workers = 8192;
-	} else
+		}
+	} else {
 		workers = 2;
+	}
 	printf("%u workers\n", workers);
 
 	RUNTIME_CHECK(isc_mem_create(0, 0, &mctx) == ISC_R_SUCCESS);
@@ -115,9 +118,9 @@ main(int argc, char *argv[]) {
 	printf("task 2 = %p\n", t2);
 #ifndef WIN32
 	sleep(2);
-#else
+#else  /* ifndef WIN32 */
 	Sleep(2000);
-#endif
+#endif /* ifndef WIN32 */
 
 	/*
 	 * Note:  (void *)1 is used as a sender here, since some compilers
@@ -184,9 +187,9 @@ main(int argc, char *argv[]) {
 
 #ifndef WIN32
 	sleep(10);
-#else
+#else  /* ifndef WIN32 */
 	Sleep(10000);
-#endif
+#endif /* ifndef WIN32 */
 	printf("destroy\n");
 	isc_timer_detach(&ti1);
 	isc_timer_detach(&ti2);

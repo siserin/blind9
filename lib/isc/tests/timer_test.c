@@ -37,10 +37,10 @@
 /* Set to true (or use -v option) for verbose output */
 static bool verbose = false;
 
-#define	FUDGE_SECONDS	0	     /* in absence of clock_getres() */
-#define	FUDGE_NANOSECONDS	500000000    /* in absence of clock_getres() */
+#define FUDGE_SECONDS   0            /* in absence of clock_getres() */
+#define FUDGE_NANOSECONDS       500000000    /* in absence of clock_getres() */
 
-static isc_timer_t *timer = NULL;
+static isc_timer_t*timer = NULL;
 static isc_condition_t cv;
 static isc_mutex_t mx;
 static isc_time_t endtime;
@@ -51,20 +51,20 @@ static int eventcnt;
 static int nevents;
 
 static int
-_setup(void **state) {
+_setup(void**state) {
 	isc_result_t result;
 
 	UNUSED(state);
 
 	/* Timer tests require two worker threads */
-	result = isc_test_begin(NULL, true, 2);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_test_begin(NULL,true,2);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	return (0);
 }
 
 static int
-_teardown(void **state) {
+_teardown(void**state) {
 	UNUSED(state);
 
 	isc_test_end();
@@ -73,7 +73,7 @@ _teardown(void **state) {
 }
 
 static void
-shutdown(isc_task_t *task, isc_event_t *event) {
+shutdown(isc_task_t*task,isc_event_t*event) {
 	isc_result_t result;
 
 	UNUSED(task);
@@ -82,24 +82,25 @@ shutdown(isc_task_t *task, isc_event_t *event) {
 	 * Signal shutdown processing complete.
 	 */
 	result = isc_mutex_lock(&mx);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	result = isc_condition_signal(&cv);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	result = isc_mutex_unlock(&mx);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	isc_event_free(&event);
 }
 
 static void
-setup_test(isc_timertype_t timertype, isc_time_t *expires,
-	   isc_interval_t *interval,
-	   void (*action)(isc_task_t *, isc_event_t *))
+setup_test(isc_timertype_t timertype,
+	   isc_time_t*expires,
+	   isc_interval_t*interval,
+	   void (*action)(isc_task_t*,isc_event_t*))
 {
 	isc_result_t result;
-	isc_task_t *task = NULL;
+	isc_task_t*task = NULL;
 	isc_time_settoepoch(&endtime);
 	eventcnt = 0;
 
@@ -109,26 +110,26 @@ setup_test(isc_timertype_t timertype, isc_time_t *expires,
 
 	LOCK(&mx);
 
-	result = isc_task_create(taskmgr, 0, &task);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_create(taskmgr,0,&task);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = isc_task_onshutdown(task, shutdown, NULL);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_onshutdown(task,shutdown,NULL);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	result = isc_time_now(&lasttime);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = isc_timer_create(timermgr, timertype, expires, interval,
-				  task, action, (void *)timertype,
+	result = isc_timer_create(timermgr,timertype,expires,interval,
+				  task,action,(void*)timertype,
 				  &timer);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	/*
 	 * Wait for shutdown processing to complete.
 	 */
 	while (eventcnt != nevents) {
-		result = isc_condition_wait(&cv, &mx);
-		assert_int_equal(result, ISC_R_SUCCESS);
+		result = isc_condition_wait(&cv,&mx);
+		assert_int_equal(result,ISC_R_SUCCESS);
 	}
 
 	UNLOCK(&mx);
@@ -139,7 +140,7 @@ setup_test(isc_timertype_t timertype, isc_time_t *expires,
 }
 
 static void
-ticktock(isc_task_t *task, isc_event_t *event) {
+ticktock(isc_task_t*task,isc_event_t*event) {
 	isc_result_t result;
 	isc_time_t now;
 	isc_time_t base;
@@ -151,7 +152,7 @@ ticktock(isc_task_t *task, isc_event_t *event) {
 	++eventcnt;
 
 	if (verbose) {
-		print_message("# tick %d\n", eventcnt);
+		print_message("# tick %d\n",eventcnt);
 	}
 
 	expected_event_type = ISC_TIMEREVENT_LIFE;
@@ -161,30 +162,30 @@ ticktock(isc_task_t *task, isc_event_t *event) {
 
 	if (event->ev_type != expected_event_type) {
 		print_error("# expected event type %u, got %u\n",
-			    expected_event_type, event->ev_type);
+			    expected_event_type,event->ev_type);
 	}
 
 	result = isc_time_now(&now);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	isc_interval_set(&interval, seconds, nanoseconds);
-	result = isc_time_add(&lasttime, &interval, &base);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	isc_interval_set(&interval,seconds,nanoseconds);
+	result = isc_time_add(&lasttime,&interval,&base);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	isc_interval_set(&interval, FUDGE_SECONDS, FUDGE_NANOSECONDS);
-	result = isc_time_add(&base, &interval, &ulim);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	isc_interval_set(&interval,FUDGE_SECONDS,FUDGE_NANOSECONDS);
+	result = isc_time_add(&base,&interval,&ulim);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = isc_time_subtract(&base, &interval, &llim);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_time_subtract(&base,&interval,&llim);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	assert_true(isc_time_compare(&llim, &now) <= 0);
-	assert_true(isc_time_compare(&ulim, &now) >= 0);
+	assert_true(isc_time_compare(&llim,&now) <= 0);
+	assert_true(isc_time_compare(&ulim,&now) >= 0);
 	lasttime = now;
 
 	if (eventcnt == nevents) {
 		result = isc_time_now(&endtime);
-		assert_int_equal(result, ISC_R_SUCCESS);
+		assert_int_equal(result,ISC_R_SUCCESS);
 		isc_timer_detach(&timer);
 		isc_task_shutdown(task);
 	}
@@ -198,7 +199,7 @@ ticktock(isc_task_t *task, isc_event_t *event) {
 
 /* timer type ticker */
 static void
-ticker(void **state) {
+ticker(void**state) {
 	isc_time_t expires;
 	isc_interval_t interval;
 
@@ -208,15 +209,15 @@ ticker(void **state) {
 	seconds = 0;
 	nanoseconds = 500000000;
 
-	isc_interval_set(&interval, seconds, nanoseconds);
+	isc_interval_set(&interval,seconds,nanoseconds);
 	isc_time_settoepoch(&expires);
 
-	setup_test(isc_timertype_ticker, &expires, &interval, ticktock);
+	setup_test(isc_timertype_ticker,&expires,&interval,ticktock);
 }
 
 /* timer type once reaches lifetime */
 static void
-once_life(void **state) {
+once_life(void**state) {
 	isc_result_t result;
 	isc_time_t expires;
 	isc_interval_t interval;
@@ -227,17 +228,17 @@ once_life(void **state) {
 	seconds = 1;
 	nanoseconds = 100000000;
 
-	isc_interval_set(&interval, seconds, nanoseconds);
-	result = isc_time_nowplusinterval(&expires, &interval);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	isc_interval_set(&interval,seconds,nanoseconds);
+	result = isc_time_nowplusinterval(&expires,&interval);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	isc_interval_set(&interval, 0, 0);
+	isc_interval_set(&interval,0,0);
 
-	setup_test(isc_timertype_once, &expires, &interval, ticktock);
+	setup_test(isc_timertype_once,&expires,&interval,ticktock);
 }
 
 static void
-test_idle(isc_task_t *task, isc_event_t *event) {
+test_idle(isc_task_t*task,isc_event_t*event) {
 	isc_result_t result;
 	isc_time_t now;
 	isc_time_t base;
@@ -248,28 +249,28 @@ test_idle(isc_task_t *task, isc_event_t *event) {
 	++eventcnt;
 
 	if (verbose) {
-		print_message("# tick %d\n", eventcnt);
+		print_message("# tick %d\n",eventcnt);
 	}
 
 	result = isc_time_now(&now);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	isc_interval_set(&interval, seconds, nanoseconds);
-	result = isc_time_add(&lasttime, &interval, &base);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	isc_interval_set(&interval,seconds,nanoseconds);
+	result = isc_time_add(&lasttime,&interval,&base);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	isc_interval_set(&interval, FUDGE_SECONDS, FUDGE_NANOSECONDS);
-	result = isc_time_add(&base, &interval, &ulim);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	isc_interval_set(&interval,FUDGE_SECONDS,FUDGE_NANOSECONDS);
+	result = isc_time_add(&base,&interval,&ulim);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = isc_time_subtract(&base, &interval, &llim);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_time_subtract(&base,&interval,&llim);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	assert_true(isc_time_compare(&llim, &now) <= 0);
-	assert_true(isc_time_compare(&ulim, &now) >= 0);
+	assert_true(isc_time_compare(&llim,&now) <= 0);
+	assert_true(isc_time_compare(&ulim,&now) >= 0);
 	lasttime = now;
 
-	assert_int_equal(event->ev_type, ISC_TIMEREVENT_IDLE);
+	assert_int_equal(event->ev_type,ISC_TIMEREVENT_IDLE);
 
 	isc_timer_detach(&timer);
 	isc_task_shutdown(task);
@@ -278,7 +279,7 @@ test_idle(isc_task_t *task, isc_event_t *event) {
 
 /* timer type once idles out */
 static void
-once_idle(void **state) {
+once_idle(void**state) {
 	isc_result_t result;
 	isc_time_t expires;
 	isc_interval_t interval;
@@ -289,18 +290,18 @@ once_idle(void **state) {
 	seconds = 1;
 	nanoseconds = 200000000;
 
-	isc_interval_set(&interval, seconds + 1, nanoseconds);
-	result = isc_time_nowplusinterval(&expires, &interval);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	isc_interval_set(&interval,seconds + 1,nanoseconds);
+	result = isc_time_nowplusinterval(&expires,&interval);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	isc_interval_set(&interval, seconds, nanoseconds);
+	isc_interval_set(&interval,seconds,nanoseconds);
 
-	setup_test(isc_timertype_once, &expires, &interval, test_idle);
+	setup_test(isc_timertype_once,&expires,&interval,test_idle);
 }
 
 /* timer reset */
 static void
-test_reset(isc_task_t *task, isc_event_t *event) {
+test_reset(isc_task_t*task,isc_event_t*event) {
 	isc_result_t result;
 	isc_time_t now;
 	isc_time_t base;
@@ -312,7 +313,7 @@ test_reset(isc_task_t *task, isc_event_t *event) {
 	++eventcnt;
 
 	if (verbose) {
-		print_message("# tick %d\n", eventcnt);
+		print_message("# tick %d\n",eventcnt);
 	}
 
 	/*
@@ -320,39 +321,39 @@ test_reset(isc_task_t *task, isc_event_t *event) {
 	 */
 
 	result = isc_time_now(&now);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	isc_interval_set(&interval, seconds, nanoseconds);
-	result = isc_time_add(&lasttime, &interval, &base);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	isc_interval_set(&interval,seconds,nanoseconds);
+	result = isc_time_add(&lasttime,&interval,&base);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	isc_interval_set(&interval, FUDGE_SECONDS, FUDGE_NANOSECONDS);
-	result = isc_time_add(&base, &interval, &ulim);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	isc_interval_set(&interval,FUDGE_SECONDS,FUDGE_NANOSECONDS);
+	result = isc_time_add(&base,&interval,&ulim);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = isc_time_subtract(&base, &interval, &llim);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_time_subtract(&base,&interval,&llim);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	assert_true(isc_time_compare(&llim, &now) <= 0);
-	assert_true(isc_time_compare(&ulim, &now) >= 0);
+	assert_true(isc_time_compare(&llim,&now) <= 0);
+	assert_true(isc_time_compare(&ulim,&now) >= 0);
 	lasttime = now;
 
 	if (eventcnt < 3) {
-		assert_int_equal(event->ev_type, ISC_TIMEREVENT_TICK);
+		assert_int_equal(event->ev_type,ISC_TIMEREVENT_TICK);
 
 		if (eventcnt == 2) {
-			isc_interval_set(&interval, seconds, nanoseconds);
-			result = isc_time_nowplusinterval(&expires, &interval);
-			assert_int_equal(result, ISC_R_SUCCESS);
+			isc_interval_set(&interval,seconds,nanoseconds);
+			result = isc_time_nowplusinterval(&expires,&interval);
+			assert_int_equal(result,ISC_R_SUCCESS);
 
-			isc_interval_set(&interval, 0, 0);
-			result = isc_timer_reset(timer, isc_timertype_once,
-						 &expires, &interval,
+			isc_interval_set(&interval,0,0);
+			result = isc_timer_reset(timer,isc_timertype_once,
+						 &expires,&interval,
 						 false);
-			assert_int_equal(result, ISC_R_SUCCESS);
+			assert_int_equal(result,ISC_R_SUCCESS);
 		}
 	} else {
-		assert_int_equal(event->ev_type, ISC_TIMEREVENT_LIFE);
+		assert_int_equal(event->ev_type,ISC_TIMEREVENT_LIFE);
 
 		isc_timer_detach(&timer);
 		isc_task_shutdown(task);
@@ -362,7 +363,7 @@ test_reset(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-reset(void **state) {
+reset(void**state) {
 	isc_time_t expires;
 	isc_interval_t interval;
 
@@ -372,18 +373,18 @@ reset(void **state) {
 	seconds = 0;
 	nanoseconds = 750000000;
 
-	isc_interval_set(&interval, seconds, nanoseconds);
+	isc_interval_set(&interval,seconds,nanoseconds);
 	isc_time_settoepoch(&expires);
 
-	setup_test(isc_timertype_ticker, &expires, &interval, test_reset);
+	setup_test(isc_timertype_ticker,&expires,&interval,test_reset);
 }
 
 static int startflag;
 static int shutdownflag;
-static isc_timer_t *tickertimer = NULL;
-static isc_timer_t *oncetimer = NULL;
-static isc_task_t *task1 = NULL;
-static isc_task_t *task2 = NULL;
+static isc_timer_t*tickertimer = NULL;
+static isc_timer_t*oncetimer = NULL;
+static isc_task_t*task1 = NULL;
+static isc_task_t*task2 = NULL;
 
 /*
  * task1 blocks on mx while events accumulate
@@ -391,7 +392,7 @@ static isc_task_t *task2 = NULL;
  */
 
 static void
-start_event(isc_task_t *task, isc_event_t *event) {
+start_event(isc_task_t*task,isc_event_t*event) {
 	UNUSED(task);
 
 	if (verbose) {
@@ -399,8 +400,8 @@ start_event(isc_task_t *task, isc_event_t *event) {
 	}
 
 	LOCK(&mx);
-	while (! startflag) {
-		(void) isc_condition_wait(&cv, &mx);
+	while (!startflag) {
+		(void) isc_condition_wait(&cv,&mx);
 	}
 	UNLOCK(&mx);
 
@@ -408,7 +409,7 @@ start_event(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-tick_event(isc_task_t *task, isc_event_t *event) {
+tick_event(isc_task_t*task,isc_event_t*event) {
 	isc_result_t result;
 	isc_time_t expires;
 	isc_interval_t interval;
@@ -417,7 +418,7 @@ tick_event(isc_task_t *task, isc_event_t *event) {
 
 	++eventcnt;
 	if (verbose) {
-		print_message("# tick_event %d\n", eventcnt);
+		print_message("# tick_event %d\n",eventcnt);
 	}
 
 	/*
@@ -426,10 +427,10 @@ tick_event(isc_task_t *task, isc_event_t *event) {
 	 */
 	if (eventcnt == 1) {
 		isc_time_settoepoch(&expires);
-		isc_interval_set(&interval, seconds, 0);
-		result = isc_timer_reset(tickertimer, isc_timertype_ticker,
-					 &expires, &interval, true);
-		assert_int_equal(result, ISC_R_SUCCESS);
+		isc_interval_set(&interval,seconds,0);
+		result = isc_timer_reset(tickertimer,isc_timertype_ticker,
+					 &expires,&interval,true);
+		assert_int_equal(result,ISC_R_SUCCESS);
 
 		isc_task_shutdown(task);
 	}
@@ -438,7 +439,7 @@ tick_event(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-once_event(isc_task_t *task, isc_event_t *event) {
+once_event(isc_task_t*task,isc_event_t*event) {
 	isc_result_t result;
 
 	if (verbose) {
@@ -452,7 +453,7 @@ once_event(isc_task_t *task, isc_event_t *event) {
 	startflag = 1;
 
 	result = isc_condition_broadcast(&cv);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	assert_int_equal(result,ISC_R_SUCCESS);
 	UNLOCK(&mx);
 
 	isc_event_free(&event);
@@ -460,7 +461,7 @@ once_event(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-shutdown_purge(isc_task_t *task, isc_event_t *event) {
+shutdown_purge(isc_task_t*task,isc_event_t*event) {
 	isc_result_t result;
 
 	UNUSED(task);
@@ -477,7 +478,7 @@ shutdown_purge(isc_task_t *task, isc_event_t *event) {
 	shutdownflag = 1;
 
 	result = isc_condition_signal(&cv);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	assert_int_equal(result,ISC_R_SUCCESS);
 	UNLOCK(&mx);
 
 	isc_event_free(&event);
@@ -485,9 +486,9 @@ shutdown_purge(isc_task_t *task, isc_event_t *event) {
 
 /* timer events purged */
 static void
-purge(void **state) {
+purge(void**state) {
 	isc_result_t result;
-	isc_event_t *event = NULL;
+	isc_event_t*event = NULL;
 	isc_time_t expires;
 	isc_interval_t interval;
 
@@ -503,54 +504,54 @@ purge(void **state) {
 
 	isc_condition_init(&cv);
 
-	result = isc_task_create(taskmgr, 0, &task1);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_create(taskmgr,0,&task1);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = isc_task_onshutdown(task1, shutdown_purge, NULL);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_onshutdown(task1,shutdown_purge,NULL);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = isc_task_create(taskmgr, 0, &task2);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_create(taskmgr,0,&task2);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	LOCK(&mx);
 
-	event = isc_event_allocate(mctx, (void *)1 , (isc_eventtype_t)1,
-				   start_event, NULL, sizeof(*event));
+	event = isc_event_allocate(mctx,(void*)1,(isc_eventtype_t)1,
+				   start_event,NULL,sizeof(*event));
 	assert_non_null(event);
-	isc_task_send(task1, &event);
+	isc_task_send(task1,&event);
 
 	isc_time_settoepoch(&expires);
-	isc_interval_set(&interval, seconds, 0);
+	isc_interval_set(&interval,seconds,0);
 
 	tickertimer = NULL;
-	result = isc_timer_create(timermgr, isc_timertype_ticker,
-				  &expires, &interval, task1,
-				  tick_event, NULL, &tickertimer);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_timer_create(timermgr,isc_timertype_ticker,
+				  &expires,&interval,task1,
+				  tick_event,NULL,&tickertimer);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	oncetimer = NULL;
 
-	isc_interval_set(&interval, (seconds * 2) + 1, 0);
-	result = isc_time_nowplusinterval(&expires, &interval);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	isc_interval_set(&interval,(seconds * 2) + 1,0);
+	result = isc_time_nowplusinterval(&expires,&interval);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	isc_interval_set(&interval, 0, 0);
-	result = isc_timer_create(timermgr, isc_timertype_once,
-				      &expires, &interval, task2,
-				      once_event, NULL, &oncetimer);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	isc_interval_set(&interval,0,0);
+	result = isc_timer_create(timermgr,isc_timertype_once,
+				  &expires,&interval,task2,
+				  once_event,NULL,&oncetimer);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	/*
 	 * Wait for shutdown processing to complete.
 	 */
-	while (! shutdownflag) {
-		result = isc_condition_wait(&cv, &mx);
-		assert_int_equal(result, ISC_R_SUCCESS);
+	while (!shutdownflag) {
+		result = isc_condition_wait(&cv,&mx);
+		assert_int_equal(result,ISC_R_SUCCESS);
 	}
 
 	UNLOCK(&mx);
 
-	assert_int_equal(eventcnt, 1);
+	assert_int_equal(eventcnt,1);
 
 	isc_timer_detach(&tickertimer);
 	isc_timer_detach(&oncetimer);
@@ -560,17 +561,17 @@ purge(void **state) {
 }
 
 int
-main(int argc, char **argv) {
+main(int argc,char**argv) {
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test_setup_teardown(ticker, _setup, _teardown),
-		cmocka_unit_test_setup_teardown(once_life, _setup, _teardown),
-		cmocka_unit_test_setup_teardown(once_idle, _setup, _teardown),
-		cmocka_unit_test_setup_teardown(reset, _setup, _teardown),
-		cmocka_unit_test_setup_teardown(purge, _setup, _teardown),
+		cmocka_unit_test_setup_teardown(ticker,_setup,_teardown),
+		cmocka_unit_test_setup_teardown(once_life,_setup,_teardown),
+		cmocka_unit_test_setup_teardown(once_idle,_setup,_teardown),
+		cmocka_unit_test_setup_teardown(reset,_setup,_teardown),
+		cmocka_unit_test_setup_teardown(purge,_setup,_teardown),
 	};
 	int c;
 
-	while ((c = isc_commandline_parse(argc, argv, "v")) != -1) {
+	while ((c = isc_commandline_parse(argc,argv,"v")) != -1) {
 		switch (c) {
 		case 'v':
 			verbose = true;
@@ -580,7 +581,7 @@ main(int argc, char **argv) {
 		}
 	}
 
-	return (cmocka_run_group_tests(tests, NULL, NULL));
+	return (cmocka_run_group_tests(tests,NULL,NULL));
 }
 
 #else /* HAVE_CMOCKA */
@@ -593,4 +594,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

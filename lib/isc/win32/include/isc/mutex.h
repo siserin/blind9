@@ -32,9 +32,9 @@ TryEnterCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
 #define isc_mutex_init(mp) \
 	InitializeCriticalSection((mp))
 #define isc_mutex_lock(mp) \
-	(EnterCriticalSection((mp)), ISC_R_SUCCESS)
+	(EnterCriticalSection((mp)),ISC_R_SUCCESS)
 #define isc_mutex_unlock(mp) \
-	(LeaveCriticalSection((mp)), ISC_R_SUCCESS)
+	(LeaveCriticalSection((mp)),ISC_R_SUCCESS)
 #define isc_mutex_trylock(mp) \
 	(TryEnterCriticalSection((mp)) ? ISC_R_SUCCESS : ISC_R_LOCKBUSY)
 #define isc_mutex_destroy(mp) \

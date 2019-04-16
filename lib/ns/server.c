@@ -24,69 +24,69 @@
 #include <ns/server.h>
 #include <ns/stats.h>
 
-#define SCTX_MAGIC		ISC_MAGIC('S','c','t','x')
-#define SCTX_VALID(s)		ISC_MAGIC_VALID(s, SCTX_MAGIC)
+#define SCTX_MAGIC              ISC_MAGIC('S','c','t','x')
+#define SCTX_VALID(s)           ISC_MAGIC_VALID(s,SCTX_MAGIC)
 
-#define CHECKFATAL(op) 						\
-	do { result = (op);					\
-		RUNTIME_CHECK(result == ISC_R_SUCCESS);		\
-	} while (0)						\
+#define CHECKFATAL(op)                                          \
+	do { result = (op);                                     \
+	     RUNTIME_CHECK(result == ISC_R_SUCCESS);         \
+	} while (0)                                             \
 
 isc_result_t
-ns_server_create(isc_mem_t *mctx, ns_matchview_t matchingview,
-		 ns_server_t **sctxp)
+ns_server_create(isc_mem_t*mctx,ns_matchview_t matchingview,ns_server_t**sctxp)
 {
-	ns_server_t *sctx;
+	ns_server_t*sctx;
 	isc_result_t result;
 
 	REQUIRE(sctxp != NULL && *sctxp == NULL);
 
-	sctx = isc_mem_get(mctx, sizeof(*sctx));
-	if (sctx == NULL)
+	sctx = isc_mem_get(mctx,sizeof(*sctx));
+	if (sctx == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
-	memset(sctx, 0, sizeof(*sctx));
+	memset(sctx,0,sizeof(*sctx));
 
-	isc_mem_attach(mctx, &sctx->mctx);
+	isc_mem_attach(mctx,&sctx->mctx);
 
-	isc_refcount_init(&sctx->references, 1);
+	isc_refcount_init(&sctx->references,1);
 
-	isc_quota_init(&sctx->xfroutquota, 10);
-	isc_quota_init(&sctx->tcpquota, 10);
-	isc_quota_init(&sctx->recursionquota, 100);
+	isc_quota_init(&sctx->xfroutquota,10);
+	isc_quota_init(&sctx->tcpquota,10);
+	isc_quota_init(&sctx->recursionquota,100);
 
-	CHECKFATAL(dns_tkeyctx_create(mctx, &sctx->tkeyctx));
+	CHECKFATAL(dns_tkeyctx_create(mctx,&sctx->tkeyctx));
 
-	CHECKFATAL(ns_stats_create(mctx, ns_statscounter_max, &sctx->nsstats));
+	CHECKFATAL(ns_stats_create(mctx,ns_statscounter_max,&sctx->nsstats));
 
-	CHECKFATAL(dns_rdatatypestats_create(mctx, &sctx->rcvquerystats));
+	CHECKFATAL(dns_rdatatypestats_create(mctx,&sctx->rcvquerystats));
 
-	CHECKFATAL(dns_opcodestats_create(mctx, &sctx->opcodestats));
+	CHECKFATAL(dns_opcodestats_create(mctx,&sctx->opcodestats));
 
-	CHECKFATAL(dns_rcodestats_create(mctx, &sctx->rcodestats));
+	CHECKFATAL(dns_rcodestats_create(mctx,&sctx->rcodestats));
 
-	CHECKFATAL(isc_stats_create(mctx, &sctx->udpinstats4,
+	CHECKFATAL(isc_stats_create(mctx,&sctx->udpinstats4,
 				    dns_sizecounter_in_max));
 
-	CHECKFATAL(isc_stats_create(mctx, &sctx->udpoutstats4,
+	CHECKFATAL(isc_stats_create(mctx,&sctx->udpoutstats4,
 				    dns_sizecounter_out_max));
 
-	CHECKFATAL(isc_stats_create(mctx, &sctx->udpinstats6,
+	CHECKFATAL(isc_stats_create(mctx,&sctx->udpinstats6,
 				    dns_sizecounter_in_max));
 
-	CHECKFATAL(isc_stats_create(mctx, &sctx->udpoutstats6,
+	CHECKFATAL(isc_stats_create(mctx,&sctx->udpoutstats6,
 				    dns_sizecounter_out_max));
 
-	CHECKFATAL(isc_stats_create(mctx, &sctx->tcpinstats4,
+	CHECKFATAL(isc_stats_create(mctx,&sctx->tcpinstats4,
 				    dns_sizecounter_in_max));
 
-	CHECKFATAL(isc_stats_create(mctx, &sctx->tcpoutstats4,
+	CHECKFATAL(isc_stats_create(mctx,&sctx->tcpoutstats4,
 				    dns_sizecounter_out_max));
 
-	CHECKFATAL(isc_stats_create(mctx, &sctx->tcpinstats6,
+	CHECKFATAL(isc_stats_create(mctx,&sctx->tcpinstats6,
 				    dns_sizecounter_in_max));
 
-	CHECKFATAL(isc_stats_create(mctx, &sctx->tcpoutstats6,
+	CHECKFATAL(isc_stats_create(mctx,&sctx->tcpoutstats6,
 				    dns_sizecounter_out_max));
 
 	sctx->initialtimo = 300;
@@ -113,7 +113,7 @@ ns_server_create(isc_mem_t *mctx, ns_matchview_t matchingview,
 }
 
 void
-ns_server_attach(ns_server_t *src, ns_server_t **dest) {
+ns_server_attach(ns_server_t*src,ns_server_t**dest) {
 	REQUIRE(SCTX_VALID(src));
 	REQUIRE(dest != NULL && *dest == NULL);
 
@@ -123,90 +123,109 @@ ns_server_attach(ns_server_t *src, ns_server_t **dest) {
 }
 
 void
-ns_server_detach(ns_server_t **sctxp) {
-	ns_server_t *sctx;
+ns_server_detach(ns_server_t**sctxp) {
+	ns_server_t*sctx;
 
 	REQUIRE(sctxp != NULL && SCTX_VALID(*sctxp));
 	sctx = *sctxp;
 	*sctxp = NULL;
 
 	if (isc_refcount_decrement(&sctx->references) == 1) {
-		ns_altsecret_t *altsecret;
+		ns_altsecret_t*altsecret;
 
 		sctx->magic = 0;
 
 		while ((altsecret = ISC_LIST_HEAD(sctx->altsecrets)) != NULL) {
-			ISC_LIST_UNLINK(sctx->altsecrets, altsecret, link);
-			isc_mem_put(sctx->mctx, altsecret, sizeof(*altsecret));
+			ISC_LIST_UNLINK(sctx->altsecrets,altsecret,link);
+			isc_mem_put(sctx->mctx,altsecret,sizeof(*altsecret));
 		}
 
 		isc_quota_destroy(&sctx->recursionquota);
 		isc_quota_destroy(&sctx->tcpquota);
 		isc_quota_destroy(&sctx->xfroutquota);
 
-		if (sctx->server_id != NULL)
-			isc_mem_free(sctx->mctx, sctx->server_id);
+		if (sctx->server_id != NULL) {
+			isc_mem_free(sctx->mctx,sctx->server_id);
+		}
 
-		if (sctx->blackholeacl != NULL)
+		if (sctx->blackholeacl != NULL) {
 			dns_acl_detach(&sctx->blackholeacl);
-		if (sctx->keepresporder != NULL)
+		}
+		if (sctx->keepresporder != NULL) {
 			dns_acl_detach(&sctx->keepresporder);
-		if (sctx->tkeyctx != NULL)
+		}
+		if (sctx->tkeyctx != NULL) {
 			dns_tkeyctx_destroy(&sctx->tkeyctx);
+		}
 
-		if (sctx->nsstats != NULL)
+		if (sctx->nsstats != NULL) {
 			ns_stats_detach(&sctx->nsstats);
+		}
 
-		if (sctx->rcvquerystats != NULL)
+		if (sctx->rcvquerystats != NULL) {
 			dns_stats_detach(&sctx->rcvquerystats);
-		if (sctx->opcodestats != NULL)
+		}
+		if (sctx->opcodestats != NULL) {
 			dns_stats_detach(&sctx->opcodestats);
-		if (sctx->rcodestats != NULL)
+		}
+		if (sctx->rcodestats != NULL) {
 			dns_stats_detach(&sctx->rcodestats);
+		}
 
-		if (sctx->udpinstats4 != NULL)
+		if (sctx->udpinstats4 != NULL) {
 			isc_stats_detach(&sctx->udpinstats4);
-		if (sctx->tcpinstats4 != NULL)
+		}
+		if (sctx->tcpinstats4 != NULL) {
 			isc_stats_detach(&sctx->tcpinstats4);
-		if (sctx->udpoutstats4 != NULL)
+		}
+		if (sctx->udpoutstats4 != NULL) {
 			isc_stats_detach(&sctx->udpoutstats4);
-		if (sctx->tcpoutstats4 != NULL)
+		}
+		if (sctx->tcpoutstats4 != NULL) {
 			isc_stats_detach(&sctx->tcpoutstats4);
+		}
 
-		if (sctx->udpinstats6 != NULL)
+		if (sctx->udpinstats6 != NULL) {
 			isc_stats_detach(&sctx->udpinstats6);
-		if (sctx->tcpinstats6 != NULL)
+		}
+		if (sctx->tcpinstats6 != NULL) {
 			isc_stats_detach(&sctx->tcpinstats6);
-		if (sctx->udpoutstats6 != NULL)
+		}
+		if (sctx->udpoutstats6 != NULL) {
 			isc_stats_detach(&sctx->udpoutstats6);
-		if (sctx->tcpoutstats6 != NULL)
+		}
+		if (sctx->tcpoutstats6 != NULL) {
 			isc_stats_detach(&sctx->tcpoutstats6);
+		}
 
-		isc_mem_putanddetach(&sctx->mctx, sctx, sizeof(*sctx));
+		isc_mem_putanddetach(&sctx->mctx,sctx,sizeof(*sctx));
 	}
 }
 
 isc_result_t
-ns_server_setserverid(ns_server_t *sctx, const char *serverid) {
+ns_server_setserverid(ns_server_t*sctx,const char*serverid) {
 	REQUIRE(SCTX_VALID(sctx));
 
 	if (sctx->server_id != NULL) {
-		isc_mem_free(sctx->mctx, sctx->server_id);
+		isc_mem_free(sctx->mctx,sctx->server_id);
 		sctx->server_id = NULL;
 	}
 
 	if (serverid != NULL) {
-		sctx->server_id = isc_mem_strdup(sctx->mctx, serverid);
-		if (sctx->server_id == NULL)
+		sctx->server_id = isc_mem_strdup(sctx->mctx,serverid);
+		if (sctx->server_id == NULL) {
 			return (ISC_R_NOMEMORY);
+		}
 	}
 
 	return (ISC_R_SUCCESS);
 }
 
 void
-ns_server_settimeouts(ns_server_t *sctx, unsigned int initial,
-		      unsigned int idle, unsigned int keepalive,
+ns_server_settimeouts(ns_server_t*sctx,
+		      unsigned int initial,
+		      unsigned int idle,
+		      unsigned int keepalive,
 		      unsigned int advertised)
 {
 	REQUIRE(SCTX_VALID(sctx));
@@ -218,9 +237,11 @@ ns_server_settimeouts(ns_server_t *sctx, unsigned int initial,
 }
 
 void
-ns_server_gettimeouts(ns_server_t *sctx, unsigned int *initial,
-		      unsigned int *idle, unsigned int *keepalive,
-		      unsigned int *advertised)
+ns_server_gettimeouts(ns_server_t*sctx,
+		      unsigned int*initial,
+		      unsigned int*idle,
+		      unsigned int*keepalive,
+		      unsigned int*advertised)
 {
 	REQUIRE(SCTX_VALID(sctx));
 	REQUIRE(initial != NULL && idle != NULL &&
@@ -233,8 +254,7 @@ ns_server_gettimeouts(ns_server_t *sctx, unsigned int *initial,
 }
 
 void
-ns_server_setoption(ns_server_t *sctx, unsigned int option,
-		    bool value)
+ns_server_setoption(ns_server_t*sctx,unsigned int option,bool value)
 {
 	REQUIRE(SCTX_VALID(sctx));
 	if (value) {
@@ -245,7 +265,7 @@ ns_server_setoption(ns_server_t *sctx, unsigned int option,
 }
 
 bool
-ns_server_getoption(ns_server_t *sctx, unsigned int option) {
+ns_server_getoption(ns_server_t*sctx,unsigned int option) {
 	REQUIRE(SCTX_VALID(sctx));
 
 	return ((sctx->options & option) != 0);

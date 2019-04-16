@@ -62,9 +62,9 @@ _teardown(void **state) {
 }
 
 typedef struct {
-	bool done;
-	isc_result_t result;
-	isc_socket_t *socket;
+	bool		    done;
+	isc_result_t	    result;
+	isc_socket_t *	    socket;
 } completion_t;
 
 static void
@@ -103,11 +103,12 @@ event_done(isc_task_t *task, isc_event_t *event) {
 		completion->result = sev->result;
 		if ((sev->attributes & ISC_SOCKEVENTATTR_DSCP) != 0) {
 			recv_dscp = true;
-			recv_dscp_value = sev->dscp;;
+			recv_dscp_value = sev->dscp;
 		} else {
 			recv_dscp = false;
 		}
-		recv_trunc = ((sev->attributes & ISC_SOCKEVENTATTR_TRUNC) != 0);
+		recv_trunc =
+			((sev->attributes & ISC_SOCKEVENTATTR_TRUNC) != 0);
 		break;
 	case ISC_SOCKEVENT_CONNECT:
 		connev = (isc_socket_connev_t *) event;
@@ -134,7 +135,7 @@ waitfor(completion_t *completion) {
 
 static void
 waitbody(void) {
-		isc_test_nap(1000);
+	isc_test_nap(1000);
 }
 
 static isc_result_t
@@ -172,7 +173,8 @@ udp_sendto_test(void **state)  {
 	isc_sockaddr_fromin(&addr1, &in, 0);
 	isc_sockaddr_fromin(&addr2, &in, 0);
 
-	result = isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s1);
+	result =
+		isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s1);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	result = isc_socket_bind(s1, &addr1, 0);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -180,7 +182,8 @@ udp_sendto_test(void **state)  {
 	assert_int_equal(result, ISC_R_SUCCESS);
 	assert_true(isc_sockaddr_getport(&addr1) != 0);
 
-	result = isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s2);
+	result =
+		isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s2);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	result = isc_socket_bind(s2, &addr2, 0);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -217,7 +220,6 @@ udp_sendto_test(void **state)  {
 
 	isc_socket_detach(&s1);
 	isc_socket_detach(&s2);
-
 }
 
 /* Test UDP sendto/recv with duplicated socket */
@@ -238,7 +240,8 @@ udp_dup_test(void **state) {
 	isc_sockaddr_fromin(&addr1, &in, 0);
 	isc_sockaddr_fromin(&addr2, &in, 0);
 
-	result = isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s1);
+	result =
+		isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s1);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	result = isc_socket_bind(s1, &addr1, 0);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -246,7 +249,8 @@ udp_dup_test(void **state) {
 	assert_int_equal(result, ISC_R_SUCCESS);
 	assert_true(isc_sockaddr_getport(&addr1) != 0);
 
-	result = isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s2);
+	result =
+		isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s2);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	result = isc_socket_bind(s2, &addr2, 0);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -309,7 +313,6 @@ udp_dup_test(void **state) {
 	isc_socket_detach(&s1);
 	isc_socket_detach(&s2);
 	isc_socket_detach(&s3);
-
 }
 
 /* Test UDP sendto/recv (IPv4) */
@@ -332,7 +335,8 @@ udp_dscp_v4_test(void **state) {
 	isc_sockaddr_fromin(&addr1, &in, 0);
 	isc_sockaddr_fromin(&addr2, &in, 0);
 
-	result = isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s1);
+	result =
+		isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s1);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	result = isc_socket_bind(s1, &addr1, ISC_SOCKET_REUSEADDRESS);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -340,7 +344,8 @@ udp_dscp_v4_test(void **state) {
 	assert_int_equal(result, ISC_R_SUCCESS);
 	assert_true(isc_sockaddr_getport(&addr1) != 0);
 
-	result = isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s2);
+	result =
+		isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s2);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	result = isc_socket_bind(s2, &addr2, ISC_SOCKET_REUSEADDRESS);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -373,7 +378,8 @@ udp_dscp_v4_test(void **state) {
 	recv_dscp = false;
 	recv_dscp_value = 0;
 
-	result = isc_socket_sendto2(s1, &r, task, &addr2, NULL, socketevent, 0);
+	result =
+		isc_socket_sendto2(s1, &r, task, &addr2, NULL, socketevent, 0);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	waitfor(&completion);
 	assert_true(completion.done);
@@ -399,7 +405,6 @@ udp_dscp_v4_test(void **state) {
 
 	isc_socket_detach(&s1);
 	isc_socket_detach(&s2);
-
 }
 
 /* Test UDP sendto/recv (IPv6) */
@@ -465,7 +470,8 @@ udp_dscp_v6_test(void **state) {
 	recv_dscp = false;
 	recv_dscp_value = 0;
 
-	result = isc_socket_sendto2(s1, &r, task, &addr2, NULL, socketevent, 0);
+	result =
+		isc_socket_sendto2(s1, &r, task, &addr2, NULL, socketevent, 0);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	waitfor(&completion);
 	assert_true(completion.done);
@@ -491,7 +497,6 @@ udp_dscp_v6_test(void **state) {
 
 	isc_socket_detach(&s1);
 	isc_socket_detach(&s2);
-
 }
 
 /* Test TCP sendto/recv (IPv4) */
@@ -512,7 +517,8 @@ tcp_dscp_v4_test(void **state) {
 	in.s_addr = inet_addr("127.0.0.1");
 	isc_sockaddr_fromin(&addr1, &in, 0);
 
-	result = isc_socket_create(socketmgr, PF_INET, isc_sockettype_tcp, &s1);
+	result =
+		isc_socket_create(socketmgr, PF_INET, isc_sockettype_tcp, &s1);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	result = isc_socket_bind(s1, &addr1, 0);
@@ -524,7 +530,8 @@ tcp_dscp_v4_test(void **state) {
 	result = isc_socket_listen(s1, 3);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
-	result = isc_socket_create(socketmgr, PF_INET, isc_sockettype_tcp, &s2);
+	result =
+		isc_socket_create(socketmgr, PF_INET, isc_sockettype_tcp, &s2);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	result = isc_task_create(taskmgr, 0, &task);
@@ -584,7 +591,6 @@ tcp_dscp_v4_test(void **state) {
 	isc_socket_detach(&s1);
 	isc_socket_detach(&s2);
 	isc_socket_detach(&s3);
-
 }
 
 /* Test TCP sendto/recv (IPv6) */
@@ -685,7 +691,6 @@ tcp_dscp_v6_test(void **state) {
 	isc_socket_detach(&s1);
 	isc_socket_detach(&s2);
 	isc_socket_detach(&s3);
-
 }
 
 /* probe dscp capabilities */
@@ -699,12 +704,12 @@ net_probedscp_test(void **state) {
 	assert_true((n & ~ISC_NET_DSCPALL) == 0);
 
 	/* ISC_NET_DSCPSETV4 MUST be set if any is set. */
-	if (n & (ISC_NET_DSCPPKTV4|ISC_NET_DSCPRECVV4)) {
+	if (n & (ISC_NET_DSCPPKTV4 | ISC_NET_DSCPRECVV4)) {
 		assert_true((n & ISC_NET_DSCPSETV4) != 0);
 	}
 
 	/* ISC_NET_DSCPSETV6 MUST be set if any is set. */
-	if (n & (ISC_NET_DSCPPKTV6|ISC_NET_DSCPRECVV6)) {
+	if (n & (ISC_NET_DSCPPKTV6 | ISC_NET_DSCPRECVV6)) {
 		assert_true((n & ISC_NET_DSCPSETV6) != 0);
 	}
 
@@ -718,7 +723,7 @@ net_probedscp_test(void **state) {
 		(n & ISC_NET_DSCPSETV6) ? " set" : "none",
 		(n & ISC_NET_DSCPPKTV6) ? " packet" : "",
 		(n & ISC_NET_DSCPRECVV6) ? " receive" : "");
-#endif
+#endif /* if 0 */
 }
 
 /* Test UDP truncation detection */
@@ -729,7 +734,7 @@ udp_trunc_test(void **state) {
 	struct in_addr in;
 	isc_socket_t *s1 = NULL, *s2 = NULL;
 	isc_task_t *task = NULL;
-	char sendbuf[BUFSIZ*2], recvbuf[BUFSIZ];
+	char sendbuf[BUFSIZ * 2], recvbuf[BUFSIZ];
 	completion_t completion;
 	isc_region_t r;
 	isc_socketevent_t *socketevent;
@@ -740,14 +745,16 @@ udp_trunc_test(void **state) {
 	isc_sockaddr_fromin(&addr1, &in, 0);
 	isc_sockaddr_fromin(&addr2, &in, 0);
 
-	result = isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s1);
+	result =
+		isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s1);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	result = isc_socket_bind(s1, &addr1, ISC_SOCKET_REUSEADDRESS);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	result = isc_socket_getsockname(s1, &addr1);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	assert_true(isc_sockaddr_getport(&addr1) != 0);
-	result = isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s2);
+	result =
+		isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp, &s2);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	result = isc_socket_bind(s2, &addr2, ISC_SOCKET_REUSEADDRESS);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -772,7 +779,8 @@ udp_trunc_test(void **state) {
 					     event_done, &completion);
 	assert_non_null(socketevent);
 
-	result = isc_socket_sendto2(s1, &r, task, &addr2, NULL, socketevent, 0);
+	result =
+		isc_socket_sendto2(s1, &r, task, &addr2, NULL, socketevent, 0);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	waitfor(&completion);
 	assert_true(completion.done);
@@ -804,7 +812,8 @@ udp_trunc_test(void **state) {
 					     event_done, &completion);
 	assert_non_null(socketevent);
 
-	result = isc_socket_sendto2(s1, &r, task, &addr2, NULL, socketevent, 0);
+	result =
+		isc_socket_sendto2(s1, &r, task, &addr2, NULL, socketevent, 0);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	waitfor(&completion);
 	assert_true(completion.done);
@@ -826,7 +835,6 @@ udp_trunc_test(void **state) {
 
 	isc_socket_detach(&s1);
 	isc_socket_detach(&s2);
-
 }
 
 /*
@@ -864,7 +872,6 @@ int
 main(void) {
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
-
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

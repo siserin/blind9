@@ -25,25 +25,25 @@
 #include <isc/stats.h>
 #include <isc/util.h>
 
-#define ISC_STATS_MAGIC			ISC_MAGIC('S', 't', 'a', 't')
-#define ISC_STATS_VALID(x)		ISC_MAGIC_VALID(x, ISC_STATS_MAGIC)
+#define ISC_STATS_MAGIC                 ISC_MAGIC('S', 't', 'a', 't')
+#define ISC_STATS_VALID(x)              ISC_MAGIC_VALID(x, ISC_STATS_MAGIC)
 
 typedef atomic_int_fast64_t isc_stat_t;
 
 struct isc_stats {
 	/*% Unlocked */
-	unsigned int	magic;
-	isc_mem_t	*mctx;
-	int		ncounters;
+	unsigned int	    magic;
+	isc_mem_t *	    mctx;
+	int		    ncounters;
 
-	isc_mutex_t	lock;
-	unsigned int	references; /* locked by lock */
+	isc_mutex_t	    lock;
+	unsigned int	    references; /* locked by lock */
 
 	/*%
 	 * Locked by counterlock or unlocked if efficient rwlock is not
 	 * available.
 	 */
-	isc_stat_t	*counters;
+	isc_stat_t *      counters;
 
 	/*%
 	 * We don't want to lock the counters while we are dumping, so we first
@@ -56,7 +56,7 @@ struct isc_stats {
 	 * simplicity here, however, under the assumption that this function
 	 * should be only rarely called.
 	 */
-	uint64_t	*copiedcounters;
+	uint64_t *      copiedcounters;
 };
 
 static isc_result_t
@@ -67,8 +67,9 @@ create_stats(isc_mem_t *mctx, int ncounters, isc_stats_t **statsp) {
 	REQUIRE(statsp != NULL && *statsp == NULL);
 
 	stats = isc_mem_get(mctx, sizeof(*stats));
-	if (stats == NULL)
+	if (stats == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	isc_mutex_init(&stats->lock);
 
@@ -95,10 +96,10 @@ create_stats(isc_mem_t *mctx, int ncounters, isc_stats_t **statsp) {
 
 	return (result);
 
-clean_counters:
+ clean_counters:
 	isc_mem_put(mctx, stats->counters, sizeof(isc_stat_t) * ncounters);
 
-clean_mutex:
+ clean_mutex:
 	isc_mutex_destroy(&stats->lock);
 	isc_mem_put(mctx, stats, sizeof(*stats));
 
@@ -176,8 +177,10 @@ isc_stats_decrement(isc_stats_t *stats, isc_statscounter_t counter) {
 }
 
 void
-isc_stats_dump(isc_stats_t *stats, isc_stats_dumper_t dump_fn,
-	       void *arg, unsigned int options)
+isc_stats_dump(isc_stats_t *stats,
+	       isc_stats_dumper_t dump_fn,
+	       void *arg,
+	       unsigned int options)
 {
 	int i;
 
@@ -191,15 +194,15 @@ isc_stats_dump(isc_stats_t *stats, isc_stats_dumper_t dump_fn,
 
 	for (i = 0; i < stats->ncounters; i++) {
 		if ((options & ISC_STATSDUMP_VERBOSE) == 0 &&
-		    stats->copiedcounters[i] == 0)
-				continue;
+		    stats->copiedcounters[i] == 0) {
+			continue;
+		}
 		dump_fn((isc_statscounter_t)i, stats->copiedcounters[i], arg);
 	}
 }
 
 void
-isc_stats_set(isc_stats_t *stats, uint64_t val,
-	      isc_statscounter_t counter)
+isc_stats_set(isc_stats_t *stats, uint64_t val, isc_statscounter_t counter)
 {
 	REQUIRE(ISC_STATS_VALID(stats));
 	REQUIRE(counter < stats->ncounters);

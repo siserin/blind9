@@ -61,9 +61,11 @@ fromtext_amtrelay(ARGS_FROMTEXT) {
 	 */
 	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_number,
 				      false));
-	if (token.value.as_ulong > 0x7fU)
+	if (token.value.as_ulong > 0x7fU) {
 		RETTOK(ISC_R_RANGE);
-	RETERR(uint8_tobuffer(token.value.as_ulong | (discovery << 7), target));
+	}
+	RETERR(uint8_tobuffer(token.value.as_ulong | (discovery << 7),
+			      target));
 	gateway = token.value.as_ulong;
 
 	if (gateway == 0) {
@@ -134,8 +136,9 @@ totext_amtrelay(ARGS_TOTEXT) {
 	REQUIRE(rdata->type == dns_rdatatype_amtrelay);
 	REQUIRE(rdata->length >= 2);
 
-	if ((rdata->data[1] & 0x7f) > 3U)
+	if ((rdata->data[1] & 0x7f) > 3U) {
 		return (ISC_R_NOTIMPLEMENTED);
+	}
 
 	/*
 	 * Precedence.
@@ -194,8 +197,9 @@ fromwire_amtrelay(ARGS_FROMWIRE) {
 	dns_decompress_setmethods(dctx, DNS_COMPRESS_NONE);
 
 	isc_buffer_activeregion(source, &region);
-	if (region.length < 2)
+	if (region.length < 2) {
 		return (ISC_R_UNEXPECTEDEND);
+	}
 
 	switch (region.base[1] & 0x7f) {
 	case 0:
@@ -298,7 +302,8 @@ fromstruct_amtrelay(ARGS_FROMSTRUCT) {
 		break;
 
 	default:
-		return (mem_tobuffer(target, amtrelay->data, amtrelay->length));
+		return (mem_tobuffer(target, amtrelay->data,
+				     amtrelay->length));
 	}
 }
 
@@ -373,21 +378,23 @@ freestruct_amtrelay(ARGS_FREESTRUCT) {
 	REQUIRE(source != NULL);
 	REQUIRE(amtrelay->common.rdtype == dns_rdatatype_amtrelay);
 
-	if (amtrelay->mctx == NULL)
+	if (amtrelay->mctx == NULL) {
 		return;
+	}
 
-	if (amtrelay->gateway_type == 3)
+	if (amtrelay->gateway_type == 3) {
 		dns_name_free(&amtrelay->gateway, amtrelay->mctx);
+	}
 
-	if (amtrelay->data != NULL)
+	if (amtrelay->data != NULL) {
 		isc_mem_free(amtrelay->mctx, amtrelay->data);
+	}
 
 	amtrelay->mctx = NULL;
 }
 
 static inline isc_result_t
 additionaldata_amtrelay(ARGS_ADDLDATA) {
-
 	REQUIRE(rdata->type == dns_rdatatype_amtrelay);
 
 	UNUSED(rdata);
@@ -409,7 +416,6 @@ digest_amtrelay(ARGS_DIGEST) {
 
 static inline bool
 checkowner_amtrelay(ARGS_CHECKOWNER) {
-
 	REQUIRE(type == dns_rdatatype_amtrelay);
 
 	UNUSED(name);
@@ -422,7 +428,6 @@ checkowner_amtrelay(ARGS_CHECKOWNER) {
 
 static inline bool
 checknames_amtrelay(ARGS_CHECKNAMES) {
-
 	REQUIRE(rdata->type == dns_rdatatype_amtrelay);
 
 	UNUSED(rdata);
@@ -449,8 +454,9 @@ casecompare_amtrelay(ARGS_COMPARE) {
 	dns_rdata_toregion(rdata2, &region2);
 
 	if (memcmp(region1.base, region2.base, 2) != 0 ||
-	    (region1.base[1] & 0x7f) != 3)
+	    (region1.base[1] & 0x7f) != 3) {
 		return (isc_region_compare(&region1, &region2));
+	}
 
 	dns_name_init(&name1, NULL);
 	dns_name_init(&name2, NULL);
@@ -464,4 +470,4 @@ casecompare_amtrelay(ARGS_COMPARE) {
 	return (dns_name_rdatacompare(&name1, &name2));
 }
 
-#endif	/* RDATA_GENERIC_AMTRELAY_260_C */
+#endif  /* RDATA_GENERIC_AMTRELAY_260_C */

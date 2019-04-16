@@ -21,16 +21,16 @@
 
 #ifdef HAVE_GEOIP
 #include <dns/geoip.h>
-#endif
+#endif /* ifdef HAVE_GEOIP */
 #include <dns/types.h>
 
 typedef struct cfg_aclconfctx {
 	ISC_LIST(dns_acl_t) named_acl_cache;
-	isc_mem_t *mctx;
+	isc_mem_t*		     mctx;
 #ifdef HAVE_GEOIP
-	dns_geoip_databases_t *geoip;
-#endif
-	isc_refcount_t references;
+	dns_geoip_databases_t*	     geoip;
+#endif /* ifdef HAVE_GEOIP */
+	isc_refcount_t		     references;
 } cfg_aclconfctx_t;
 
 /***
@@ -40,35 +40,42 @@ typedef struct cfg_aclconfctx {
 ISC_LANG_BEGINDECLS
 
 isc_result_t
-cfg_aclconfctx_create(isc_mem_t *mctx, cfg_aclconfctx_t **ret);
+cfg_aclconfctx_create(isc_mem_t*mctx,cfg_aclconfctx_t**ret);
 /*
  * Creates and initializes an ACL configuration context.
  */
 
 void
-cfg_aclconfctx_detach(cfg_aclconfctx_t **actxp);
+cfg_aclconfctx_detach(cfg_aclconfctx_t**actxp);
 /*
  * Removes a reference to an ACL configuration context; when references
  * reaches zero, clears the contents and deallocate the structure.
  */
 
 void
-cfg_aclconfctx_attach(cfg_aclconfctx_t *src, cfg_aclconfctx_t **dest);
+cfg_aclconfctx_attach(cfg_aclconfctx_t*src,cfg_aclconfctx_t**dest);
 /*
  * Attaches a pointer to an existing ACL configuration context.
  */
 
 isc_result_t
-cfg_acl_fromconfig(const cfg_obj_t *caml, const cfg_obj_t *cctx,
-		   isc_log_t *lctx, cfg_aclconfctx_t *ctx,
-		   isc_mem_t *mctx, unsigned int nest_level,
-		   dns_acl_t **target);
+cfg_acl_fromconfig(const cfg_obj_t*caml,
+		   const cfg_obj_t*cctx,
+		   isc_log_t*lctx,
+		   cfg_aclconfctx_t*ctx,
+		   isc_mem_t*mctx,
+		   unsigned int nest_level,
+		   dns_acl_t**target);
 
 isc_result_t
-cfg_acl_fromconfig2(const cfg_obj_t *caml, const cfg_obj_t *cctx,
-		   isc_log_t *lctx, cfg_aclconfctx_t *ctx,
-		   isc_mem_t *mctx, unsigned int nest_level,
-		   uint16_t family, dns_acl_t **target);
+cfg_acl_fromconfig2(const cfg_obj_t*caml,
+		    const cfg_obj_t*cctx,
+		    isc_log_t*lctx,
+		    cfg_aclconfctx_t*ctx,
+		    isc_mem_t*mctx,
+		    unsigned int nest_level,
+		    uint16_t family,
+		    dns_acl_t**target);
 /*
  * Construct a new dns_acl_t from configuration data in 'caml' and
  * 'cctx'.  Memory is allocated through 'mctx'.

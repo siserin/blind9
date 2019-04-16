@@ -17,8 +17,8 @@
 #include <dns/types.h>
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file
  * \brief
@@ -28,9 +28,14 @@
 ISC_LANG_BEGINDECLS
 
 isc_result_t
-dns_rbtdb_create(isc_mem_t *mctx, const dns_name_t *base, dns_dbtype_t type,
-		 dns_rdataclass_t rdclass, unsigned int argc, char *argv[],
-		 void *driverarg, dns_db_t **dbp);
+dns_rbtdb_create(isc_mem_t *mctx,
+		 const dns_name_t *base,
+		 dns_dbtype_t type,
+		 dns_rdataclass_t rdclass,
+		 unsigned int argc,
+		 char *argv[],
+		 void *driverarg,
+		 dns_db_t **dbp);
 
 /*%<
  * Create a new database of type "rbt" (or "rbt64").  Called via

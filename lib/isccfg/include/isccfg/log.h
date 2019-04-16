@@ -21,14 +21,14 @@
 LIBISCCFG_EXTERNAL_DATA extern isc_logcategory_t cfg_categories[];
 LIBISCCFG_EXTERNAL_DATA extern isc_logmodule_t cfg_modules[];
 
-#define CFG_LOGCATEGORY_CONFIG	(&cfg_categories[0])
+#define CFG_LOGCATEGORY_CONFIG  (&cfg_categories[0])
 
-#define CFG_LOGMODULE_PARSER	(&cfg_modules[0])
+#define CFG_LOGMODULE_PARSER    (&cfg_modules[0])
 
 ISC_LANG_BEGINDECLS
 
 void
-cfg_log_init(isc_log_t *lctx);
+cfg_log_init(isc_log_t*lctx);
 /*%<
  * Make the libisccfg categories and modules available for use with the
  * ISC logging library.
@@ -40,7 +40,7 @@ cfg_log_init(isc_log_t *lctx);
  *
  * Ensures:
  * \li	The categories and modules defined above are available for
- * 	use by isc_log_usechannnel() and isc_log_write().
+ *      use by isc_log_usechannnel() and isc_log_write().
  */
 
 ISC_LANG_ENDDECLS

@@ -39,15 +39,17 @@ ISC_LANG_BEGINDECLS
  ***/
 
 isc_result_t
-isccc_base64_encode(isccc_region_t *source, int wordlength,
-		  const char *wordbreak, isccc_region_t *target);
+isccc_base64_encode(isccc_region_t*source,
+		    int wordlength,
+		    const char*wordbreak,
+		    isccc_region_t*target);
 /*%<
  * Convert data into base64 encoded text.
  *
  * Notes:
  *\li	The base64 encoded text in 'target' will be divided into
  *	words of at most 'wordlength' characters, separated by
- * 	the 'wordbreak' string.  No parentheses will surround
+ *      the 'wordbreak' string.  No parentheses will surround
  *	the text.
  *
  * Requires:
@@ -58,7 +60,7 @@ isccc_base64_encode(isccc_region_t *source, int wordlength,
  */
 
 isc_result_t
-isccc_base64_decode(const char *cstr, isccc_region_t *target);
+isccc_base64_decode(const char*cstr,isccc_region_t*target);
 /*%<
  * Decode a null-terminated base64 string.
  *

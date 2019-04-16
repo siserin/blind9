@@ -41,10 +41,11 @@
 #include <dst/result.h>
 
 #define CHECK(str, x) { \
-	if ((x) != ISC_R_SUCCESS) { \
-		fprintf(stderr, "I:%s: %s\n", (str), isc_result_totext(x)); \
-		exit(-1); \
-	} \
+		if ((x) != ISC_R_SUCCESS) { \
+			fprintf(stderr, "I:%s: %s\n", (str), \
+				isc_result_totext(x)); \
+			exit(-1); \
+		} \
 }
 
 #define RUNCHECK(x) RUNTIME_CHECK((x) == ISC_R_SUCCESS)
@@ -87,7 +88,7 @@ recvquery(isc_task_t *task, isc_event_t *event) {
 		result = ISC_RESULTCLASS_DNSRCODE + response->rcode;
 		fprintf(stderr, "I:response rcode: %s\n",
 			isc_result_totext(result));
-			exit(-1);
+		exit(-1);
 	}
 
 	result = dns_tkey_processdeleteresponse(query, response, ring);
@@ -112,8 +113,9 @@ sendquery(isc_task_t *task, isc_event_t *event) {
 	isc_event_free(&event);
 
 	result = ISC_R_FAILURE;
-	if (inet_pton(AF_INET, "10.53.0.1", &inaddr) != 1)
+	if (inet_pton(AF_INET, "10.53.0.1", &inaddr) != 1) {
 		CHECK("inet_pton", result);
+	}
 	isc_sockaddr_fromin(&address, &inaddr, PORT);
 
 	query = NULL;
@@ -194,12 +196,12 @@ main(int argc, char **argv) {
 		   DNS_DISPATCHATTR_IPV6;
 	dispatchv4 = NULL;
 	RUNCHECK(dns_dispatch_getudp(dispatchmgr, socketmgr, taskmgr,
-					  &bind_any, 4096, 4, 2, 3, 5,
-					  attrs, attrmask, &dispatchv4));
+				     &bind_any, 4096, 4, 2, 3, 5,
+				     attrs, attrmask, &dispatchv4));
 	requestmgr = NULL;
 	RUNCHECK(dns_requestmgr_create(mctx, timermgr, socketmgr, taskmgr,
-					    dispatchmgr, dispatchv4, NULL,
-					    &requestmgr));
+				       dispatchmgr, dispatchv4, NULL,
+				       &requestmgr));
 
 	ring = NULL;
 	RUNCHECK(dns_tsigkeyring_create(mctx, &ring));

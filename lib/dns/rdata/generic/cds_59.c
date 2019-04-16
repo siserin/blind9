@@ -20,7 +20,6 @@
 
 static inline isc_result_t
 fromtext_cds(ARGS_FROMTEXT) {
-
 	REQUIRE(type == dns_rdatatype_cds);
 
 	return (generic_fromtext_ds(rdclass, type, lexer, origin, options,
@@ -29,7 +28,6 @@ fromtext_cds(ARGS_FROMTEXT) {
 
 static inline isc_result_t
 totext_cds(ARGS_TOTEXT) {
-
 	REQUIRE(rdata->type == dns_rdatatype_cds);
 
 	return (generic_totext_ds(rdata, tctx, target));
@@ -37,7 +35,6 @@ totext_cds(ARGS_TOTEXT) {
 
 static inline isc_result_t
 fromwire_cds(ARGS_FROMWIRE) {
-
 	REQUIRE(type == dns_rdatatype_cds);
 
 	return (generic_fromwire_ds(rdclass, type, source, dctx, options,
@@ -75,7 +72,6 @@ compare_cds(ARGS_COMPARE) {
 
 static inline isc_result_t
 fromstruct_cds(ARGS_FROMSTRUCT) {
-
 	REQUIRE(type == dns_rdatatype_cds);
 
 	return (generic_fromstruct_ds(rdclass, type, source, target));
@@ -106,11 +102,13 @@ freestruct_cds(ARGS_FREESTRUCT) {
 	REQUIRE(ds != NULL);
 	REQUIRE(ds->common.rdtype == dns_rdatatype_cds);
 
-	if (ds->mctx == NULL)
+	if (ds->mctx == NULL) {
 		return;
+	}
 
-	if (ds->digest != NULL)
+	if (ds->digest != NULL) {
 		isc_mem_free(ds->mctx, ds->digest);
+	}
 	ds->mctx = NULL;
 }
 
@@ -138,7 +136,6 @@ digest_cds(ARGS_DIGEST) {
 
 static inline bool
 checkowner_cds(ARGS_CHECKOWNER) {
-
 	REQUIRE(type == dns_rdatatype_cds);
 
 	UNUSED(name);
@@ -151,7 +148,6 @@ checkowner_cds(ARGS_CHECKOWNER) {
 
 static inline bool
 checknames_cds(ARGS_CHECKNAMES) {
-
 	REQUIRE(rdata->type == dns_rdatatype_cds);
 
 	UNUSED(rdata);
@@ -166,4 +162,4 @@ casecompare_cds(ARGS_COMPARE) {
 	return (compare_cds(rdata1, rdata2));
 }
 
-#endif	/* RDATA_GENERIC_CDS_59_C */
+#endif  /* RDATA_GENERIC_CDS_59_C */

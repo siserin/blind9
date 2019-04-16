@@ -30,20 +30,20 @@
 
 #include <dirent.h>
 #include <stdbool.h>
-#include <unistd.h>		/* XXXDCL Required for ?. */
+#include <unistd.h>             /* XXXDCL Required for ?. */
 
 #include <isc/lang.h>
 
 #ifdef NEED_OPTARG
 extern char *optarg;
-#endif
+#endif /* ifdef NEED_OPTARG */
 
-#define isc_commandline_parse		getopt
-#define isc_commandline_argument 	optarg
+#define isc_commandline_parse           getopt
+#define isc_commandline_argument        optarg
 
 typedef struct {
-	DIR *handle;
-	char *filename;
+	DIR *	    handle;
+	char *	    filename;
 } isc_dir_t;
 
 ISC_LANG_BEGINDECLS
@@ -52,11 +52,11 @@ static bool
 start_directory(const char *path, isc_dir_t *dir) {
 	dir->handle = opendir(path);
 
-	if (dir->handle != NULL)
+	if (dir->handle != NULL) {
 		return (true);
-	else
+	} else {
 		return (false);
-
+	}
 }
 
 static bool
@@ -67,20 +67,23 @@ next_file(isc_dir_t *dir) {
 
 	if (dir->handle != NULL) {
 		dirent = readdir(dir->handle);
-		if (dirent != NULL)
+		if (dirent != NULL) {
 			dir->filename = dirent->d_name;
+		}
 	}
 
-	if (dir->filename != NULL)
+	if (dir->filename != NULL) {
 		return (true);
-	else
+	} else {
 		return (false);
+	}
 }
 
 static void
 end_directory(isc_dir_t *dir) {
-	if (dir->handle != NULL)
+	if (dir->handle != NULL) {
 		(void)closedir(dir->handle);
+	}
 
 	dir->handle = NULL;
 }

@@ -18,7 +18,6 @@
 
 static inline isc_result_t
 fromtext_in_eid(ARGS_FROMTEXT) {
-
 	REQUIRE(type == dns_rdatatype_eid);
 	REQUIRE(rdclass == dns_rdataclass_in);
 
@@ -192,7 +191,6 @@ digest_in_eid(ARGS_DIGEST) {
 
 static inline bool
 checkowner_in_eid(ARGS_CHECKOWNER) {
-
 	REQUIRE(type == dns_rdatatype_eid);
 	REQUIRE(rdclass == dns_rdataclass_in);
 
@@ -206,7 +204,6 @@ checkowner_in_eid(ARGS_CHECKOWNER) {
 
 static inline bool
 checknames_in_eid(ARGS_CHECKNAMES) {
-
 	REQUIRE(rdata->type == dns_rdatatype_eid);
 	REQUIRE(rdata->rdclass == dns_rdataclass_in);
 
@@ -222,4 +219,4 @@ casecompare_in_eid(ARGS_COMPARE) {
 	return (compare_in_eid(rdata1, rdata2));
 }
 
-#endif	/* RDATA_IN_1_EID_31_C */
+#endif  /* RDATA_IN_1_EID_31_C */

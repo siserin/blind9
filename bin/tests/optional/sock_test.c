@@ -52,8 +52,9 @@ my_send(isc_task_t *task, isc_event_t *event) {
 		isc_task_shutdown(task);
 	}
 
-	if (dev->region.base != NULL)
+	if (dev->region.base != NULL) {
 		isc_mem_put(mctx, dev->region.base, dev->region.length);
+	}
 
 	isc_event_free(&event);
 }
@@ -88,8 +89,10 @@ my_recv(isc_task_t *task, isc_event_t *event) {
 	if (dev->result != ISC_R_SUCCESS) {
 		isc_socket_detach(&sock);
 
-		if (dev->region.base != NULL)
-			isc_mem_put(mctx, dev->region.base, dev->region.length);
+		if (dev->region.base != NULL) {
+			isc_mem_put(mctx, dev->region.base,
+				    dev->region.length);
+		}
 		isc_event_free(&event);
 
 		isc_task_shutdown(task);
@@ -107,8 +110,9 @@ my_recv(isc_task_t *task, isc_event_t *event) {
 		if (region.base != NULL) {
 			region.length = strlen(buf) + 1;
 			strlcpy((char *)region.base, buf, region.length);
-		} else
+		} else {
 			region.length = 0;
+		}
 		isc_socket_send(sock, &region, task, my_send, event->ev_arg);
 	} else {
 		region = dev->region;
@@ -138,8 +142,10 @@ my_http_get(isc_task_t *task, isc_event_t *event) {
 	if (dev->result != ISC_R_SUCCESS) {
 		isc_socket_detach(&sock);
 		isc_task_shutdown(task);
-		if (dev->region.base != NULL)
-			isc_mem_put(mctx, dev->region.base, dev->region.length);
+		if (dev->region.base != NULL) {
+			isc_mem_put(mctx, dev->region.base,
+				    dev->region.length);
+		}
 		isc_event_free(&event);
 		return;
 	}
@@ -272,18 +278,22 @@ main(int argc, char *argv[]) {
 
 	if (argc > 1) {
 		workers = atoi(argv[1]);
-		if (workers < 1)
+		if (workers < 1) {
 			workers = 1;
-		if (workers > 8192)
+		}
+		if (workers > 8192) {
 			workers = 8192;
-	} else
+		}
+	} else {
 		workers = 2;
+	}
 	printf("%u workers\n", workers);
 
-	if (isc_net_probeipv6() == ISC_R_SUCCESS)
+	if (isc_net_probeipv6() == ISC_R_SUCCESS) {
 		pf = PF_INET6;
-	else
+	} else {
 		pf = PF_INET;
+	}
 
 	/*
 	 * EVERYTHING needs a memory context.
@@ -355,10 +365,11 @@ main(int argc, char *argv[]) {
 	 */
 	so2 = NULL;
 	ina.s_addr = inet_addr("204.152.184.97");
-	if (0 && pf == PF_INET6)
+	if (0 && pf == PF_INET6) {
 		isc_sockaddr_v6fromin(&sockaddr, &ina, 80);
-	else
+	} else {
 		isc_sockaddr_fromin(&sockaddr, &ina, 80);
+	}
 	RUNTIME_CHECK(isc_socket_create(socketmgr, isc_sockaddr_pf(&sockaddr),
 					isc_sockettype_tcp,
 					&so2) == ISC_R_SUCCESS);
@@ -378,9 +389,9 @@ main(int argc, char *argv[]) {
 	 */
 #ifndef WIN32
 	sleep(10);
-#else
+#else  /* ifndef WIN32 */
 	Sleep(10000);
-#endif
+#endif /* ifndef WIN32 */
 
 	fprintf(stderr, "Destroying socket manager\n");
 	isc_socketmgr_destroy(&socketmgr);

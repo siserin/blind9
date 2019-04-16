@@ -277,7 +277,7 @@ tostruct_doa(ARGS_TOSTRUCT) {
 
 	return (ISC_R_SUCCESS);
 
-cleanup:
+ cleanup:
 	if (mctx != NULL && doa->mediatype != NULL) {
 		isc_mem_free(mctx, doa->mediatype);
 	}
@@ -355,4 +355,4 @@ casecompare_doa(ARGS_COMPARE) {
 	return (compare_doa(rdata1, rdata2));
 }
 
-#endif	/* RDATA_GENERIC_DOA_259_C */
+#endif  /* RDATA_GENERIC_DOA_259_C */

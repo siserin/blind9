@@ -34,52 +34,53 @@ static dns_sdlzimplementation_t *dlz_dlopen = NULL;
 
 
 typedef struct dlopen_data {
-	isc_mem_t *mctx;
-	char *dl_path;
-	char *dlzname;
-	void *dl_handle;
-	void *dbdata;
-	unsigned int flags;
-	isc_mutex_t lock;
-	int version;
-	bool in_configure;
+	isc_mem_t *			 mctx;
+	char *				 dl_path;
+	char *				 dlzname;
+	void *				 dl_handle;
+	void *				 dbdata;
+	unsigned int			 flags;
+	isc_mutex_t			 lock;
+	int				 version;
+	bool				 in_configure;
 
-	dlz_dlopen_version_t *dlz_version;
-	dlz_dlopen_create_t *dlz_create;
-	dlz_dlopen_findzonedb_t *dlz_findzonedb;
-	dlz_dlopen_lookup_t *dlz_lookup;
-	dlz_dlopen_authority_t *dlz_authority;
-	dlz_dlopen_allnodes_t *dlz_allnodes;
-	dlz_dlopen_allowzonexfr_t *dlz_allowzonexfr;
-	dlz_dlopen_newversion_t *dlz_newversion;
-	dlz_dlopen_closeversion_t *dlz_closeversion;
-	dlz_dlopen_configure_t *dlz_configure;
-	dlz_dlopen_ssumatch_t *dlz_ssumatch;
-	dlz_dlopen_addrdataset_t *dlz_addrdataset;
-	dlz_dlopen_subrdataset_t *dlz_subrdataset;
-	dlz_dlopen_delrdataset_t *dlz_delrdataset;
-	dlz_dlopen_destroy_t *dlz_destroy;
+	dlz_dlopen_version_t *		 dlz_version;
+	dlz_dlopen_create_t *		 dlz_create;
+	dlz_dlopen_findzonedb_t *	 dlz_findzonedb;
+	dlz_dlopen_lookup_t *		 dlz_lookup;
+	dlz_dlopen_authority_t *	 dlz_authority;
+	dlz_dlopen_allnodes_t *		 dlz_allnodes;
+	dlz_dlopen_allowzonexfr_t *	 dlz_allowzonexfr;
+	dlz_dlopen_newversion_t *	 dlz_newversion;
+	dlz_dlopen_closeversion_t *	 dlz_closeversion;
+	dlz_dlopen_configure_t *	 dlz_configure;
+	dlz_dlopen_ssumatch_t *		 dlz_ssumatch;
+	dlz_dlopen_addrdataset_t *	 dlz_addrdataset;
+	dlz_dlopen_subrdataset_t *	 dlz_subrdataset;
+	dlz_dlopen_delrdataset_t *	 dlz_delrdataset;
+	dlz_dlopen_destroy_t *		 dlz_destroy;
 } dlopen_data_t;
 
 /* Modules can choose whether they are lock-safe or not. */
 #define MAYBE_LOCK(cd) \
 	do { \
 		if ((cd->flags & DNS_SDLZFLAG_THREADSAFE) == 0 && \
-		    cd->in_configure == false) \
-			LOCK(&cd->lock); \
+		    cd->in_configure == false) { \
+			LOCK(&cd->lock);} \
 	} while (0)
 
 #define MAYBE_UNLOCK(cd) \
 	do { \
 		if ((cd->flags & DNS_SDLZFLAG_THREADSAFE) == 0 && \
-		    cd->in_configure == false) \
-			UNLOCK(&cd->lock); \
+		    cd->in_configure == false) { \
+			UNLOCK(&cd->lock);} \
 	} while (0)
 
 /*
  * Log a message at the given level.
  */
-static void dlopen_log(int level, const char *fmt, ...)
+static void
+dlopen_log(int level, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
@@ -94,7 +95,9 @@ static void dlopen_log(int level, const char *fmt, ...)
  */
 
 static isc_result_t
-dlopen_dlz_allnodes(const char *zone, void *driverarg, void *dbdata,
+dlopen_dlz_allnodes(const char *zone,
+		    void *driverarg,
+		    void *dbdata,
 		    dns_sdlzallnodes_t *allnodes)
 {
 	dlopen_data_t *cd = (dlopen_data_t *) dbdata;
@@ -115,7 +118,9 @@ dlopen_dlz_allnodes(const char *zone, void *driverarg, void *dbdata,
 
 
 static isc_result_t
-dlopen_dlz_allowzonexfr(void *driverarg, void *dbdata, const char *name,
+dlopen_dlz_allowzonexfr(void *driverarg,
+			void *dbdata,
+			const char *name,
 			const char *client)
 {
 	dlopen_data_t *cd = (dlopen_data_t *) dbdata;
@@ -135,7 +140,9 @@ dlopen_dlz_allowzonexfr(void *driverarg, void *dbdata, const char *name,
 }
 
 static isc_result_t
-dlopen_dlz_authority(const char *zone, void *driverarg, void *dbdata,
+dlopen_dlz_authority(const char *zone,
+		     void *driverarg,
+		     void *dbdata,
 		     dns_sdlzlookup_t *lookup)
 {
 	dlopen_data_t *cd = (dlopen_data_t *) dbdata;
@@ -154,7 +161,9 @@ dlopen_dlz_authority(const char *zone, void *driverarg, void *dbdata,
 }
 
 static isc_result_t
-dlopen_dlz_findzonedb(void *driverarg, void *dbdata, const char *name,
+dlopen_dlz_findzonedb(void *driverarg,
+		      void *dbdata,
+		      const char *name,
 		      dns_clientinfomethods_t *methods,
 		      dns_clientinfo_t *clientinfo)
 {
@@ -171,8 +180,11 @@ dlopen_dlz_findzonedb(void *driverarg, void *dbdata, const char *name,
 
 
 static isc_result_t
-dlopen_dlz_lookup(const char *zone, const char *name, void *driverarg,
-		  void *dbdata, dns_sdlzlookup_t *lookup,
+dlopen_dlz_lookup(const char *zone,
+		  const char *name,
+		  void *driverarg,
+		  void *dbdata,
+		  dns_sdlzlookup_t *lookup,
 		  dns_clientinfomethods_t *methods,
 		  dns_clientinfo_t *clientinfo)
 {
@@ -206,8 +218,11 @@ dl_load_symbol(dlopen_data_t *cd, const char *symbol, bool mandatory) {
  * Called at startup for each dlopen zone in named.conf
  */
 static isc_result_t
-dlopen_dlz_create(const char *dlzname, unsigned int argc, char *argv[],
-		  void *driverarg, void **dbdata)
+dlopen_dlz_create(const char *dlzname,
+		  unsigned int argc,
+		  char *argv[],
+		  void *driverarg,
+		  void **dbdata)
 {
 	dlopen_data_t *cd;
 	isc_mem_t *mctx = NULL;
@@ -224,8 +239,9 @@ dlopen_dlz_create(const char *dlzname, unsigned int argc, char *argv[],
 	}
 
 	result = isc_mem_create(0, 0, &mctx);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	cd = isc_mem_get(mctx, sizeof(*cd));
 	if (cd == NULL) {
@@ -252,7 +268,7 @@ dlopen_dlz_create(const char *dlzname, unsigned int argc, char *argv[],
 	isc_mutex_init(&cd->lock);
 
 	/* Open the library */
-	dlopen_flags = RTLD_NOW|RTLD_GLOBAL;
+	dlopen_flags = RTLD_NOW | RTLD_GLOBAL;
 
 #if defined(RTLD_DEEPBIND) && !__SANITIZE_ADDRESS__
 	/*
@@ -265,7 +281,7 @@ dlopen_dlz_create(const char *dlzname, unsigned int argc, char *argv[],
 	 * a segfault).
 	 */
 	dlopen_flags |= RTLD_DEEPBIND;
-#endif
+#endif /* if defined(RTLD_DEEPBIND) && !__SANITIZE_ADDRESS__ */
 
 	cd->dl_handle = dlopen(cd->dl_path, dlopen_flags);
 	if (cd->dl_handle == NULL) {
@@ -278,13 +294,13 @@ dlopen_dlz_create(const char *dlzname, unsigned int argc, char *argv[],
 
 	/* Find the symbols */
 	cd->dlz_version = (dlz_dlopen_version_t *)
-		dl_load_symbol(cd, "dlz_version", true);
+			  dl_load_symbol(cd, "dlz_version", true);
 	cd->dlz_create = (dlz_dlopen_create_t *)
-		dl_load_symbol(cd, "dlz_create", true);
+			 dl_load_symbol(cd, "dlz_create", true);
 	cd->dlz_lookup = (dlz_dlopen_lookup_t *)
-		dl_load_symbol(cd, "dlz_lookup", true);
+			 dl_load_symbol(cd, "dlz_lookup", true);
 	cd->dlz_findzonedb = (dlz_dlopen_findzonedb_t *)
-		dl_load_symbol(cd, "dlz_findzonedb", true);
+			     dl_load_symbol(cd, "dlz_findzonedb", true);
 
 	if (cd->dlz_create == NULL ||
 	    cd->dlz_version == NULL ||
@@ -297,29 +313,29 @@ dlopen_dlz_create(const char *dlzname, unsigned int argc, char *argv[],
 	}
 
 	cd->dlz_allowzonexfr = (dlz_dlopen_allowzonexfr_t *)
-		dl_load_symbol(cd, "dlz_allowzonexfr", false);
+			       dl_load_symbol(cd, "dlz_allowzonexfr", false);
 	cd->dlz_allnodes = (dlz_dlopen_allnodes_t *)
-		dl_load_symbol(cd, "dlz_allnodes",
-			       (cd->dlz_allowzonexfr != NULL));
+			   dl_load_symbol(cd, "dlz_allnodes",
+					  (cd->dlz_allowzonexfr != NULL));
 	cd->dlz_authority = (dlz_dlopen_authority_t *)
-		dl_load_symbol(cd, "dlz_authority", false);
+			    dl_load_symbol(cd, "dlz_authority", false);
 	cd->dlz_newversion = (dlz_dlopen_newversion_t *)
-		dl_load_symbol(cd, "dlz_newversion", false);
+			     dl_load_symbol(cd, "dlz_newversion", false);
 	cd->dlz_closeversion = (dlz_dlopen_closeversion_t *)
-		dl_load_symbol(cd, "dlz_closeversion",
-			       (cd->dlz_newversion != NULL));
+			       dl_load_symbol(cd, "dlz_closeversion",
+					      (cd->dlz_newversion != NULL));
 	cd->dlz_configure = (dlz_dlopen_configure_t *)
-		dl_load_symbol(cd, "dlz_configure", false);
+			    dl_load_symbol(cd, "dlz_configure", false);
 	cd->dlz_ssumatch = (dlz_dlopen_ssumatch_t *)
-		dl_load_symbol(cd, "dlz_ssumatch", false);
+			   dl_load_symbol(cd, "dlz_ssumatch", false);
 	cd->dlz_addrdataset = (dlz_dlopen_addrdataset_t *)
-		dl_load_symbol(cd, "dlz_addrdataset", false);
+			      dl_load_symbol(cd, "dlz_addrdataset", false);
 	cd->dlz_subrdataset = (dlz_dlopen_subrdataset_t *)
-		dl_load_symbol(cd, "dlz_subrdataset", false);
+			      dl_load_symbol(cd, "dlz_subrdataset", false);
 	cd->dlz_delrdataset = (dlz_dlopen_delrdataset_t *)
-		dl_load_symbol(cd, "dlz_delrdataset", false);
+			      dl_load_symbol(cd, "dlz_delrdataset", false);
 	cd->dlz_destroy = (dlz_dlopen_destroy_t *)
-		dl_load_symbol(cd, "dlz_destroy", false);
+			  dl_load_symbol(cd, "dlz_destroy", false);
 
 	/* Check the version of the API is the same */
 	cd->version = cd->dlz_version(&cd->flags);
@@ -342,7 +358,7 @@ dlopen_dlz_create(const char *dlzname, unsigned int argc, char *argv[],
 	 * link the BIND9 libraries
 	 */
 	MAYBE_LOCK(cd);
-	result = cd->dlz_create(dlzname, argc-1, argv+1,
+	result = cd->dlz_create(dlzname, argc - 1, argv + 1,
 				&cd->dbdata,
 				"log", dlopen_log,
 				"putrr", dns_sdlz_putrr,
@@ -350,14 +366,15 @@ dlopen_dlz_create(const char *dlzname, unsigned int argc, char *argv[],
 				"writeable_zone", dns_dlz_writeablezone,
 				NULL);
 	MAYBE_UNLOCK(cd);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto failed;
+	}
 
 	*dbdata = cd;
 
 	return (ISC_R_SUCCESS);
 
-failed:
+ failed:
 	dlopen_log(ISC_LOG_ERROR, "dlz_dlopen of '%s' failed", dlzname);
 	if (cd->dl_path != NULL) {
 		isc_mem_free(mctx, cd->dl_path);
@@ -372,7 +389,7 @@ failed:
 	if (cd->dl_handle) {
 		dlclose(cd->dl_handle);
 	}
-#endif
+#endif /* ifdef HAVE_DLCLOSE */
 	isc_mem_put(mctx, cd, sizeof(*cd));
 	isc_mem_destroy(&mctx);
 	return (result);
@@ -405,7 +422,7 @@ dlopen_dlz_destroy(void *driverarg, void *dbdata) {
 	if (cd->dl_handle) {
 		dlclose(cd->dl_handle);
 	}
-#endif
+#endif /* ifdef HAVE_DLCLOSE */
 
 	isc_mutex_destroy(&cd->lock);
 
@@ -418,7 +435,9 @@ dlopen_dlz_destroy(void *driverarg, void *dbdata) {
  * Called to start a transaction
  */
 static isc_result_t
-dlopen_dlz_newversion(const char *zone, void *driverarg, void *dbdata,
+dlopen_dlz_newversion(const char *zone,
+		      void *driverarg,
+		      void *dbdata,
 		      void **versionp)
 {
 	dlopen_data_t *cd = (dlopen_data_t *) dbdata;
@@ -426,8 +445,9 @@ dlopen_dlz_newversion(const char *zone, void *driverarg, void *dbdata,
 
 	UNUSED(driverarg);
 
-	if (cd->dlz_newversion == NULL)
+	if (cd->dlz_newversion == NULL) {
 		return (ISC_R_NOTIMPLEMENTED);
+	}
 
 	MAYBE_LOCK(cd);
 	result = cd->dlz_newversion(zone, cd->dbdata, versionp);
@@ -439,8 +459,11 @@ dlopen_dlz_newversion(const char *zone, void *driverarg, void *dbdata,
  * Called to end a transaction
  */
 static void
-dlopen_dlz_closeversion(const char *zone, bool commit,
-			void *driverarg, void *dbdata, void **versionp)
+dlopen_dlz_closeversion(const char *zone,
+			bool commit,
+			void *driverarg,
+			void *dbdata,
+			void **versionp)
 {
 	dlopen_data_t *cd = (dlopen_data_t *) dbdata;
 
@@ -460,16 +483,19 @@ dlopen_dlz_closeversion(const char *zone, bool commit,
  * Called on startup to configure any writeable zones
  */
 static isc_result_t
-dlopen_dlz_configure(dns_view_t *view, dns_dlzdb_t *dlzdb,
-		     void *driverarg, void *dbdata)
+dlopen_dlz_configure(dns_view_t *view,
+		     dns_dlzdb_t *dlzdb,
+		     void *driverarg,
+		     void *dbdata)
 {
 	dlopen_data_t *cd = (dlopen_data_t *) dbdata;
 	isc_result_t result;
 
 	UNUSED(driverarg);
 
-	if (cd->dlz_configure == NULL)
+	if (cd->dlz_configure == NULL) {
 		return (ISC_R_SUCCESS);
+	}
 
 	MAYBE_LOCK(cd);
 	cd->in_configure = true;
@@ -485,17 +511,24 @@ dlopen_dlz_configure(dns_view_t *view, dns_dlzdb_t *dlzdb,
  * Check for authority to change a name.
  */
 static bool
-dlopen_dlz_ssumatch(const char *signer, const char *name, const char *tcpaddr,
-		    const char *type, const char *key, uint32_t keydatalen,
-		    unsigned char *keydata, void *driverarg, void *dbdata)
+dlopen_dlz_ssumatch(const char *signer,
+		    const char *name,
+		    const char *tcpaddr,
+		    const char *type,
+		    const char *key,
+		    uint32_t keydatalen,
+		    unsigned char *keydata,
+		    void *driverarg,
+		    void *dbdata)
 {
 	dlopen_data_t *cd = (dlopen_data_t *) dbdata;
 	bool ret;
 
 	UNUSED(driverarg);
 
-	if (cd->dlz_ssumatch == NULL)
+	if (cd->dlz_ssumatch == NULL) {
 		return (false);
+	}
 
 	MAYBE_LOCK(cd);
 	ret = cd->dlz_ssumatch(signer, name, tcpaddr, type, key, keydatalen,
@@ -510,16 +543,20 @@ dlopen_dlz_ssumatch(const char *signer, const char *name, const char *tcpaddr,
  * Add an rdataset.
  */
 static isc_result_t
-dlopen_dlz_addrdataset(const char *name, const char *rdatastr,
-		       void *driverarg, void *dbdata, void *version)
+dlopen_dlz_addrdataset(const char *name,
+		       const char *rdatastr,
+		       void *driverarg,
+		       void *dbdata,
+		       void *version)
 {
 	dlopen_data_t *cd = (dlopen_data_t *) dbdata;
 	isc_result_t result;
 
 	UNUSED(driverarg);
 
-	if (cd->dlz_addrdataset == NULL)
+	if (cd->dlz_addrdataset == NULL) {
 		return (ISC_R_NOTIMPLEMENTED);
+	}
 
 	MAYBE_LOCK(cd);
 	result = cd->dlz_addrdataset(name, rdatastr, cd->dbdata, version);
@@ -532,16 +569,20 @@ dlopen_dlz_addrdataset(const char *name, const char *rdatastr,
  * Subtract an rdataset.
  */
 static isc_result_t
-dlopen_dlz_subrdataset(const char *name, const char *rdatastr,
-		       void *driverarg, void *dbdata, void *version)
+dlopen_dlz_subrdataset(const char *name,
+		       const char *rdatastr,
+		       void *driverarg,
+		       void *dbdata,
+		       void *version)
 {
 	dlopen_data_t *cd = (dlopen_data_t *) dbdata;
 	isc_result_t result;
 
 	UNUSED(driverarg);
 
-	if (cd->dlz_subrdataset == NULL)
+	if (cd->dlz_subrdataset == NULL) {
 		return (ISC_R_NOTIMPLEMENTED);
+	}
 
 	MAYBE_LOCK(cd);
 	result = cd->dlz_subrdataset(name, rdatastr, cd->dbdata, version);
@@ -554,16 +595,20 @@ dlopen_dlz_subrdataset(const char *name, const char *rdatastr,
  * Delete a rdataset.
  */
 static isc_result_t
-dlopen_dlz_delrdataset(const char *name, const char *type,
-		       void *driverarg, void *dbdata, void *version)
+dlopen_dlz_delrdataset(const char *name,
+		       const char *type,
+		       void *driverarg,
+		       void *dbdata,
+		       void *version)
 {
 	dlopen_data_t *cd = (dlopen_data_t *) dbdata;
 	isc_result_t result;
 
 	UNUSED(driverarg);
 
-	if (cd->dlz_delrdataset == NULL)
+	if (cd->dlz_delrdataset == NULL) {
 		return (ISC_R_NOTIMPLEMENTED);
+	}
 
 	MAYBE_LOCK(cd);
 	result = cd->dlz_delrdataset(name, type, cd->dbdata, version);
@@ -589,7 +634,7 @@ static dns_sdlzmethods_t dlz_dlopen_methods = {
 	dlopen_dlz_subrdataset,
 	dlopen_dlz_delrdataset
 };
-#endif
+#endif /* ifdef ISC_DLZ_DLOPEN */
 
 /*
  * Register driver with BIND
@@ -599,7 +644,7 @@ dlz_dlopen_init(isc_mem_t *mctx) {
 #ifndef ISC_DLZ_DLOPEN
 	UNUSED(mctx);
 	return (ISC_R_NOTIMPLEMENTED);
-#else
+#else  /* ifndef ISC_DLZ_DLOPEN */
 	isc_result_t result;
 
 	dlopen_log(2, "Registering DLZ_dlopen driver");
@@ -618,7 +663,7 @@ dlz_dlopen_init(isc_mem_t *mctx) {
 	}
 
 	return (result);
-#endif
+#endif /* ifndef ISC_DLZ_DLOPEN */
 }
 
 
@@ -629,7 +674,8 @@ void
 dlz_dlopen_clear(void) {
 #ifdef ISC_DLZ_DLOPEN
 	dlopen_log(2, "Unregistering DLZ_dlopen driver");
-	if (dlz_dlopen != NULL)
+	if (dlz_dlopen != NULL) {
 		dns_sdlzunregister(&dlz_dlopen);
-#endif
+	}
+#endif /* ifdef ISC_DLZ_DLOPEN */
 }

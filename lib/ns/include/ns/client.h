@@ -13,8 +13,8 @@
 #define NS_CLIENT_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file
  * \brief
@@ -82,72 +82,75 @@
 
 /*% nameserver client structure */
 struct ns_client {
-	unsigned int		magic;
-	isc_mem_t		*mctx;
-	ns_server_t		*sctx;
-	ns_clientmgr_t		*manager;
-	int			state;
-	int			newstate;
-	int			naccepts;
-	int			nreads;
-	int			nsends;
-	int			nrecvs;
-	int			nupdates;
-	int			nctls;
-	int			references;
-	bool			needshutdown;	/*
-						 * Used by clienttest to get
-						 * the client to go from
-						 * inactive to free state
-						 * by shutting down the
-						 * client's task.
-						 */
-	unsigned int		attributes;
-	isc_task_t		*task;
-	dns_view_t		*view;
-	dns_dispatch_t		*dispatch;
-	isc_socket_t		*udpsocket;
-	isc_socket_t		*tcplistener;
-	isc_socket_t		*tcpsocket;
-	unsigned char		*tcpbuf;
-	dns_tcpmsg_t		tcpmsg;
-	bool			tcpmsg_valid;
-	isc_timer_t		*timer;
-	isc_timer_t		*delaytimer;
-	bool 			timerset;
-	dns_message_t		*message;
-	isc_socketevent_t	*sendevent;
-	isc_socketevent_t	*recvevent;
-	unsigned char		*recvbuf;
-	dns_rdataset_t		*opt;
-	uint16_t		udpsize;
-	uint16_t		extflags;
-	int16_t			ednsversion;	/* -1 noedns */
-	void			(*next)(ns_client_t *);
-	void			(*shutdown)(void *arg, isc_result_t result);
-	void 			*shutdown_arg;
-	ns_query_t		query;
-	isc_time_t		requesttime;
-	isc_stdtime_t		now;
-	isc_time_t		tnow;
-	dns_name_t		signername;	/*%< [T]SIG key name */
-	dns_name_t		*signer;	/*%< NULL if not valid sig */
-	bool			mortal;		/*%< Die after handling request */
-	bool			pipelined;	/*%< TCP queries not in sequence */
-	isc_quota_t		*tcpquota;
-	isc_quota_t		*recursionquota;
-	ns_interface_t		*interface;
+	unsigned int	      magic;
+	isc_mem_t*	      mctx;
+	ns_server_t*	      sctx;
+	ns_clientmgr_t*	      manager;
+	int		      state;
+	int		      newstate;
+	int		      naccepts;
+	int		      nreads;
+	int		      nsends;
+	int		      nrecvs;
+	int		      nupdates;
+	int		      nctls;
+	int		      references;
+	bool		      needshutdown;     /*
+	                                         * Used by clienttest to get
+	                                         * the client to go from
+	                                         * inactive to free state
+	                                         * by shutting down the
+	                                         * client's task.
+	                                         */
+	unsigned int		  attributes;
+	isc_task_t*		  task;
+	dns_view_t*		  view;
+	dns_dispatch_t*		  dispatch;
+	isc_socket_t*		  udpsocket;
+	isc_socket_t*		  tcplistener;
+	isc_socket_t*		  tcpsocket;
+	unsigned char*		  tcpbuf;
+	dns_tcpmsg_t		  tcpmsg;
+	bool			  tcpmsg_valid;
+	isc_timer_t*		  timer;
+	isc_timer_t*		  delaytimer;
+	bool			  timerset;
+	dns_message_t*		  message;
+	isc_socketevent_t*	  sendevent;
+	isc_socketevent_t*	  recvevent;
+	unsigned char*		  recvbuf;
+	dns_rdataset_t*		  opt;
+	uint16_t		  udpsize;
+	uint16_t		  extflags;
+	int16_t			  ednsversion;  /* -1 noedns */
+	void			  (*next)(ns_client_t*);
+	void			  (*shutdown)(void*arg,isc_result_t result);
+	void*			  shutdown_arg;
+	ns_query_t		  query;
+	isc_time_t		  requesttime;
+	isc_stdtime_t		  now;
+	isc_time_t		  tnow;
+	dns_name_t		  signername;   /*%< [T]SIG key name */
+	dns_name_t*		  signer;       /*%< NULL if not valid sig */
+	bool			  mortal;       /*%< Die after handling request
+	                                         * */
+	bool			  pipelined;    /*%< TCP queries not in sequence
+	                                         * */
+	isc_quota_t*		  tcpquota;
+	isc_quota_t*		  recursionquota;
+	ns_interface_t*		  interface;
 
-	isc_sockaddr_t		peeraddr;
-	bool			peeraddr_valid;
-	isc_netaddr_t		destaddr;
-	isc_sockaddr_t		destsockaddr;
+	isc_sockaddr_t		  peeraddr;
+	bool			  peeraddr_valid;
+	isc_netaddr_t		  destaddr;
+	isc_sockaddr_t		  destsockaddr;
 
-	dns_ecs_t		ecs;		/*%< EDNS client subnet sent by client */
+	dns_ecs_t		  ecs;          /*%< EDNS client subnet sent by
+	                                         * client */
 
-	struct in6_pktinfo	pktinfo;
-	isc_dscp_t		dscp;
-	isc_event_t		ctlevent;
+	struct in6_pktinfo	  pktinfo;
+	isc_dscp_t		  dscp;
+	isc_event_t		  ctlevent;
 	/*%
 	 * Information about recent FORMERR response(s), for
 	 * FORMERR loop avoidance.  This is separate for each
@@ -155,54 +158,56 @@ struct ns_client {
 	 * the need for locking.
 	 */
 	struct {
-		isc_sockaddr_t		addr;
-		isc_stdtime_t		time;
-		dns_messageid_t		id;
+		isc_sockaddr_t	       addr;
+		isc_stdtime_t	       time;
+		dns_messageid_t	       id;
 	} formerrcache;
 
 	/*% Callback function to send a response when unit testing */
-	void			(*sendcb)(isc_buffer_t *buf);
+	void        (*sendcb)(isc_buffer_t*buf);
 
-	ISC_LINK(ns_client_t)	link;
-	ISC_LINK(ns_client_t)	rlink;
-	ISC_QLINK(ns_client_t)	ilink;
-	unsigned char		cookie[8];
-	uint32_t		expire;
-	unsigned char		*keytag;
-	uint16_t		keytag_len;
+	ISC_LINK(ns_client_t)   link;
+	ISC_LINK(ns_client_t)   rlink;
+	ISC_QLINK(ns_client_t)  ilink;
+	unsigned char	     cookie[8];
+	uint32_t	     expire;
+	unsigned char*	     keytag;
+	uint16_t	     keytag_len;
 };
 
-typedef ISC_QUEUE(ns_client_t) client_queue_t;
-typedef ISC_LIST(ns_client_t) client_list_t;
+typedef ISC_QUEUE (ns_client_t) client_queue_t;
+typedef ISC_LIST (ns_client_t) client_list_t;
 
-#define NS_CLIENT_MAGIC			ISC_MAGIC('N','S','C','c')
-#define NS_CLIENT_VALID(c)		ISC_MAGIC_VALID(c, NS_CLIENT_MAGIC)
+#define NS_CLIENT_MAGIC                 ISC_MAGIC('N','S','C','c')
+#define NS_CLIENT_VALID(c)              ISC_MAGIC_VALID(c,NS_CLIENT_MAGIC)
 
-#define NS_CLIENTATTR_TCP		0x00001
-#define NS_CLIENTATTR_RA		0x00002 /*%< Client gets recursive service */
-#define NS_CLIENTATTR_PKTINFO		0x00004 /*%< pktinfo is valid */
-#define NS_CLIENTATTR_MULTICAST		0x00008 /*%< recv'd from multicast */
-#define NS_CLIENTATTR_WANTDNSSEC	0x00010 /*%< include dnssec records */
-#define NS_CLIENTATTR_WANTNSID		0x00020 /*%< include nameserver ID */
+#define NS_CLIENTATTR_TCP               0x00001
+#define NS_CLIENTATTR_RA                0x00002 /*%< Client gets recursive
+	                                         * service */
+#define NS_CLIENTATTR_PKTINFO           0x00004 /*%< pktinfo is valid */
+#define NS_CLIENTATTR_MULTICAST         0x00008 /*%< recv'd from multicast */
+#define NS_CLIENTATTR_WANTDNSSEC        0x00010 /*%< include dnssec records */
+#define NS_CLIENTATTR_WANTNSID          0x00020 /*%< include nameserver ID */
 /* Obsolete: NS_CLIENTATTR_FILTER_AAAA	0x00040 */
 /* Obsolete: NS_CLIENTATTR_FILTER_AAAA_RC 0x00080 */
-#define NS_CLIENTATTR_WANTAD		0x00100 /*%< want AD in response if possible */
-#define NS_CLIENTATTR_WANTCOOKIE	0x00200 /*%< return a COOKIE */
-#define NS_CLIENTATTR_HAVECOOKIE	0x00400 /*%< has a valid COOKIE */
-#define NS_CLIENTATTR_WANTEXPIRE	0x00800 /*%< return seconds to expire */
-#define NS_CLIENTATTR_HAVEEXPIRE	0x01000 /*%< return seconds to expire */
-#define NS_CLIENTATTR_WANTOPT		0x02000 /*%< add opt to reply */
-#define NS_CLIENTATTR_HAVEECS		0x04000 /*%< received an ECS option */
-#define NS_CLIENTATTR_WANTPAD		0x08000 /*%< pad reply */
-#define NS_CLIENTATTR_USEKEEPALIVE	0x10000 /*%< use TCP keepalive */
+#define NS_CLIENTATTR_WANTAD            0x00100 /*%< want AD in response if
+	                                         * possible */
+#define NS_CLIENTATTR_WANTCOOKIE        0x00200 /*%< return a COOKIE */
+#define NS_CLIENTATTR_HAVECOOKIE        0x00400 /*%< has a valid COOKIE */
+#define NS_CLIENTATTR_WANTEXPIRE        0x00800 /*%< return seconds to expire */
+#define NS_CLIENTATTR_HAVEEXPIRE        0x01000 /*%< return seconds to expire */
+#define NS_CLIENTATTR_WANTOPT           0x02000 /*%< add opt to reply */
+#define NS_CLIENTATTR_HAVEECS           0x04000 /*%< received an ECS option */
+#define NS_CLIENTATTR_WANTPAD           0x08000 /*%< pad reply */
+#define NS_CLIENTATTR_USEKEEPALIVE      0x10000 /*%< use TCP keepalive */
 
-#define NS_CLIENTATTR_NOSETFC		0x20000 /*%< don't set servfail cache */
+#define NS_CLIENTATTR_NOSETFC           0x20000 /*%< don't set servfail cache */
 
 /*
  * Flag to use with the SERVFAIL cache to indicate
  * that a query had the CD bit set.
  */
-#define NS_FAILCACHE_CD		0x01
+#define NS_FAILCACHE_CD         0x01
 
 LIBNS_EXTERNAL_DATA extern unsigned int ns_client_requests;
 
@@ -216,7 +221,7 @@ LIBNS_EXTERNAL_DATA extern unsigned int ns_client_requests;
  */
 
 void
-ns_client_send(ns_client_t *client);
+ns_client_send(ns_client_t*client);
 /*%<
  * Finish processing the current client request and
  * send client->message as a response.
@@ -226,14 +231,14 @@ ns_client_send(ns_client_t *client);
  */
 
 void
-ns_client_sendraw(ns_client_t *client, dns_message_t *msg);
+ns_client_sendraw(ns_client_t*client,dns_message_t*msg);
 /*%<
  * Finish processing the current client request and
  * send msg as a response using client->message->id for the id.
  */
 
 void
-ns_client_error(ns_client_t *client, isc_result_t result);
+ns_client_error(ns_client_t*client,isc_result_t result);
 /*%<
  * Finish processing the current client request and return
  * an error response to the client.  The error response
@@ -241,32 +246,32 @@ ns_client_error(ns_client_t *client, isc_result_t result);
  */
 
 void
-ns_client_next(ns_client_t *client, isc_result_t result);
+ns_client_next(ns_client_t*client,isc_result_t result);
 /*%<
  * Finish processing the current client request,
  * return no response to the client.
  */
 
 bool
-ns_client_shuttingdown(ns_client_t *client);
+ns_client_shuttingdown(ns_client_t*client);
 /*%<
  * Return true iff the client is currently shutting down.
  */
 
 void
-ns_client_attach(ns_client_t *source, ns_client_t **target);
+ns_client_attach(ns_client_t*source,ns_client_t**target);
 /*%<
  * Attach '*targetp' to 'source'.
  */
 
 void
-ns_client_detach(ns_client_t **clientp);
+ns_client_detach(ns_client_t**clientp);
 /*%<
  * Detach '*clientp' from its client.
  */
 
 isc_result_t
-ns_client_replace(ns_client_t *client);
+ns_client_replace(ns_client_t*client);
 /*%<
  * Try to replace the current client with a new one, so that the
  * current one can go off and do some lengthy work without
@@ -274,51 +279,58 @@ ns_client_replace(ns_client_t *client);
  */
 
 void
-ns_client_settimeout(ns_client_t *client, unsigned int seconds);
+ns_client_settimeout(ns_client_t*client,unsigned int seconds);
 /*%<
  * Set a timer in the client to go off in the specified amount of time.
  */
 
 isc_result_t
-ns_clientmgr_create(isc_mem_t *mctx, ns_server_t *sctx, isc_taskmgr_t *taskmgr,
-		    isc_timermgr_t *timermgr, ns_clientmgr_t **managerp);
+ns_clientmgr_create(isc_mem_t*mctx,
+		    ns_server_t*sctx,
+		    isc_taskmgr_t*taskmgr,
+		    isc_timermgr_t*timermgr,
+		    ns_clientmgr_t**managerp);
 /*%<
  * Create a client manager.
  */
 
 void
-ns_clientmgr_destroy(ns_clientmgr_t **managerp);
+ns_clientmgr_destroy(ns_clientmgr_t**managerp);
 /*%<
  * Destroy a client manager and all ns_client_t objects
  * managed by it.
  */
 
 isc_result_t
-ns_clientmgr_createclients(ns_clientmgr_t *manager, unsigned int n,
-			   ns_interface_t *ifp, bool tcp);
+ns_clientmgr_createclients(ns_clientmgr_t*manager,
+			   unsigned int n,
+			   ns_interface_t*ifp,
+			   bool tcp);
 /*%<
  * Create up to 'n' clients listening on interface 'ifp'.
  * If 'tcp' is true, the clients will listen for TCP connections,
  * otherwise for UDP requests.
  */
 
-isc_sockaddr_t *
-ns_client_getsockaddr(ns_client_t *client);
+isc_sockaddr_t*
+ns_client_getsockaddr(ns_client_t*client);
 /*%<
  * Get the socket address of the client whose request is
  * currently being processed.
  */
 
-isc_sockaddr_t *
-ns_client_getdestaddr(ns_client_t *client);
+isc_sockaddr_t*
+ns_client_getdestaddr(ns_client_t*client);
 /*%<
  * Get the destination address (server) for the request that is
  * currently being processed.
  */
 
 isc_result_t
-ns_client_checkaclsilent(ns_client_t *client, isc_netaddr_t *netaddr,
-			 dns_acl_t *acl, bool default_allow);
+ns_client_checkaclsilent(ns_client_t*client,
+			 isc_netaddr_t*netaddr,
+			 dns_acl_t*acl,
+			 bool default_allow);
 
 /*%<
  * Convenience function for client request ACL checking.
@@ -330,9 +342,9 @@ ns_client_checkaclsilent(ns_client_t *client, isc_netaddr_t *netaddr,
  *
  * Notes:
  *\li	This is appropriate for checking allow-update,
- * 	allow-query, allow-transfer, etc.  It is not appropriate
- * 	for checking the blackhole list because we treat positive
- * 	matches as "allow" and negative matches as "deny"; in
+ *      allow-query, allow-transfer, etc.  It is not appropriate
+ *      for checking the blackhole list because we treat positive
+ *      matches as "allow" and negative matches as "deny"; in
  *	the case of the blackhole list this would be backwards.
  *
  * Requires:
@@ -347,9 +359,10 @@ ns_client_checkaclsilent(ns_client_t *client, isc_netaddr_t *netaddr,
  */
 
 isc_result_t
-ns_client_checkacl(ns_client_t  *client,
-		   isc_sockaddr_t *sockaddr,
-		   const char *opname, dns_acl_t *acl,
+ns_client_checkacl(ns_client_t*client,
+		   isc_sockaddr_t*sockaddr,
+		   const char*opname,
+		   dns_acl_t*acl,
 		   bool default_allow,
 		   int log_level);
 /*%<
@@ -365,105 +378,117 @@ ns_client_checkacl(ns_client_t  *client,
  */
 
 void
-ns_client_log(ns_client_t *client, isc_logcategory_t *category,
-	      isc_logmodule_t *module, int level,
-	      const char *fmt, ...) ISC_FORMAT_PRINTF(5, 6);
+ns_client_log(ns_client_t*client,
+	      isc_logcategory_t*category,
+	      isc_logmodule_t*module,
+	      int level,
+	      const char*fmt,
+	      ...) ISC_FORMAT_PRINTF(5,6);
 
 void
-ns_client_logv(ns_client_t *client, isc_logcategory_t *category,
-	       isc_logmodule_t *module, int level, const char *fmt, va_list ap) ISC_FORMAT_PRINTF(5, 0);
+ns_client_logv(ns_client_t*client,
+	       isc_logcategory_t*category,
+	       isc_logmodule_t*module,
+	       int level,
+	       const char*fmt,
+	       va_list ap) ISC_FORMAT_PRINTF(5,0);
 
 void
-ns_client_aclmsg(const char *msg, const dns_name_t *name, dns_rdatatype_t type,
-		 dns_rdataclass_t rdclass, char *buf, size_t len);
+ns_client_aclmsg(const char*msg,
+		 const dns_name_t*name,
+		 dns_rdatatype_t type,
+		 dns_rdataclass_t rdclass,
+		 char*buf,
+		 size_t len);
 
 #define NS_CLIENT_ACLMSGSIZE(x) \
 	(DNS_NAME_FORMATSIZE + DNS_RDATATYPE_FORMATSIZE + \
 	 DNS_RDATACLASS_FORMATSIZE + sizeof(x) + sizeof("'/'"))
 
 void
-ns_client_recursing(ns_client_t *client);
+ns_client_recursing(ns_client_t*client);
 /*%<
  * Add client to end of th recursing list.
  */
 
 void
-ns_client_killoldestquery(ns_client_t *client);
+ns_client_killoldestquery(ns_client_t*client);
 /*%<
  * Kill the oldest recursive query (recursing list head).
  */
 
 void
-ns_client_dumprecursing(FILE *f, ns_clientmgr_t *manager);
+ns_client_dumprecursing(FILE*f,ns_clientmgr_t*manager);
 /*%<
  * Dump the outstanding recursive queries to 'f'.
  */
 
 void
-ns_client_qnamereplace(ns_client_t *client, dns_name_t *name);
+ns_client_qnamereplace(ns_client_t*client,dns_name_t*name);
 /*%<
  * Replace the qname.
  */
 
 isc_result_t
-ns_client_sourceip(dns_clientinfo_t *ci, isc_sockaddr_t **addrp);
+ns_client_sourceip(dns_clientinfo_t*ci,isc_sockaddr_t**addrp);
 
 isc_result_t
-ns_client_addopt(ns_client_t *client, dns_message_t *message,
-		 dns_rdataset_t **opt);
+ns_client_addopt(ns_client_t*client,dns_message_t*message,dns_rdataset_t**opt);
 
 isc_result_t
-ns__clientmgr_getclient(ns_clientmgr_t *manager, ns_interface_t *ifp,
-			bool tcp, ns_client_t **clientp);
+ns__clientmgr_getclient(ns_clientmgr_t*manager,
+			ns_interface_t*ifp,
+			bool tcp,
+			ns_client_t**clientp);
 /*
  * Get a client object from the inactive queue, or create one, as needed.
  * (Not intended for use outside this module and associated tests.)
  */
 
 void
-ns__client_request(isc_task_t *task, isc_event_t *event);
+ns__client_request(isc_task_t*task,isc_event_t*event);
 /*
  * Handle client requests.
  * (Not intended for use outside this module and associated tests.)
  */
 
-dns_rdataset_t *
-ns_client_newrdataset(ns_client_t *client);
+dns_rdataset_t*
+ns_client_newrdataset(ns_client_t*client);
 
 void
-ns_client_putrdataset(ns_client_t *client, dns_rdataset_t **rdatasetp);
+ns_client_putrdataset(ns_client_t*client,dns_rdataset_t**rdatasetp);
 /*%<
  * Get and release temporary rdatasets in the client message;
  * used in query.c and in plugins.
  */
 
 isc_result_t
-ns_client_newnamebuf(ns_client_t *client);
+ns_client_newnamebuf(ns_client_t*client);
 /*%<
  * Allocate a name buffer for the client message.
  */
 
-dns_name_t *
-ns_client_newname(ns_client_t *client, isc_buffer_t *dbuf, isc_buffer_t *nbuf);
+dns_name_t*
+ns_client_newname(ns_client_t*client,isc_buffer_t*dbuf,isc_buffer_t*nbuf);
 /*%<
  * Get a temporary name for the client message.
  */
 
-isc_buffer_t *
-ns_client_getnamebuf(ns_client_t *client);
+isc_buffer_t*
+ns_client_getnamebuf(ns_client_t*client);
 /*%<
  * Get a name buffer from the pool, or allocate a new one if needed.
  */
 
 void
-ns_client_keepname(ns_client_t *client, dns_name_t *name, isc_buffer_t *dbuf);
+ns_client_keepname(ns_client_t*client,dns_name_t*name,isc_buffer_t*dbuf);
 /*%<
  * Adjust buffer 'dbuf' to reflect that 'name' is using space in it,
  * and set client attributes appropriately.
  */
 
 void
-ns_client_releasename(ns_client_t *client, dns_name_t **namep);
+ns_client_releasename(ns_client_t*client,dns_name_t**namep);
 /*%<
  * Release 'name' back to the pool of temporary names for the client
  * message. If it is using a name buffer, relinquish its exclusive
@@ -471,20 +496,20 @@ ns_client_releasename(ns_client_t *client, dns_name_t **namep);
  */
 
 isc_result_t
-ns_client_newdbversion(ns_client_t *client, unsigned int n);
+ns_client_newdbversion(ns_client_t*client,unsigned int n);
 /*%<
  * Allocate 'n' new database versions for use by client queries.
  */
 
-ns_dbversion_t *
-ns_client_getdbversion(ns_client_t *client);
+ns_dbversion_t*
+ns_client_getdbversion(ns_client_t*client);
 /*%<
  * Get a free database version for use by a client query, allocating
  * a new one if necessary.
  */
 
-ns_dbversion_t *
-ns_client_findversion(ns_client_t *client, dns_db_t *db);
+ns_dbversion_t*
+ns_client_findversion(ns_client_t*client,dns_db_t*db);
 /*%<
  * Find the correct database version to use with a client query.
  * If we have already done a query related to the database 'db',

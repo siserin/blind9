@@ -106,21 +106,21 @@ enum {
 };
 
 void
-ns_stats_attach(ns_stats_t *stats, ns_stats_t **statsp);
+ns_stats_attach(ns_stats_t*stats,ns_stats_t**statsp);
 
 void
-ns_stats_detach(ns_stats_t **statsp);
+ns_stats_detach(ns_stats_t**statsp);
 
 isc_result_t
-ns_stats_create(isc_mem_t *mctx, int ncounters, ns_stats_t **statsp);
+ns_stats_create(isc_mem_t*mctx,int ncounters,ns_stats_t**statsp);
 
 void
-ns_stats_increment(ns_stats_t *stats, isc_statscounter_t counter);
+ns_stats_increment(ns_stats_t*stats,isc_statscounter_t counter);
 
 void
-ns_stats_decrement(ns_stats_t *stats, isc_statscounter_t counter);
+ns_stats_decrement(ns_stats_t*stats,isc_statscounter_t counter);
 
-isc_stats_t *
-ns_stats_get(ns_stats_t *stats);
+isc_stats_t*
+ns_stats_get(ns_stats_t*stats);
 
 #endif /* NS_STATS_H */

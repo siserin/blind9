@@ -19,7 +19,7 @@
 
 #if defined(HAVE_PTHREAD_NP_H)
 #include <pthread_np.h>
-#endif
+#endif /* if defined(HAVE_PTHREAD_NP_H) */
 
 #include <isc/lang.h>
 #include <isc/result.h>
@@ -27,13 +27,13 @@
 ISC_LANG_BEGINDECLS
 
 typedef pthread_t isc_thread_t;
-typedef void * isc_threadresult_t;
-typedef void * isc_threadarg_t;
+typedef void *isc_threadresult_t;
+typedef void *isc_threadarg_t;
 typedef isc_threadresult_t (*isc_threadfunc_t)(isc_threadarg_t);
 typedef pthread_key_t isc_thread_key_t;
 
 isc_result_t
-isc_thread_create(isc_threadfunc_t, isc_threadarg_t, isc_thread_t *);
+	isc_thread_create(isc_threadfunc_t, isc_threadarg_t, isc_thread_t *);
 
 void
 isc_thread_setconcurrency(unsigned int level);

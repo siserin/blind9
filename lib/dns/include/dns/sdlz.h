@@ -58,22 +58,21 @@
 
 ISC_LANG_BEGINDECLS
 
-#define DNS_SDLZFLAG_THREADSAFE		0x00000001U
-#define DNS_SDLZFLAG_RELATIVEOWNER	0x00000002U
-#define DNS_SDLZFLAG_RELATIVERDATA	0x00000004U
+#define DNS_SDLZFLAG_THREADSAFE         0x00000001U
+#define DNS_SDLZFLAG_RELATIVEOWNER      0x00000002U
+#define DNS_SDLZFLAG_RELATIVERDATA      0x00000004U
 
- /* A simple DLZ database. */
+/* A simple DLZ database. */
 typedef struct dns_sdlz_db dns_sdlz_db_t;
 
- /* A simple DLZ database lookup in progress. */
+/* A simple DLZ database lookup in progress. */
 typedef struct dns_sdlzlookup dns_sdlzlookup_t;
 
- /* A simple DLZ database traversal in progress. */
+/* A simple DLZ database traversal in progress. */
 typedef struct dns_sdlzallnodes dns_sdlzallnodes_t;
 
 typedef isc_result_t (*dns_sdlzallnodesfunc_t)(const char *zone,
-					       void *driverarg,
-					       void *dbdata,
+					       void *driverarg, void *dbdata,
 					       dns_sdlzallnodes_t *allnodes);
 /*%<
  * Method prototype.  Drivers implementing the SDLZ interface may
@@ -88,8 +87,8 @@ typedef isc_result_t (*dns_sdlzallnodesfunc_t)(const char *zone,
  * does not have to implement an all nodes method.
  */
 
-typedef isc_result_t (*dns_sdlzallowzonexfr_t)(void *driverarg,
-					       void *dbdata, const char *name,
+typedef isc_result_t (*dns_sdlzallowzonexfr_t)(void *driverarg, void *dbdata,
+					       const char *name,
 					       const char *client);
 
 /*%<
@@ -199,9 +198,8 @@ typedef isc_result_t
  * from the caller.
  */
 
-typedef isc_result_t (*dns_sdlznewversion_t)(const char *zone,
-					     void *driverarg, void *dbdata,
-					     void **versionp);
+typedef isc_result_t (*dns_sdlznewversion_t)(const char *zone, void *driverarg,
+					     void *dbdata, void **versionp);
 /*%<
  * Method prototype.  Drivers implementing the SDLZ interface may
  * supply a newversion method.  This method is called to start a
@@ -235,15 +233,11 @@ typedef isc_result_t (*dns_sdlzconfigure_t)(dns_view_t *view,
  */
 
 
-typedef bool (*dns_sdlzssumatch_t)(const char *signer,
-					    const char *name,
-					    const char *tcpaddr,
-					    const char *type,
-					    const char *key,
-					    uint32_t keydatalen,
-					    unsigned char *keydata,
-					    void *driverarg,
-					    void *dbdata);
+typedef bool (*dns_sdlzssumatch_t)(const char *signer, const char *name,
+				   const char *tcpaddr, const char *type,
+				   const char *key, uint32_t keydatalen,
+				   unsigned char *keydata, void *driverarg,
+				   void *dbdata);
 
 /*%<
  * Method prototype.  Drivers implementing the SDLZ interface may
@@ -282,25 +276,28 @@ typedef isc_result_t (*dns_sdlzdelrdataset_t)(const char *name,
  */
 
 typedef struct dns_sdlzmethods {
-	dns_sdlzcreate_t	create;
-	dns_sdlzdestroy_t	destroy;
-	dns_sdlzfindzone_t	findzone;
-	dns_sdlzlookupfunc_t	lookup;
-	dns_sdlzauthorityfunc_t	authority;
-	dns_sdlzallnodesfunc_t	allnodes;
-	dns_sdlzallowzonexfr_t	allowzonexfr;
-	dns_sdlznewversion_t    newversion;
-	dns_sdlzcloseversion_t  closeversion;
-	dns_sdlzconfigure_t	configure;
-	dns_sdlzssumatch_t	ssumatch;
-	dns_sdlzmodrdataset_t	addrdataset;
-	dns_sdlzmodrdataset_t	subtractrdataset;
-	dns_sdlzdelrdataset_t	delrdataset;
+	dns_sdlzcreate_t	       create;
+	dns_sdlzdestroy_t	       destroy;
+	dns_sdlzfindzone_t	       findzone;
+	dns_sdlzlookupfunc_t	       lookup;
+	dns_sdlzauthorityfunc_t	       authority;
+	dns_sdlzallnodesfunc_t	       allnodes;
+	dns_sdlzallowzonexfr_t	       allowzonexfr;
+	dns_sdlznewversion_t	       newversion;
+	dns_sdlzcloseversion_t	       closeversion;
+	dns_sdlzconfigure_t	       configure;
+	dns_sdlzssumatch_t	       ssumatch;
+	dns_sdlzmodrdataset_t	       addrdataset;
+	dns_sdlzmodrdataset_t	       subtractrdataset;
+	dns_sdlzdelrdataset_t	       delrdataset;
 } dns_sdlzmethods_t;
 
 isc_result_t
-dns_sdlzregister(const char *drivername, const dns_sdlzmethods_t *methods,
-		 void *driverarg, unsigned int flags, isc_mem_t *mctx,
+dns_sdlzregister(const char *drivername,
+		 const dns_sdlzmethods_t *methods,
+		 void *driverarg,
+		 unsigned int flags,
+		 isc_mem_t *mctx,
 		 dns_sdlzimplementation_t **sdlzimp);
 /*%<
  * Register a dynamically loadable zones (dlz) driver for the database
@@ -321,11 +318,11 @@ dns_sdlzunregister(dns_sdlzimplementation_t **sdlzimp);
  * function is called.
  */
 
-typedef isc_result_t dns_sdlz_putnamedrr_t(dns_sdlzallnodes_t *allnodes,
-					   const char *name,
-					   const char *type,
-					   dns_ttl_t ttl,
-					   const char *data);
+typedef isc_result_t dns_sdlz_putnamedrr_t (dns_sdlzallnodes_t *allnodes,
+					    const char *name,
+					    const char *type,
+					    dns_ttl_t ttl,
+					    const char *data);
 dns_sdlz_putnamedrr_t dns_sdlz_putnamedrr;
 
 /*%<
@@ -333,20 +330,20 @@ dns_sdlz_putnamedrr_t dns_sdlz_putnamedrr;
  * parsed into a zone transfer response.
  */
 
-typedef isc_result_t dns_sdlz_putrr_t(dns_sdlzlookup_t *lookup,
-				      const char *type,
-				      dns_ttl_t ttl,
-				      const char *data);
+typedef isc_result_t dns_sdlz_putrr_t (dns_sdlzlookup_t *lookup,
+				       const char *type,
+				       dns_ttl_t ttl,
+				       const char *data);
 dns_sdlz_putrr_t dns_sdlz_putrr;
 /*%<
  * Add a single resource record to the lookup structure to be later
  * parsed into a query response.
  */
 
-typedef isc_result_t dns_sdlz_putsoa_t(dns_sdlzlookup_t *lookup,
-				       const char *mname,
-				       const char *rname,
-				       uint32_t serial);
+typedef isc_result_t dns_sdlz_putsoa_t (dns_sdlzlookup_t *lookup,
+					const char *mname,
+					const char *rname,
+					uint32_t serial);
 dns_sdlz_putsoa_t dns_sdlz_putsoa;
 /*%<
  * This function may optionally be called from the 'authority'
@@ -359,10 +356,10 @@ dns_sdlz_putsoa_t dns_sdlz_putsoa;
  */
 
 
-typedef isc_result_t dns_sdlz_setdb_t(dns_dlzdb_t *dlzdatabase,
-				      dns_rdataclass_t rdclass,
-				      const dns_name_t *name,
-				      dns_db_t **dbp);
+typedef isc_result_t dns_sdlz_setdb_t (dns_dlzdb_t *dlzdatabase,
+				       dns_rdataclass_t rdclass,
+				       const dns_name_t *name,
+				       dns_db_t **dbp);
 dns_sdlz_setdb_t dns_sdlz_setdb;
 /*%<
  * Create the database pointers for a writeable SDLZ zone

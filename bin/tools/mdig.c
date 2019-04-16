@@ -56,20 +56,20 @@
 #include <bind9/getaddresses.h>
 
 #define CHECK(str, x) { \
-	if ((x) != ISC_R_SUCCESS) { \
-		fprintf(stderr, "mdig: %s failed with %s\n",	\
-			(str), isc_result_totext(x));	\
-		exit(-1); \
-	} \
+		if ((x) != ISC_R_SUCCESS) { \
+			fprintf(stderr, "mdig: %s failed with %s\n",    \
+				(str), isc_result_totext(x));   \
+			exit(-1); \
+		} \
 }
 
 #define RUNCHECK(x) RUNTIME_CHECK((x) == ISC_R_SUCCESS)
 
-#define ADD_STRING(b, s) { 				\
-	if (strlen(s) >= isc_buffer_availablelength(b)) \
-		return (ISC_R_NOSPACE); 		\
-	else 						\
-		isc_buffer_putstr(b, s); 		\
+#define ADD_STRING(b, s) {                              \
+		if (strlen(s) >= isc_buffer_availablelength(b)) { \
+			return (ISC_R_NOSPACE);}                 \
+		else {                                            \
+			isc_buffer_putstr(b, s);}                \
 }
 
 #define MXNAME (DNS_NAME_MAXTEXT + 1)
@@ -117,28 +117,29 @@ static int onfly = 0;
 static char hexcookie[81];
 
 struct query {
-	char textname[MXNAME]; /*% Name we're going to be looking up */
-	bool recurse;
-	bool have_aaonly;
-	bool have_adflag;
-	bool have_cdflag;
-	bool have_zflag;
-	bool dnssec;
-	bool expire;
-	bool send_cookie;
-	char *cookie;
-	bool nsid;
-	dns_rdatatype_t rdtype;
-	dns_rdataclass_t rdclass;
-	uint16_t udpsize;
-	int16_t edns;
-	dns_ednsopt_t *ednsopts;
-	unsigned int ednsoptscnt;
-	unsigned int ednsflags;
-	isc_sockaddr_t *ecs_addr;
-	unsigned int timeout;
-	unsigned int udptimeout;
-	unsigned int udpretries;
+	char			textname[MXNAME]; /*% Name we're going to be
+	                                           * looking up */
+	bool			recurse;
+	bool			have_aaonly;
+	bool			have_adflag;
+	bool			have_cdflag;
+	bool			have_zflag;
+	bool			dnssec;
+	bool			expire;
+	bool			send_cookie;
+	char *			cookie;
+	bool			nsid;
+	dns_rdatatype_t		rdtype;
+	dns_rdataclass_t	rdclass;
+	uint16_t		udpsize;
+	int16_t			edns;
+	dns_ednsopt_t *		ednsopts;
+	unsigned int		ednsoptscnt;
+	unsigned int		ednsflags;
+	isc_sockaddr_t *	ecs_addr;
+	unsigned int		timeout;
+	unsigned int		udptimeout;
+	unsigned int		udpretries;
 	ISC_LINK(struct query) link;
 };
 static struct query default_query;
@@ -146,7 +147,7 @@ static ISC_LIST(struct query) queries;
 
 #define EDNSOPTS 100U
 /*% opcode text */
-static const char * const opcodetext[] = {
+static const char *const opcodetext[] = {
 	"QUERY",
 	"IQUERY",
 	"STATUS",
@@ -166,7 +167,7 @@ static const char * const opcodetext[] = {
 };
 
 /*% return code text */
-static const char * const rcodetext[] = {
+static const char *const rcodetext[] = {
 	"NOERROR",
 	"FORMERR",
 	"SERVFAIL",
@@ -192,16 +193,17 @@ rcode_totext(dns_rcode_t rcode)
 {
 	static char buf[sizeof("?65535")];
 	union {
-		const char *consttext;
-		char *deconsttext;
+		const char *	  consttext;
+		char *		  deconsttext;
 	} totext;
 
-	if (rcode >= (sizeof(rcodetext)/sizeof(rcodetext[0]))) {
+	if (rcode >= (sizeof(rcodetext) / sizeof(rcodetext[0]))) {
 		snprintf(buf, sizeof(buf), "?%u", rcode);
 		totext.deconsttext = buf;
-	} else
+	} else {
 		totext.consttext = rcodetext[rcode];
-	return totext.deconsttext;
+	}
+	return(totext.deconsttext);
 }
 
 /* receive response event handler */
@@ -225,10 +227,11 @@ recvresponse(isc_task_t *task, isc_event_t *event) {
 	if (reqev->result != ISC_R_SUCCESS) {
 		fprintf(stderr, "response failed with %s\n",
 			isc_result_totext(reqev->result));
-		if (continue_on_error)
+		if (continue_on_error) {
 			goto cleanup;
-		else
+		} else {
 			exit(-1);
+		}
 	}
 
 	result = dns_message_create(mctx, DNS_MESSAGE_INTENTPARSE, &response);
@@ -243,20 +246,27 @@ recvresponse(isc_task_t *task, isc_event_t *event) {
 	CHECK("dns_request_getresponse", result);
 
 	styleflags |= DNS_STYLEFLAG_REL_OWNER;
-	if (display_comments)
+	if (display_comments) {
 		styleflags |= DNS_STYLEFLAG_COMMENT;
-	if (display_unknown_format)
+	}
+	if (display_unknown_format) {
 		styleflags |= DNS_STYLEFLAG_UNKNOWNFORMAT;
-	if (display_rrcomments)
+	}
+	if (display_rrcomments) {
 		styleflags |= DNS_STYLEFLAG_RRCOMMENT;
-	if (display_ttlunits)
+	}
+	if (display_ttlunits) {
 		styleflags |= DNS_STYLEFLAG_TTL_UNITS;
-	if (!display_ttl)
+	}
+	if (!display_ttl) {
 		styleflags |= DNS_STYLEFLAG_NO_TTL;
-	if (!display_class)
+	}
+	if (!display_class) {
 		styleflags |= DNS_STYLEFLAG_NO_CLASS;
-	if (!display_crypto)
+	}
+	if (!display_crypto) {
 		styleflags |= DNS_STYLEFLAG_NOCRYPTO;
+	}
 	if (display_multiline) {
 		styleflags |= DNS_STYLEFLAG_OMIT_OWNER;
 		styleflags |= DNS_STYLEFLAG_OMIT_CLASS;
@@ -267,18 +277,19 @@ recvresponse(isc_task_t *task, isc_event_t *event) {
 		styleflags |= DNS_STYLEFLAG_COMMENT;
 		styleflags |= DNS_STYLEFLAG_RRCOMMENT;
 	}
-	if (display_multiline || (!display_ttl && !display_class))
+	if (display_multiline || (!display_ttl && !display_class)) {
 		result = dns_master_stylecreate(&style, styleflags,
 						24, 24, 24, 32, 80, 8,
 						display_splitwidth, mctx);
-	else if (!display_ttl || !display_class)
+	} else if (!display_ttl || !display_class) {
 		result = dns_master_stylecreate(&style, styleflags,
 						24, 24, 32, 40, 80, 8,
 						display_splitwidth, mctx);
-	else
+	} else {
 		result = dns_master_stylecreate(&style, styleflags,
 						24, 32, 40, 48, 80, 8,
 						display_splitwidth, mctx);
+	}
 	CHECK("dns_master_stylecreate2", result);
 
 	flags = 0;
@@ -286,8 +297,9 @@ recvresponse(isc_task_t *task, isc_event_t *event) {
 		flags |= DNS_MESSAGETEXTFLAG_NOHEADERS;
 		flags |= DNS_MESSAGETEXTFLAG_NOCOMMENTS;
 	}
-	if (!display_comments)
+	if (!display_comments) {
 		flags |= DNS_MESSAGETEXTFLAG_NOCOMMENTS;
+	}
 
 	result = isc_buffer_allocate(mctx, &buf, len);
 	CHECK("isc_buffer_allocate", result);
@@ -302,22 +314,30 @@ recvresponse(isc_task_t *task, isc_event_t *event) {
 			       rcode_totext(response->rcode),
 			       response->id);
 			printf(";; flags:");
-			if ((response->flags & DNS_MESSAGEFLAG_QR) != 0)
+			if ((response->flags & DNS_MESSAGEFLAG_QR) != 0) {
 				printf(" qr");
-			if ((response->flags & DNS_MESSAGEFLAG_AA) != 0)
+			}
+			if ((response->flags & DNS_MESSAGEFLAG_AA) != 0) {
 				printf(" aa");
-			if ((response->flags & DNS_MESSAGEFLAG_TC) != 0)
+			}
+			if ((response->flags & DNS_MESSAGEFLAG_TC) != 0) {
 				printf(" tc");
-			if ((response->flags & DNS_MESSAGEFLAG_RD) != 0)
+			}
+			if ((response->flags & DNS_MESSAGEFLAG_RD) != 0) {
 				printf(" rd");
-			if ((response->flags & DNS_MESSAGEFLAG_RA) != 0)
+			}
+			if ((response->flags & DNS_MESSAGEFLAG_RA) != 0) {
 				printf(" ra");
-			if ((response->flags & DNS_MESSAGEFLAG_AD) != 0)
+			}
+			if ((response->flags & DNS_MESSAGEFLAG_AD) != 0) {
 				printf(" ad");
-			if ((response->flags & DNS_MESSAGEFLAG_CD) != 0)
+			}
+			if ((response->flags & DNS_MESSAGEFLAG_CD) != 0) {
 				printf(" cd");
-			if ((response->flags & 0x0040U) != 0)
+			}
+			if ((response->flags & 0x0040U) != 0) {
 				printf("; MBZ: 0x4");
+			}
 
 			printf("; QUERY: %u, ANSWER: %u, "
 			       "AUTHORITY: %u, ADDITIONAL: %u\n",
@@ -327,27 +347,29 @@ recvresponse(isc_task_t *task, isc_event_t *event) {
 			       response->counts[DNS_SECTION_ADDITIONAL]);
 
 			if ((response->flags & DNS_MESSAGEFLAG_RD) != 0 &&
-			    (response->flags & DNS_MESSAGEFLAG_RA) == 0)
+			    (response->flags & DNS_MESSAGEFLAG_RA) == 0) {
 				printf(";; WARNING: recursion requested "
 				       "but not available\n");
+			}
 		}
 	}
 
-repopulate_buffer:
+ repopulate_buffer:
 
 	if (display_comments && display_headers && !display_short_form) {
 		result = dns_message_pseudosectiontotext(response,
 							 DNS_PSEUDOSECTION_OPT,
 							 style, flags, buf);
 		if (result == ISC_R_NOSPACE) {
-buftoosmall:
+ buftoosmall:
 			len += OUTPUTBUF;
 			isc_buffer_free(&buf);
 			result = isc_buffer_allocate(mctx, &buf, len);
-			if (result == ISC_R_SUCCESS)
+			if (result == ISC_R_SUCCESS) {
 				goto repopulate_buffer;
-			else
+			} else {
 				goto cleanup;
+			}
 		}
 		CHECK("dns_message_pseudosectiontotext", result);
 	}
@@ -356,8 +378,9 @@ buftoosmall:
 		result = dns_message_sectiontotext(response,
 						   DNS_SECTION_QUESTION,
 						   style, flags, buf);
-		if (result == ISC_R_NOSPACE)
+		if (result == ISC_R_NOSPACE) {
 			goto buftoosmall;
+		}
 		CHECK("dns_message_sectiontotext", result);
 	}
 
@@ -365,8 +388,9 @@ buftoosmall:
 		result = dns_message_sectiontotext(response,
 						   DNS_SECTION_ANSWER,
 						   style, flags, buf);
-		if (result == ISC_R_NOSPACE)
+		if (result == ISC_R_NOSPACE) {
 			goto buftoosmall;
+		}
 		CHECK("dns_message_sectiontotext", result);
 	} else if (display_answer) {
 		dns_name_t *name;
@@ -376,19 +400,23 @@ buftoosmall:
 		dns_rdata_t rdata = DNS_RDATA_INIT;
 		unsigned int answerstyleflags = 0;
 
-		if (!display_crypto)
+		if (!display_crypto) {
 			answerstyleflags |= DNS_STYLEFLAG_NOCRYPTO;
-		if (display_unknown_format)
+		}
+		if (display_unknown_format) {
 			answerstyleflags |= DNS_STYLEFLAG_UNKNOWNFORMAT;
+		}
 
 		dns_name_init(&empty_name, NULL);
 		result = dns_message_firstname(response, DNS_SECTION_ANSWER);
-		if (result != ISC_R_NOMORE)
+		if (result != ISC_R_NOMORE) {
 			CHECK("dns_message_firstname", result);
+		}
 
 		for (;;) {
-			if (result == ISC_R_NOMORE)
+			if (result == ISC_R_NOMORE) {
 				break;
+			}
 			CHECK("dns_message_nextname", result);
 			name = NULL;
 			dns_message_currentname(response,
@@ -397,24 +425,27 @@ buftoosmall:
 
 			for (rdataset = ISC_LIST_HEAD(name->list);
 			     rdataset != NULL;
-			     rdataset = ISC_LIST_NEXT(rdataset, link)) {
+			     rdataset = ISC_LIST_NEXT(rdataset, link))
+			{
 				loopresult = dns_rdataset_first(rdataset);
 				while (loopresult == ISC_R_SUCCESS) {
 					dns_rdataset_current(rdataset, &rdata);
 					result = dns_rdata_tofmttext(
-							&rdata,
-							NULL,
-							answerstyleflags,
-							0, 60, " ", buf);
-					if (result == ISC_R_NOSPACE)
+						&rdata,
+						NULL,
+						answerstyleflags,
+						0, 60, " ", buf);
+					if (result == ISC_R_NOSPACE) {
 						goto buftoosmall;
+					}
 					CHECK("dns_rdata_tofmttext", result);
 					loopresult =
-					    dns_rdataset_next(rdataset);
+						dns_rdataset_next(rdataset);
 					dns_rdata_reset(&rdata);
 					if (strlen("\n") >=
-					    isc_buffer_availablelength(buf))
+					    isc_buffer_availablelength(buf)) {
 						goto buftoosmall;
+					}
 					isc_buffer_putstr(buf, "\n");
 				}
 			}
@@ -427,8 +458,9 @@ buftoosmall:
 		result = dns_message_sectiontotext(response,
 						   DNS_SECTION_AUTHORITY,
 						   style, flags, buf);
-		if (result == ISC_R_NOSPACE)
+		if (result == ISC_R_NOSPACE) {
 			goto buftoosmall;
+		}
 		CHECK("dns_message_sectiontotext", result);
 	}
 
@@ -436,8 +468,9 @@ buftoosmall:
 		result = dns_message_sectiontotext(response,
 						   DNS_SECTION_ADDITIONAL,
 						   style, flags, buf);
-		if (result == ISC_R_NOSPACE)
+		if (result == ISC_R_NOSPACE) {
 			goto buftoosmall;
+		}
 		CHECK("dns_message_sectiontotext", result);
 	}
 
@@ -447,41 +480,48 @@ buftoosmall:
 		 * Only print the signature on the first record.
 		 */
 		result =
-		    dns_message_pseudosectiontotext(response,
-						    DNS_PSEUDOSECTION_TSIG,
-						    style, flags, buf);
-		if (result == ISC_R_NOSPACE)
+			dns_message_pseudosectiontotext(response,
+							DNS_PSEUDOSECTION_TSIG,
+							style, flags, buf);
+		if (result == ISC_R_NOSPACE) {
 			goto buftoosmall;
+		}
 		CHECK("dns_message_pseudosectiontotext", result);
 		result =
-		    dns_message_pseudosectiontotext(response,
-						    DNS_PSEUDOSECTION_SIG0,
-						    style, flags, buf);
-		if (result == ISC_R_NOSPACE)
+			dns_message_pseudosectiontotext(response,
+							DNS_PSEUDOSECTION_SIG0,
+							style, flags, buf);
+		if (result == ISC_R_NOSPACE) {
 			goto buftoosmall;
+		}
 		CHECK("dns_message_pseudosectiontotext", result);
 	}
 
-	if (display_headers && display_comments && !display_short_form)
+	if (display_headers && display_comments && !display_short_form) {
 		printf("\n");
+	}
 
 	printf("%.*s", (int)isc_buffer_usedlength(buf),
 	       (char *)isc_buffer_base(buf));
 	isc_buffer_free(&buf);
 
-cleanup:
+ cleanup:
 	fflush(stdout);
-	if (style != NULL)
+	if (style != NULL) {
 		dns_master_styledestroy(&style, mctx);
-	if (query != NULL)
+	}
+	if (query != NULL) {
 		dns_message_destroy(&query);
-	if (response != NULL)
+	}
+	if (response != NULL) {
 		dns_message_destroy(&response);
+	}
 	dns_request_destroy(&reqev->request);
 	isc_event_free(&event);
 
-	if (--onfly == 0)
+	if (--onfly == 0) {
 		isc_app_shutdown();
+	}
 	return;
 }
 
@@ -491,8 +531,12 @@ cleanup:
  * (e.g., NSID, COOKIE, client-subnet)
  */
 static void
-add_opt(dns_message_t *msg, uint16_t udpsize, uint16_t edns,
-	unsigned int flags, dns_ednsopt_t *opts, size_t count)
+add_opt(dns_message_t *msg,
+	uint16_t udpsize,
+	uint16_t edns,
+	unsigned int flags,
+	dns_ednsopt_t *opts,
+	size_t count)
 {
 	dns_rdataset_t *rdataset = NULL;
 	isc_result_t result;
@@ -537,16 +581,21 @@ sendquery(struct query *query, isc_task_t *task)
 	CHECK("dns_message_create", result);
 
 	message->opcode = dns_opcode_query;
-	if (query->recurse)
+	if (query->recurse) {
 		message->flags |= DNS_MESSAGEFLAG_RD;
-	if (query->have_aaonly)
+	}
+	if (query->have_aaonly) {
 		message->flags |= DNS_MESSAGEFLAG_AA;
-	if (query->have_adflag)
+	}
+	if (query->have_adflag) {
 		message->flags |= DNS_MESSAGEFLAG_AD;
-	if (query->have_cdflag)
+	}
+	if (query->have_cdflag) {
 		message->flags |= DNS_MESSAGEFLAG_CD;
-	if (query->have_zflag)
+	}
+	if (query->have_zflag) {
 		message->flags |= 0x0040U;
+	}
 	message->rdclass = query->rdclass;
 	message->id = (unsigned short)(random() & 0xFFFF);
 
@@ -574,10 +623,12 @@ sendquery(struct query *query, isc_task_t *task)
 		char ecsbuf[20];
 		unsigned char cookie[40];
 
-		if (query->udpsize == 0)
+		if (query->udpsize == 0) {
 			query->udpsize = 4096;
-		if (query->edns < 0)
+		}
+		if (query->edns < 0) {
 			query->edns = 0;
+		}
 
 		if (query->nsid) {
 			INSIST(i < DNS_EDNSOPTIONS);
@@ -611,9 +662,10 @@ sendquery(struct query *query, isc_task_t *task)
 				family = 1;
 				sin = (struct sockaddr_in *) sa;
 				memmove(addr, &sin->sin_addr, 4);
-				if ((plen % 8) != 0)
-					addr[addrl-1] &=
+				if ((plen % 8) != 0) {
+					addr[addrl - 1] &=
 						~0U << (8 - (plen % 8));
+				}
 			} else {
 				family = 2;
 				sin6 = (struct sockaddr_in6 *) sa;
@@ -621,8 +673,9 @@ sendquery(struct query *query, isc_task_t *task)
 			}
 
 			/* Mask off last address byte */
-			if (addrl > 0 && (plen % 8) != 0)
+			if (addrl > 0 && (plen % 8) != 0) {
 				addr[addrl - 1] &= ~0U << (8 - (plen % 8));
+			}
 
 			/* family */
 			isc_buffer_putuint16(&b, family);
@@ -631,9 +684,10 @@ sendquery(struct query *query, isc_task_t *task)
 			/* scope prefix-length */
 			isc_buffer_putuint8(&b, 0);
 			/* address */
-			if (addrl > 0)
+			if (addrl > 0) {
 				isc_buffer_putmem(&b, addr,
 						  (unsigned)addrl);
+			}
 
 			opts[i].value = (uint8_t *) ecsbuf;
 			i++;
@@ -675,14 +729,16 @@ sendquery(struct query *query, isc_task_t *task)
 
 		flags = query->ednsflags;
 		flags &= ~DNS_MESSAGEEXTFLAG_DO;
-		if (query->dnssec)
+		if (query->dnssec) {
 			flags |= DNS_MESSAGEEXTFLAG_DO;
+		}
 		add_opt(message, query->udpsize, query->edns, flags, opts, i);
 	}
 
 	options = 0;
-	if (tcp_mode)
+	if (tcp_mode) {
 		options |= DNS_REQUESTOPT_TCP | DNS_REQUESTOPT_SHARE;
+	}
 	request = NULL;
 	result = dns_request_createvia(requestmgr, message,
 				       have_src ? &srcaddr : NULL, &dstaddr,
@@ -692,7 +748,7 @@ sendquery(struct query *query, isc_task_t *task)
 				       recvresponse, message, &request);
 	CHECK("dns_request_createvia4", result);
 
-	return ISC_R_SUCCESS;
+	return(ISC_R_SUCCESS);
 }
 
 static void
@@ -709,8 +765,9 @@ sendqueries(isc_task_t *task, isc_event_t *event)
 		query = next;
 	}
 
-	if (onfly == 0)
+	if (onfly == 0) {
 		isc_app_shutdown();
+	}
 	return;
 }
 
@@ -735,63 +792,63 @@ help(void) {
 	      "           {local-opt} [ host {local-opt} [...]]\n",
 	      stdout);
 	fputs(
-"Where:\n"
-" anywhere opt    is one of:\n"
-"                 -f filename         (batch mode)\n"
-"                 -h                  (print help and exit)\n"
-"                 -v                  (print version and exit)\n"
-" global opt      is one of:\n"
-"                 -4                  (use IPv4 query transport only)\n"
-"                 -6                  (use IPv6 query transport only)\n"
-"                 -b address[#port]   (bind to source address/port)\n"
-"                 -p port             (specify port number)\n"
-"                 -m                  (enable memory usage debugging)\n"
-"                 +[no]dscp[=###]     (Set the DSCP value to ### [0..63])\n"
-"                 +[no]vc             (TCP mode)\n"
-"                 +[no]tcp            (TCP mode, alternate syntax)\n"
-"                 +[no]besteffort     (Try to parse even illegal messages)\n"
-"                 +[no]cl             (Control display of class in records)\n"
-"                 +[no]comments       (Control display of comment lines)\n"
-"                 +[no]rrcomments     (Control display of per-record "
-				       "comments)\n"
-"                 +[no]crypto         (Control display of cryptographic "
-				       "fields in records)\n"
-"                 +[no]question       (Control display of question)\n"
-"                 +[no]answer         (Control display of answer)\n"
-"                 +[no]authority      (Control display of authority)\n"
-"                 +[no]additional     (Control display of additional)\n"
-"                 +[no]short          (Disable everything except short\n"
-"                                      form of answer)\n"
-"                 +[no]ttlid          (Control display of ttls in records)\n"
-"                 +[no]ttlunits       (Display TTLs in human-readable units)\n"
-"                 +[no]unknownformat  (Print RDATA in RFC 3597 \"unknown\" format)\n"
-"                 +[no]all            (Set or clear all display flags)\n"
-"                 +[no]multiline      (Print records in an expanded format)\n"
-"                 +[no]split=##       (Split hex/base64 fields into chunks)\n"
-" local opt       is one of:\n"
-"                 -c class            (specify query class)\n"
-"                 -t type             (specify query type)\n"
-"                 -x dot-notation     (shortcut for reverse lookups)\n"
-"                 +timeout=###        (Set query timeout) [UDP=5,TCP=10]\n"
-"                 +udptimeout=###     (Set timeout before UDP retry)\n"
-"                 +tries=###          (Set number of UDP attempts) [3]\n"
-"                 +retry=###          (Set number of UDP retries) [2]\n"
-"                 +bufsize=###        (Set EDNS0 Max UDP packet size)\n"
-"                 +subnet=addr        (Set edns-client-subnet option)\n"
-"                 +[no]edns[=###]     (Set EDNS version) [0]\n"
-"                 +ednsflags=###      (Set EDNS flag bits)\n"
-"                 +ednsopt=###[:value] (Send specified EDNS option)\n"
-"                 +noednsopt          (Clear list of +ednsopt options)\n"
-"                 +[no]recurse        (Recursive mode)\n"
-"                 +[no]aaonly         (Set AA flag in query (+[no]aaflag))\n"
-"                 +[no]adflag         (Set AD flag in query)\n"
-"                 +[no]cdflag         (Set CD flag in query)\n"
-"                 +[no]zflag          (Set Z flag in query)\n"
-"                 +[no]dnssec         (Request DNSSEC records)\n"
-"                 +[no]expire         (Request time to expire)\n"
-"                 +[no]cookie[=###]   (Send a COOKIE option)\n"
-"                 +[no]nsid           (Request Name Server ID)\n",
-	stdout);
+		"Where:\n"
+		" anywhere opt    is one of:\n"
+		"                 -f filename         (batch mode)\n"
+		"                 -h                  (print help and exit)\n"
+		"                 -v                  (print version and exit)\n"
+		" global opt      is one of:\n"
+		"                 -4                  (use IPv4 query transport only)\n"
+		"                 -6                  (use IPv6 query transport only)\n"
+		"                 -b address[#port]   (bind to source address/port)\n"
+		"                 -p port             (specify port number)\n"
+		"                 -m                  (enable memory usage debugging)\n"
+		"                 +[no]dscp[=###]     (Set the DSCP value to ### [0..63])\n"
+		"                 +[no]vc             (TCP mode)\n"
+		"                 +[no]tcp            (TCP mode, alternate syntax)\n"
+		"                 +[no]besteffort     (Try to parse even illegal messages)\n"
+		"                 +[no]cl             (Control display of class in records)\n"
+		"                 +[no]comments       (Control display of comment lines)\n"
+		"                 +[no]rrcomments     (Control display of per-record "
+		"comments)\n"
+		"                 +[no]crypto         (Control display of cryptographic "
+		"fields in records)\n"
+		"                 +[no]question       (Control display of question)\n"
+		"                 +[no]answer         (Control display of answer)\n"
+		"                 +[no]authority      (Control display of authority)\n"
+		"                 +[no]additional     (Control display of additional)\n"
+		"                 +[no]short          (Disable everything except short\n"
+		"                                      form of answer)\n"
+		"                 +[no]ttlid          (Control display of ttls in records)\n"
+		"                 +[no]ttlunits       (Display TTLs in human-readable units)\n"
+		"                 +[no]unknownformat  (Print RDATA in RFC 3597 \"unknown\" format)\n"
+		"                 +[no]all            (Set or clear all display flags)\n"
+		"                 +[no]multiline      (Print records in an expanded format)\n"
+		"                 +[no]split=##       (Split hex/base64 fields into chunks)\n"
+		" local opt       is one of:\n"
+		"                 -c class            (specify query class)\n"
+		"                 -t type             (specify query type)\n"
+		"                 -x dot-notation     (shortcut for reverse lookups)\n"
+		"                 +timeout=###        (Set query timeout) [UDP=5,TCP=10]\n"
+		"                 +udptimeout=###     (Set timeout before UDP retry)\n"
+		"                 +tries=###          (Set number of UDP attempts) [3]\n"
+		"                 +retry=###          (Set number of UDP retries) [2]\n"
+		"                 +bufsize=###        (Set EDNS0 Max UDP packet size)\n"
+		"                 +subnet=addr        (Set edns-client-subnet option)\n"
+		"                 +[no]edns[=###]     (Set EDNS version) [0]\n"
+		"                 +ednsflags=###      (Set EDNS flag bits)\n"
+		"                 +ednsopt=###[:value] (Send specified EDNS option)\n"
+		"                 +noednsopt          (Clear list of +ednsopt options)\n"
+		"                 +[no]recurse        (Recursive mode)\n"
+		"                 +[no]aaonly         (Set AA flag in query (+[no]aaflag))\n"
+		"                 +[no]adflag         (Set AD flag in query)\n"
+		"                 +[no]cdflag         (Set CD flag in query)\n"
+		"                 +[no]zflag          (Set Z flag in query)\n"
+		"                 +[no]dnssec         (Request DNSSEC records)\n"
+		"                 +[no]expire         (Request time to expire)\n"
+		"                 +[no]cookie[=###]   (Send a COOKIE option)\n"
+		"                 +[no]nsid           (Request Name Server ID)\n",
+		stdout);
 }
 
 ISC_PLATFORM_NORETURN_PRE static void
@@ -812,12 +869,16 @@ fatal(const char *format, ...) {
 }
 
 static isc_result_t
-parse_uint_helper(uint32_t *uip, const char *value, uint32_t max,
-		  const char *desc, int base) {
+parse_uint_helper(uint32_t *uip,
+		  const char *value,
+		  uint32_t max,
+		  const char *desc,
+		  int base) {
 	uint32_t n;
 	isc_result_t result = isc_parse_uint32(&n, value, base);
-	if (result == ISC_R_SUCCESS && n > max)
+	if (result == ISC_R_SUCCESS && n > max) {
 		result = ISC_R_RANGE;
+	}
 	if (result != ISC_R_SUCCESS) {
 		printf("invalid %s '%s': %s\n", desc,
 		       value, isc_result_totext(result));
@@ -828,14 +889,12 @@ parse_uint_helper(uint32_t *uip, const char *value, uint32_t max,
 }
 
 static isc_result_t
-parse_uint(uint32_t *uip, const char *value, uint32_t max,
-	   const char *desc) {
+parse_uint(uint32_t *uip, const char *value, uint32_t max, const char *desc) {
 	return (parse_uint_helper(uip, value, max, desc, 10));
 }
 
 static isc_result_t
-parse_xint(uint32_t *uip, const char *value, uint32_t max,
-	   const char *desc) {
+parse_xint(uint32_t *uip, const char *value, uint32_t max, const char *desc) {
 	return (parse_uint_helper(uip, value, max, desc, 0));
 }
 
@@ -845,8 +904,9 @@ newopts(struct query *query) {
 	size_t i;
 
 	query->ednsopts = isc_mem_allocate(mctx, len);
-	if (query->ednsopts == NULL)
+	if (query->ednsopts == NULL) {
 		fatal("out of memory");
+	}
 
 	for (i = 0; i < EDNSOPTS; i++) {
 		query->ednsopts[i].code = 0;
@@ -880,17 +940,17 @@ save_opt(struct query *query, char *code, char *value) {
 
 	if (value != NULL) {
 		char *buf;
-		buf = isc_mem_allocate(mctx, strlen(value)/2 + 1);
+		buf = isc_mem_allocate(mctx, strlen(value) / 2 + 1);
 		if (buf == NULL) {
 			fatal("out of memory");
 		}
-		isc_buffer_init(&b, buf, strlen(value)/2 + 1);
+		isc_buffer_init(&b, buf, strlen(value) / 2 + 1);
 		result = isc_hex_decodestring(value, &b);
 		CHECK("isc_hex_decodestring", result);
 		query->ednsopts[query->ednsoptscnt].value =
-						isc_buffer_base(&b);
+			isc_buffer_base(&b);
 		query->ednsopts[query->ednsoptscnt].length =
-						isc_buffer_usedlength(&b);
+			isc_buffer_usedlength(&b);
 	}
 
 	query->ednsoptscnt++;
@@ -907,8 +967,9 @@ parse_netprefix(isc_sockaddr_t **sap, const char *value) {
 	bool parsed = false;
 	char buf[sizeof("xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:XXX.XXX.XXX.XXX/128")];
 
-	if (strlcpy(buf, value, sizeof(buf)) >= sizeof(buf))
+	if (strlcpy(buf, value, sizeof(buf)) >= sizeof(buf)) {
 		fatal("invalid prefix '%s'\n", value);
+	}
 
 	slash = strchr(buf, '/');
 	if (slash != NULL) {
@@ -923,18 +984,21 @@ parse_netprefix(isc_sockaddr_t **sap, const char *value) {
 	}
 
 	sa = isc_mem_allocate(mctx, sizeof(*sa));
-	if (sa == NULL)
+	if (sa == NULL) {
 		fatal("out of memory");
+	}
 	if (inet_pton(AF_INET6, buf, &in6) == 1) {
 		parsed = true;
 		isc_sockaddr_fromin6(sa, &in6, 0);
-		if (netmask > 128)
+		if (netmask > 128) {
 			netmask = 128;
+		}
 	} else if (inet_pton(AF_INET, buf, &in4) == 1) {
 		parsed = true;
 		isc_sockaddr_fromin(sa, &in4, 0);
-		if (netmask > 32)
+		if (netmask > 32) {
 			netmask = 32;
+		}
 	} else if (netmask != 0xffffffff) {
 		int i;
 
@@ -947,12 +1011,14 @@ parse_netprefix(isc_sockaddr_t **sap, const char *value) {
 			}
 		}
 
-		if (netmask > 32)
+		if (netmask > 32) {
 			netmask = 32;
+		}
 	}
 
-	if (!parsed)
+	if (!parsed) {
 		fatal("invalid address '%s'", value);
+	}
 
 	sa->length = netmask;
 	*sap = sa;
@@ -966,8 +1032,9 @@ parse_netprefix(isc_sockaddr_t **sap, const char *value) {
  */
 static isc_result_t
 append(const char *text, int len, char **p, char *end) {
-	if (len > end - *p)
+	if (len > end - *p) {
 		return (ISC_R_NOSPACE);
+	}
 	memmove(*p, text, len);
 	*p += len;
 	return (ISC_R_SUCCESS);
@@ -1061,20 +1128,20 @@ plus_option(char *option, struct query *query, bool global)
 #define FULLCHECK(A) \
 	do { \
 		size_t _l = strlen(cmd); \
-		if (_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0) \
-			goto invalid_option; \
+		if (_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0) { \
+			goto invalid_option;} \
 	} while (0)
 #define FULLCHECK2(A, B) \
 	do { \
 		size_t _l = strlen(cmd); \
 		if ((_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0) && \
-		    (_l >= sizeof(B) || strncasecmp(cmd, B, _l) != 0)) \
-			goto invalid_option; \
+		    (_l >= sizeof(B) || strncasecmp(cmd, B, _l) != 0)) { \
+			goto invalid_option;} \
 	} while (0)
 #define GLOBAL() \
 	do { \
-		if (!global) \
-			goto global_option; \
+		if (!global) { \
+			goto global_option;} \
 	} while (0)
 
 	switch (cmd[0]) {
@@ -1132,10 +1199,12 @@ plus_option(char *option, struct query *query, bool global)
 			break;
 		case 'u':/* bufsize */
 			FULLCHECK("bufsize");
-			if (value == NULL)
+			if (value == NULL) {
 				goto need_value;
-			if (!state)
+			}
+			if (!state) {
 				goto invalid_option;
+			}
 			result = parse_uint(&num, value, COMMSIZE,
 					    "buffer size");
 			CHECK("parse_uint(buffer size)", result);
@@ -1177,17 +1246,20 @@ plus_option(char *option, struct query *query, bool global)
 				break;
 			case 'o':
 				FULLCHECK("cookie");
-				if (state && query->edns == -1)
+				if (state && query->edns == -1) {
 					query->edns = 0;
+				}
 				query->send_cookie = state;
 				if (value != NULL) {
 					n = strlcpy(hexcookie, value,
 						    sizeof(hexcookie));
-					if (n >= sizeof(hexcookie))
+					if (n >= sizeof(hexcookie)) {
 						fatal("COOKIE data too large");
+					}
 					query->cookie = hexcookie;
-				} else
+				} else {
 					query->cookie = NULL;
+				}
 				break;
 			default:
 				goto invalid_option;
@@ -1206,8 +1278,9 @@ plus_option(char *option, struct query *query, bool global)
 		switch (cmd[1]) {
 		case 'n': /* dnssec */
 			FULLCHECK("dnssec");
-			if (state && query->edns == -1)
+			if (state && query->edns == -1) {
 				query->edns = 0;
+			}
 			query->dnssec = state;
 			break;
 		case 's': /* dscp */
@@ -1217,8 +1290,9 @@ plus_option(char *option, struct query *query, bool global)
 				dscp = -1;
 				break;
 			}
-			if (value == NULL)
+			if (value == NULL) {
 				goto need_value;
+			}
 			result = parse_uint(&num, value, 0x3f, "DSCP");
 			CHECK("parse_uint(DSCP)", result);
 			dscp = num;
@@ -1230,7 +1304,7 @@ plus_option(char *option, struct query *query, bool global)
 	case 'e':
 		switch (cmd[1]) {
 		case 'd':
-			switch(cmd[2]) {
+			switch (cmd[2]) {
 			case 'n':
 				switch (cmd[3]) {
 				case 's':
@@ -1266,7 +1340,7 @@ plus_option(char *option, struct query *query, bool global)
 						result = parse_xint(&num,
 								    value,
 								    0xffff,
-								  "ednsflags");
+								    "ednsflags");
 						CHECK("parse_xint(ednsflags)",
 						      result);
 						query->ednsflags = num;
@@ -1319,8 +1393,9 @@ plus_option(char *option, struct query *query, bool global)
 		break;
 	case 'n':
 		FULLCHECK("nsid");
-		if (state && query->edns == -1)
+		if (state && query->edns == -1) {
 			query->edns = 0;
+		}
 		query->nsid = state;
 		break;
 	case 'q':
@@ -1338,10 +1413,12 @@ plus_option(char *option, struct query *query, bool global)
 				break;
 			case 't': /* retry / retries */
 				FULLCHECK2("retry", "retries");
-				if (value == NULL)
+				if (value == NULL) {
 					goto need_value;
-				if (!state)
+				}
+				if (!state) {
 					goto invalid_option;
+				}
 				result = parse_uint(&query->udpretries,
 						    value,
 						    MAXTRIES - 1,
@@ -1380,22 +1457,24 @@ plus_option(char *option, struct query *query, bool global)
 		case 'p': /* split */
 			FULLCHECK("split");
 			GLOBAL();
-			if (value != NULL && !state)
+			if (value != NULL && !state) {
 				goto invalid_option;
+			}
 			if (!state) {
 				display_splitwidth = 0;
 				break;
-			} else if (value == NULL)
+			} else if (value == NULL) {
 				break;
+			}
 
 			result = parse_uint(&display_splitwidth, value,
 					    1023, "split");
 			if ((display_splitwidth % 4) != 0) {
 				display_splitwidth =
-				    ((display_splitwidth + 3) / 4) * 4;
+					((display_splitwidth + 3) / 4) * 4;
 				fprintf(stderr, ";; Warning, split must be "
-						"a multiple of 4; adjusting "
-						"to %u\n",
+					"a multiple of 4; adjusting "
+					"to %u\n",
 					display_splitwidth);
 			}
 			/*
@@ -1405,14 +1484,16 @@ plus_option(char *option, struct query *query, bool global)
 			 * using the default width but incorrect in this
 			 * case, so we correct for it
 			 */
-			if (display_splitwidth)
+			if (display_splitwidth) {
 				display_splitwidth += 3;
+			}
 			CHECK("parse_uint(split)", result);
 			break;
 		case 'u': /* subnet */
 			FULLCHECK("subnet");
-			if (state && value == NULL)
+			if (state && value == NULL) {
 				goto need_value;
+			}
 			if (!state) {
 				if (query->ecs_addr != NULL) {
 					isc_mem_free(mctx, query->ecs_addr);
@@ -1420,8 +1501,9 @@ plus_option(char *option, struct query *query, bool global)
 				}
 				break;
 			}
-			if (query->edns == -1)
+			if (query->edns == -1) {
 				query->edns = 0;
+			}
 			result = parse_netprefix(&query->ecs_addr, value);
 			CHECK("parse_netprefix", result);
 			break;
@@ -1438,27 +1520,33 @@ plus_option(char *option, struct query *query, bool global)
 			break;
 		case 'i': /* timeout */
 			FULLCHECK("timeout");
-			if (value == NULL)
+			if (value == NULL) {
 				goto need_value;
-			if (!state)
+			}
+			if (!state) {
 				goto invalid_option;
+			}
 			result = parse_uint(&query->timeout, value,
 					    MAXTIMEOUT, "timeout");
 			CHECK("parse_uint(timeout)", result);
-			if (query->timeout == 0)
+			if (query->timeout == 0) {
 				query->timeout = 1;
+			}
 			break;
 		case 'r':
 			FULLCHECK("tries");
-			if (value == NULL)
+			if (value == NULL) {
 				goto need_value;
-			if (!state)
+			}
+			if (!state) {
 				goto invalid_option;
+			}
 			result = parse_uint(&query->udpretries, value,
 					    MAXTRIES, "udpretries");
 			CHECK("parse_uint(udpretries)", result);
-			if (query->udpretries == 0)
+			if (query->udpretries == 0) {
 				query->udpretries = 1;
+			}
 			break;
 		case 't':
 			switch (cmd[2]) {
@@ -1492,10 +1580,12 @@ plus_option(char *option, struct query *query, bool global)
 		switch (cmd[1]) {
 		case 'd':
 			FULLCHECK("udptimeout");
-			if (value == NULL)
+			if (value == NULL) {
 				goto need_value;
-			if (!state)
+			}
+			if (!state) {
 				goto invalid_option;
+			}
 			result = parse_uint(&query->udptimeout, value,
 					    MAXTIMEOUT, "udptimeout");
 			CHECK("parse_uint(udptimeout)", result);
@@ -1517,12 +1607,12 @@ plus_option(char *option, struct query *query, bool global)
 		FULLCHECK("zflag");
 		query->have_zflag = state;
 		break;
-	global_option:
+ global_option:
 		fprintf(stderr, "Ignored late global option: +%s\n", option);
 		break;
 	default:
-	invalid_option:
-	need_value:
+ invalid_option:
+ need_value:
 		fprintf(stderr, "Invalid option: +%s\n", option);
 		usage();
 	}
@@ -1535,8 +1625,11 @@ plus_option(char *option, struct query *query, bool global)
 static const char *single_dash_opts = "46himv";
 static const char *dash_opts = "46bcfhiptvx";
 static bool
-dash_option(const char *option, char *next, struct query *query,
-	    bool global, bool *setname)
+dash_option(const char *option,
+	    char *next,
+	    struct query *query,
+	    bool global,
+	    bool *setname)
 {
 	char opt;
 	const char *value;
@@ -1599,10 +1692,11 @@ dash_option(const char *option, char *next, struct query *query,
 			exit(0);
 			break;
 		}
-		if (strlen(option) > 1U)
+		if (strlen(option) > 1U) {
 			option = &option[1];
-		else
+		} else {
 			return (false);
+		}
 	}
 	opt = option[0];
 	if (strlen(option) > 1U) {
@@ -1612,8 +1706,9 @@ dash_option(const char *option, char *next, struct query *query,
 		value_from_next = true;
 		value = next;
 	}
-	if (value == NULL)
+	if (value == NULL) {
 		goto invalid_option;
+	}
 	switch (opt) {
 	case 'b':
 		GLOBAL();
@@ -1624,8 +1719,9 @@ dash_option(const char *option, char *next, struct query *query,
 			CHECK("parse_uint(srcport)", result);
 			srcport = num;
 			*hash = '\0';
-		} else
+		} else {
 			srcport = 0;
+		}
 		if (have_ipv6 && inet_pton(AF_INET6, value, &in6) == 1) {
 			isc_sockaddr_fromin6(&srcaddr, &in6, srcport);
 			isc_net_disableipv4();
@@ -1633,12 +1729,14 @@ dash_option(const char *option, char *next, struct query *query,
 			isc_sockaddr_fromin(&srcaddr, &in4, srcport);
 			isc_net_disableipv6();
 		} else {
-			if (hash != NULL)
+			if (hash != NULL) {
 				*hash = '#';
+			}
 			fatal("invalid address %s", value);
 		}
-		if (hash != NULL)
+		if (hash != NULL) {
 			*hash = '#';
+		}
 		have_src = true;
 		return (value_from_next);
 	case 'c':
@@ -1673,11 +1771,11 @@ dash_option(const char *option, char *next, struct query *query,
 		query->rdclass = dns_rdataclass_in;
 		*setname = true;
 		return (value_from_next);
-	global_option:
+ global_option:
 		fprintf(stderr, "Ignored late global option: -%s\n", option);
 		usage();
 	default:
-	invalid_option:
+ invalid_option:
 		fprintf(stderr, "Invalid option: -%s\n", option);
 		usage();
 	}
@@ -1690,24 +1788,27 @@ clone_default_query() {
 	struct query *query;
 
 	query = isc_mem_allocate(mctx, sizeof(struct query));
-	if (query == NULL)
+	if (query == NULL) {
 		fatal("memory allocation failure in %s:%d",
 		      __FILE__, __LINE__);
+	}
 	memmove(query, &default_query, sizeof(struct query));
 	if (default_query.ecs_addr != NULL) {
 		size_t len = sizeof(isc_sockaddr_t);
 
 		query->ecs_addr = isc_mem_allocate(mctx, len);
-		if (query->ecs_addr == NULL)
+		if (query->ecs_addr == NULL) {
 			fatal("memory allocation failure in %s:%d",
 			      __FILE__, __LINE__);
+		}
 		memmove(query->ecs_addr, default_query.ecs_addr, len);
 	}
 
-	if (query->timeout == 0)
+	if (query->timeout == 0) {
 		query->timeout = tcp_mode ? TCPTIMEOUT : UDPTIMEOUT;
+	}
 
-	return query;
+	return(query);
 }
 
 /*%
@@ -1729,14 +1830,15 @@ preparse_args(int argc, char **argv) {
 	rc = argc;
 	rv = argv;
 	for (rc--, rv++; rc > 0; rc--, rv++) {
-		if (rv[0][0] != '-')
+		if (rv[0][0] != '-') {
 			continue;
+		}
 		option = &rv[0][1];
 		while (strpbrk(option, single_dash_opts) == &option[0]) {
 			switch (option[0]) {
 			case 'm':
 				isc_mem_debugging = ISC_MEM_DEBUGTRACE |
-					ISC_MEM_DEBUGRECORD;
+						    ISC_MEM_DEBUGRECORD;
 				break;
 			case '4':
 				if (ipv6only) {
@@ -1765,8 +1867,9 @@ preparse_args(int argc, char **argv) {
 		/* Dash value is next argument so we need to skip it. */
 		rc--, rv++;
 		/* Handle missing argument */
-		if (rc == 0)
+		if (rc == 0) {
 			break;
+		}
 	}
 }
 
@@ -1823,17 +1926,20 @@ parse_args(bool is_batchfile, int argc, char **argv)
 		/* Processing '-f batchfile'. */
 		query = clone_default_query();
 		global = false;
-	} else
+	} else {
 		query = &default_query;
+	}
 
 	rc = argc;
 	rv = argv;
 	for (rc--, rv++; rc > 0; rc--, rv++) {
-		if (strncmp(rv[0], "%", 1) == 0)
+		if (strncmp(rv[0], "%", 1) == 0) {
 			break;
+		}
 		if (rv[0][0] == '@') {
-			if (server != NULL)
+			if (server != NULL) {
 				fatal("server already set to @%s", server);
+			}
 			server = &rv[0][1];
 		} else if (rv[0][0] == '+') {
 			plus_option(&rv[0][1], query, global);
@@ -1854,8 +1960,9 @@ parse_args(bool is_batchfile, int argc, char **argv)
 				}
 			}
 			if (setname) {
-				if (query == &default_query)
+				if (query == &default_query) {
 					query = clone_default_query();
+				}
 				ISC_LIST_APPEND(queries, query, link);
 
 				default_query.textname[0] = 0;
@@ -1866,8 +1973,9 @@ parse_args(bool is_batchfile, int argc, char **argv)
 			/*
 			 * Anything which isn't an option
 			 */
-			if (query == &default_query)
+			if (query == &default_query) {
 				query = clone_default_query();
+			}
 			strlcpy(query->textname, rv[0],
 				sizeof(query->textname));
 			ISC_LIST_APPEND(queries, query, link);
@@ -1882,21 +1990,26 @@ parse_args(bool is_batchfile, int argc, char **argv)
 	 * If we have a batchfile, read the query list from it.
 	 */
 	if ((batchname != NULL) && !is_batchfile) {
-		if (strcmp(batchname, "-") == 0)
+		if (strcmp(batchname, "-") == 0) {
 			batchfp = stdin;
-		else
+		} else {
 			batchfp = fopen(batchname, "r");
+		}
 		if (batchfp == NULL) {
 			perror(batchname);
 			fatal("couldn't open batch file '%s'", batchname);
 		}
 		while (fgets(batchline, sizeof(batchline), batchfp) != 0) {
-			if (batchline[0] == '\r' || batchline[0] == '\n'
-			    || batchline[0] == '#' || batchline[0] == ';')
+			if (batchline[0] == '\r' || batchline[0] == '\n' ||
+			    batchline[0] == '#' || batchline[0] == ';') {
 				continue;
-			for (bargc = 1, bargv[bargc] = strtok_r(batchline, " \t\r\n", &last);
+			}
+			for (bargc = 1,
+			     bargv[bargc] =
+				     strtok_r(batchline, " \t\r\n", &last);
 			     (bargc < 14) && bargv[bargc];
-			     bargc++, bargv[bargc] = strtok_r(NULL, " \t\r\n", &last))
+			     bargc++,
+			     bargv[bargc] = strtok_r(NULL, " \t\r\n", &last))
 			{
 				/* empty body */
 			}
@@ -1904,12 +2017,14 @@ parse_args(bool is_batchfile, int argc, char **argv)
 			bargv[0] = argv[0];
 			parse_args(true, bargc, (char **)bargv);
 		}
-		if (batchfp != stdin)
+		if (batchfp != stdin) {
 			fclose(batchfp);
+		}
 	}
 	if (query != &default_query) {
-		if (query->ecs_addr != NULL)
+		if (query->ecs_addr != NULL) {
 			isc_mem_free(mctx, query->ecs_addr);
+		}
 		isc_mem_free(mctx, query);
 	}
 }
@@ -1937,12 +2052,15 @@ main(int argc, char *argv[]) {
 
 	dns_result_register();
 
-	if (isc_net_probeipv4() == ISC_R_SUCCESS)
+	if (isc_net_probeipv4() == ISC_R_SUCCESS) {
 		have_ipv4 = true;
-	if (isc_net_probeipv6() == ISC_R_SUCCESS)
+	}
+	if (isc_net_probeipv6() == ISC_R_SUCCESS) {
 		have_ipv6 = true;
-	if (!have_ipv4 && !have_ipv6)
+	}
+	if (!have_ipv4 && !have_ipv6) {
 		fatal("could not find either IPv4 or IPv6");
+	}
 
 	preparse_args(argc, argv);
 
@@ -1958,8 +2076,9 @@ main(int argc, char *argv[]) {
 
 	ISC_LIST_INIT(queries);
 	parse_args(false, argc, argv);
-	if (server == NULL)
+	if (server == NULL) {
 		fatal("a server '@xxx' is required");
+	}
 
 	ns = 0;
 	result = bind9_getaddresses(server, port, &dstaddr, 1, &ns);
@@ -1975,8 +2094,9 @@ main(int argc, char *argv[]) {
 		isc_net_disableipv4();
 		have_ipv4 = false;
 	}
-	if (have_ipv4 && have_ipv6)
+	if (have_ipv4 && have_ipv6) {
 		fatal("can't choose between IPv4 and IPv6");
+	}
 
 	taskmgr = NULL;
 	RUNCHECK(isc_taskmgr_create(mctx, 1, 0, &taskmgr));
@@ -2044,8 +2164,9 @@ main(int argc, char *argv[]) {
 		query = next;
 	}
 
-	if (default_query.ecs_addr != NULL)
+	if (default_query.ecs_addr != NULL) {
 		isc_mem_free(mctx, default_query.ecs_addr);
+	}
 
 	dns_view_detach(&view);
 

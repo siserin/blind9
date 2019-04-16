@@ -31,11 +31,13 @@ fromtext_x25(ARGS_FROMTEXT) {
 
 	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_qstring,
 				      false));
-	if (token.value.as_textregion.length < 4)
+	if (token.value.as_textregion.length < 4) {
 		RETTOK(DNS_R_SYNTAX);
+	}
 	for (i = 0; i < token.value.as_textregion.length; i++)
-		if (!isdigit(token.value.as_textregion.base[i] & 0xff))
+		if (!isdigit(token.value.as_textregion.base[i] & 0xff)) {
 			RETTOK(ISC_R_RANGE);
+		}
 	RETTOK(txt_fromtext(&token.value.as_textregion, target));
 	return (ISC_R_SUCCESS);
 }
@@ -65,8 +67,9 @@ fromwire_x25(ARGS_FROMWIRE) {
 	UNUSED(options);
 
 	isc_buffer_activeregion(source, &sr);
-	if (sr.length < 5)
+	if (sr.length < 5) {
 		return (DNS_R_FORMERR);
+	}
 	return (txt_fromwire(source, target));
 }
 
@@ -110,12 +113,14 @@ fromstruct_x25(ARGS_FROMSTRUCT) {
 	UNUSED(type);
 	UNUSED(rdclass);
 
-	if (x25->x25_len < 4)
+	if (x25->x25_len < 4) {
 		return (ISC_R_RANGE);
+	}
 
 	for (i = 0; i < x25->x25_len; i++)
-		if (!isdigit(x25->x25[i] & 0xff))
+		if (!isdigit(x25->x25[i] & 0xff)) {
 			return (ISC_R_RANGE);
+		}
 
 	RETERR(uint8_tobuffer(x25->x25_len, target));
 	return (mem_tobuffer(target, x25->x25, x25->x25_len));
@@ -138,8 +143,9 @@ tostruct_x25(ARGS_TOSTRUCT) {
 	x25->x25_len = uint8_fromregion(&r);
 	isc_region_consume(&r, 1);
 	x25->x25 = mem_maybedup(mctx, r.base, x25->x25_len);
-	if (x25->x25 == NULL)
+	if (x25->x25 == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	x25->mctx = mctx;
 	return (ISC_R_SUCCESS);
@@ -151,11 +157,13 @@ freestruct_x25(ARGS_FREESTRUCT) {
 	REQUIRE(source != NULL);
 	REQUIRE(x25->common.rdtype == dns_rdatatype_x25);
 
-	if (x25->mctx == NULL)
+	if (x25->mctx == NULL) {
 		return;
+	}
 
-	if (x25->x25 != NULL)
+	if (x25->x25 != NULL) {
 		isc_mem_free(x25->mctx, x25->x25);
+	}
 	x25->mctx = NULL;
 }
 
@@ -183,7 +191,6 @@ digest_x25(ARGS_DIGEST) {
 
 static inline bool
 checkowner_x25(ARGS_CHECKOWNER) {
-
 	REQUIRE(type == dns_rdatatype_x25);
 
 	UNUSED(name);
@@ -196,7 +203,6 @@ checkowner_x25(ARGS_CHECKOWNER) {
 
 static inline bool
 checknames_x25(ARGS_CHECKNAMES) {
-
 	REQUIRE(rdata->type == dns_rdatatype_x25);
 
 	UNUSED(rdata);
@@ -211,4 +217,4 @@ casecompare_x25(ARGS_COMPARE) {
 	return (compare_x25(rdata1, rdata2));
 }
 
-#endif	/* RDATA_GENERIC_X25_19_C */
+#endif  /* RDATA_GENERIC_X25_19_C */

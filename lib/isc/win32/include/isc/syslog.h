@@ -19,7 +19,7 @@
 ISC_LANG_BEGINDECLS
 
 isc_result_t
-isc_syslog_facilityfromstring(const char *str, int *facilityp);
+isc_syslog_facilityfromstring(const char*str,int*facilityp);
 /*
  * Convert 'str' to the appropriate syslog facility constant.
  *
@@ -29,8 +29,8 @@ isc_syslog_facilityfromstring(const char *str, int *facilityp);
  *	'facilityp' is not NULL
  *
  * Returns:
- * 	ISC_R_SUCCESS
- * 	ISC_R_NOTFOUND
+ *      ISC_R_SUCCESS
+ *      ISC_R_NOTFOUND
  */
 
 ISC_LANG_ENDDECLS

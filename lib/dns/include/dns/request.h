@@ -14,8 +14,8 @@
 #define DNS_REQUEST_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/request.h
  *
@@ -48,17 +48,20 @@
 
 typedef struct dns_requestevent {
 	ISC_EVENT_COMMON(struct dns_requestevent);
-	isc_result_t result;
-	dns_request_t *request;
+	isc_result_t	     result;
+	dns_request_t *	     request;
 } dns_requestevent_t;
 
 ISC_LANG_BEGINDECLS
 
 isc_result_t
-dns_requestmgr_create(isc_mem_t *mctx, isc_timermgr_t *timermgr,
-		      isc_socketmgr_t *socketmgr, isc_taskmgr_t *taskmgr,
+dns_requestmgr_create(isc_mem_t *mctx,
+		      isc_timermgr_t *timermgr,
+		      isc_socketmgr_t *socketmgr,
+		      isc_taskmgr_t *taskmgr,
 		      dns_dispatchmgr_t *dispatchmgr,
-		      dns_dispatch_t *dispatchv4, dns_dispatch_t *dispatchv6,
+		      dns_dispatch_t *dispatchv4,
+		      dns_dispatch_t *dispatchv6,
 		      dns_requestmgr_t **requestmgrp);
 /*%<
  * Create a request manager.
@@ -91,7 +94,8 @@ dns_requestmgr_create(isc_mem_t *mctx, isc_timermgr_t *timermgr,
  */
 
 void
-dns_requestmgr_whenshutdown(dns_requestmgr_t *requestmgr, isc_task_t *task,
+dns_requestmgr_whenshutdown(dns_requestmgr_t *requestmgr,
+			    isc_task_t *task,
 			    isc_event_t **eventp);
 /*%<
  * Send '*eventp' to 'task' when 'requestmgr' has completed shutdown.
@@ -158,11 +162,15 @@ dns_requestmgr_detach(dns_requestmgr_t **requestmgrp);
  */
 
 isc_result_t
-dns_request_create(dns_requestmgr_t *requestmgr, dns_message_t *message,
-		   const isc_sockaddr_t *address, unsigned int options,
+dns_request_create(dns_requestmgr_t *requestmgr,
+		   dns_message_t *message,
+		   const isc_sockaddr_t *address,
+		   unsigned int options,
 		   dns_tsigkey_t *key,
-		   unsigned int timeout, isc_task_t *task,
-		   isc_taskaction_t action, void *arg,
+		   unsigned int timeout,
+		   isc_task_t *task,
+		   isc_taskaction_t action,
+		   void *arg,
 		   dns_request_t **requestp);
 /*%<
  * Create and send a request.
@@ -195,13 +203,19 @@ dns_request_create(dns_requestmgr_t *requestmgr, dns_message_t *message,
  */
 
 isc_result_t
-dns_request_createvia(dns_requestmgr_t *requestmgr, dns_message_t *message,
+dns_request_createvia(dns_requestmgr_t *requestmgr,
+		      dns_message_t *message,
 		      const isc_sockaddr_t *srcaddr,
 		      const isc_sockaddr_t *destaddr,
-		      isc_dscp_t dscp, unsigned int options,
-		      dns_tsigkey_t *key, unsigned int timeout,
-		      unsigned int udptimeout, unsigned int udpretries,
-		      isc_task_t *task, isc_taskaction_t action, void *arg,
+		      isc_dscp_t dscp,
+		      unsigned int options,
+		      dns_tsigkey_t *key,
+		      unsigned int timeout,
+		      unsigned int udptimeout,
+		      unsigned int udpretries,
+		      isc_task_t *task,
+		      isc_taskaction_t action,
+		      void *arg,
 		      dns_request_t **requestp);
 /*%<
  * Create and send a request.
@@ -239,13 +253,18 @@ dns_request_createvia(dns_requestmgr_t *requestmgr, dns_message_t *message,
  */
 
 isc_result_t
-dns_request_createraw(dns_requestmgr_t *requestmgr, isc_buffer_t *msgbuf,
+dns_request_createraw(dns_requestmgr_t *requestmgr,
+		      isc_buffer_t *msgbuf,
 		      const isc_sockaddr_t *srcaddr,
 		      const isc_sockaddr_t *destaddr,
-		      isc_dscp_t dscp, unsigned int options,
-		      unsigned int timeout, unsigned int udptimeout,
-		      unsigned int udpretries, isc_task_t *task,
-		      isc_taskaction_t action, void *arg,
+		      isc_dscp_t dscp,
+		      unsigned int options,
+		      unsigned int timeout,
+		      unsigned int udptimeout,
+		      unsigned int udpretries,
+		      isc_task_t *task,
+		      isc_taskaction_t action,
+		      void *arg,
 		      dns_request_t **requestp);
 /*!<
  * \brief Create and send a request.
@@ -295,7 +314,8 @@ dns_request_cancel(dns_request_t *request);
  */
 
 isc_result_t
-dns_request_getresponse(dns_request_t *request, dns_message_t *message,
+dns_request_getresponse(dns_request_t *request,
+			dns_message_t *message,
 			unsigned int options);
 /*%<
  * Get the response to 'request' by filling in 'message'.

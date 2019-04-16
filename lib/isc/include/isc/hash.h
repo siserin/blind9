@@ -30,11 +30,13 @@ void
 isc_hash_set_initializer(const void *initializer);
 
 uint32_t
-isc_hash_function(const void *data, size_t length,
+isc_hash_function(const void *data,
+		  size_t length,
 		  bool case_sensitive,
 		  const uint32_t *previous_hashp);
 uint32_t
-isc_hash_function_reverse(const void *data, size_t length,
+isc_hash_function_reverse(const void *data,
+			  size_t length,
 			  bool case_sensitive,
 			  const uint32_t *previous_hashp);
 /*!<

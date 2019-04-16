@@ -29,13 +29,14 @@
  * the function like this before the BN_GENCB_new call:
  *
  * #if OPENSSL_VERSION_NUMBER < 0x10100000L
- *     	 _cb;
+ *       _cb;
  * #endif
  */
 #define BN_GENCB_free(x) ((void)0)
 #define BN_GENCB_new() (&_cb)
 #define BN_GENCB_get_arg(x) ((x)->arg)
-#endif
+#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L ||
+        * defined(LIBRESSL_VERSION_NUMBER) */
 
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
 /*
@@ -44,7 +45,7 @@
  * the link has been eliminated and EVP_sha1() can be used now instead.
  */
 #define EVP_dss1 EVP_sha1
-#endif
+#endif /* if OPENSSL_VERSION_NUMBER >= 0x10100000L */
 
 ISC_LANG_BEGINDECLS
 
@@ -56,14 +57,15 @@ dst__openssl_toresult2(const char *funcname, isc_result_t fallback);
 
 isc_result_t
 dst__openssl_toresult3(isc_logcategory_t *category,
-		       const char *funcname, isc_result_t fallback);
+		       const char *funcname,
+		       isc_result_t fallback);
 
 #if !defined(OPENSSL_NO_ENGINE)
 ENGINE *
 dst__openssl_getengine(const char *engine);
-#else
+#else /* if !defined(OPENSSL_NO_ENGINE) */
 #define dst__openssl_getengine(x) NULL
-#endif
+#endif /* if !defined(OPENSSL_NO_ENGINE) */
 
 ISC_LANG_ENDDECLS
 

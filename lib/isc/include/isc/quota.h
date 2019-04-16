@@ -14,8 +14,8 @@
 #define ISC_QUOTA_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file isc/quota.h
  *
@@ -36,16 +36,16 @@
 #include <isc/types.h>
 
 /*****
- ***** Types.
- *****/
+***** Types.
+*****/
 
 ISC_LANG_BEGINDECLS
 
 /*% isc_quota structure */
 struct isc_quota {
-	atomic_uint_fast32_t 		max;
-	atomic_uint_fast32_t 		used;
-	atomic_uint_fast32_t		soft;
+	atomic_uint_fast32_t	    max;
+	atomic_uint_fast32_t	    used;
+	atomic_uint_fast32_t	    soft;
 };
 
 
@@ -97,7 +97,7 @@ isc_quota_reserve(isc_quota_t *quota);
  * Attempt to reserve one unit of 'quota'.
  *
  * Returns:
- * \li 	#ISC_R_SUCCESS		Success
+ * \li  #ISC_R_SUCCESS		Success
  * \li	#ISC_R_SOFTQUOTA	Success soft quota reached
  * \li	#ISC_R_QUOTA		Quota is full
  */

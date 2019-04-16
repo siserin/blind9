@@ -14,8 +14,8 @@
 #define ISC_RATELIMITER_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file isc/ratelimiter.h
  * \brief A rate limiter is a mechanism for dispatching events at a limited
@@ -36,12 +36,14 @@
 ISC_LANG_BEGINDECLS
 
 /*****
- ***** Functions.
- *****/
+***** Functions.
+*****/
 
 isc_result_t
-isc_ratelimiter_create(isc_mem_t *mctx, isc_timermgr_t *timermgr,
-		       isc_task_t *task, isc_ratelimiter_t **ratelimiterp);
+isc_ratelimiter_create(isc_mem_t *mctx,
+		       isc_timermgr_t *timermgr,
+		       isc_task_t *task,
+		       isc_ratelimiter_t **ratelimiterp);
 /*%<
  * Create a rate limiter.  The execution interval is initially undefined.
  */
@@ -71,7 +73,8 @@ isc_ratelimiter_setpushpop(isc_ratelimiter_t *rl, bool pushpop);
  */
 
 isc_result_t
-isc_ratelimiter_enqueue(isc_ratelimiter_t *rl, isc_task_t *task,
+isc_ratelimiter_enqueue(isc_ratelimiter_t *rl,
+			isc_task_t *task,
 			isc_event_t **eventp);
 /*%<
  * Queue an event for rate-limited execution.
@@ -109,11 +112,11 @@ isc_ratelimiter_shutdown(isc_ratelimiter_t *ratelimiter);
  *
  * Ensures:
  *\li	All events that have not yet been
- * 	dispatched to the task are dispatched immediately with
+ *      dispatched to the task are dispatched immediately with
  *	the #ISC_EVENTATTR_CANCELED bit set in ev_attributes.
  *
  *\li	Further attempts to enqueue events will fail with
- * 	#ISC_R_SHUTTINGDOWN.
+ *      #ISC_R_SHUTTINGDOWN.
  *
  *\li	The rate limiter is no longer attached to its task.
  */

@@ -19,12 +19,12 @@
 static inline long
 sysconf_ncpus(void) {
 #if defined(_SC_NPROCESSORS_ONLN)
-	return sysconf((_SC_NPROCESSORS_ONLN));
+	return(sysconf((_SC_NPROCESSORS_ONLN)));
 #elif defined(_SC_NPROC_ONLN)
-	return sysconf((_SC_NPROC_ONLN));
-#else
+	return(sysconf((_SC_NPROC_ONLN)));
+#else  /* if defined(_SC_NPROCESSORS_ONLN) */
 	return (0);
-#endif
+#endif /* if defined(_SC_NPROCESSORS_ONLN) */
 }
 #endif /* HAVE_SYSCONF */
 
@@ -35,16 +35,17 @@ sysconf_ncpus(void) {
 
 static int
 sysctl_ncpus(void) {
-	int ncpu, result;
+	int ncpu,result;
 	size_t len;
 
 	len = sizeof(ncpu);
-	result = sysctlbyname("hw.ncpu", &ncpu, &len , 0, 0);
-	if (result != -1)
+	result = sysctlbyname("hw.ncpu",&ncpu,&len,0,0);
+	if (result != -1) {
 		return (ncpu);
+	}
 	return (0);
 }
-#endif
+#endif /* if defined(HAVE_SYS_SYSCTL_H) && defined(HAVE_SYSCTLBYNAME) */
 
 unsigned int
 isc_os_ncpus(void) {
@@ -52,13 +53,15 @@ isc_os_ncpus(void) {
 
 #if defined(HAVE_SYSCONF)
 	ncpus = sysconf_ncpus();
-#endif
+#endif /* if defined(HAVE_SYSCONF) */
 #if defined(HAVE_SYS_SYSCTL_H) && defined(HAVE_SYSCTLBYNAME)
-	if (ncpus <= 0)
+	if (ncpus <= 0) {
 		ncpus = sysctl_ncpus();
-#endif
-	if (ncpus <= 0)
+	}
+#endif /* if defined(HAVE_SYS_SYSCTL_H) && defined(HAVE_SYSCTLBYNAME) */
+	if (ncpus <= 0) {
 		ncpus = 1;
+	}
 
 	return ((unsigned int)ncpus);
 }

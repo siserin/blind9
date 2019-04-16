@@ -15,8 +15,8 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include <sys/types.h>		/* Non-portable. */
-#include <sys/stat.h>		/* Non-portable. */
+#include <sys/types.h>          /* Non-portable. */
+#include <sys/stat.h>           /* Non-portable. */
 
 #include <isc/fsaccess.h>
 #include <isc/print.h>
@@ -60,8 +60,9 @@ main(void) {
 	printf("fsaccess=%u\n", access);
 
 	result = isc_fsaccess_set(PATH, access);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fprintf(stderr, "result = %s\n", isc_result_totext(result));
+	}
 	(void)fclose(fp);
 
 	return (0);

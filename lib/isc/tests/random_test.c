@@ -40,8 +40,8 @@
 
 #define REPS 25000
 
-typedef double (pvalue_func_t)(isc_mem_t *mctx,
-			       uint16_t *values, size_t length);
+typedef double (pvalue_func_t)(isc_mem_t *mctx, uint16_t *values,
+			       size_t length);
 
 /* igamc(), igam(), etc. were adapted (and cleaned up) from the Cephes
  * math library:
@@ -51,12 +51,12 @@ typedef double (pvalue_func_t)(isc_mem_t *mctx,
  *
  * The Cephes math library was released into the public domain as part
  * of netlib.
-*/
+ */
 
 static double MACHEP = 1.11022302462515654042E-16;
 static double MAXLOG = 7.09782712893383996843E2;
 static double big = 4.503599627370496e15;
-static double biginv =	2.22044604925031308085e-16;
+static double biginv =  2.22044604925031308085e-16;
 
 static double igamc(double a, double x);
 static double igam(double a, double x);
@@ -78,11 +78,13 @@ igamc(double a, double x) {
 	double ans, ax, c, yc, r, t, y, z;
 	double pk, pkm1, pkm2, qk, qkm1, qkm2;
 
-	if ((x <= 0) || (a <= 0))
+	if ((x <= 0) || (a <= 0)) {
 		return (1.0);
+	}
 
-	if ((x < 1.0) || (x < a))
+	if ((x < 1.0) || (x < a)) {
 		return (1.0 - igam(a, x));
+	}
 
 	ax = a * log(x) - x - lgamma(a);
 	if (ax < -MAXLOG) {
@@ -112,8 +114,9 @@ igamc(double a, double x) {
 			r = pk / qk;
 			t = fabs((ans - r) / r);
 			ans = r;
-		} else
+		} else {
 			t = 1.0;
+		}
 
 		pkm2 = pkm1;
 		pkm1 = pk;
@@ -135,15 +138,17 @@ static double
 igam(double a, double x) {
 	double ans, ax, c, r;
 
-	if ((x <= 0) || (a <= 0))
+	if ((x <= 0) || (a <= 0)) {
 		return (0.0);
+	}
 
-	if ((x > 1.0) && (x > a))
+	if ((x > 1.0) && (x > a)) {
 		return (1.0 - igamc(a, x));
+	}
 
 	/* Compute  x**a * exp(-x) / md_gamma(a)  */
 	ax = a * log(x) - x - lgamma(a);
-	if (ax < -MAXLOG ) {
+	if (ax < -MAXLOG) {
 		print_error("# igam: UNDERFLOW, ax=%f\n", ax);
 		return (0.0);
 	}
@@ -176,10 +181,11 @@ scount_calculate(uint16_t n) {
 		uint16_t lsb;
 
 		lsb = n & 1;
-		if (lsb != 0)
+		if (lsb != 0) {
 			sc += 1;
-		else
+		} else {
 			sc -= 1;
+		}
 
 		n >>= 1;
 	}
@@ -197,8 +203,9 @@ bitcount_calculate(uint16_t n) {
 		uint16_t lsb;
 
 		lsb = n & 1;
-		if (lsb != 0)
+		if (lsb != 0) {
 			bc += 1;
+		}
 
 		n >>= 1;
 	}
@@ -236,9 +243,9 @@ matrix_binaryrank(uint32_t *bits, size_t rows, size_t cols) {
 		while (rt >= cols || ((bits[i] >> rt) & 1) == 0) {
 			i++;
 
-			if (i < rows)
+			if (i < rows) {
 				continue;
-			else {
+			} else {
 				rt++;
 				if (rt < cols) {
 					i = k;
@@ -257,10 +264,11 @@ matrix_binaryrank(uint32_t *bits, size_t rows, size_t cols) {
 		}
 
 		for (j = i + 1; j < rows; j++) {
-			if (((bits[j] >> rt) & 1) == 0)
+			if (((bits[j] >> rt) & 1) == 0) {
 				continue;
-			else
+			} else {
 				bits[j] ^= bits[k];
+			}
 		}
 
 		rt++;
@@ -300,19 +308,25 @@ random_test(pvalue_func_t *func, isc_random_func test_func) {
 
 		switch (test_func) {
 		case ISC_RANDOM8:
-			for (i = 0; i < (sizeof(values) / sizeof(*values)); i++)
+			for (i = 0;
+			     i < (sizeof(values) / sizeof(*values));
+			     i++)
 			{
 				values[i] = isc_random8();
 			}
 			break;
 		case ISC_RANDOM16:
-			for (i = 0; i < (sizeof(values) / sizeof(*values)); i++)
+			for (i = 0;
+			     i < (sizeof(values) / sizeof(*values));
+			     i++)
 			{
 				values[i] = isc_random16();
 			}
 			break;
 		case ISC_RANDOM32:
-			for (i = 0; i < (sizeof(values) / sizeof(*values)); i++)
+			for (i = 0;
+			     i < (sizeof(values) / sizeof(*values));
+			     i++)
 			{
 				values[i] = isc_random32();
 			}
@@ -482,8 +496,9 @@ runs(isc_mem_t *mctx, uint16_t *values, size_t length) {
 	 * for some sequences, and the p-value is taken as 0 in these
 	 * cases.
 	 */
-	if (fabs(pi - 0.5) >= tau)
+	if (fabs(pi - 0.5) >= tau) {
 		return (0.0);
+	}
 
 	/* Compute v_obs */
 	j = 0;
@@ -639,12 +654,13 @@ binarymatrixrank(isc_mem_t *mctx, uint16_t *values, size_t length) {
 
 		rank = matrix_binaryrank(bits, matrix_m, matrix_q);
 
-		if (rank == matrix_m)
+		if (rank == matrix_m) {
 			fm_0++;
-		else if (rank == (matrix_m - 1))
+		} else if (rank == (matrix_m - 1)) {
 			fm_1++;
-		else
+		} else {
 			fm_rest++;
+		}
 	}
 
 	/* Compute chi_square */
@@ -653,13 +669,18 @@ binarymatrixrank(isc_mem_t *mctx, uint16_t *values, size_t length) {
 	term2 = ((fm_1 - (0.5776 * num_matrices)) *
 		 (fm_1 - (0.5776 * num_matrices))) / (0.5776 * num_matrices);
 	term3 = ((fm_rest - (0.1336 * num_matrices)) *
-		 (fm_rest - (0.1336 * num_matrices))) / (0.1336 * num_matrices);
+		 (fm_rest - (0.1336 * num_matrices))) /
+		(0.1336 * num_matrices);
 
 	chi_square = term1 + term2 + term3;
 
 	if (verbose) {
-		print_message("# fm_0=%u, fm_1=%u, fm_rest=%u, chi_square=%f\n",
-			      fm_0, fm_1, fm_rest, chi_square);
+		print_message(
+			"# fm_0=%u, fm_1=%u, fm_rest=%u, chi_square=%f\n",
+			fm_0,
+			fm_1,
+			fm_rest,
+			chi_square);
 	}
 
 	p_value = exp(-chi_square * 0.5);
@@ -855,4 +876,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

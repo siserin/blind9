@@ -24,11 +24,11 @@
  ***/
 
 struct isc_taskpool {
-	isc_mem_t *			mctx;
-	isc_taskmgr_t *			tmgr;
-	unsigned int			ntasks;
-	unsigned int			quantum;
-	isc_task_t **			tasks;
+	isc_mem_t *	     mctx;
+	isc_taskmgr_t *	     tmgr;
+	unsigned int	     ntasks;
+	unsigned int	     quantum;
+	isc_task_t **	     tasks;
 };
 
 /***
@@ -36,15 +36,19 @@ struct isc_taskpool {
  ***/
 
 static isc_result_t
-alloc_pool(isc_taskmgr_t *tmgr, isc_mem_t *mctx, unsigned int ntasks,
-	   unsigned int quantum, isc_taskpool_t **poolp)
+alloc_pool(isc_taskmgr_t *tmgr,
+	   isc_mem_t *mctx,
+	   unsigned int ntasks,
+	   unsigned int quantum,
+	   isc_taskpool_t **poolp)
 {
 	isc_taskpool_t *pool;
 	unsigned int i;
 
 	pool = isc_mem_get(mctx, sizeof(*pool));
-	if (pool == NULL)
+	if (pool == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	pool->mctx = NULL;
 	isc_mem_attach(mctx, &pool->mctx);
@@ -64,8 +68,10 @@ alloc_pool(isc_taskmgr_t *tmgr, isc_mem_t *mctx, unsigned int ntasks,
 }
 
 isc_result_t
-isc_taskpool_create(isc_taskmgr_t *tmgr, isc_mem_t *mctx,
-		    unsigned int ntasks, unsigned int quantum,
+isc_taskpool_create(isc_taskmgr_t *tmgr,
+		    isc_mem_t *mctx,
+		    unsigned int ntasks,
+		    unsigned int quantum,
 		    isc_taskpool_t **poolp)
 {
 	unsigned int i;
@@ -76,8 +82,9 @@ isc_taskpool_create(isc_taskmgr_t *tmgr, isc_mem_t *mctx,
 
 	/* Allocate the pool structure */
 	result = alloc_pool(tmgr, mctx, ntasks, quantum, &pool);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	/* Create the tasks */
 	for (i = 0; i < ntasks; i++) {
@@ -95,7 +102,8 @@ isc_taskpool_create(isc_taskmgr_t *tmgr, isc_mem_t *mctx,
 
 void
 isc_taskpool_gettask(isc_taskpool_t *pool, isc_task_t **targetp) {
-	isc_task_attach(pool->tasks[isc_random_uniform(pool->ntasks)], targetp);
+	isc_task_attach(pool->tasks[isc_random_uniform(pool->ntasks)],
+			targetp);
 }
 
 int
@@ -105,7 +113,8 @@ isc_taskpool_size(isc_taskpool_t *pool) {
 }
 
 isc_result_t
-isc_taskpool_expand(isc_taskpool_t **sourcep, unsigned int size,
+isc_taskpool_expand(isc_taskpool_t **sourcep,
+		    unsigned int size,
 		    isc_taskpool_t **targetp)
 {
 	isc_result_t result;
@@ -122,8 +131,9 @@ isc_taskpool_expand(isc_taskpool_t **sourcep, unsigned int size,
 		/* Allocate a new pool structure */
 		result = alloc_pool(pool->tmgr, pool->mctx, size,
 				    pool->quantum, &newpool);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (result);
+		}
 
 		/* Copy over the tasks from the old pool */
 		for (i = 0; i < pool->ntasks; i++) {
@@ -156,8 +166,9 @@ isc_taskpool_destroy(isc_taskpool_t **poolp) {
 	unsigned int i;
 	isc_taskpool_t *pool = *poolp;
 	for (i = 0; i < pool->ntasks; i++) {
-		if (pool->tasks[i] != NULL)
+		if (pool->tasks[i] != NULL) {
 			isc_task_detach(&pool->tasks[i]);
+		}
 	}
 	isc_mem_put(pool->mctx, pool->tasks,
 		    pool->ntasks * sizeof(isc_task_t *));
@@ -172,7 +183,8 @@ isc_taskpool_setprivilege(isc_taskpool_t *pool, bool priv) {
 	REQUIRE(pool != NULL);
 
 	for (i = 0; i < pool->ntasks; i++) {
-		if (pool->tasks[i] != NULL)
+		if (pool->tasks[i] != NULL) {
 			isc_task_setprivilege(pool->tasks[i], priv);
+		}
 	}
 }

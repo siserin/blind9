@@ -65,10 +65,12 @@ _teardown(void **state) {
 dns_keytable_t *keytable = NULL;
 dns_ntatable_t *ntatable = NULL;
 
-static const char *keystr1 = "BQEAAAABok+vaUC9neRv8yeT/FEGgN7svR8s7VBUVSBd8NsAiV8AlaAg O5FHar3JQd95i/puZos6Vi6at9/JBbN8qVmO2AuiXxVqfxMKxIcy+LEB 0Vw4NaSJ3N3uaVREso6aTSs98H/25MjcwLOr7SFfXA7bGhZatLtYY/xu kp6Km5hMfkE=";
+static const char *keystr1 =
+	"BQEAAAABok+vaUC9neRv8yeT/FEGgN7svR8s7VBUVSBd8NsAiV8AlaAg O5FHar3JQd95i/puZos6Vi6at9/JBbN8qVmO2AuiXxVqfxMKxIcy+LEB 0Vw4NaSJ3N3uaVREso6aTSs98H/25MjcwLOr7SFfXA7bGhZatLtYY/xu kp6Km5hMfkE=";
 static const dns_keytag_t keytag1 = 30591;
 
-static const char *keystr2 = "BQEAAAABwuHz9Cem0BJ0JQTO7C/a3McR6hMaufljs1dfG/inaJpYv7vH XTrAOm/MeKp+/x6eT4QLru0KoZkvZJnqTI8JyaFTw2OM/ItBfh/hL2lm Cft2O7n3MfeqYtvjPnY7dWghYW4sVfH7VVEGm958o9nfi79532Qeklxh x8pXWdeAaRU=";
+static const char *keystr2 =
+	"BQEAAAABwuHz9Cem0BJ0JQTO7C/a3McR6hMaufljs1dfG/inaJpYv7vH XTrAOm/MeKp+/x6eT4QLru0KoZkvZJnqTI8JyaFTw2OM/ItBfh/hL2lm Cft2O7n3MfeqYtvjPnY7dWghYW4sVfH7VVEGm958o9nfi79532Qeklxh x8pXWdeAaRU=";
 
 static dns_view_t *view = NULL;
 
@@ -102,8 +104,12 @@ str2name(const char *namestr) {
 }
 
 static void
-create_key(uint16_t flags, uint8_t proto, uint8_t alg,
-	   const char *keynamestr, const char *keystr, dst_key_t **target)
+create_key(uint16_t flags,
+	   uint8_t proto,
+	   uint8_t alg,
+	   const char *keynamestr,
+	   const char *keystr,
+	   dst_key_t **target)
 {
 	dns_rdata_dnskey_t keystruct;
 	unsigned char keydata[4096];
@@ -324,7 +330,8 @@ add_test(void **state) {
 					   &keynode),
 			 ISC_R_SUCCESS);
 	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						&next_keynode), ISC_R_SUCCESS);
+						  &next_keynode),
+			 ISC_R_SUCCESS);
 	assert_int_equal(dns_keynode_initial(keynode), false);
 	dns_keytable_detachkeynode(keytable, &next_keynode);
 	dns_keytable_detachkeynode(keytable, &keynode);
@@ -527,8 +534,8 @@ find_test(void **state) {
 			 ISC_R_SUCCESS);
 	assert_true(dns_name_equal(name, str2name("example.com")));
 	assert_int_equal(dns_keytable_finddeepestmatch(keytable,
-					       str2name("s.example.com"),
-					       name),
+						       str2name("s.example.com"),
+						       name),
 			 ISC_R_SUCCESS);
 	assert_true(dns_name_equal(name, str2name("example.com")));
 	assert_int_equal(dns_keytable_finddeepestmatch(keytable,
@@ -763,4 +770,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

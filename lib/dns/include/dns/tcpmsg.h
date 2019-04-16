@@ -27,11 +27,11 @@ typedef struct dns_tcpmsg {
 	uint16_t		size;
 	isc_buffer_t		buffer;
 	unsigned int		maxsize;
-	isc_mem_t	       *mctx;
-	isc_socket_t	       *sock;
-	isc_task_t	       *task;
+	isc_mem_t *		mctx;
+	isc_socket_t *		sock;
+	isc_task_t *		task;
 	isc_taskaction_t	action;
-	void		       *arg;
+	void *			arg;
 	isc_event_t		event;
 	/* public (read-only) */
 	isc_result_t		result;
@@ -73,7 +73,9 @@ dns_tcpmsg_setmaxsize(dns_tcpmsg_t *tcpmsg, unsigned int maxsize);
 
 isc_result_t
 dns_tcpmsg_readmessage(dns_tcpmsg_t *tcpmsg,
-		       isc_task_t *task, isc_taskaction_t action, void *arg);
+		       isc_task_t *task,
+		       isc_taskaction_t action,
+		       void *arg);
 /*%<
  * Schedule an event to be delivered when a DNS message is readable, or
  * when an error occurs on the socket.

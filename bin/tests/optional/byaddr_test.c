@@ -50,7 +50,8 @@ done(isc_task_t *task, isc_event_t *event) {
 	if (bevent->result == ISC_R_SUCCESS) {
 		for (name = ISC_LIST_HEAD(bevent->names);
 		     name != NULL;
-		     name = ISC_LIST_NEXT(name, link)) {
+		     name = ISC_LIST_NEXT(name, link))
+		{
 			char text[DNS_NAME_FORMATSIZE];
 			dns_name_format(name, text, sizeof(text));
 			printf("%s\n", text);
@@ -179,12 +180,14 @@ main(int argc, char *argv[]) {
 						      timermgr, 0,
 						      dispatchmgr,
 						      disp4, disp6) ==
-		      ISC_R_SUCCESS);
+			      ISC_R_SUCCESS);
 
-		if (disp4 != NULL)
-		    dns_dispatch_detach(&disp4);
-		if (disp6 != NULL)
-		    dns_dispatch_detach(&disp6);
+		if (disp4 != NULL) {
+			dns_dispatch_detach(&disp4);
+		}
+		if (disp6 != NULL) {
+			dns_dispatch_detach(&disp6);
+		}
 	}
 
 	{
@@ -247,8 +250,9 @@ main(int argc, char *argv[]) {
 	isc_socketmgr_destroy(&socketmgr);
 	isc_timermgr_destroy(&timermgr);
 
-	if (verbose)
+	if (verbose) {
 		isc_mem_stats(mctx, stdout);
+	}
 	isc_mem_destroy(&mctx);
 
 	isc_app_finish();

@@ -44,19 +44,25 @@
 ISC_LANG_BEGINDECLS
 
 isc_result_t
-dns_nsec3_buildrdata(dns_db_t *db, dns_dbversion_t *version,
-		     dns_dbnode_t *node, unsigned int hashalg,
-		     unsigned int optin, unsigned int iterations,
-		     const unsigned char *salt, size_t salt_length,
-		     const unsigned char *nexthash, size_t hash_length,
-		     unsigned char *buffer, dns_rdata_t *rdata);
+dns_nsec3_buildrdata(dns_db_t *db,
+		     dns_dbversion_t *version,
+		     dns_dbnode_t *node,
+		     unsigned int hashalg,
+		     unsigned int optin,
+		     unsigned int iterations,
+		     const unsigned char *salt,
+		     size_t salt_length,
+		     const unsigned char *nexthash,
+		     size_t hash_length,
+		     unsigned char *buffer,
+		     dns_rdata_t *rdata);
 /*%<
  * Build the rdata of a NSEC3 record for the data at 'node'.
  * Note: 'node' is not the node where the NSEC3 record will be stored.
  *
  * Requires:
  *	buffer	Points to a temporary buffer of at least
- * 		DNS_NSEC_BUFFERSIZE bytes.
+ *              DNS_NSEC_BUFFERSIZE bytes.
  *	rdata	Points to an initialized dns_rdata_t.
  *
  * Ensures:
@@ -74,12 +80,12 @@ dns_nsec3_typepresent(dns_rdata_t *nsec, dns_rdatatype_t type);
  */
 
 isc_result_t
-dns_nsec3_hashname(dns_fixedname_t *result,
-		   unsigned char rethash[NSEC3_MAX_HASH_LENGTH],
-		   size_t *hash_length,
-		   const dns_name_t *name, const dns_name_t *origin,
-		   dns_hash_t hashalg, unsigned int iterations,
-		   const unsigned char *salt, size_t saltlength);
+	dns_nsec3_hashname(dns_fixedname_t * result,
+			   unsigned char rethash[NSEC3_MAX_HASH_LENGTH],
+			   size_t *hash_length,
+			   const dns_name_t *name, const dns_name_t *origin,
+			   dns_hash_t hashalg, unsigned int iterations,
+			   const unsigned char *salt, size_t saltlength);
 /*%<
  * Make a hashed domain name from an unhashed one. If rethash is not NULL
  * the raw hash is stored there.
@@ -99,20 +105,29 @@ dns_nsec3_supportedhash(dns_hash_t hash);
  */
 
 isc_result_t
-dns_nsec3_addnsec3(dns_db_t *db, dns_dbversion_t *version,
+dns_nsec3_addnsec3(dns_db_t *db,
+		   dns_dbversion_t *version,
 		   const dns_name_t *name,
 		   const dns_rdata_nsec3param_t *nsec3param,
-		   dns_ttl_t nsecttl, bool unsecure, dns_diff_t *diff);
+		   dns_ttl_t nsecttl,
+		   bool unsecure,
+		   dns_diff_t *diff);
 
 isc_result_t
-dns_nsec3_addnsec3s(dns_db_t *db, dns_dbversion_t *version,
-		    const dns_name_t *name, dns_ttl_t nsecttl,
-		    bool unsecure, dns_diff_t *diff);
+dns_nsec3_addnsec3s(dns_db_t *db,
+		    dns_dbversion_t *version,
+		    const dns_name_t *name,
+		    dns_ttl_t nsecttl,
+		    bool unsecure,
+		    dns_diff_t *diff);
 
 isc_result_t
-dns_nsec3_addnsec3sx(dns_db_t *db, dns_dbversion_t *version,
-		     const dns_name_t *name, dns_ttl_t nsecttl,
-		     bool unsecure, dns_rdatatype_t private,
+dns_nsec3_addnsec3sx(dns_db_t *db,
+		     dns_dbversion_t *version,
+		     const dns_name_t *name,
+		     dns_ttl_t nsecttl,
+		     bool unsecure,
+		     dns_rdatatype_t private,
 		     dns_diff_t *diff);
 /*%<
  * Add NSEC3 records for 'name', recording the change in 'diff'.
@@ -147,17 +162,23 @@ dns_nsec3_addnsec3sx(dns_db_t *db, dns_dbversion_t *version,
  */
 
 isc_result_t
-dns_nsec3_delnsec3(dns_db_t *db, dns_dbversion_t *version,
+dns_nsec3_delnsec3(dns_db_t *db,
+		   dns_dbversion_t *version,
 		   const dns_name_t *name,
-		   const dns_rdata_nsec3param_t *nsec3param, dns_diff_t *diff);
+		   const dns_rdata_nsec3param_t *nsec3param,
+		   dns_diff_t *diff);
 
 isc_result_t
-dns_nsec3_delnsec3s(dns_db_t *db, dns_dbversion_t *version,
-		    const dns_name_t *name, dns_diff_t *diff);
+dns_nsec3_delnsec3s(dns_db_t *db,
+		    dns_dbversion_t *version,
+		    const dns_name_t *name,
+		    dns_diff_t *diff);
 
 isc_result_t
-dns_nsec3_delnsec3sx(dns_db_t *db, dns_dbversion_t *version,
-		     const dns_name_t *name, dns_rdatatype_t private,
+dns_nsec3_delnsec3sx(dns_db_t *db,
+		     dns_dbversion_t *version,
+		     const dns_name_t *name,
+		     dns_rdatatype_t private,
 		     dns_diff_t *diff);
 /*%<
  * Remove NSEC3 records for 'name', recording the change in 'diff'.
@@ -183,12 +204,16 @@ dns_nsec3_delnsec3sx(dns_db_t *db, dns_dbversion_t *version,
  */
 
 isc_result_t
-dns_nsec3_active(dns_db_t *db, dns_dbversion_t *version,
-		 bool complete, bool *answer);
+dns_nsec3_active(dns_db_t *db,
+		 dns_dbversion_t *version,
+		 bool complete,
+		 bool *answer);
 
 isc_result_t
-dns_nsec3_activex(dns_db_t *db, dns_dbversion_t *version,
-		  bool complete, dns_rdatatype_t private,
+dns_nsec3_activex(dns_db_t *db,
+		  dns_dbversion_t *version,
+		  bool complete,
+		  dns_rdatatype_t private,
 		  bool *answer);
 /*%<
  * Check if there are any complete/to be built NSEC3 chains.
@@ -205,8 +230,10 @@ dns_nsec3_activex(dns_db_t *db, dns_dbversion_t *version,
  */
 
 isc_result_t
-dns_nsec3_maxiterations(dns_db_t *db, dns_dbversion_t *version,
-			isc_mem_t *mctx, unsigned int *iterationsp);
+dns_nsec3_maxiterations(dns_db_t *db,
+			dns_dbversion_t *version,
+			isc_mem_t *mctx,
+			unsigned int *iterationsp);
 /*%<
  * Find the maximum permissible number of iterations allowed based on
  * the key strength.
@@ -219,8 +246,10 @@ dns_nsec3_maxiterations(dns_db_t *db, dns_dbversion_t *version,
  */
 
 bool
-dns_nsec3param_fromprivate(dns_rdata_t *src, dns_rdata_t *target,
-			   unsigned char *buf, size_t buflen);
+dns_nsec3param_fromprivate(dns_rdata_t *src,
+			   dns_rdata_t *target,
+			   unsigned char *buf,
+			   size_t buflen);
 /*%<
  * Convert a private rdata to a nsec3param rdata.
  *
@@ -230,9 +259,11 @@ dns_nsec3param_fromprivate(dns_rdata_t *src, dns_rdata_t *target,
  */
 
 void
-dns_nsec3param_toprivate(dns_rdata_t *src, dns_rdata_t *target,
+dns_nsec3param_toprivate(dns_rdata_t *src,
+			 dns_rdata_t *target,
 			 dns_rdatatype_t privatetype,
-			 unsigned char *buf, size_t buflen);
+			 unsigned char *buf,
+			 size_t buflen);
 /*%<
  * Convert a nsec3param rdata to a private rdata.
  *
@@ -240,7 +271,8 @@ dns_nsec3param_toprivate(dns_rdata_t *src, dns_rdata_t *target,
  */
 
 isc_result_t
-dns_nsec3param_salttotext(dns_rdata_nsec3param_t *nsec3param, char *dst,
+dns_nsec3param_salttotext(dns_rdata_nsec3param_t *nsec3param,
+			  char *dst,
 			  size_t dstlen);
 /*%<
  * Convert the salt of given NSEC3PARAM RDATA into hex-encoded, NULL-terminated
@@ -248,13 +280,15 @@ dns_nsec3param_salttotext(dns_rdata_nsec3param_t *nsec3param, char *dst,
  *
  * Requires:
  *
- *\li 	"dst" to have enough space (as indicated by "dstlen") to hold the
- * 	resulting text and its NULL-terminating byte.
+ *\li   "dst" to have enough space (as indicated by "dstlen") to hold the
+ *      resulting text and its NULL-terminating byte.
  */
 
 isc_result_t
-dns_nsec3param_deletechains(dns_db_t *db, dns_dbversion_t *ver,
-			    dns_zone_t *zone, bool nonsec,
+dns_nsec3param_deletechains(dns_db_t *db,
+			    dns_dbversion_t *ver,
+			    dns_zone_t *zone,
+			    bool nonsec,
 			    dns_diff_t *diff);
 
 /*%<
@@ -262,13 +296,21 @@ dns_nsec3param_deletechains(dns_db_t *db, dns_dbversion_t *ver,
  */
 
 isc_result_t
-dns_nsec3_noexistnodata(dns_rdatatype_t type, const dns_name_t *name,
-			const dns_name_t *nsec3name, dns_rdataset_t *nsec3set,
-			dns_name_t *zonename, bool *exists,
-			bool *data, bool *optout,
-			bool *unknown, bool *setclosest,
-			bool *setnearest, dns_name_t *closest,
-			dns_name_t *nearest, dns_nseclog_t logit, void *arg);
+dns_nsec3_noexistnodata(dns_rdatatype_t type,
+			const dns_name_t *name,
+			const dns_name_t *nsec3name,
+			dns_rdataset_t *nsec3set,
+			dns_name_t *zonename,
+			bool *exists,
+			bool *data,
+			bool *optout,
+			bool *unknown,
+			bool *setclosest,
+			bool *setnearest,
+			dns_name_t *closest,
+			dns_name_t *nearest,
+			dns_nseclog_t logit,
+			void *arg);
 
 ISC_LANG_ENDDECLS
 

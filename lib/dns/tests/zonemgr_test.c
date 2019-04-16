@@ -91,7 +91,8 @@ zonemgr_managezone(void **state) {
 	result = dns_zonemgr_managezone(myzonemgr, zone);
 	assert_int_equal(result, ISC_R_FAILURE);
 
-	assert_int_equal(dns_zonemgr_getcount(myzonemgr, DNS_ZONESTATE_ANY), 0);
+	assert_int_equal(dns_zonemgr_getcount(myzonemgr, DNS_ZONESTATE_ANY),
+			 0);
 
 	result = dns_zonemgr_setsize(myzonemgr, 1);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -100,12 +101,14 @@ zonemgr_managezone(void **state) {
 	result = dns_zonemgr_managezone(myzonemgr, zone);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
-	assert_int_equal(dns_zonemgr_getcount(myzonemgr, DNS_ZONESTATE_ANY), 1);
+	assert_int_equal(dns_zonemgr_getcount(myzonemgr, DNS_ZONESTATE_ANY),
+			 1);
 
 	dns_zonemgr_releasezone(myzonemgr, zone);
 	dns_zone_detach(&zone);
 
-	assert_int_equal(dns_zonemgr_getcount(myzonemgr, DNS_ZONESTATE_ANY), 0);
+	assert_int_equal(dns_zonemgr_getcount(myzonemgr, DNS_ZONESTATE_ANY),
+			 0);
 
 	dns_zonemgr_shutdown(myzonemgr);
 	dns_zonemgr_detach(&myzonemgr);
@@ -137,8 +140,9 @@ zonemgr_createzone(void **state) {
 	assert_int_equal(result, ISC_R_SUCCESS);
 	assert_non_null(zone);
 
-	if (zone != NULL)
+	if (zone != NULL) {
 		dns_zone_detach(&zone);
+	}
 
 	dns_zonemgr_shutdown(myzonemgr);
 	dns_zonemgr_detach(&myzonemgr);
@@ -217,20 +221,20 @@ zonemgr_unreachable(void **state) {
  * XXX:
  * dns_zonemgr API calls that are not yet part of this unit test:
  *
- * 	- dns_zonemgr_attach
- * 	- dns_zonemgr_forcemaint
- * 	- dns_zonemgr_resumexfrs
- * 	- dns_zonemgr_shutdown
- * 	- dns_zonemgr_setsize
- * 	- dns_zonemgr_settransfersin
- * 	- dns_zonemgr_getttransfersin
- * 	- dns_zonemgr_settransfersperns
- * 	- dns_zonemgr_getttransfersperns
- * 	- dns_zonemgr_setiolimit
- * 	- dns_zonemgr_getiolimit
- * 	- dns_zonemgr_dbdestroyed
- * 	- dns_zonemgr_setserialqueryrate
- * 	- dns_zonemgr_getserialqueryrate
+ *      - dns_zonemgr_attach
+ *      - dns_zonemgr_forcemaint
+ *      - dns_zonemgr_resumexfrs
+ *      - dns_zonemgr_shutdown
+ *      - dns_zonemgr_setsize
+ *      - dns_zonemgr_settransfersin
+ *      - dns_zonemgr_getttransfersin
+ *      - dns_zonemgr_settransfersperns
+ *      - dns_zonemgr_getttransfersperns
+ *      - dns_zonemgr_setiolimit
+ *      - dns_zonemgr_getiolimit
+ *      - dns_zonemgr_dbdestroyed
+ *      - dns_zonemgr_setserialqueryrate
+ *      - dns_zonemgr_getserialqueryrate
  */
 
 int
@@ -259,4 +263,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

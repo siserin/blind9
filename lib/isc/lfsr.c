@@ -20,12 +20,16 @@
 #include <isc/lfsr.h>
 #include <isc/util.h>
 
-#define VALID_LFSR(x)	(x != NULL)
+#define VALID_LFSR(x)   (x != NULL)
 
 void
-isc_lfsr_init(isc_lfsr_t *lfsr, uint32_t state, unsigned int bits,
-	      uint32_t tap, unsigned int count,
-	      isc_lfsrreseed_t reseed, void *arg)
+isc_lfsr_init(isc_lfsr_t *lfsr,
+	      uint32_t state,
+	      unsigned int bits,
+	      uint32_t tap,
+	      unsigned int count,
+	      isc_lfsrreseed_t reseed,
+	      void *arg)
 {
 	REQUIRE(VALID_LFSR(lfsr));
 	REQUIRE(8 <= bits && bits <= 32);
@@ -38,10 +42,12 @@ isc_lfsr_init(isc_lfsr_t *lfsr, uint32_t state, unsigned int bits,
 	lfsr->reseed = reseed;
 	lfsr->arg = arg;
 
-	if (count == 0 && reseed != NULL)
+	if (count == 0 && reseed != NULL) {
 		reseed(lfsr, arg);
-	if (lfsr->state == 0)
+	}
+	if (lfsr->state == 0) {
 		lfsr->state = 0xffffffffU >> (32 - lfsr->bits);
+	}
 }
 
 /*!
@@ -50,7 +56,6 @@ isc_lfsr_init(isc_lfsr_t *lfsr, uint32_t state, unsigned int bits,
 static inline uint32_t
 lfsr_generate(isc_lfsr_t *lfsr)
 {
-
 	/*
 	 * If the previous state is zero, we must fill it with something
 	 * here, or we will begin to generate an extremely predictable output.
@@ -59,10 +64,12 @@ lfsr_generate(isc_lfsr_t *lfsr)
 	 * still 0, set it to all ones.
 	 */
 	if (lfsr->state == 0) {
-		if (lfsr->reseed != NULL)
+		if (lfsr->reseed != NULL) {
 			lfsr->reseed(lfsr, lfsr->arg);
-		if (lfsr->state == 0)
+		}
+		if (lfsr->state == 0) {
 			lfsr->state = 0xffffffffU >> (32 - lfsr->bits);
+		}
 	}
 
 	if (lfsr->state & 0x01) {
@@ -99,18 +106,20 @@ isc_lfsr_generate(isc_lfsr_t *lfsr, void *data, unsigned int count)
 	}
 
 	if (lfsr->count != 0 && lfsr->reseed != NULL) {
-		if (lfsr->count <= count * 8)
+		if (lfsr->count <= count * 8) {
 			lfsr->reseed(lfsr, lfsr->arg);
-		else
+		} else {
 			lfsr->count -= (count * 8);
+		}
 	}
 }
 
 static inline uint32_t
 lfsr_skipgenerate(isc_lfsr_t *lfsr, unsigned int skip)
 {
-	while (skip--)
+	while (skip--) {
 		(void)lfsr_generate(lfsr);
+	}
 
 	(void)lfsr_generate(lfsr);
 
@@ -125,8 +134,9 @@ isc_lfsr_skip(isc_lfsr_t *lfsr, unsigned int skip)
 {
 	REQUIRE(VALID_LFSR(lfsr));
 
-	while (skip--)
+	while (skip--) {
 		(void)lfsr_generate(lfsr);
+	}
 }
 
 /*

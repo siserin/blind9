@@ -13,18 +13,18 @@
 #define DNS_DISPATCH_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/dispatch.h
  * \brief
  * DNS Dispatch Management
- * 	Shared UDP and single-use TCP dispatches for queries and responses.
+ *      Shared UDP and single-use TCP dispatches for queries and responses.
  *
  * MP:
  *
- *\li     	All locking is performed internally to each dispatch.
- * 	Restrictions apply to dns_dispatch_removeresponse().
+ *\li           All locking is performed internally to each dispatch.
+ *      Restrictions apply to dns_dispatch_removeresponse().
  *
  * Reliability:
  *
@@ -75,13 +75,13 @@ ISC_LANG_BEGINDECLS
  */
 
 struct dns_dispatchevent {
-	ISC_EVENT_COMMON(dns_dispatchevent_t);	/*%< standard event common */
-	isc_result_t		result;		/*%< result code */
-	int32_t		id;		/*%< message id */
-	isc_sockaddr_t		addr;		/*%< address recv'd from */
-	struct in6_pktinfo	pktinfo;	/*%< reply info for v6 */
-	isc_buffer_t	        buffer;		/*%< data buffer */
-	uint32_t		attributes;	/*%< mirrored from socket.h */
+	ISC_EVENT_COMMON(dns_dispatchevent_t);  /*%< standard event common */
+	isc_result_t		  result;       /*%< result code */
+	int32_t			  id;   /*%< message id */
+	isc_sockaddr_t		  addr;         /*%< address recv'd from */
+	struct in6_pktinfo	  pktinfo;      /*%< reply info for v6 */
+	isc_buffer_t		  buffer;       /*%< data buffer */
+	uint32_t		  attributes;   /*%< mirrored from socket.h */
 };
 
 /*%
@@ -89,11 +89,11 @@ struct dns_dispatchevent {
  * round-robin fashion.
  */
 struct dns_dispatchset {
-	isc_mem_t		*mctx;
-	dns_dispatch_t		**dispatches;
-	int			ndisp;
-	int			cur;
-	isc_mutex_t		lock;
+	isc_mem_t *	      mctx;
+	dns_dispatch_t **     dispatches;
+	int		      ndisp;
+	int		      cur;
+	isc_mutex_t	      lock;
 };
 
 /*@{*/
@@ -130,22 +130,22 @@ struct dns_dispatchset {
  * _EXCLUSIVE
  *	A separate socket will be used on-demand for each transaction.
  */
-#define DNS_DISPATCHATTR_PRIVATE	0x00000001U
-#define DNS_DISPATCHATTR_TCP		0x00000002U
-#define DNS_DISPATCHATTR_UDP		0x00000004U
-#define DNS_DISPATCHATTR_IPV4		0x00000008U
-#define DNS_DISPATCHATTR_IPV6		0x00000010U
-#define DNS_DISPATCHATTR_NOLISTEN	0x00000020U
-#define DNS_DISPATCHATTR_MAKEQUERY	0x00000040U
-#define DNS_DISPATCHATTR_CONNECTED	0x00000080U
-#define DNS_DISPATCHATTR_FIXEDID	0x00000100U
-#define DNS_DISPATCHATTR_EXCLUSIVE	0x00000200U
-#define DNS_DISPATCHATTR_CANREUSE	0x00000400U
+#define DNS_DISPATCHATTR_PRIVATE        0x00000001U
+#define DNS_DISPATCHATTR_TCP            0x00000002U
+#define DNS_DISPATCHATTR_UDP            0x00000004U
+#define DNS_DISPATCHATTR_IPV4           0x00000008U
+#define DNS_DISPATCHATTR_IPV6           0x00000010U
+#define DNS_DISPATCHATTR_NOLISTEN       0x00000020U
+#define DNS_DISPATCHATTR_MAKEQUERY      0x00000040U
+#define DNS_DISPATCHATTR_CONNECTED      0x00000080U
+#define DNS_DISPATCHATTR_FIXEDID        0x00000100U
+#define DNS_DISPATCHATTR_EXCLUSIVE      0x00000200U
+#define DNS_DISPATCHATTR_CANREUSE       0x00000400U
 /*@}*/
 
 /*
  */
-#define DNS_DISPATCHOPT_FIXEDID		0x00000001U
+#define DNS_DISPATCHOPT_FIXEDID         0x00000001U
 
 isc_result_t
 dns_dispatchmgr_create(isc_mem_t *mctx, dns_dispatchmgr_t **mgrp);
@@ -194,7 +194,7 @@ dns_dispatchmgr_getblackhole(dns_dispatchmgr_t *mgr);
  * without incrementing its reference count.
  *
  * Requires:
- *\li 	mgr is a valid dispatchmgr
+ *\li   mgr is a valid dispatchmgr
  * Returns:
  *\li	A pointer to the current blackhole list, or NULL.
  */
@@ -219,7 +219,8 @@ dns_dispatchmgr_getblackportlist(dns_dispatchmgr_t *mgr);
  */
 
 isc_result_t
-dns_dispatchmgr_setavailports(dns_dispatchmgr_t *mgr, isc_portset_t *v4portset,
+dns_dispatchmgr_setavailports(dns_dispatchmgr_t *mgr,
+			      isc_portset_t *v4portset,
 			      isc_portset_t *v6portset);
 /*%<
  * Sets a list of UDP ports that can be used for outgoing UDP messages.
@@ -246,22 +247,33 @@ dns_dispatchmgr_setstats(dns_dispatchmgr_t *mgr, isc_stats_t *stats);
  */
 
 isc_result_t
-dns_dispatch_getudp(dns_dispatchmgr_t *mgr, isc_socketmgr_t *sockmgr,
-		    isc_taskmgr_t *taskmgr, const isc_sockaddr_t *localaddr,
+dns_dispatch_getudp(dns_dispatchmgr_t *mgr,
+		    isc_socketmgr_t *sockmgr,
+		    isc_taskmgr_t *taskmgr,
+		    const isc_sockaddr_t *localaddr,
 		    unsigned int buffersize,
-		    unsigned int maxbuffers, unsigned int maxrequests,
-		    unsigned int buckets, unsigned int increment,
-		    unsigned int attributes, unsigned int mask,
+		    unsigned int maxbuffers,
+		    unsigned int maxrequests,
+		    unsigned int buckets,
+		    unsigned int increment,
+		    unsigned int attributes,
+		    unsigned int mask,
 		    dns_dispatch_t **dispp);
 
 isc_result_t
-dns_dispatch_getudp_dup(dns_dispatchmgr_t *mgr, isc_socketmgr_t *sockmgr,
-		    isc_taskmgr_t *taskmgr, const isc_sockaddr_t *localaddr,
-		    unsigned int buffersize,
-		    unsigned int maxbuffers, unsigned int maxrequests,
-		    unsigned int buckets, unsigned int increment,
-		    unsigned int attributes, unsigned int mask,
-		    dns_dispatch_t **dispp, dns_dispatch_t *dup);
+dns_dispatch_getudp_dup(dns_dispatchmgr_t *mgr,
+			isc_socketmgr_t *sockmgr,
+			isc_taskmgr_t *taskmgr,
+			const isc_sockaddr_t *localaddr,
+			unsigned int buffersize,
+			unsigned int maxbuffers,
+			unsigned int maxrequests,
+			unsigned int buckets,
+			unsigned int increment,
+			unsigned int attributes,
+			unsigned int mask,
+			dns_dispatch_t **dispp,
+			dns_dispatch_t *dup);
 /*%<
  * Attach to existing dns_dispatch_t if one is found with dns_dispatchmgr_find,
  * otherwise create a new UDP dispatch.
@@ -288,12 +300,18 @@ dns_dispatch_getudp_dup(dns_dispatchmgr_t *mgr, isc_socketmgr_t *sockmgr,
  */
 
 isc_result_t
-dns_dispatch_createtcp(dns_dispatchmgr_t *mgr, isc_socket_t *sock,
-		       isc_taskmgr_t *taskmgr, const isc_sockaddr_t *localaddr,
-		       const isc_sockaddr_t *destaddr, unsigned int buffersize,
-		       unsigned int maxbuffers, unsigned int maxrequests,
-		       unsigned int buckets, unsigned int increment,
-		       unsigned int attributes, dns_dispatch_t **dispp);
+dns_dispatch_createtcp(dns_dispatchmgr_t *mgr,
+		       isc_socket_t *sock,
+		       isc_taskmgr_t *taskmgr,
+		       const isc_sockaddr_t *localaddr,
+		       const isc_sockaddr_t *destaddr,
+		       unsigned int buffersize,
+		       unsigned int maxbuffers,
+		       unsigned int maxrequests,
+		       unsigned int buckets,
+		       unsigned int increment,
+		       unsigned int attributes,
+		       dns_dispatch_t **dispp);
 /*%<
  * Create a new dns_dispatch and attach it to the provided isc_socket_t.
  *
@@ -366,9 +384,11 @@ dns_dispatch_starttcp(dns_dispatch_t *disp);
  */
 
 isc_result_t
-dns_dispatch_gettcp(dns_dispatchmgr_t *mgr, const isc_sockaddr_t *destaddr,
-		     const isc_sockaddr_t *localaddr, bool *connected,
-		     dns_dispatch_t **dispp);
+dns_dispatch_gettcp(dns_dispatchmgr_t *mgr,
+		    const isc_sockaddr_t *destaddr,
+		    const isc_sockaddr_t *localaddr,
+		    bool *connected,
+		    dns_dispatch_t **dispp);
 /*
  * Attempt to connect to a existing TCP connection (connection completed
  * if connected == NULL).
@@ -376,10 +396,14 @@ dns_dispatch_gettcp(dns_dispatchmgr_t *mgr, const isc_sockaddr_t *destaddr,
 
 
 isc_result_t
-dns_dispatch_addresponse(dns_dispatch_t *disp, unsigned int options,
-			 const isc_sockaddr_t *dest, isc_task_t *task,
-			 isc_taskaction_t action, void *arg,
-			 uint16_t *idp, dns_dispentry_t **resp,
+dns_dispatch_addresponse(dns_dispatch_t *disp,
+			 unsigned int options,
+			 const isc_sockaddr_t *dest,
+			 isc_task_t *task,
+			 isc_taskaction_t action,
+			 void *arg,
+			 uint16_t *idp,
+			 dns_dispentry_t **resp,
 			 isc_socketmgr_t *sockmgr);
 /*%<
  * Add a response entry for this dispatch.
@@ -431,7 +455,7 @@ dns_dispatch_removeresponse(dns_dispentry_t **resp,
  *	by dns_dispatch_addresponse();
  *
  *\li	May only be called from within the task given as the 'task'
- * 	argument to dns_dispatch_addresponse() when allocating '*resp'.
+ *      argument to dns_dispatch_addresponse() when allocating '*resp'.
  */
 
 isc_socket_t *
@@ -485,7 +509,8 @@ dns_dispatch_getattributes(dns_dispatch_t *disp);
 
 void
 dns_dispatch_changeattributes(dns_dispatch_t *disp,
-			      unsigned int attributes, unsigned int mask);
+			      unsigned int attributes,
+			      unsigned int mask);
 /*%<
  * Set the bits described by "mask" to the corresponding values in
  * "attributes".
@@ -519,8 +544,8 @@ dns_dispatch_importrecv(dns_dispatch_t *disp, isc_event_t *event);
  * the dispatch is already handling a recv; return immediately.
  *
  * Requires:
- *\li 	disp is valid, and the attribute DNS_DISPATCHATTR_NOLISTEN is set.
- * 	event != NULL
+ *\li   disp is valid, and the attribute DNS_DISPATCHATTR_NOLISTEN is set.
+ *      event != NULL
  */
 
 dns_dispatch_t *
@@ -530,21 +555,24 @@ dns_dispatchset_get(dns_dispatchset_t *dset);
  * the round-robin counter.
  *
  * Requires:
- *\li 	dset != NULL
+ *\li   dset != NULL
  */
 
 isc_result_t
-dns_dispatchset_create(isc_mem_t *mctx, isc_socketmgr_t *sockmgr,
-		       isc_taskmgr_t *taskmgr, dns_dispatch_t *source,
-		       dns_dispatchset_t **dsetp, int n);
+dns_dispatchset_create(isc_mem_t *mctx,
+		       isc_socketmgr_t *sockmgr,
+		       isc_taskmgr_t *taskmgr,
+		       dns_dispatch_t *source,
+		       dns_dispatchset_t **dsetp,
+		       int n);
 /*%<
  * Given a valid dispatch 'source', create a dispatch set containing
  * 'n' UDP dispatches, with the remainder filled out by clones of the
  * source.
  *
  * Requires:
- *\li 	source is a valid UDP dispatcher
- *\li 	dsetp != NULL, *dsetp == NULL
+ *\li   source is a valid UDP dispatcher
+ *\li   dsetp != NULL, *dsetp == NULL
  */
 
 void
@@ -560,7 +588,7 @@ dns_dispatchset_destroy(dns_dispatchset_t **dsetp);
  * memory, and set *dsetp to NULL.
  *
  * Requires:
- *\li 	dset is valid
+ *\li   dset is valid
  */
 
 void

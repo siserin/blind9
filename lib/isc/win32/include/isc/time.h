@@ -31,10 +31,10 @@
  * The contents are exposed only to allow callers to avoid dynamic allocation.
  */
 struct isc_interval {
-	int64_t interval;
+	int64_t        interval;
 };
 
-LIBISC_EXTERNAL_DATA extern const isc_interval_t * const isc_interval_zero;
+LIBISC_EXTERNAL_DATA extern const isc_interval_t*const isc_interval_zero;
 
 /*
  * ISC_FORMATHTTPTIMESTAMP_SIZE needs to be 30 in C locale and potentially
@@ -46,8 +46,8 @@ LIBISC_EXTERNAL_DATA extern const isc_interval_t * const isc_interval_zero;
 ISC_LANG_BEGINDECLS
 
 void
-isc_interval_set(isc_interval_t *i,
-		 unsigned int seconds, unsigned int nanoseconds);
+isc_interval_set(isc_interval_t*i,unsigned int seconds,
+		 unsigned int nanoseconds);
 /*
  * Set 'i' to a value representing an interval of 'seconds' seconds and
  * 'nanoseconds' nanoseconds, suitable for use in isc_time_add() and
@@ -60,7 +60,7 @@ isc_interval_set(isc_interval_t *i,
  */
 
 bool
-isc_interval_iszero(const isc_interval_t *i);
+isc_interval_iszero(const isc_interval_t*i);
 /*
  * Returns true iff. 'i' is the zero interval.
  *
@@ -81,13 +81,13 @@ isc_interval_iszero(const isc_interval_t *i);
  */
 
 struct isc_time {
-	FILETIME absolute;
+	FILETIME        absolute;
 };
 
-LIBISC_EXTERNAL_DATA extern const isc_time_t * const isc_time_epoch;
+LIBISC_EXTERNAL_DATA extern const isc_time_t*const isc_time_epoch;
 
 void
-isc_time_set(isc_time_t *t, unsigned int seconds, unsigned int nanoseconds);
+isc_time_set(isc_time_t*t,unsigned int seconds,unsigned int nanoseconds);
 /*%<
  * Set 't' to a value which represents the given number of seconds and
  * nanoseconds since 00:00:00 January 1, 1970, UTC.
@@ -98,12 +98,12 @@ isc_time_set(isc_time_t *t, unsigned int seconds, unsigned int nanoseconds);
  */
 
 void
-isc_time_settoepoch(isc_time_t *t);
+isc_time_settoepoch(isc_time_t*t);
 /*
  * Set 't' to the time of the epoch.
  *
  * Notes:
- * 	The date of the epoch is platform-dependent.
+ *      The date of the epoch is platform-dependent.
  *
  * Requires:
  *
@@ -111,7 +111,7 @@ isc_time_settoepoch(isc_time_t *t);
  */
 
 bool
-isc_time_isepoch(const isc_time_t *t);
+isc_time_isepoch(const isc_time_t*t);
 /*
  * Returns true iff. 't' is the epoch ("time zero").
  *
@@ -121,7 +121,7 @@ isc_time_isepoch(const isc_time_t *t);
  */
 
 isc_result_t
-isc_time_now(isc_time_t *t);
+isc_time_now(isc_time_t*t);
 /*
  * Set 't' to the current absolute time.
  *
@@ -140,7 +140,7 @@ isc_time_now(isc_time_t *t);
  */
 
 isc_result_t
-isc_time_nowplusinterval(isc_time_t *t, const isc_interval_t *i);
+isc_time_nowplusinterval(isc_time_t*t,const isc_interval_t*i);
 /*
  * Set *t to the current absolute time + i.
  *
@@ -165,7 +165,7 @@ isc_time_nowplusinterval(isc_time_t *t, const isc_interval_t *i);
  */
 
 int
-isc_time_compare(const isc_time_t *t1, const isc_time_t *t2);
+isc_time_compare(const isc_time_t*t1,const isc_time_t*t2);
 /*
  * Compare the times referenced by 't1' and 't2'
  *
@@ -181,7 +181,7 @@ isc_time_compare(const isc_time_t *t1, const isc_time_t *t2);
  */
 
 isc_result_t
-isc_time_add(const isc_time_t *t, const isc_interval_t *i, isc_time_t *result);
+isc_time_add(const isc_time_t*t,const isc_interval_t*i,isc_time_t*result);
 /*
  * Add 'i' to 't', storing the result in 'result'.
  *
@@ -190,15 +190,14 @@ isc_time_add(const isc_time_t *t, const isc_interval_t *i, isc_time_t *result);
  *	't', 'i', and 'result' are valid pointers.
  *
  * Returns:
- * 	Success
+ *      Success
  *	Out of range
- * 		The interval added to the time is too large to
+ *              The interval added to the time is too large to
  *		be represented in the current definition of isc_time_t.
  */
 
 isc_result_t
-isc_time_subtract(const isc_time_t *t, const isc_interval_t *i,
-		  isc_time_t *result);
+isc_time_subtract(const isc_time_t*t,const isc_interval_t*i,isc_time_t*result);
 /*
  * Subtract 'i' from 't', storing the result in 'result'.
  *
@@ -213,7 +212,7 @@ isc_time_subtract(const isc_time_t *t, const isc_interval_t *i,
  */
 
 uint64_t
-isc_time_microdiff(const isc_time_t *t1, const isc_time_t *t2);
+isc_time_microdiff(const isc_time_t*t1,const isc_time_t*t2);
 /*
  * Find the difference in milliseconds between time t1 and time t2.
  * t2 is the subtrahend of t1; ie, difference = t1 - t2.
@@ -227,7 +226,7 @@ isc_time_microdiff(const isc_time_t *t1, const isc_time_t *t2);
  */
 
 isc_result_t
-isc_time_parsehttptimestamp(char *input, isc_time_t *t);
+isc_time_parsehttptimestamp(char*input,isc_time_t*t);
 /*%<
  * Parse the time in 'input' into the isc_time_t pointed to by 't',
  * expecting a format like "Mon, 30 Aug 2000 04:06:47 GMT"
@@ -237,7 +236,7 @@ isc_time_parsehttptimestamp(char *input, isc_time_t *t);
  */
 
 uint32_t
-isc_time_nanoseconds(const isc_time_t *t);
+isc_time_nanoseconds(const isc_time_t*t);
 /*
  * Return the number of nanoseconds stored in a time structure.
  *
@@ -254,7 +253,7 @@ isc_time_nanoseconds(const isc_time_t *t);
  */
 
 void
-isc_time_formattimestamp(const isc_time_t *t, char *buf, unsigned int len);
+isc_time_formattimestamp(const isc_time_t*t,char*buf,unsigned int len);
 /*
  * Format the time 't' into the buffer 'buf' of length 'len',
  * using a format like "30-Aug-2000 04:06:47.997" and the local time zone.
@@ -268,7 +267,7 @@ isc_time_formattimestamp(const isc_time_t *t, char *buf, unsigned int len);
  */
 
 void
-isc_time_formathttptimestamp(const isc_time_t *t, char *buf, unsigned int len);
+isc_time_formathttptimestamp(const isc_time_t*t,char*buf,unsigned int len);
 /*
  * Format the time 't' into the buffer 'buf' of length 'len',
  * using a format like "Mon, 30 Aug 2000 04:06:47 GMT"
@@ -282,7 +281,7 @@ isc_time_formathttptimestamp(const isc_time_t *t, char *buf, unsigned int len);
  */
 
 isc_result_t
-isc_time_parsehttptimestamp(char *input, isc_time_t *t);
+isc_time_parsehttptimestamp(char*input,isc_time_t*t);
 /*%<
  * Parse the time in 'input' into the isc_time_t pointed to by 't',
  * expecting a format like "Mon, 30 Aug 2000 04:06:47 GMT"
@@ -292,7 +291,7 @@ isc_time_parsehttptimestamp(char *input, isc_time_t *t);
  */
 
 void
-isc_time_formatISO8601L(const isc_time_t *t, char *buf, unsigned int len);
+isc_time_formatISO8601L(const isc_time_t*t,char*buf,unsigned int len);
 /*%<
  * Format the time 't' into the buffer 'buf' of length 'len',
  * using the ISO8601 format: "yyyy-mm-ddThh:mm:ss"
@@ -306,7 +305,7 @@ isc_time_formatISO8601L(const isc_time_t *t, char *buf, unsigned int len);
  */
 
 void
-isc_time_formatISO8601Lms(const isc_time_t *t, char *buf, unsigned int len);
+isc_time_formatISO8601Lms(const isc_time_t*t,char*buf,unsigned int len);
 /*%<
  * Format the time 't' into the buffer 'buf' of length 'len',
  * using the ISO8601 format: "yyyy-mm-ddThh:mm:ss.sss"
@@ -320,7 +319,7 @@ isc_time_formatISO8601Lms(const isc_time_t *t, char *buf, unsigned int len);
  */
 
 void
-isc_time_formatISO8601(const isc_time_t *t, char *buf, unsigned int len);
+isc_time_formatISO8601(const isc_time_t*t,char*buf,unsigned int len);
 /*%<
  * Format the time 't' into the buffer 'buf' of length 'len',
  * using the ISO8601 format: "yyyy-mm-ddThh:mm:ssZ"
@@ -334,7 +333,7 @@ isc_time_formatISO8601(const isc_time_t *t, char *buf, unsigned int len);
  */
 
 void
-isc_time_formatISO8601ms(const isc_time_t *t, char *buf, unsigned int len);
+isc_time_formatISO8601ms(const isc_time_t*t,char*buf,unsigned int len);
 /*%<
  * Format the time 't' into the buffer 'buf' of length 'len',
  * using the ISO8601 format: "yyyy-mm-ddThh:mm:ss.sssZ"
@@ -348,7 +347,7 @@ isc_time_formatISO8601ms(const isc_time_t *t, char *buf, unsigned int len);
  */
 
 void
-isc_time_formatshorttimestamp(const isc_time_t *t, char *buf, unsigned int len);
+isc_time_formatshorttimestamp(const isc_time_t*t,char*buf,unsigned int len);
 /*%<
  * Format the time 't' into the buffer 'buf' of length 'len',
  * using the format "yyyymmddhhmmsssss" userful for file timestamping.
@@ -362,7 +361,7 @@ isc_time_formatshorttimestamp(const isc_time_t *t, char *buf, unsigned int len);
  */
 
 uint32_t
-isc_time_seconds(const isc_time_t *t);
+isc_time_seconds(const isc_time_t*t);
 /*%<
  * Return the number of seconds since the epoch stored in a time structure.
  *
@@ -372,7 +371,7 @@ isc_time_seconds(const isc_time_t *t);
  */
 
 isc_result_t
-isc_time_secondsastimet(const isc_time_t *t, time_t *secondsp);
+isc_time_secondsastimet(const isc_time_t*t,time_t*secondsp);
 /*%<
  * Ensure the number of seconds in an isc_time_t is representable by a time_t.
  *

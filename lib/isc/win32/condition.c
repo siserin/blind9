@@ -20,11 +20,11 @@
 #include <isc/thread.h>
 #include <isc/time.h>
 
-#define LSIGNAL		0
-#define LBROADCAST	1
+#define LSIGNAL         0
+#define LBROADCAST      1
 
 void
-isc_condition_init(isc_condition_t *cond) {
+isc_condition_init(isc_condition_t*cond) {
 	HANDLE h;
 
 	REQUIRE(cond != NULL);
@@ -33,13 +33,13 @@ isc_condition_init(isc_condition_t *cond) {
 	/*
 	 * This handle is shared across all threads
 	 */
-	h = CreateEvent(NULL, FALSE, FALSE, NULL);
+	h = CreateEvent(NULL,FALSE,FALSE,NULL);
 	if (h == NULL) {
 		char strbuf[ISC_STRERRORSIZE];
 		DWORD err = GetLastError();
-		strerror_r(err, strbuf, sizeof(strbuf));
-		isc_error_fatal(__FILE__, __LINE__,
-				"CreateEvent failed: %s", strbuf);
+		strerror_r(err,strbuf,sizeof(strbuf));
+		isc_error_fatal(__FILE__,__LINE__,
+				"CreateEvent failed: %s",strbuf);
 	}
 	cond->events[LSIGNAL] = h;
 
@@ -54,22 +54,24 @@ isc_condition_init(isc_condition_t *cond) {
  * Add the thread to the threadlist along with the required events
  */
 static isc_result_t
-register_thread(unsigned long thrd, isc_condition_t *gblcond,
-		isc_condition_thread_t **localcond)
+register_thread(unsigned long thrd,
+		isc_condition_t*gblcond,
+		isc_condition_thread_t**localcond)
 {
 	HANDLE hc;
-	isc_condition_thread_t *newthread;
+	isc_condition_thread_t*newthread;
 
 	REQUIRE(localcond != NULL && *localcond == NULL);
 
 	newthread = malloc(sizeof(isc_condition_thread_t));
-	if (newthread == NULL)
+	if (newthread == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	/*
 	 * Create the thread-specific handle
 	 */
-	hc = CreateEvent(NULL, FALSE, FALSE, NULL);
+	hc = CreateEvent(NULL,FALSE,FALSE,NULL);
 	if (hc == NULL) {
 		free(newthread);
 		return (ISC_R_UNEXPECTED);
@@ -85,17 +87,18 @@ register_thread(unsigned long thrd, isc_condition_t *gblcond,
 	/*
 	 * The thread is holding the manager lock so this is safe
 	 */
-	ISC_LINK_INIT(newthread, link);
-	ISC_LIST_APPEND(gblcond->threadlist, newthread, link);
+	ISC_LINK_INIT(newthread,link);
+	ISC_LIST_APPEND(gblcond->threadlist,newthread,link);
 	*localcond = newthread;
 	return (ISC_R_SUCCESS);
 }
 
 static isc_result_t
-find_thread_condition(unsigned long thrd, isc_condition_t *cond,
-		      isc_condition_thread_t **threadcondp)
+find_thread_condition(unsigned long thrd,
+		      isc_condition_t*cond,
+		      isc_condition_thread_t**threadcondp)
 {
-	isc_condition_thread_t *threadcond;
+	isc_condition_thread_t*threadcond;
 
 	REQUIRE(threadcondp != NULL && *threadcondp == NULL);
 
@@ -104,8 +107,8 @@ find_thread_condition(unsigned long thrd, isc_condition_t *cond,
 	 */
 	for (threadcond = ISC_LIST_HEAD(cond->threadlist);
 	     threadcond != NULL;
-	     threadcond = ISC_LIST_NEXT(threadcond, link)) {
-
+	     threadcond = ISC_LIST_NEXT(threadcond,link))
+	{
 		if (threadcond->th == thrd) {
 			*threadcondp = threadcond;
 			return (ISC_R_SUCCESS);
@@ -115,12 +118,11 @@ find_thread_condition(unsigned long thrd, isc_condition_t *cond,
 	/*
 	 * Not found, so add it.
 	 */
-	return (register_thread(thrd, cond, threadcondp));
+	return (register_thread(thrd,cond,threadcondp));
 }
 
 isc_result_t
-isc_condition_signal(isc_condition_t *cond) {
-
+isc_condition_signal(isc_condition_t*cond) {
 	/*
 	 * Unlike pthreads, the caller MUST hold the lock associated with
 	 * the condition variable when calling us.
@@ -135,9 +137,8 @@ isc_condition_signal(isc_condition_t *cond) {
 }
 
 isc_result_t
-isc_condition_broadcast(isc_condition_t *cond) {
-
-	isc_condition_thread_t *threadcond;
+isc_condition_broadcast(isc_condition_t*cond) {
+	isc_condition_thread_t*threadcond;
 	bool failed = false;
 
 	/*
@@ -151,22 +152,23 @@ isc_condition_broadcast(isc_condition_t *cond) {
 	 */
 	for (threadcond = ISC_LIST_HEAD(cond->threadlist);
 	     threadcond != NULL;
-	     threadcond = ISC_LIST_NEXT(threadcond, link)) {
-
-		if (!SetEvent(threadcond->handle[LBROADCAST]))
+	     threadcond = ISC_LIST_NEXT(threadcond,link))
+	{
+		if (!SetEvent(threadcond->handle[LBROADCAST])) {
 			failed = true;
+		}
 	}
 
-	if (failed)
+	if (failed) {
 		return (ISC_R_UNEXPECTED);
+	}
 
 	return (ISC_R_SUCCESS);
 }
 
 isc_result_t
-isc_condition_destroy(isc_condition_t *cond) {
-
-	isc_condition_thread_t *next, *threadcond;
+isc_condition_destroy(isc_condition_t*cond) {
+	isc_condition_thread_t*next,*threadcond;
 
 	REQUIRE(cond != NULL);
 	REQUIRE(cond->waiters == 0);
@@ -179,8 +181,8 @@ isc_condition_destroy(isc_condition_t *cond) {
 	threadcond = ISC_LIST_HEAD(cond->threadlist);
 
 	while (threadcond != NULL) {
-		next = ISC_LIST_NEXT(threadcond, link);
-		DEQUEUE(cond->threadlist, threadcond, link);
+		next = ISC_LIST_NEXT(threadcond,link);
+		DEQUEUE(cond->threadlist,threadcond,link);
 		(void) CloseHandle(threadcond->handle[LBROADCAST]);
 		free(threadcond);
 		threadcond = next;
@@ -199,21 +201,22 @@ isc_condition_destroy(isc_condition_t *cond) {
  * the mutex.
  */
 static isc_result_t
-wait(isc_condition_t *cond, isc_mutex_t *mutex, DWORD milliseconds) {
+wait(isc_condition_t*cond,isc_mutex_t*mutex,DWORD milliseconds) {
 	DWORD result;
 	isc_result_t tresult;
-	isc_condition_thread_t *threadcond = NULL;
+	isc_condition_thread_t*threadcond = NULL;
 
 	/*
 	 * Get the thread events needed for the wait
 	 */
-	tresult = find_thread_condition(isc_thread_self(), cond, &threadcond);
-	if (tresult !=  ISC_R_SUCCESS)
+	tresult = find_thread_condition(isc_thread_self(),cond,&threadcond);
+	if (tresult !=  ISC_R_SUCCESS) {
 		return (tresult);
+	}
 
 	cond->waiters++;
 	LeaveCriticalSection(mutex);
-	result = WaitForMultipleObjects(2, threadcond->handle, FALSE,
+	result = WaitForMultipleObjects(2,threadcond->handle,FALSE,
 					milliseconds);
 	EnterCriticalSection(mutex);
 	cond->waiters--;
@@ -221,20 +224,20 @@ wait(isc_condition_t *cond, isc_mutex_t *mutex, DWORD milliseconds) {
 		/* XXX */
 		return (ISC_R_UNEXPECTED);
 	}
-	if (result == WAIT_TIMEOUT)
+	if (result == WAIT_TIMEOUT) {
 		return (ISC_R_TIMEDOUT);
+	}
 
 	return (ISC_R_SUCCESS);
 }
 
 isc_result_t
-isc_condition_wait(isc_condition_t *cond, isc_mutex_t *mutex) {
-	return (wait(cond, mutex, INFINITE));
+isc_condition_wait(isc_condition_t*cond,isc_mutex_t*mutex) {
+	return (wait(cond,mutex,INFINITE));
 }
 
 isc_result_t
-isc_condition_waituntil(isc_condition_t *cond, isc_mutex_t *mutex,
-			isc_time_t *t) {
+isc_condition_waituntil(isc_condition_t*cond,isc_mutex_t*mutex,isc_time_t*t) {
 	DWORD milliseconds;
 	uint64_t microseconds;
 	isc_time_t now;
@@ -244,11 +247,12 @@ isc_condition_waituntil(isc_condition_t *cond, isc_mutex_t *mutex,
 		return (ISC_R_UNEXPECTED);
 	}
 
-	microseconds = isc_time_microdiff(t, &now);
-	if (microseconds > 0xFFFFFFFFi64 * 1000)
+	microseconds = isc_time_microdiff(t,&now);
+	if (microseconds > 0xFFFFFFFFi64 * 1000) {
 		milliseconds = 0xFFFFFFFF;
-	else
+	} else {
 		milliseconds = (DWORD)(microseconds / 1000);
+	}
 
-	return (wait(cond, mutex, milliseconds));
+	return (wait(cond,mutex,milliseconds));
 }

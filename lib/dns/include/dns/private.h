@@ -24,9 +24,11 @@
 ISC_LANG_BEGINDECLS
 
 isc_result_t
-dns_private_chains(dns_db_t *db, dns_dbversion_t *ver,
+dns_private_chains(dns_db_t *db,
+		   dns_dbversion_t *ver,
 		   dns_rdatatype_t privatetype,
-		   bool *build_nsec, bool *build_nsec3);
+		   bool *build_nsec,
+		   bool *build_nsec3);
 /*%<
  * Examine the NSEC, NSEC3PARAM and privatetype RRsets at the apex of the
  * database to determine which of NSEC or NSEC3 chains we are currently
@@ -42,7 +44,7 @@ dns_private_chains(dns_db_t *db, dns_dbversion_t *ver,
  * \li	'build_nsec3' is a pointer to a bool or NULL.
  *
  * Returns:
- * \li 	ISC_R_SUCCESS, 'build_nsec' and 'build_nsec3' will be valid.
+ * \li  ISC_R_SUCCESS, 'build_nsec' and 'build_nsec3' will be valid.
  * \li	other on error
  */
 
@@ -59,10 +61,10 @@ dns_private_totext(dns_rdata_t *privaterdata, isc_buffer_t *buffer);
  * \li	'buffer' is a valid buffer
  *
  * Returns:
- * \li 	ISC_R_SUCCESS
+ * \li  ISC_R_SUCCESS
  * \li	other on error
  */
 
 ISC_LANG_ENDDECLS
 
-#endif
+#endif /* ifndef DNS_PRIVATE_H */

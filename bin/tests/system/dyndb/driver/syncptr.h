@@ -9,7 +9,9 @@
 
 #include <dns/diff.h>
 isc_result_t
-syncptrs(sample_instance_t *inst, dns_name_t *name, dns_rdataset_t *rdataset,
+syncptrs(sample_instance_t *inst,
+	 dns_name_t *name,
+	 dns_rdataset_t *rdataset,
 	 dns_diffop_t op);
 
 #endif /* SYNCPTR_H_ */

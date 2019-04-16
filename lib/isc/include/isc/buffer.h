@@ -13,12 +13,13 @@
 #define ISC_BUFFER_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file isc/buffer.h
  *
- * \brief A buffer is a region of memory, together with a set of related subregions.
+ * \brief A buffer is a region of memory, together with a set of related
+ * subregions.
  * Buffers are used for parsing and I/O operations.
  *
  * The 'used region' and the 'available' region are disjoint, and their
@@ -121,8 +122,8 @@ ISC_LANG_BEGINDECLS
 /*!
  *** Magic numbers
  ***/
-#define ISC_BUFFER_MAGIC		0x42756621U	/* Buf!. */
-#define ISC_BUFFER_VALID(b)		ISC_MAGIC_VALID(b, ISC_BUFFER_MAGIC)
+#define ISC_BUFFER_MAGIC                0x42756621U     /* Buf!. */
+#define ISC_BUFFER_VALID(b)             ISC_MAGIC_VALID(b, ISC_BUFFER_MAGIC)
 /*@}*/
 
 /*!
@@ -143,25 +144,25 @@ ISC_LANG_BEGINDECLS
 /*!
  * Fundamental buffer elements.  (A through E in the introductory comment.)
  */
-#define isc_buffer_base(b)    ((void *)(b)->base)			  /*a*/
+#define isc_buffer_base(b)    ((void *)(b)->base)                         /*a*/
 #define isc_buffer_current(b) \
-		((void *)((unsigned char *)(b)->base + (b)->current))     /*b*/
+	((void *)((unsigned char *)(b)->base + (b)->current))             /*b*/
 #define isc_buffer_active(b)  \
-		((void *)((unsigned char *)(b)->base + (b)->active))      /*c*/
+	((void *)((unsigned char *)(b)->base + (b)->active))              /*c*/
 #define isc_buffer_used(b)    \
-		((void *)((unsigned char *)(b)->base + (b)->used))        /*d*/
-#define isc_buffer_length(b)  ((b)->length)				  /*e*/
+	((void *)((unsigned char *)(b)->base + (b)->used))                /*d*/
+#define isc_buffer_length(b)  ((b)->length)                               /*e*/
 /*@}*/
 
 /*@{*/
 /*!
  * Derived lengths.  (Described in the introductory comment.)
  */
-#define isc_buffer_usedlength(b)	((b)->used)		      /* d-a */
-#define isc_buffer_consumedlength(b)	((b)->current)		      /* b-a */
-#define isc_buffer_remaininglength(b)	((b)->used - (b)->current)    /* d-b */
-#define isc_buffer_activelength(b)	((b)->active - (b)->current)  /* c-b */
-#define isc_buffer_availablelength(b)	((b)->length - (b)->used)     /* e-d */
+#define isc_buffer_usedlength(b)        ((b)->used)                   /* d-a */
+#define isc_buffer_consumedlength(b)    ((b)->current)                /* b-a */
+#define isc_buffer_remaininglength(b)   ((b)->used - (b)->current)    /* d-b */
+#define isc_buffer_activelength(b)      ((b)->active - (b)->current)  /* c-b */
+#define isc_buffer_availablelength(b)   ((b)->length - (b)->used)     /* e-d */
 /*@}*/
 
 /*!
@@ -171,21 +172,21 @@ ISC_LANG_BEGINDECLS
  */
 
 struct isc_buffer {
-	unsigned int		magic;
-	void		       *base;
+	unsigned int	    magic;
+	void *		    base;
 	/*@{*/
 	/*! The following integers are byte offsets from 'base'. */
-	unsigned int		length;
-	unsigned int		used;
-	unsigned int 		current;
-	unsigned int 		active;
+	unsigned int	    length;
+	unsigned int	    used;
+	unsigned int	    current;
+	unsigned int	    active;
 	/*@}*/
 	/*! linkable */
-	ISC_LINK(isc_buffer_t)	link;
+	ISC_LINK(isc_buffer_t)  link;
 	/*! private internal elements */
-	isc_mem_t	       *mctx;
+	isc_mem_t *	 mctx;
 	/* automatically realloc buffer at put* */
-	bool		autore;
+	bool		 autore;
 };
 
 /***
@@ -193,7 +194,8 @@ struct isc_buffer {
  ***/
 
 isc_result_t
-isc_buffer_allocate(isc_mem_t *mctx, isc_buffer_t **dynbuffer,
+isc_buffer_allocate(isc_mem_t *mctx,
+		    isc_buffer_t **dynbuffer,
 		    unsigned int length);
 /*!<
  * \brief Allocate a dynamic linkable buffer which has "length" bytes in the
@@ -529,7 +531,8 @@ isc__buffer_putuint8(isc_buffer_t *b, uint8_t val);
 uint16_t
 isc_buffer_getuint16(isc_buffer_t *b);
 /*!<
- * \brief Read an unsigned 16-bit integer in network byte order from 'b', convert
+ * \brief Read an unsigned 16-bit integer in network byte order from 'b',
+ * convert
  * it to host byte order, and return it.
  *
  * Requires:
@@ -567,7 +570,8 @@ isc__buffer_putuint16(isc_buffer_t *b, uint16_t val);
 uint32_t
 isc_buffer_getuint32(isc_buffer_t *b);
 /*!<
- * \brief Read an unsigned 32-bit integer in network byte order from 'b', convert
+ * \brief Read an unsigned 32-bit integer in network byte order from 'b',
+ * convert
  * it to host byte order, and return it.
  *
  * Requires:
@@ -655,7 +659,8 @@ isc__buffer_putuint24(isc_buffer_t *b, uint32_t val);
  */
 
 void
-isc__buffer_putmem(isc_buffer_t *b, const unsigned char *base,
+isc__buffer_putmem(isc_buffer_t *b,
+		   const unsigned char *base,
 		   unsigned int length);
 /*!<
  * \brief Copy 'length' bytes of memory at 'base' into 'b'.
@@ -729,7 +734,7 @@ isc_buffer_dup(isc_mem_t *mctx, isc_buffer_t **dstp, const isc_buffer_t *src);
 
 isc_result_t
 isc_buffer_printf(isc_buffer_t *b, const char *format, ...)
-	ISC_FORMAT_PRINTF(2, 3);
+ISC_FORMAT_PRINTF(2, 3);
 /*!<
  * \brief Append a formatted string to the used region of 'b'.
  *
@@ -836,10 +841,10 @@ ISC_LANG_ENDDECLS
 #define ISC__BUFFER_SUBTRACT(_b, _n) \
 	do { \
 		(_b)->used -= (_n); \
-		if ((_b)->current > (_b)->used) \
-			(_b)->current = (_b)->used; \
-		if ((_b)->active > (_b)->used) \
-			(_b)->active = (_b)->used; \
+		if ((_b)->current > (_b)->used) { \
+			(_b)->current = (_b)->used;} \
+		if ((_b)->active > (_b)->used) { \
+			(_b)->active = (_b)->used;} \
 	} while (0)
 
 #define ISC__BUFFER_CLEAR(_b) \
@@ -897,9 +902,10 @@ ISC_LANG_ENDDECLS
 		if (ISC_UNLIKELY((_b)->autore)) { \
 			isc_buffer_t *_tmp = _b; \
 			ISC_REQUIRE(isc_buffer_reserve(&_tmp, _length) \
-				== ISC_R_SUCCESS); \
+				    == ISC_R_SUCCESS); \
 		} \
-		ISC_REQUIRE(isc_buffer_availablelength(_b) >= (unsigned int) _length); \
+		ISC_REQUIRE(isc_buffer_availablelength( \
+				    _b) >= (unsigned int) _length); \
 		if (_length > 0U) { \
 			memmove(isc_buffer_used(_b), (_base), (_length)); \
 			(_b)->used += (_length); \
@@ -914,7 +920,7 @@ ISC_LANG_ENDDECLS
 		if (ISC_UNLIKELY((_b)->autore)) { \
 			isc_buffer_t *_tmp = _b; \
 			ISC_REQUIRE(isc_buffer_reserve(&_tmp, _length) \
-				== ISC_R_SUCCESS); \
+				    == ISC_R_SUCCESS); \
 		} \
 		ISC_REQUIRE(isc_buffer_availablelength(_b) >= _length); \
 		_cp = isc_buffer_used(_b); \
@@ -930,7 +936,7 @@ ISC_LANG_ENDDECLS
 		if (ISC_UNLIKELY((_b)->autore)) { \
 			isc_buffer_t *_tmp = _b; \
 			ISC_REQUIRE(isc_buffer_reserve(&_tmp, 1) \
-				== ISC_R_SUCCESS); \
+				    == ISC_R_SUCCESS); \
 		} \
 		ISC_REQUIRE(isc_buffer_availablelength(_b) >= 1U); \
 		_cp = isc_buffer_used(_b); \
@@ -946,7 +952,7 @@ ISC_LANG_ENDDECLS
 		if (ISC_UNLIKELY((_b)->autore)) { \
 			isc_buffer_t *_tmp = _b; \
 			ISC_REQUIRE(isc_buffer_reserve(&_tmp, 2) \
-				== ISC_R_SUCCESS); \
+				    == ISC_R_SUCCESS); \
 		} \
 		ISC_REQUIRE(isc_buffer_availablelength(_b) >= 2U); \
 		_cp = isc_buffer_used(_b); \
@@ -963,7 +969,7 @@ ISC_LANG_ENDDECLS
 		if (ISC_UNLIKELY((_b)->autore)) { \
 			isc_buffer_t *_tmp = _b; \
 			ISC_REQUIRE(isc_buffer_reserve(&_tmp, 3) \
-				== ISC_R_SUCCESS); \
+				    == ISC_R_SUCCESS); \
 		} \
 		ISC_REQUIRE(isc_buffer_availablelength(_b) >= 3U); \
 		_cp = isc_buffer_used(_b); \
@@ -981,7 +987,7 @@ ISC_LANG_ENDDECLS
 		if (ISC_UNLIKELY((_b)->autore)) { \
 			isc_buffer_t *_tmp = _b; \
 			ISC_REQUIRE(isc_buffer_reserve(&_tmp, 4) \
-				== ISC_R_SUCCESS); \
+				    == ISC_R_SUCCESS); \
 		} \
 		ISC_REQUIRE(isc_buffer_availablelength(_b) >= 4U); \
 		_cp = isc_buffer_used(_b); \
@@ -993,56 +999,56 @@ ISC_LANG_ENDDECLS
 	} while (0)
 
 #if defined(ISC_BUFFER_USEINLINE)
-#define isc_buffer_init			ISC__BUFFER_INIT
-#define isc_buffer_initnull		ISC__BUFFER_INITNULL
-#define isc_buffer_invalidate		ISC__BUFFER_INVALIDATE
-#define isc_buffer_region		ISC__BUFFER_REGION
-#define isc_buffer_usedregion		ISC__BUFFER_USEDREGION
-#define isc_buffer_availableregion	ISC__BUFFER_AVAILABLEREGION
-#define isc_buffer_add			ISC__BUFFER_ADD
-#define isc_buffer_subtract		ISC__BUFFER_SUBTRACT
-#define isc_buffer_clear		ISC__BUFFER_CLEAR
-#define isc_buffer_consumedregion	ISC__BUFFER_CONSUMEDREGION
-#define isc_buffer_remainingregion	ISC__BUFFER_REMAININGREGION
-#define isc_buffer_activeregion		ISC__BUFFER_ACTIVEREGION
-#define isc_buffer_setactive		ISC__BUFFER_SETACTIVE
-#define isc_buffer_first		ISC__BUFFER_FIRST
-#define isc_buffer_forward		ISC__BUFFER_FORWARD
-#define isc_buffer_back			ISC__BUFFER_BACK
-#define isc_buffer_putmem		ISC__BUFFER_PUTMEM
-#define isc_buffer_putstr		ISC__BUFFER_PUTSTR
-#define isc_buffer_putuint8		ISC__BUFFER_PUTUINT8
-#define isc_buffer_putuint16		ISC__BUFFER_PUTUINT16
-#define isc_buffer_putuint24		ISC__BUFFER_PUTUINT24
-#define isc_buffer_putuint32		ISC__BUFFER_PUTUINT32
-#else
-#define isc_buffer_init			isc__buffer_init
-#define isc_buffer_initnull		isc__buffer_initnull
-#define isc_buffer_invalidate		isc__buffer_invalidate
-#define isc_buffer_region		isc__buffer_region
-#define isc_buffer_usedregion		isc__buffer_usedregion
-#define isc_buffer_availableregion	isc__buffer_availableregion
-#define isc_buffer_add			isc__buffer_add
-#define isc_buffer_subtract		isc__buffer_subtract
-#define isc_buffer_clear		isc__buffer_clear
-#define isc_buffer_consumedregion	isc__buffer_consumedregion
-#define isc_buffer_remainingregion	isc__buffer_remainingregion
-#define isc_buffer_activeregion		isc__buffer_activeregion
-#define isc_buffer_setactive		isc__buffer_setactive
-#define isc_buffer_first		isc__buffer_first
-#define isc_buffer_forward		isc__buffer_forward
-#define isc_buffer_back			isc__buffer_back
-#define isc_buffer_putmem		isc__buffer_putmem
-#define isc_buffer_putstr		isc__buffer_putstr
-#define isc_buffer_putuint8		isc__buffer_putuint8
-#define isc_buffer_putuint16		isc__buffer_putuint16
-#define isc_buffer_putuint24		isc__buffer_putuint24
-#define isc_buffer_putuint32		isc__buffer_putuint32
-#endif
+#define isc_buffer_init                 ISC__BUFFER_INIT
+#define isc_buffer_initnull             ISC__BUFFER_INITNULL
+#define isc_buffer_invalidate           ISC__BUFFER_INVALIDATE
+#define isc_buffer_region               ISC__BUFFER_REGION
+#define isc_buffer_usedregion           ISC__BUFFER_USEDREGION
+#define isc_buffer_availableregion      ISC__BUFFER_AVAILABLEREGION
+#define isc_buffer_add                  ISC__BUFFER_ADD
+#define isc_buffer_subtract             ISC__BUFFER_SUBTRACT
+#define isc_buffer_clear                ISC__BUFFER_CLEAR
+#define isc_buffer_consumedregion       ISC__BUFFER_CONSUMEDREGION
+#define isc_buffer_remainingregion      ISC__BUFFER_REMAININGREGION
+#define isc_buffer_activeregion         ISC__BUFFER_ACTIVEREGION
+#define isc_buffer_setactive            ISC__BUFFER_SETACTIVE
+#define isc_buffer_first                ISC__BUFFER_FIRST
+#define isc_buffer_forward              ISC__BUFFER_FORWARD
+#define isc_buffer_back                 ISC__BUFFER_BACK
+#define isc_buffer_putmem               ISC__BUFFER_PUTMEM
+#define isc_buffer_putstr               ISC__BUFFER_PUTSTR
+#define isc_buffer_putuint8             ISC__BUFFER_PUTUINT8
+#define isc_buffer_putuint16            ISC__BUFFER_PUTUINT16
+#define isc_buffer_putuint24            ISC__BUFFER_PUTUINT24
+#define isc_buffer_putuint32            ISC__BUFFER_PUTUINT32
+#else /* if defined(ISC_BUFFER_USEINLINE) */
+#define isc_buffer_init                 isc__buffer_init
+#define isc_buffer_initnull             isc__buffer_initnull
+#define isc_buffer_invalidate           isc__buffer_invalidate
+#define isc_buffer_region               isc__buffer_region
+#define isc_buffer_usedregion           isc__buffer_usedregion
+#define isc_buffer_availableregion      isc__buffer_availableregion
+#define isc_buffer_add                  isc__buffer_add
+#define isc_buffer_subtract             isc__buffer_subtract
+#define isc_buffer_clear                isc__buffer_clear
+#define isc_buffer_consumedregion       isc__buffer_consumedregion
+#define isc_buffer_remainingregion      isc__buffer_remainingregion
+#define isc_buffer_activeregion         isc__buffer_activeregion
+#define isc_buffer_setactive            isc__buffer_setactive
+#define isc_buffer_first                isc__buffer_first
+#define isc_buffer_forward              isc__buffer_forward
+#define isc_buffer_back                 isc__buffer_back
+#define isc_buffer_putmem               isc__buffer_putmem
+#define isc_buffer_putstr               isc__buffer_putstr
+#define isc_buffer_putuint8             isc__buffer_putuint8
+#define isc_buffer_putuint16            isc__buffer_putuint16
+#define isc_buffer_putuint24            isc__buffer_putuint24
+#define isc_buffer_putuint32            isc__buffer_putuint32
+#endif /* if defined(ISC_BUFFER_USEINLINE) */
 
 #define isc_buffer_constinit(_b, _d, _l) \
 	do { \
-		union { void *_var; const void *_const; } _deconst; \
+		union { void *      _var; const void *_const; } _deconst; \
 		_deconst._const = (_d); \
 		isc_buffer_init((_b), _deconst._var, (_l)); \
 	} while (0)
@@ -1050,6 +1056,6 @@ ISC_LANG_ENDDECLS
 /*
  * No inline method for this one (yet).
  */
-#define isc_buffer_putuint48		isc__buffer_putuint48
+#define isc_buffer_putuint48            isc__buffer_putuint48
 
 #endif /* ISC_BUFFER_H */

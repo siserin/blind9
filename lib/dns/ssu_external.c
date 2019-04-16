@@ -24,7 +24,7 @@
 #ifdef ISC_PLATFORM_HAVESYSUNH
 #include <sys/socket.h>
 #include <sys/un.h>
-#endif
+#endif /* ifdef ISC_PLATFORM_HAVESYSUNH */
 
 #include <isc/magic.h>
 #include <isc/mem.h>
@@ -68,7 +68,7 @@ ux_socket_connect(const char *path) {
 
 	if (strlen(path) > sizeof(addr.sun_path)) {
 		ssu_e_log(3, "ssu_external: socket path '%s' "
-			     "longer than system maximum %u",
+			  "longer than system maximum %u",
 			  path, sizeof(addr.sun_path));
 		return (-1);
 	}
@@ -90,12 +90,12 @@ ux_socket_connect(const char *path) {
 		char strbuf[ISC_STRERRORSIZE];
 		strerror_r(errno, strbuf, sizeof(strbuf));
 		ssu_e_log(3, "ssu_external: unable to connect to "
-			     "socket '%s' - %s",
+			  "socket '%s' - %s",
 			  path, strbuf);
 		close(fd);
 		return (-1);
 	}
-#endif
+#endif /* ifdef ISC_PLATFORM_HAVESYSUNH */
 	return (fd);
 }
 
@@ -114,9 +114,12 @@ ux_socket_connect(const char *path) {
  */
 bool
 dns_ssu_external_match(const dns_name_t *identity,
-		       const dns_name_t *signer, const dns_name_t *name,
-		       const isc_netaddr_t *tcpaddr, dns_rdatatype_t type,
-		       const dst_key_t *key, isc_mem_t *mctx)
+		       const dns_name_t *signer,
+		       const dns_name_t *name,
+		       const isc_netaddr_t *tcpaddr,
+		       dns_rdatatype_t type,
+		       const dst_key_t *key,
+		       isc_mem_t *mctx)
 {
 	char b_identity[DNS_NAME_FORMATSIZE];
 	char b_signer[DNS_NAME_FORMATSIZE];
@@ -147,14 +150,16 @@ dns_ssu_external_match(const dns_name_t *identity,
 	sock_path = &b_identity[6];
 
 	fd = ux_socket_connect(sock_path);
-	if (fd == -1)
+	if (fd == -1) {
 		return (false);
+	}
 
 	if (key != NULL) {
 		dst_key_format(key, b_key, sizeof(b_key));
 		tkey_token = dst_key_tkeytoken(key);
-	} else
+	} else {
 		b_key[0] = 0;
+	}
 
 	if (tkey_token != NULL) {
 		isc_buffer_region(tkey_token, &token_region);
@@ -162,17 +167,19 @@ dns_ssu_external_match(const dns_name_t *identity,
 	}
 
 	/* Format the request elements */
-	if (signer != NULL)
+	if (signer != NULL) {
 		dns_name_format(signer, b_signer, sizeof(b_signer));
-	else
+	} else {
 		b_signer[0] = 0;
+	}
 
 	dns_name_format(name, b_name, sizeof(b_name));
 
-	if (tcpaddr != NULL)
+	if (tcpaddr != NULL) {
 		isc_netaddr_format(tcpaddr, b_addr, sizeof(b_addr));
-	else
+	} else {
 		b_addr[0] = 0;
+	}
 
 	dns_rdatatype_format(type, b_type, sizeof(b_type));
 
@@ -212,8 +219,9 @@ dns_ssu_external_match(const dns_name_t *identity,
 	isc_buffer_putuint8(&buf, 0);
 
 	isc_buffer_putuint32(&buf, token_len);
-	if (tkey_token && token_len != 0)
+	if (tkey_token && token_len != 0) {
 		isc_buffer_putmem(&buf, token_region.base, token_len);
+	}
 
 	ENSURE(isc_buffer_availablelength(&buf) == 0);
 

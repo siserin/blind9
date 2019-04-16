@@ -40,8 +40,9 @@ fromtext_ipseckey(ARGS_FROMTEXT) {
 	 */
 	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_number,
 				      false));
-	if (token.value.as_ulong > 0xffU)
+	if (token.value.as_ulong > 0xffU) {
 		RETTOK(ISC_R_RANGE);
+	}
 	RETERR(uint8_tobuffer(token.value.as_ulong, target));
 
 	/*
@@ -49,8 +50,9 @@ fromtext_ipseckey(ARGS_FROMTEXT) {
 	 */
 	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_number,
 				      false));
-	if (token.value.as_ulong > 0x3U)
+	if (token.value.as_ulong > 0x3U) {
 		RETTOK(ISC_R_RANGE);
+	}
 	RETERR(uint8_tobuffer(token.value.as_ulong, target));
 	gateway = token.value.as_ulong;
 
@@ -59,8 +61,9 @@ fromtext_ipseckey(ARGS_FROMTEXT) {
 	 */
 	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_number,
 				      false));
-	if (token.value.as_ulong > 0xffU)
+	if (token.value.as_ulong > 0xffU) {
 		RETTOK(ISC_R_RANGE);
+	}
 	RETERR(uint8_tobuffer(token.value.as_ulong, target));
 
 	/*
@@ -71,26 +74,31 @@ fromtext_ipseckey(ARGS_FROMTEXT) {
 
 	switch (gateway) {
 	case 0:
-		if (strcmp(DNS_AS_STR(token), ".") != 0)
+		if (strcmp(DNS_AS_STR(token), ".") != 0) {
 			RETTOK(DNS_R_SYNTAX);
+		}
 		break;
 
 	case 1:
-		if (inet_pton(AF_INET, DNS_AS_STR(token), &addr) != 1)
+		if (inet_pton(AF_INET, DNS_AS_STR(token), &addr) != 1) {
 			RETTOK(DNS_R_BADDOTTEDQUAD);
+		}
 		isc_buffer_availableregion(target, &region);
-		if (region.length < 4)
+		if (region.length < 4) {
 			return (ISC_R_NOSPACE);
+		}
 		memmove(region.base, &addr, 4);
 		isc_buffer_add(target, 4);
 		break;
 
 	case 2:
-		if (inet_pton(AF_INET6, DNS_AS_STR(token), addr6) != 1)
+		if (inet_pton(AF_INET6, DNS_AS_STR(token), addr6) != 1) {
 			RETTOK(DNS_R_BADAAAA);
+		}
 		isc_buffer_availableregion(target, &region);
-		if (region.length < 16)
+		if (region.length < 16) {
 			return (ISC_R_NOSPACE);
+		}
 		memmove(region.base, addr6, 16);
 		isc_buffer_add(target, 16);
 		break;
@@ -98,8 +106,9 @@ fromtext_ipseckey(ARGS_FROMTEXT) {
 	case 3:
 		dns_name_init(&name, NULL);
 		buffer_fromregion(&buffer, &token.value.as_region);
-		if (origin == NULL)
+		if (origin == NULL) {
 			origin = dns_rootname;
+		}
 		RETTOK(dns_name_fromtext(&name, &buffer, origin,
 					 options, target));
 		break;
@@ -124,11 +133,13 @@ totext_ipseckey(ARGS_TOTEXT) {
 
 	dns_name_init(&name, NULL);
 
-	if (rdata->data[1] > 3U)
+	if (rdata->data[1] > 3U) {
 		return (ISC_R_NOTIMPLEMENTED);
+	}
 
-	if ((tctx->flags & DNS_STYLEFLAG_MULTILINE) != 0)
+	if ((tctx->flags & DNS_STYLEFLAG_MULTILINE) != 0) {
 		RETERR(str_totext("( ", target));
+	}
 
 	/*
 	 * Precedence.
@@ -185,15 +196,17 @@ totext_ipseckey(ARGS_TOTEXT) {
 	 */
 	if (region.length > 0U) {
 		RETERR(str_totext(tctx->linebreak, target));
-		if (tctx->width == 0)   /* No splitting */
+		if (tctx->width == 0) { /* No splitting */
 			RETERR(isc_base64_totext(&region, 60, "", target));
-		else
+		} else {
 			RETERR(isc_base64_totext(&region, tctx->width - 2,
 						 tctx->linebreak, target));
+		}
 	}
 
-	if ((tctx->flags & DNS_STYLEFLAG_MULTILINE) != 0)
+	if ((tctx->flags & DNS_STYLEFLAG_MULTILINE) != 0) {
 		RETERR(str_totext(" )", target));
+	}
 	return (ISC_R_SUCCESS);
 }
 
@@ -212,8 +225,9 @@ fromwire_ipseckey(ARGS_FROMWIRE) {
 	dns_name_init(&name, NULL);
 
 	isc_buffer_activeregion(source, &region);
-	if (region.length < 3)
+	if (region.length < 3) {
 		return (ISC_R_UNEXPECTEDEND);
+	}
 
 	switch (region.base[1]) {
 	case 0:
@@ -221,21 +235,24 @@ fromwire_ipseckey(ARGS_FROMWIRE) {
 		return (mem_tobuffer(target, region.base, region.length));
 
 	case 1:
-		if (region.length < 7)
+		if (region.length < 7) {
 			return (ISC_R_UNEXPECTEDEND);
+		}
 		isc_buffer_forward(source, region.length);
 		return (mem_tobuffer(target, region.base, region.length));
 
 	case 2:
-		if (region.length < 19)
+		if (region.length < 19) {
 			return (ISC_R_UNEXPECTEDEND);
+		}
 		isc_buffer_forward(source, region.length);
 		return (mem_tobuffer(target, region.base, region.length));
 
 	case 3:
 		RETERR(mem_tobuffer(target, region.base, 3));
 		isc_buffer_forward(source, 3);
-		RETERR(dns_name_fromwire(&name, source, dctx, options, target));
+		RETERR(dns_name_fromwire(&name, source, dctx, options,
+					 target));
 		isc_buffer_activeregion(source, &region);
 		isc_buffer_forward(source, region.length);
 		return(mem_tobuffer(target, region.base, region.length));
@@ -289,8 +306,9 @@ fromstruct_ipseckey(ARGS_FROMSTRUCT) {
 	UNUSED(type);
 	UNUSED(rdclass);
 
-	if (ipseckey->gateway_type > 3U)
+	if (ipseckey->gateway_type > 3U) {
 		return (ISC_R_NOTIMPLEMENTED);
+	}
 
 	RETERR(uint8_tobuffer(ipseckey->precedence, target));
 	RETERR(uint8_tobuffer(ipseckey->gateway_type, target));
@@ -329,8 +347,9 @@ tostruct_ipseckey(ARGS_TOSTRUCT) {
 	REQUIRE(target != NULL);
 	REQUIRE(rdata->length >= 3);
 
-	if (rdata->data[1] > 3U)
+	if (rdata->data[1] > 3U) {
 		return (ISC_R_NOTIMPLEMENTED);
+	}
 
 	ipseckey->common.rdclass = rdata->rdclass;
 	ipseckey->common.rdtype = rdata->type;
@@ -376,13 +395,15 @@ tostruct_ipseckey(ARGS_TOSTRUCT) {
 		ipseckey->key = mem_maybedup(mctx, region.base,
 					     ipseckey->keylength);
 		if (ipseckey->key == NULL) {
-			if (ipseckey->gateway_type == 3)
+			if (ipseckey->gateway_type == 3) {
 				dns_name_free(&ipseckey->gateway,
 					      ipseckey->mctx);
+			}
 			return (ISC_R_NOMEMORY);
 		}
-	} else
+	} else {
 		ipseckey->key = NULL;
+	}
 
 	ipseckey->mctx = mctx;
 	return (ISC_R_SUCCESS);
@@ -395,21 +416,23 @@ freestruct_ipseckey(ARGS_FREESTRUCT) {
 	REQUIRE(source != NULL);
 	REQUIRE(ipseckey->common.rdtype == dns_rdatatype_ipseckey);
 
-	if (ipseckey->mctx == NULL)
+	if (ipseckey->mctx == NULL) {
 		return;
+	}
 
-	if (ipseckey->gateway_type == 3)
+	if (ipseckey->gateway_type == 3) {
 		dns_name_free(&ipseckey->gateway, ipseckey->mctx);
+	}
 
-	if (ipseckey->key != NULL)
+	if (ipseckey->key != NULL) {
 		isc_mem_free(ipseckey->mctx, ipseckey->key);
+	}
 
 	ipseckey->mctx = NULL;
 }
 
 static inline isc_result_t
 additionaldata_ipseckey(ARGS_ADDLDATA) {
-
 	REQUIRE(rdata->type == dns_rdatatype_ipseckey);
 
 	UNUSED(rdata);
@@ -431,7 +454,6 @@ digest_ipseckey(ARGS_DIGEST) {
 
 static inline bool
 checkowner_ipseckey(ARGS_CHECKOWNER) {
-
 	REQUIRE(type == dns_rdatatype_ipseckey);
 
 	UNUSED(name);
@@ -444,7 +466,6 @@ checkowner_ipseckey(ARGS_CHECKOWNER) {
 
 static inline bool
 checknames_ipseckey(ARGS_CHECKNAMES) {
-
 	REQUIRE(rdata->type == dns_rdatatype_ipseckey);
 
 	UNUSED(rdata);
@@ -471,8 +492,10 @@ casecompare_ipseckey(ARGS_COMPARE) {
 	dns_rdata_toregion(rdata1, &region1);
 	dns_rdata_toregion(rdata2, &region2);
 
-	if (memcmp(region1.base, region2.base, 3) != 0 || region1.base[1] != 3)
+	if (memcmp(region1.base, region2.base,
+		   3) != 0 || region1.base[1] != 3) {
 		return (isc_region_compare(&region1, &region2));
+	}
 
 	dns_name_init(&name1, NULL);
 	dns_name_init(&name2, NULL);
@@ -484,8 +507,9 @@ casecompare_ipseckey(ARGS_COMPARE) {
 	dns_name_fromregion(&name2, &region2);
 
 	order = dns_name_rdatacompare(&name1, &name2);
-	if (order != 0)
+	if (order != 0) {
 		return (order);
+	}
 
 	isc_region_consume(&region1, name_length(&name1));
 	isc_region_consume(&region2, name_length(&name2));
@@ -493,4 +517,4 @@ casecompare_ipseckey(ARGS_COMPARE) {
 	return (isc_region_compare(&region1, &region2));
 }
 
-#endif	/* RDATA_GENERIC_IPSECKEY_45_C */
+#endif  /* RDATA_GENERIC_IPSECKEY_45_C */

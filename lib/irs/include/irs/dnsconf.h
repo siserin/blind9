@@ -35,12 +35,12 @@
  * 'keydatabuf' members with the dst_key_fromdns() function.
  */
 typedef struct irs_dnsconf_dnskey {
-	dns_name_t				*keyname;
-	isc_buffer_t				*keydatabuf;
-	ISC_LINK(struct irs_dnsconf_dnskey)	link;
+	dns_name_t *	    keyname;
+	isc_buffer_t *	    keydatabuf;
+	ISC_LINK(struct irs_dnsconf_dnskey)     link;
 } irs_dnsconf_dnskey_t;
 
-typedef ISC_LIST(irs_dnsconf_dnskey_t) irs_dnsconf_dnskeylist_t;
+typedef ISC_LIST (irs_dnsconf_dnskey_t) irs_dnsconf_dnskeylist_t;
 
 ISC_LANG_BEGINDECLS
 

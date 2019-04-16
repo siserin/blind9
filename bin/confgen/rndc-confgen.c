@@ -48,9 +48,9 @@
 #include "util.h"
 #include "keygen.h"
 
-#define DEFAULT_KEYNAME		"rndc-key"
-#define DEFAULT_SERVER		"127.0.0.1"
-#define DEFAULT_PORT		953
+#define DEFAULT_KEYNAME         "rndc-key"
+#define DEFAULT_SERVER          "127.0.0.1"
+#define DEFAULT_PORT            953
 
 static char program[256];
 const char *progname;
@@ -64,8 +64,8 @@ usage(int status) ISC_PLATFORM_NORETURN_POST;
 
 static void
 usage(int status) {
-
-	fprintf(stderr, "\
+	fprintf(stderr,
+		"\
 Usage:\n\
  %s [-a] [-b bits] [-c keyfile] [-k keyname] [-p port] \
 [-s addr] [-t chrootdir] [-u user]\n\
@@ -78,7 +78,8 @@ Usage:\n\
   -s addr:	 the address to which rndc should connect\n\
   -t chrootdir:	 write a keyfile in chrootdir as well (requires -a)\n\
   -u user:	 set the keyfile owner to \"user\" (requires -a)\n",
-		 progname, keydef);
+		progname,
+		keydef);
 
 	exit (status);
 }
@@ -108,8 +109,9 @@ main(int argc, char **argv) {
 	keydef = keyfile = RNDC_KEYFILE;
 
 	result = isc_file_progname(*argv, program, sizeof(program));
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		memmove(program, "rndc-confgen", 13);
+	}
 	progname = program;
 
 	keyname = DEFAULT_KEYNAME;
@@ -129,13 +131,15 @@ main(int argc, char **argv) {
 		case 'A':
 			algname = isc_commandline_argument;
 			alg = alg_fromtext(algname);
-			if (alg == DST_ALG_UNKNOWN)
+			if (alg == DST_ALG_UNKNOWN) {
 				fatal("Unsupported algorithm '%s'", algname);
+			}
 			break;
 		case 'b':
 			keysize = strtol(isc_commandline_argument, &p, 10);
-			if (*p != '\0' || keysize < 0)
+			if (*p != '\0' || keysize < 0) {
 				fatal("-b requires a non-negative number");
+			}
 			break;
 		case 'c':
 			keyfile = isc_commandline_argument;
@@ -143,7 +147,7 @@ main(int argc, char **argv) {
 		case 'h':
 			usage(0);
 		case 'k':
-		case 'y':	/* Compatible with rndc -y. */
+		case 'y':       /* Compatible with rndc -y. */
 			keyname = isc_commandline_argument;
 			break;
 		case 'M':
@@ -155,18 +159,22 @@ main(int argc, char **argv) {
 			break;
 		case 'p':
 			port = strtol(isc_commandline_argument, &p, 10);
-			if (*p != '\0' || port < 0 || port > 65535)
+			if (*p != '\0' || port < 0 || port > 65535) {
 				fatal("port '%s' out of range",
 				      isc_commandline_argument);
+			}
 			break;
 		case 'r':
 			fatal("The -r option has been deprecated.");
 			break;
 		case 's':
 			serveraddr = isc_commandline_argument;
-			if (inet_pton(AF_INET, serveraddr, &addr4_dummy) != 1 &&
-			    inet_pton(AF_INET6, serveraddr, &addr6_dummy) != 1)
+			if (inet_pton(AF_INET, serveraddr,
+				      &addr4_dummy) != 1 &&
+			    inet_pton(AF_INET6, serveraddr,
+				      &addr6_dummy) != 1) {
 				fatal("-s should be an IPv4 or IPv6 address");
+			}
 			break;
 		case 't':
 			chrootdir = isc_commandline_argument;
@@ -182,8 +190,9 @@ main(int argc, char **argv) {
 				fprintf(stderr, "%s: invalid argument -%c\n",
 					program, isc_commandline_option);
 				usage(1);
-			} else
+			} else {
 				usage(0);
+			}
 			break;
 		default:
 			fprintf(stderr, "%s: unhandled option -%c\n",
@@ -196,8 +205,9 @@ main(int argc, char **argv) {
 	argv += isc_commandline_index;
 	POST(argv);
 
-	if (argc > 0)
+	if (argc > 0) {
 		usage(1);
+	}
 
 	if (alg == DST_ALG_HMACMD5) {
 		fprintf(stderr,
@@ -205,8 +215,9 @@ main(int argc, char **argv) {
 			"is deprecated; hmac-sha256 is now recommended.\n");
 	}
 
-	if (keysize < 0)
+	if (keysize < 0) {
 		keysize = alg_bits(alg);
+	}
 	algname = alg_totext(alg);
 
 	DO("create memory context", isc_mem_create(0, 0, &mctx));
@@ -222,12 +233,14 @@ main(int argc, char **argv) {
 			char *buf;
 			len = strlen(chrootdir) + strlen(keyfile) + 2;
 			buf = isc_mem_get(mctx, len);
-			if (buf == NULL)
+			if (buf == NULL) {
 				fatal("isc_mem_get(%d) failed\n", len);
+			}
 			snprintf(buf, len, "%s%s%s", chrootdir,
 				 (*keyfile != '/') ? "/" : "", keyfile);
 
-			write_key_file(buf, user, keyname, &key_txtbuffer, alg);
+			write_key_file(buf, user, keyname, &key_txtbuffer,
+				       alg);
 			isc_mem_put(mctx, buf, len);
 		}
 	} else {
@@ -247,27 +260,36 @@ options {\n\
 \n\
 # Use with the following in named.conf, adjusting the allow list as needed:\n\
 # key \"%s\" {\n\
-# 	algorithm %s;\n\
-# 	secret \"%.*s\";\n\
+#       algorithm %s;\n\
+#       secret \"%.*s\";\n\
 # };\n\
 # \n\
 # controls {\n\
-# 	inet %s port %d\n\
-# 		allow { %s; } keys { \"%s\"; };\n\
+#       inet %s port %d\n\
+#               allow { %s; } keys { \"%s\"; };\n\
 # };\n\
 # End of named.conf\n",
-		       keyname, algname,
+		       keyname,
+		       algname,
+		       (int)isc_buffer_usedlength(
+			       &key_txtbuffer),
+		       (char *)isc_buffer_base(&key_txtbuffer),
+		       keyname,
+		       serveraddr,
+		       port,
+		       keyname,
+		       algname,
 		       (int)isc_buffer_usedlength(&key_txtbuffer),
 		       (char *)isc_buffer_base(&key_txtbuffer),
-		       keyname, serveraddr, port,
-		       keyname, algname,
-		       (int)isc_buffer_usedlength(&key_txtbuffer),
-		       (char *)isc_buffer_base(&key_txtbuffer),
-		       serveraddr, port, serveraddr, keyname);
+		       serveraddr,
+		       port,
+		       serveraddr,
+		       keyname);
 	}
 
-	if (show_final_mem)
+	if (show_final_mem) {
 		isc_mem_stats(mctx, stderr);
+	}
 
 	isc_mem_destroy(&mctx);
 

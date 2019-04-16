@@ -22,35 +22,36 @@
 #include <isc/types.h>
 #ifdef ISC_PLATFORM_HAVESYSUNH
 #include <sys/un.h>
-#endif
+#endif /* ifdef ISC_PLATFORM_HAVESYSUNH */
 
 struct isc_sockaddr {
 	union {
-		struct sockaddr		sa;
-		struct sockaddr_in	sin;
-		struct sockaddr_in6	sin6;
-		struct sockaddr_storage ss;
+		struct sockaddr		       sa;
+		struct sockaddr_in	       sin;
+		struct sockaddr_in6	       sin6;
+		struct sockaddr_storage	       ss;
 #ifdef ISC_PLATFORM_HAVESYSUNH
-		struct sockaddr_un	sunix;
-#endif
-	}				type;
-	unsigned int			length;		/* XXXRTH beginning? */
-	ISC_LINK(struct isc_sockaddr)	link;
+		struct sockaddr_un	       sunix;
+#endif /* ifdef ISC_PLATFORM_HAVESYSUNH */
+	}                               type;
+	unsigned int        length;                     /* XXXRTH beginning? */
+	ISC_LINK(struct isc_sockaddr)   link;
 };
 
-#define ISC_SOCKADDR_CMPADDR	  0x0001	/*%< compare the address
-						 *   sin_addr/sin6_addr */
-#define ISC_SOCKADDR_CMPPORT 	  0x0002	/*%< compare the port
-						 *   sin_port/sin6_port */
-#define ISC_SOCKADDR_CMPSCOPE     0x0004	/*%< compare the scope
-						 *   sin6_scope */
-#define ISC_SOCKADDR_CMPSCOPEZERO 0x0008	/*%< when comparing scopes
-						 *   zero scopes always match */
+#define ISC_SOCKADDR_CMPADDR      0x0001        /*%< compare the address
+	                                         *   sin_addr/sin6_addr */
+#define ISC_SOCKADDR_CMPPORT      0x0002        /*%< compare the port
+	                                         *   sin_port/sin6_port */
+#define ISC_SOCKADDR_CMPSCOPE     0x0004        /*%< compare the scope
+	                                         *   sin6_scope */
+#define ISC_SOCKADDR_CMPSCOPEZERO 0x0008        /*%< when comparing scopes
+	                                         *   zero scopes always match */
 
 ISC_LANG_BEGINDECLS
 
 bool
-isc_sockaddr_compare(const isc_sockaddr_t *a, const isc_sockaddr_t *b,
+isc_sockaddr_compare(const isc_sockaddr_t *a,
+		     const isc_sockaddr_t *b,
 		     unsigned int flags);
 /*%<
  * Compare the elements of the two address ('a' and 'b') as specified
@@ -73,7 +74,8 @@ isc_sockaddr_eqaddr(const isc_sockaddr_t *a, const isc_sockaddr_t *b);
  */
 
 bool
-isc_sockaddr_eqaddrprefix(const isc_sockaddr_t *a, const isc_sockaddr_t *b,
+isc_sockaddr_eqaddrprefix(const isc_sockaddr_t *a,
+			  const isc_sockaddr_t *b,
 			  unsigned int prefixlen);
 /*%<
  * Return true iff the most significant 'prefixlen' bits of the
@@ -114,28 +116,32 @@ isc_sockaddr_anyofpf(isc_sockaddr_t *sockaddr, int family);
  */
 
 void
-isc_sockaddr_fromin(isc_sockaddr_t *sockaddr, const struct in_addr *ina,
+isc_sockaddr_fromin(isc_sockaddr_t *sockaddr,
+		    const struct in_addr *ina,
 		    in_port_t port);
 /*%<
  * Construct an isc_sockaddr_t from an IPv4 address and port.
  */
 
 void
-isc_sockaddr_fromin6(isc_sockaddr_t *sockaddr, const struct in6_addr *ina6,
+isc_sockaddr_fromin6(isc_sockaddr_t *sockaddr,
+		     const struct in6_addr *ina6,
 		     in_port_t port);
 /*%<
  * Construct an isc_sockaddr_t from an IPv6 address and port.
  */
 
 void
-isc_sockaddr_v6fromin(isc_sockaddr_t *sockaddr, const struct in_addr *ina,
+isc_sockaddr_v6fromin(isc_sockaddr_t *sockaddr,
+		      const struct in_addr *ina,
 		      in_port_t port);
 /*%<
  * Construct an IPv6 isc_sockaddr_t representing a mapped IPv4 address.
  */
 
 void
-isc_sockaddr_fromnetaddr(isc_sockaddr_t *sockaddr, const isc_netaddr_t *na,
+isc_sockaddr_fromnetaddr(isc_sockaddr_t *sockaddr,
+			 const isc_netaddr_t *na,
 			 in_port_t port);
 /*%<
  * Construct an isc_sockaddr_t from an isc_netaddr_t and port.

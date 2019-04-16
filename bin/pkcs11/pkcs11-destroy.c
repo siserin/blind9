@@ -62,8 +62,8 @@
 #include <pk11/result.h>
 
 #ifdef WIN32
-#define sleep(x)	Sleep(x)
-#endif
+#define sleep(x)        Sleep(x)
+#endif /* ifdef WIN32 */
 
 int
 main(int argc, char *argv[]) {
@@ -86,7 +86,10 @@ main(int argc, char *argv[]) {
 	};
 	unsigned int j, len;
 
-	while ((c = isc_commandline_parse(argc, argv, ":m:s:i:l:p:w:")) != -1) {
+	while ((c =
+			isc_commandline_parse(argc, argv,
+					      ":m:s:i:l:p:w:")) != -1)
+	{
 		switch (c) {
 		case 'm':
 			lib_name = isc_commandline_argument;
@@ -124,7 +127,7 @@ main(int argc, char *argv[]) {
 	if (errflg || (id && (label != NULL))) {
 		fprintf(stderr, "Usage:\n");
 		fprintf(stderr, "\tpkcs11-destroy [-m module] [-s slot] "
-				"[-i id | -l label] [-p pin] [-w waittime]\n");
+			"[-i id | -l label] [-p pin] [-w waittime]\n");
 		exit(1);
 	}
 
@@ -140,8 +143,9 @@ main(int argc, char *argv[]) {
 	pk11_result_register();
 
 	/* Initialize the CRYPTOKI library */
-	if (lib_name != NULL)
+	if (lib_name != NULL) {
 		pk11_set_lib_name(lib_name);
+	}
 
 	if (pin == NULL) {
 		pin = getpass("Enter Pin: ");
@@ -154,10 +158,10 @@ main(int argc, char *argv[]) {
 	    result == PK11_R_NOAESSERVICE) {
 		fprintf(stderr, "Warning: %s\n", isc_result_totext(result));
 		fprintf(stderr, "This HSM will not work with BIND 9 "
-				"using native PKCS#11.\n");
+			"using native PKCS#11.\n");
 	} else if (result != ISC_R_SUCCESS) {
 		fprintf(stderr, "Unrecoverable error initializing "
-				"PKCS#11: %s\n", isc_result_totext(result));
+			"PKCS#11: %s\n", isc_result_totext(result));
 		exit(1);
 	}
 
@@ -166,14 +170,14 @@ main(int argc, char *argv[]) {
 	hSession = pctx.session;
 
 	rv = pkcs_C_FindObjectsInit(hSession, search_template,
-				    ((id != 0) || (label != NULL)) ? 1 : 0); 
+				    ((id != 0) || (label != NULL)) ? 1 : 0);
 
 	if (rv != CKR_OK) {
 		fprintf(stderr, "C_FindObjectsInit: Error = 0x%.8lX\n", rv);
 		error = 1;
 		goto exit_session;
 	}
-	
+
 	rv = pkcs_C_FindObjects(hSession, akey, 50, &ulObjectCount);
 	if (rv != CKR_OK) {
 		fprintf(stderr, "C_FindObjects: Error = 0x%.8lX\n", rv);
@@ -184,8 +188,9 @@ main(int argc, char *argv[]) {
 	if (ulObjectCount == 0) {
 		printf("No matching key objects found.\n");
 		goto exit_search;
-	} else
+	} else {
 		printf("Key object%s found:\n", ulObjectCount > 1 ? "s" : "");
+	}
 
 	for (i = 0; i < ulObjectCount; i++) {
 		CK_OBJECT_CLASS oclass = 0;
@@ -212,16 +217,19 @@ main(int argc, char *argv[]) {
 		len = attr_template[2].ulValueLen;
 		printf("  object[%u]: class %lu, label '%s', id[%lu] ",
 		       i, oclass, labelbuf, attr_template[2].ulValueLen);
-		if (len > 4)
+		if (len > 4) {
 			len = 4;
-		if (len > 0)
+		}
+		if (len > 0) {
 			printf("0x");
+		}
 		for (j = 0; j < len; j++)
 			printf("%02x", idbuf[j]);
-		if (attr_template[2].ulValueLen > len)
+		if (attr_template[2].ulValueLen > len) {
 			printf("...\n");
-		else
+		} else {
 			printf("\n");
+		}
 	}
 
 	if (wait != 0) {
@@ -245,8 +253,9 @@ main(int argc, char *argv[]) {
 		}
 	}
 
-	if (error == 0)
+	if (error == 0) {
 		printf("Destruction complete.\n");
+	}
 
  exit_search:
 	rv = pkcs_C_FindObjectsFinal(hSession);

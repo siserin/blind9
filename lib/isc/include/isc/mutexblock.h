@@ -47,7 +47,7 @@ isc_mutexblock_destroy(isc_mutex_t *block, unsigned int count);
  *\li	count > 0
  *
  *\li	Each lock in the block be initialized via isc_mutex_init() or
- * 	the whole block was initialized via isc_mutex_initblock().
+ *      the whole block was initialized via isc_mutex_initblock().
  *
  */
 

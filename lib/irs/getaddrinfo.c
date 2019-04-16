@@ -128,7 +128,7 @@
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#endif
+#endif /* ifdef _WIN32 */
 
 #include <isc/app.h>
 #include <isc/buffer.h>
@@ -153,37 +153,47 @@
 #include <irs/netdb.h>
 #include <irs/resconf.h>
 
-#define SA(addr)	((struct sockaddr *)(addr))
-#define SIN(addr)	((struct sockaddr_in *)(addr))
-#define SIN6(addr)	((struct sockaddr_in6 *)(addr))
-#define SLOCAL(addr)	((struct sockaddr_un *)(addr))
+#define SA(addr)        ((struct sockaddr *)(addr))
+#define SIN(addr)       ((struct sockaddr_in *)(addr))
+#define SIN6(addr)      ((struct sockaddr_in6 *)(addr))
+#define SLOCAL(addr)    ((struct sockaddr_un *)(addr))
 
 /*! \struct addrinfo
  */
 static struct addrinfo
-	*ai_concat(struct addrinfo *ai1, struct addrinfo *ai2),
-	*ai_reverse(struct addrinfo *oai),
-	*ai_clone(struct addrinfo *oai, int family),
-	*ai_alloc(int family, int addrlen);
+*ai_concat(struct addrinfo *ai1, struct addrinfo *ai2),
+*ai_reverse(struct addrinfo *oai),
+*ai_clone(struct addrinfo *oai, int family),
+*ai_alloc(int family, int addrlen);
 #ifdef AF_LOCAL
 static int get_local(const char *name, int socktype, struct addrinfo **res);
-#endif
+#endif /* ifdef AF_LOCAL */
 
 static int
-resolve_name(int family, const char *hostname, int flags,
-	     struct addrinfo **aip, int socktype, int port);
+resolve_name(int family,
+	     const char *hostname,
+	     int flags,
+	     struct addrinfo **aip,
+	     int socktype,
+	     int port);
 
-static int add_ipv4(const char *hostname, int flags, struct addrinfo **aip,
-		    int socktype, int port);
-static int add_ipv6(const char *hostname, int flags, struct addrinfo **aip,
-		    int socktype, int port);
+static int add_ipv4(const char *hostname,
+		    int flags,
+		    struct addrinfo **aip,
+		    int socktype,
+		    int port);
+static int add_ipv6(const char *hostname,
+		    int flags,
+		    struct addrinfo **aip,
+		    int socktype,
+		    int port);
 static void set_order(int, int (**)(const char *, int, struct addrinfo **,
 				    int, int));
 static void _freeaddrinfo(struct addrinfo *ai);
 
-#define FOUND_IPV4	0x1
-#define FOUND_IPV6	0x2
-#define FOUND_MAX	2
+#define FOUND_IPV4      0x1
+#define FOUND_IPV6      0x2
+#define FOUND_MAX       2
 
 /*%
  * Try converting the scope identifier in 'src' to a network interface index.
@@ -203,7 +213,7 @@ parse_scopeid(const char *src, uint32_t *dst) {
 	 * handle numeric scopes, we do not simply return if it fails.
 	 */
 	scopeid = (uint32_t)if_nametoindex(src);
-#endif
+#endif /* ifdef HAVE_IF_NAMETOINDEX */
 
 	/*
 	 * Fall back to numeric scope processing if if_nametoindex() either
@@ -226,14 +236,16 @@ parse_scopeid(const char *src, uint32_t *dst) {
 	return (true);
 }
 
-#define ISC_AI_MASK (AI_PASSIVE|AI_CANONNAME|AI_NUMERICHOST)
+#define ISC_AI_MASK (AI_PASSIVE | AI_CANONNAME | AI_NUMERICHOST)
 /*%
  * Get a list of IP addresses and port numbers for host hostname and
  * service servname.
  */
 int
-getaddrinfo(const char *hostname, const char *servname,
-	    const struct addrinfo *hints, struct addrinfo **res)
+getaddrinfo(const char *hostname,
+	    const char *servname,
+	    const struct addrinfo *hints,
+	    struct addrinfo **res)
 {
 	struct servent *sp;
 	const char *proto;
@@ -241,16 +253,18 @@ getaddrinfo(const char *hostname, const char *servname,
 	struct addrinfo *ai, *ai_list;
 	int err = 0;
 	int port, i;
-	int (*net_order[FOUND_MAX+1])(const char *, int, struct addrinfo **,
-				      int, int);
+	int (*net_order[FOUND_MAX + 1])(const char *, int, struct addrinfo **,
+					int, int);
 
-	if (hostname == NULL && servname == NULL)
+	if (hostname == NULL && servname == NULL) {
 		return (EAI_NONAME);
+	}
 
 	proto = NULL;
 	if (hints != NULL) {
-		if ((hints->ai_flags & ~(ISC_AI_MASK)) != 0)
+		if ((hints->ai_flags & ~(ISC_AI_MASK)) != 0) {
 			return (EAI_BADFLAGS);
+		}
 		if (hints->ai_addrlen || hints->ai_canonname ||
 		    hints->ai_addr || hints->ai_next) {
 			errno = EINVAL;
@@ -288,7 +302,7 @@ getaddrinfo(const char *hostname, const char *servname,
 				return (EAI_SOCKTYPE);
 			}
 			break;
-#ifdef	AF_LOCAL
+#ifdef  AF_LOCAL
 		case AF_LOCAL:
 			switch (hints->ai_socktype) {
 			case 0:
@@ -301,7 +315,7 @@ getaddrinfo(const char *hostname, const char *servname,
 				return (EAI_SOCKTYPE);
 			}
 			break;
-#endif
+#endif /* ifdef  AF_LOCAL */
 		default:
 			return (EAI_FAMILY);
 		}
@@ -312,7 +326,7 @@ getaddrinfo(const char *hostname, const char *servname,
 		flags = 0;
 	}
 
-#ifdef	AF_LOCAL
+#ifdef  AF_LOCAL
 	/*!
 	 * First, deal with AF_LOCAL.  If the family was not set,
 	 * then assume AF_LOCAL if the first character of the
@@ -320,13 +334,15 @@ getaddrinfo(const char *hostname, const char *servname,
 	 */
 
 	if (hostname != NULL &&
-	    (family == AF_LOCAL || (family == 0 && *hostname == '/')))
+	    (family == AF_LOCAL || (family == 0 && *hostname == '/'))) {
 		return (get_local(hostname, socktype, res));
+	}
 
 	if (servname != NULL &&
-	    (family == AF_LOCAL || (family == 0 && *servname == '/')))
+	    (family == AF_LOCAL || (family == 0 && *servname == '/'))) {
 		return (get_local(servname, socktype, res));
-#endif
+	}
+#endif /* ifdef  AF_LOCAL */
 
 	/*
 	 * Ok, only AF_INET and AF_INET6 left.
@@ -361,13 +377,14 @@ getaddrinfo(const char *hostname, const char *servname,
 			if (err != 0) {
 				return (EAI_FAIL);
 			}
-#endif
+#endif /* ifdef _WIN32 */
 			sp = getservbyname(servname, proto);
-			if (sp != NULL)
+			if (sp != NULL) {
 				port = sp->s_port;
+			}
 #ifdef _WIN32
 			WSACleanup();
-#endif
+#endif /* ifdef _WIN32 */
 			if (sp == NULL) {
 				return (EAI_SERVICE);
 			}
@@ -390,8 +407,9 @@ getaddrinfo(const char *hostname, const char *servname,
 	if (hostname == NULL && (flags & AI_PASSIVE) != 0) {
 		if (family == AF_INET || family == 0) {
 			ai = ai_alloc(AF_INET, sizeof(struct sockaddr_in));
-			if (ai == NULL)
+			if (ai == NULL) {
 				return (EAI_MEMORY);
+			}
 			ai->ai_socktype = socktype;
 			ai->ai_protocol = protocol;
 			SIN(ai->ai_addr)->sin_port = port;
@@ -466,28 +484,32 @@ getaddrinfo(const char *hostname, const char *servname,
 			family = AF_INET;
 			goto common;
 		} else if (ntmp[0] != '\0' &&
-			   inet_pton(AF_INET6, ntmp, abuf) == 1) {
-			if (family && family != AF_INET6)
+			   inet_pton(AF_INET6, ntmp, abuf) == 1)
+		{
+			if (family && family != AF_INET6) {
 				return (EAI_NONAME);
+			}
 			addrsize = sizeof(struct in6_addr);
 			addroff = offsetof(struct sockaddr_in6, sin6_addr);
 			family = AF_INET6;
 			goto common;
 		} else if (inet_pton(AF_INET6, hostname, abuf) == 1) {
-			if (family != 0 && family != AF_INET6)
+			if (family != 0 && family != AF_INET6) {
 				return (EAI_NONAME);
-		inet6_addr:
+			}
+ inet6_addr:
 			addrsize = sizeof(struct in6_addr);
 			addroff = offsetof(struct sockaddr_in6, sin6_addr);
 			family = AF_INET6;
 
-		common:
+ common:
 			ai = ai_alloc(family,
 				      ((family == AF_INET6) ?
 				       sizeof(struct sockaddr_in6) :
 				       sizeof(struct sockaddr_in)));
-			if (ai == NULL)
+			if (ai == NULL) {
 				return (EAI_MEMORY);
+			}
 			ai_list = ai;
 			ai->ai_socktype = socktype;
 			SIN(ai->ai_addr)->sin_port = port;
@@ -519,8 +541,9 @@ getaddrinfo(const char *hostname, const char *servname,
 	if (hostname == NULL && (flags & AI_PASSIVE) == 0) {
 		set_order(family, net_order);
 		for (i = 0; i < FOUND_MAX; i++) {
-			if (net_order[i] == NULL)
+			if (net_order[i] == NULL) {
 				break;
+			}
 			err = (net_order[i])(hostname, flags, &ai_list,
 					     socktype, port);
 			if (err != 0) {
@@ -531,17 +554,19 @@ getaddrinfo(const char *hostname, const char *servname,
 				break;
 			}
 		}
-	} else
+	} else {
 		err = resolve_name(family, hostname, flags, &ai_list,
 				   socktype, port);
+	}
 
 	if (ai_list == NULL) {
-		if (err == 0)
+		if (err == 0) {
 			err = EAI_NONAME;
+		}
 		return (err);
 	}
 
-done:
+ done:
 	ai_list = ai_reverse(ai_list);
 
 	*res = ai_list;
@@ -549,38 +574,41 @@ done:
 }
 
 typedef struct gai_restrans {
-	dns_clientrestrans_t	*xid;
-	bool		is_inprogress;
-	int			error;
-	struct addrinfo		ai_sentinel;
-	struct gai_resstate	*resstate;
+	dns_clientrestrans_t *	    xid;
+	bool			    is_inprogress;
+	int			    error;
+	struct addrinfo		    ai_sentinel;
+	struct gai_resstate *	    resstate;
 } gai_restrans_t;
 
 typedef struct gai_resstate {
-	isc_mem_t			*mctx;
-	struct gai_statehead		*head;
-	dns_fixedname_t			fixedname;
-	dns_name_t			*qname;
-	gai_restrans_t			*trans4;
-	gai_restrans_t			*trans6;
-	ISC_LINK(struct gai_resstate)	link;
+	isc_mem_t *		    mctx;
+	struct gai_statehead *	    head;
+	dns_fixedname_t		    fixedname;
+	dns_name_t *		    qname;
+	gai_restrans_t *	    trans4;
+	gai_restrans_t *	    trans6;
+	ISC_LINK(struct gai_resstate)   link;
 } gai_resstate_t;
 
 typedef struct gai_statehead {
-	int				ai_family;
-	int				ai_flags;
-	int				ai_socktype;
-	int				ai_port;
-	isc_appctx_t			*actx;
-	dns_client_t			*dnsclient;
-	isc_mutex_t			list_lock;
-	ISC_LIST(struct gai_resstate)	resstates;
-	unsigned int			activestates;
+	int		    ai_family;
+	int		    ai_flags;
+	int		    ai_socktype;
+	int		    ai_port;
+	isc_appctx_t *	    actx;
+	dns_client_t *	    dnsclient;
+	isc_mutex_t	    list_lock;
+	ISC_LIST(struct gai_resstate)   resstates;
+	unsigned int	    activestates;
 } gai_statehead_t;
 
 static isc_result_t
-make_resstate(isc_mem_t *mctx, gai_statehead_t *head, const char *hostname,
-	      const char *domain, gai_resstate_t **statep)
+make_resstate(isc_mem_t *mctx,
+	      gai_statehead_t *head,
+	      const char *hostname,
+	      const char *domain,
+	      gai_resstate_t **statep)
 {
 	isc_result_t result;
 	gai_resstate_t *state;
@@ -592,8 +620,9 @@ make_resstate(isc_mem_t *mctx, gai_statehead_t *head, const char *hostname,
 	bool need_v6 = false;
 
 	state = isc_mem_get(mctx, sizeof(*state));
-	if (state == NULL)
+	if (state == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	/* Construct base domain name */
 	namelen = strlen(domain);
@@ -617,10 +646,12 @@ make_resstate(isc_mem_t *mctx, gai_statehead_t *head, const char *hostname,
 		return (result);
 	}
 
-	if (head->ai_family == AF_UNSPEC || head->ai_family == AF_INET)
+	if (head->ai_family == AF_UNSPEC || head->ai_family == AF_INET) {
 		need_v4 = true;
-	if (head->ai_family == AF_UNSPEC || head->ai_family == AF_INET6)
+	}
+	if (head->ai_family == AF_UNSPEC || head->ai_family == AF_INET6) {
 		need_v6 = true;
+	}
 
 	state->trans6 = NULL;
 	state->trans4 = NULL;
@@ -639,9 +670,10 @@ make_resstate(isc_mem_t *mctx, gai_statehead_t *head, const char *hostname,
 	if (need_v6) {
 		state->trans6 = isc_mem_get(mctx, sizeof(gai_restrans_t));
 		if (state->trans6 == NULL) {
-			if (state->trans4 != NULL)
+			if (state->trans4 != NULL) {
 				isc_mem_put(mctx, state->trans4,
 					    sizeof(*state->trans4));
+			}
 			isc_mem_put(mctx, state, sizeof(*state));
 			return (ISC_R_NOMEMORY);
 		}
@@ -662,7 +694,9 @@ make_resstate(isc_mem_t *mctx, gai_statehead_t *head, const char *hostname,
 }
 
 static isc_result_t
-make_resstates(isc_mem_t *mctx, const char *hostname, gai_statehead_t *head,
+make_resstates(isc_mem_t *mctx,
+	       const char *hostname,
+	       gai_statehead_t *head,
 	       irs_resconf_t *resconf)
 {
 	isc_result_t result;
@@ -672,18 +706,21 @@ make_resstates(isc_mem_t *mctx, const char *hostname, gai_statehead_t *head,
 
 	resstate0 = NULL;
 	result = make_resstate(mctx, head, hostname, ".", &resstate0);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	searchlist = irs_resconf_getsearchlist(resconf);
 	for (searchent = ISC_LIST_HEAD(*searchlist); searchent != NULL;
-	     searchent = ISC_LIST_NEXT(searchent, link)) {
+	     searchent = ISC_LIST_NEXT(searchent, link))
+	{
 		resstate = NULL;
 		result = make_resstate(mctx, head, hostname,
 				       (const char *)searchent->domain,
 				       &resstate);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			break;
+		}
 
 		ISC_LIST_APPEND(head->resstates, resstate, link);
 		head->activestates++;
@@ -697,8 +734,9 @@ make_resstates(isc_mem_t *mctx, const char *hostname, gai_statehead_t *head,
 	if (dns_name_countlabels(resstate0->qname) >
 	    irs_resconf_getndots(resconf) + 1) {
 		ISC_LIST_PREPEND(head->resstates, resstate0, link);
-	} else
+	} else {
 		ISC_LIST_APPEND(head->resstates, resstate0, link);
+	}
 	head->activestates++;
 
 	if (result != ISC_R_SUCCESS) {
@@ -776,7 +814,8 @@ process_answer(isc_task_t *task, isc_event_t *event) {
 
 	/* Parse the response and construct the addrinfo chain */
 	for (name = ISC_LIST_HEAD(rev->answerlist); name != NULL;
-	     name = ISC_LIST_NEXT(name, link)) {
+	     name = ISC_LIST_NEXT(name, link))
+	{
 		isc_result_t result;
 		dns_rdataset_t *rdataset;
 		char cname[1024];
@@ -795,15 +834,19 @@ process_answer(isc_task_t *task, isc_event_t *event) {
 
 		for (rdataset = ISC_LIST_HEAD(name->list);
 		     rdataset != NULL;
-		     rdataset = ISC_LIST_NEXT(rdataset, link)) {
-			if (!dns_rdataset_isassociated(rdataset))
+		     rdataset = ISC_LIST_NEXT(rdataset, link))
+		{
+			if (!dns_rdataset_isassociated(rdataset)) {
 				continue;
-			if (rdataset->type != qtype)
+			}
+			if (rdataset->type != qtype) {
 				continue;
+			}
 
 			for (result = dns_rdataset_first(rdataset);
 			     result == ISC_R_SUCCESS;
-			     result = dns_rdataset_next(rdataset)) {
+			     result = dns_rdataset_next(rdataset))
+			{
 				struct addrinfo *ai;
 				dns_rdata_t rdata;
 				dns_rdata_in_a_t rdata_a;
@@ -872,8 +915,9 @@ process_answer(isc_task_t *task, isc_event_t *event) {
 
 	/* Make sure that error == 0 iff we have a non-empty list */
 	if (error == 0) {
-		if (trans->ai_sentinel.ai_next == NULL)
+		if (trans->ai_sentinel.ai_next == NULL) {
 			error = EAI_NONAME;
+		}
 	} else {
 		if (trans->ai_sentinel.ai_next != NULL) {
 			_freeaddrinfo(trans->ai_sentinel.ai_next);
@@ -911,15 +955,18 @@ process_answer(isc_task_t *task, isc_event_t *event) {
 
 				for (rest = ISC_LIST_NEXT(resstate, link);
 				     rest != NULL;
-				     rest = ISC_LIST_NEXT(rest, link)) {
+				     rest = ISC_LIST_NEXT(rest, link))
+				{
 					if (rest->trans4 != NULL &&
-					    rest->trans4->xid != NULL)
+					    rest->trans4->xid != NULL) {
 						dns_client_cancelresolve(
 							rest->trans4->xid);
+					}
 					if (rest->trans6 != NULL &&
-					    rest->trans6->xid != NULL)
+					    rest->trans6->xid != NULL) {
 						dns_client_cancelresolve(
 							rest->trans6->xid);
+					}
 				}
 			} else {
 				/*
@@ -938,8 +985,12 @@ process_answer(isc_task_t *task, isc_event_t *event) {
 }
 
 static int
-resolve_name(int family, const char *hostname, int flags,
-	     struct addrinfo **aip, int socktype, int port)
+resolve_name(int family,
+	     const char *hostname,
+	     int flags,
+	     struct addrinfo **aip,
+	     int socktype,
+	     int port)
 {
 	isc_result_t result;
 	irs_context_t *irsctx;
@@ -957,8 +1008,9 @@ resolve_name(int family, const char *hostname, int flags,
 	/* get IRS context and the associated parameters */
 	irsctx = NULL;
 	result = irs_context_get(&irsctx);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (EAI_FAIL);
+	}
 	actx = irs_context_getappctx(irsctx);
 
 	mctx = irs_context_getmctx(irsctx);
@@ -985,7 +1037,8 @@ resolve_name(int family, const char *hostname, int flags,
 
 	LOCK(&head.list_lock);
 	for (resstate = ISC_LIST_HEAD(head.resstates);
-	     resstate != NULL; resstate = ISC_LIST_NEXT(resstate, link)) {
+	     resstate != NULL; resstate = ISC_LIST_NEXT(resstate, link))
+	{
 		if (resstate->trans4 != NULL) {
 			result = dns_client_startresolve(client,
 							 resstate->qname,
@@ -998,8 +1051,9 @@ resolve_name(int family, const char *hostname, int flags,
 			if (result == ISC_R_SUCCESS) {
 				resstate->trans4->is_inprogress = true;
 				all_fail = false;
-			} else
+			} else {
 				resstate->trans4->is_inprogress = false;
+			}
 		}
 		if (resstate->trans6 != NULL) {
 			result = dns_client_startresolve(client,
@@ -1013,8 +1067,9 @@ resolve_name(int family, const char *hostname, int flags,
 			if (result == ISC_R_SUCCESS) {
 				resstate->trans6->is_inprogress = true;
 				all_fail = false;
-			} else
-				resstate->trans6->is_inprogress= false;
+			} else {
+				resstate->trans6->is_inprogress = false;
+			}
 		}
 	}
 	UNLOCK(&head.list_lock);
@@ -1022,8 +1077,9 @@ resolve_name(int family, const char *hostname, int flags,
 	if (!all_fail) {
 		/* Start all the events */
 		isc_app_ctxrun(actx);
-	} else
+	} else {
 		error = EAI_FAIL;
+	}
 
 	/* Cleanup */
 	while ((resstate = ISC_LIST_HEAD(head.resstates)) != NULL) {
@@ -1070,10 +1126,11 @@ resolve_name(int family, const char *hostname, int flags,
 		 * EAI_NONAME will be set below if no better code is found.
 		 */
 		if (terror == 0 || terror == EAI_NONAME) {
-			if (terror4 != 0 && terror4 != EAI_NONAME)
+			if (terror4 != 0 && terror4 != EAI_NONAME) {
 				terror = terror4;
-			else if (terror6 != 0 && terror6 != EAI_NONAME)
+			} else if (terror6 != 0 && terror6 != EAI_NONAME) {
 				terror = terror6;
+			}
 		}
 
 		isc_mem_put(mctx, resstate, sizeof(*resstate));
@@ -1081,14 +1138,15 @@ resolve_name(int family, const char *hostname, int flags,
 
 	if (*aip == NULL) {
 		error = terror;
-		if (error == 0)
+		if (error == 0) {
 			error = EAI_NONAME;
+		}
 	}
 
-#if 1	/*  XXX: enabled for finding leaks.  should be cleaned up later. */
+#if 1   /*  XXX: enabled for finding leaks.  should be cleaned up later. */
 	isc_app_ctxfinish(actx);
 	irs_context_destroy(&irsctx);
-#endif
+#endif /* if 1 */
 
 	isc_mutex_destroy(&head.list_lock);
 	return (error);
@@ -1125,7 +1183,8 @@ set_order(int family, int (**net_order)(const char *, int, struct addrinfo **,
 					}
 					found |= FOUND_IPV6;
 				} else if (strcasecmp(tok, "inet") == 0 ||
-					   strcasecmp(tok, "inet4") == 0) {
+					   strcasecmp(tok, "inet4") == 0)
+				{
 					if ((found & FOUND_IPV4) == 0) {
 						*net_order++ = add_ipv4;
 					}
@@ -1137,10 +1196,12 @@ set_order(int family, int (**net_order)(const char *, int, struct addrinfo **,
 		/*
 		 * Add in anything that we didn't find.
 		 */
-		if ((found & FOUND_IPV4) == 0)
+		if ((found & FOUND_IPV4) == 0) {
 			*net_order++ = add_ipv4;
-		if ((found & FOUND_IPV6) == 0)
+		}
+		if ((found & FOUND_IPV6) == 0) {
 			*net_order++ = add_ipv6;
+		}
 	}
 	*net_order = NULL;
 	return;
@@ -1149,8 +1210,11 @@ set_order(int family, int (**net_order)(const char *, int, struct addrinfo **,
 static char v4_loop[4] = { 127, 0, 0, 1 };
 
 static int
-add_ipv4(const char *hostname, int flags, struct addrinfo **aip,
-	 int socktype, int port)
+add_ipv4(const char *hostname,
+	 int flags,
+	 struct addrinfo **aip,
+	 int socktype,
+	 int port)
 {
 	struct addrinfo *ai;
 
@@ -1158,8 +1222,9 @@ add_ipv4(const char *hostname, int flags, struct addrinfo **aip,
 	UNUSED(flags);
 
 	ai = ai_clone(*aip, AF_INET); /* don't use ai_clone() */
-	if (ai == NULL)
+	if (ai == NULL) {
 		return (EAI_MEMORY);
+	}
 
 	*aip = ai;
 	ai->ai_socktype = socktype;
@@ -1172,8 +1237,11 @@ add_ipv4(const char *hostname, int flags, struct addrinfo **aip,
 static char v6_loop[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
 
 static int
-add_ipv6(const char *hostname, int flags, struct addrinfo **aip,
-	 int socktype, int port)
+add_ipv6(const char *hostname,
+	 int flags,
+	 struct addrinfo **aip,
+	 int socktype,
+	 int port)
 {
 	struct addrinfo *ai;
 
@@ -1181,8 +1249,9 @@ add_ipv6(const char *hostname, int flags, struct addrinfo **aip,
 	UNUSED(flags);
 
 	ai = ai_clone(*aip, AF_INET6); /* don't use ai_clone() */
-	if (ai == NULL)
+	if (ai == NULL) {
 		return (EAI_MEMORY);
+	}
 
 	*aip = ai;
 	ai->ai_socktype = socktype;
@@ -1204,10 +1273,12 @@ _freeaddrinfo(struct addrinfo *ai) {
 
 	while (ai != NULL) {
 		ai_next = ai->ai_next;
-		if (ai->ai_addr != NULL)
+		if (ai->ai_addr != NULL) {
 			free(ai->ai_addr);
-		if (ai->ai_canonname)
+		}
+		if (ai->ai_canonname) {
 			free(ai->ai_canonname);
+		}
 		free(ai);
 		ai = ai_next;
 	}
@@ -1219,12 +1290,14 @@ get_local(const char *name, int socktype, struct addrinfo **res) {
 	struct addrinfo *ai;
 	struct sockaddr_un *slocal;
 
-	if (socktype == 0)
+	if (socktype == 0) {
 		return (EAI_SOCKTYPE);
+	}
 
 	ai = ai_alloc(AF_LOCAL, sizeof(*slocal));
-	if (ai == NULL)
+	if (ai == NULL) {
 		return (EAI_MEMORY);
+	}
 
 	slocal = SLOCAL(ai->ai_addr);
 	strlcpy(slocal->sun_path, name, sizeof(slocal->sun_path));
@@ -1238,7 +1311,7 @@ get_local(const char *name, int socktype, struct addrinfo **res) {
 	*res = ai;
 	return (0);
 }
-#endif
+#endif /* ifdef AF_LOCAL */
 
 /*!
  * Allocate an addrinfo structure, and a sockaddr structure
@@ -1255,8 +1328,9 @@ ai_alloc(int family, int addrlen) {
 	struct addrinfo *ai;
 
 	ai = (struct addrinfo *)calloc(1, sizeof(*ai));
-	if (ai == NULL)
+	if (ai == NULL) {
 		return (NULL);
+	}
 
 	ai->ai_addr = SA(calloc(1, addrlen));
 	if (ai->ai_addr == NULL) {
@@ -1268,7 +1342,7 @@ ai_alloc(int family, int addrlen) {
 	ai->ai_addr->sa_family = family;
 #ifdef IRS_PLATFORM_HAVESALEN
 	ai->ai_addr->sa_len = addrlen;
-#endif
+#endif /* ifdef IRS_PLATFORM_HAVESALEN */
 	return (ai);
 }
 
@@ -1276,13 +1350,17 @@ static struct addrinfo *
 ai_clone(struct addrinfo *oai, int family) {
 	struct addrinfo *ai;
 
-	ai = ai_alloc(family, ((family == AF_INET6) ?
-	    sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in)));
+	ai = ai_alloc(family,
+		      ((family == AF_INET6) ?
+		       sizeof(struct sockaddr_in6) : sizeof(struct
+							    sockaddr_in)));
 
-	if (ai == NULL)
+	if (ai == NULL) {
 		return (NULL);
-	if (oai == NULL)
+	}
+	if (oai == NULL) {
 		return (ai);
+	}
 
 	ai->ai_flags = oai->ai_flags;
 	ai->ai_socktype = oai->ai_socktype;
@@ -1318,10 +1396,11 @@ static struct addrinfo *
 ai_concat(struct addrinfo *ai1, struct addrinfo *ai2) {
 	struct addrinfo *ai_tmp;
 
-	if (ai1 == NULL)
+	if (ai1 == NULL) {
 		return (ai2);
-	else if (ai2 == NULL)
+	} else if (ai2 == NULL) {
 		return (ai1);
+	}
 
 	for (ai_tmp = ai1; ai_tmp != NULL && ai_tmp->ai_next != NULL;
 	     ai_tmp = ai_tmp->ai_next)

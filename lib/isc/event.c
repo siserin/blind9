@@ -30,8 +30,12 @@ destroy(isc_event_t *event) {
 }
 
 isc_event_t *
-isc_event_allocate(isc_mem_t *mctx, void *sender, isc_eventtype_t type,
-		   isc_taskaction_t action, void *arg, size_t size)
+isc_event_allocate(isc_mem_t *mctx,
+		   void *sender,
+		   isc_eventtype_t type,
+		   isc_taskaction_t action,
+		   void *arg,
+		   size_t size)
 {
 	isc_event_t *event;
 
@@ -39,8 +43,9 @@ isc_event_allocate(isc_mem_t *mctx, void *sender, isc_eventtype_t type,
 	REQUIRE(action != NULL);
 
 	event = isc_mem_get(mctx, size);
-	if (event == NULL)
+	if (event == NULL) {
 		return (NULL);
+	}
 
 	ISC_EVENT_INIT(event, size, 0, NULL, type, action, arg,
 		       sender, destroy, mctx);
@@ -49,8 +54,12 @@ isc_event_allocate(isc_mem_t *mctx, void *sender, isc_eventtype_t type,
 }
 
 isc_event_t *
-isc_event_constallocate(isc_mem_t *mctx, void *sender, isc_eventtype_t type,
-			isc_taskaction_t action, const void *arg, size_t size)
+isc_event_constallocate(isc_mem_t *mctx,
+			void *sender,
+			isc_eventtype_t type,
+			isc_taskaction_t action,
+			const void *arg,
+			size_t size)
 {
 	isc_event_t *event;
 	void *deconst_arg;
@@ -59,8 +68,9 @@ isc_event_constallocate(isc_mem_t *mctx, void *sender, isc_eventtype_t type,
 	REQUIRE(action != NULL);
 
 	event = isc_mem_get(mctx, size);
-	if (event == NULL)
+	if (event == NULL) {
 		return (NULL);
+	}
 
 	/*
 	 * Removing the const attribute from "arg" is the best of two
@@ -93,8 +103,9 @@ isc_event_free(isc_event_t **eventp) {
 	REQUIRE(!ISC_LINK_LINKED(event, ev_link));
 	REQUIRE(!ISC_LINK_LINKED(event, ev_ratelink));
 
-	if (event->ev_destroy != NULL)
+	if (event->ev_destroy != NULL) {
 		(event->ev_destroy)(event);
+	}
 
 	*eventp = NULL;
 }

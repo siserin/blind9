@@ -14,8 +14,8 @@
 #define DNS_SOA_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/soa.h
  * \brief
@@ -38,11 +38,15 @@ ISC_LANG_BEGINDECLS
 #define DNS_SOA_BUFFERSIZE      ((2 * DNS_NAME_MAXWIRE) + (4 * 5))
 
 isc_result_t
-dns_soa_buildrdata(const dns_name_t *origin, const dns_name_t *contact,
+dns_soa_buildrdata(const dns_name_t *origin,
+		   const dns_name_t *contact,
 		   dns_rdataclass_t rdclass,
-		   uint32_t serial, uint32_t refresh,
-		   uint32_t retry, uint32_t expire,
-		   uint32_t minimum, unsigned char *buffer,
+		   uint32_t serial,
+		   uint32_t refresh,
+		   uint32_t retry,
+		   uint32_t expire,
+		   uint32_t minimum,
+		   unsigned char *buffer,
 		   dns_rdata_t *rdata);
 /*%<
  * Build the rdata of an SOA record.
@@ -54,7 +58,7 @@ dns_soa_buildrdata(const dns_name_t *origin, const dns_name_t *contact,
  *
  * Ensures:
  *  \li    *rdata       Contains a valid SOA rdata.  The 'data' member
- *  			refers to 'buffer'.
+ *                      refers to 'buffer'.
  */
 
 uint32_t

@@ -14,8 +14,8 @@
 #define DNS_CLIENTINFO_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/clientinfo.h
  * \brief
@@ -34,8 +34,8 @@
  */
 
 /*****
- ***** Imports
- *****/
+***** Imports
+*****/
 
 #include <inttypes.h>
 
@@ -45,14 +45,14 @@
 ISC_LANG_BEGINDECLS
 
 /*****
- ***** Types
- *****/
+***** Types
+*****/
 
 #define DNS_CLIENTINFO_VERSION 2
 typedef struct dns_clientinfo {
-	uint16_t version;
-	void *data;
-	void *dbversion;
+	uint16_t	version;
+	void *		data;
+	void *		dbversion;
 } dns_clientinfo_t;
 
 typedef isc_result_t (*dns_clientinfo_sourceip_t)(dns_clientinfo_t *client,
@@ -62,14 +62,14 @@ typedef isc_result_t (*dns_clientinfo_sourceip_t)(dns_clientinfo_t *client,
 #define DNS_CLIENTINFOMETHODS_AGE 0
 
 typedef struct dns_clientinfomethods {
-	uint16_t version;
-	uint16_t age;
-	dns_clientinfo_sourceip_t sourceip;
+	uint16_t			 version;
+	uint16_t			 age;
+	dns_clientinfo_sourceip_t	 sourceip;
 } dns_clientinfomethods_t;
 
 /*****
- ***** Methods
- *****/
+***** Methods
+*****/
 void
 dns_clientinfomethods_init(dns_clientinfomethods_t *methods,
 			   dns_clientinfo_sourceip_t sourceip);

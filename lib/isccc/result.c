@@ -31,16 +31,16 @@
 
 #include <isccc/result.h>
 
-static const char *text[ISCCC_R_NRESULTS] = {
-	"unknown version",			/* 1 */
-	"syntax error",				/* 2 */
-	"bad auth",				/* 3 */
-	"expired",				/* 4 */
-	"clock skew",				/* 5 */
-	"duplicate"				/* 6 */
+static const char*text[ISCCC_R_NRESULTS] = {
+	"unknown version",                      /* 1 */
+	"syntax error",                         /* 2 */
+	"bad auth",                             /* 3 */
+	"expired",                              /* 4 */
+	"clock skew",                           /* 5 */
+	"duplicate"                             /* 6 */
 };
 
-static const char *ids[ISCCC_R_NRESULTS] = {
+static const char*ids[ISCCC_R_NRESULTS] = {
 	"ISCCC_R_UNKNOWNVERSION",
 	"ISCCC_R_SYNTAX",
 	"ISCCC_R_BADAUTH",
@@ -49,33 +49,35 @@ static const char *ids[ISCCC_R_NRESULTS] = {
 	"ISCCC_R_DUPLICATE",
 };
 
-#define ISCCC_RESULT_RESULTSET			2
+#define ISCCC_RESULT_RESULTSET                  2
 
-static isc_once_t		once = ISC_ONCE_INIT;
+static isc_once_t once = ISC_ONCE_INIT;
 
 static void
 initialize_action(void) {
 	isc_result_t result;
 
-	result = isc_result_register(ISC_RESULTCLASS_ISCCC, ISCCC_R_NRESULTS,
-				     text, ISCCC_RESULT_RESULTSET);
-	if (result != ISC_R_SUCCESS)
-		UNEXPECTED_ERROR(__FILE__, __LINE__,
-				 "isc_result_register() failed: %u", result);
+	result = isc_result_register(ISC_RESULTCLASS_ISCCC,ISCCC_R_NRESULTS,
+				     text,ISCCC_RESULT_RESULTSET);
+	if (result != ISC_R_SUCCESS) {
+		UNEXPECTED_ERROR(__FILE__,__LINE__,
+				 "isc_result_register() failed: %u",result);
+	}
 
-	result = isc_result_registerids(ISC_RESULTCLASS_ISCCC, ISCCC_R_NRESULTS,
-					ids, ISCCC_RESULT_RESULTSET);
-	if (result != ISC_R_SUCCESS)
-		UNEXPECTED_ERROR(__FILE__, __LINE__,
-				 "isc_result_registerids() failed: %u", result);
+	result = isc_result_registerids(ISC_RESULTCLASS_ISCCC,ISCCC_R_NRESULTS,
+					ids,ISCCC_RESULT_RESULTSET);
+	if (result != ISC_R_SUCCESS) {
+		UNEXPECTED_ERROR(__FILE__,__LINE__,
+				 "isc_result_registerids() failed: %u",result);
+	}
 }
 
 static void
 initialize(void) {
-	RUNTIME_CHECK(isc_once_do(&once, initialize_action) == ISC_R_SUCCESS);
+	RUNTIME_CHECK(isc_once_do(&once,initialize_action) == ISC_R_SUCCESS);
 }
 
-const char *
+const char*
 isccc_result_totext(isc_result_t result) {
 	initialize();
 

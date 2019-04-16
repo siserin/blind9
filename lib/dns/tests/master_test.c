@@ -71,9 +71,9 @@ nullmsg(dns_rdatacallbacks_t *cb, const char *fmt, ...) {
 	UNUSED(ap);
 }
 
-#define	BUFLEN		255
-#define	BIGBUFLEN	(70 * 1024)
-#define TEST_ORIGIN	"test"
+#define BUFLEN          255
+#define BIGBUFLEN       (70 * 1024)
+#define TEST_ORIGIN     "test"
 
 static dns_masterrawheader_t header;
 static bool headerset;
@@ -112,10 +112,10 @@ static isc_result_t
 setup_master(void (*warn)(struct dns_rdatacallbacks *, const char *, ...),
 	     void (*error)(struct dns_rdatacallbacks *, const char *, ...))
 {
-	isc_result_t		result;
-	int			len;
-	isc_buffer_t		source;
-	isc_buffer_t		target;
+	isc_result_t result;
+	int len;
+	isc_buffer_t source;
+	isc_buffer_t target;
 
 	strlcpy(origin, TEST_ORIGIN, sizeof(origin));
 	len = strlen(origin);
@@ -147,11 +147,14 @@ setup_master(void (*warn)(struct dns_rdatacallbacks *, const char *, ...),
 }
 
 static isc_result_t
-test_master(const char *testfile, dns_masterformat_t format,
-	    void (*warn)(struct dns_rdatacallbacks *, const char *, ...),
-	    void (*error)(struct dns_rdatacallbacks *, const char *, ...))
+test_master(const char *testfile, dns_masterformat_t format, void (*warn)(
+		    struct dns_rdatacallbacks *,
+		    const char *,
+		    ...), void (*error)(struct dns_rdatacallbacks *,
+					const char *,
+					...))
 {
-	isc_result_t		result;
+	isc_result_t result;
 
 	result = setup_master(warn, error);
 	if (result != ISC_R_SUCCESS) {
@@ -356,7 +359,8 @@ master_includelist_test(void **state) {
 				     &dns_origin, &dns_origin,
 				     dns_rdataclass_in, 0, true,
 				     &callbacks, include_callback,
-				     &filename, mctx, dns_masterformat_text, 0);
+				     &filename, mctx, dns_masterformat_text,
+				     0);
 	assert_int_equal(result, DNS_R_SEENINCLUDE);
 	assert_non_null(filename);
 	if (filename != NULL) {
@@ -644,4 +648,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

@@ -68,7 +68,8 @@ set_mystdtime(int year, int month, int day) {
 	mystdtime = timegm(&tm);
 }
 
-void isc_stdtime_get(isc_stdtime_t *now) {
+void
+isc_stdtime_get(isc_stdtime_t *now) {
 	*now = mystdtime;
 }
 
@@ -316,4 +317,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

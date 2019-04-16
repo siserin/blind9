@@ -31,12 +31,12 @@
 
 ISC_LANG_BEGINDECLS
 
-#define DNS_CATZ_ERROR_LEVEL	ISC_LOG_WARNING
-#define DNS_CATZ_INFO_LEVEL	ISC_LOG_INFO
-#define DNS_CATZ_DEBUG_LEVEL1	ISC_LOG_DEBUG(1)
-#define DNS_CATZ_DEBUG_LEVEL2	ISC_LOG_DEBUG(2)
-#define DNS_CATZ_DEBUG_LEVEL3	ISC_LOG_DEBUG(3)
-#define DNS_CATZ_DEBUG_QUIET	(DNS_CATZ_DEBUG_LEVEL3+1)
+#define DNS_CATZ_ERROR_LEVEL    ISC_LOG_WARNING
+#define DNS_CATZ_INFO_LEVEL     ISC_LOG_INFO
+#define DNS_CATZ_DEBUG_LEVEL1   ISC_LOG_DEBUG(1)
+#define DNS_CATZ_DEBUG_LEVEL2   ISC_LOG_DEBUG(2)
+#define DNS_CATZ_DEBUG_LEVEL3   ISC_LOG_DEBUG(3)
+#define DNS_CATZ_DEBUG_QUIET    (DNS_CATZ_DEBUG_LEVEL3 + 1)
 
 /*
  * Catalog Zones functions and structures.
@@ -50,26 +50,26 @@ struct dns_catz_entry_options {
 	 * Options that can be overriden in catalog zone
 	 */
 	/* default-masters definition */
-	dns_ipkeylist_t masters;
+	dns_ipkeylist_t	       masters;
 
 	/* both as text in config format, NULL if none */
-	isc_buffer_t *allow_query;
-	isc_buffer_t *allow_transfer;
+	isc_buffer_t *	       allow_query;
+	isc_buffer_t *	       allow_transfer;
 
 	/*
 	 * Options that are only set in named.conf
 	 */
 	/* zone-directory definition */
-	char *zonedir;
+	char *	    zonedir;
 
 	/* zone should not be stored on disk (no 'file' statement in def */
-	bool in_memory;
+	bool	    in_memory;
 	/*
 	 * Minimal interval between catalog zone updates, if a new version
 	 * of catalog zone is received before this time the update will be
 	 * postponed. This is a global option for the whole catalog zone.
 	 */
-	uint32_t min_update_interval;
+	uint32_t        min_update_interval;
 };
 
 void
@@ -92,7 +92,8 @@ dns_catz_options_free(dns_catz_options_t *options, isc_mem_t *mctx);
  */
 
 isc_result_t
-dns_catz_options_copy(isc_mem_t *mctx, const dns_catz_options_t *opts,
+dns_catz_options_copy(isc_mem_t *mctx,
+		      const dns_catz_options_t *opts,
 		      dns_catz_options_t *nopts);
 /*%<
  * Duplicate 'opts' into 'nopts', allocating space from 'mctx'.
@@ -104,7 +105,8 @@ dns_catz_options_copy(isc_mem_t *mctx, const dns_catz_options_t *opts,
  */
 
 isc_result_t
-dns_catz_options_setdefault(isc_mem_t *mctx, const dns_catz_options_t *defaults,
+dns_catz_options_setdefault(isc_mem_t *mctx,
+			    const dns_catz_options_t *defaults,
 			    dns_catz_options_t *opts);
 /*%<
  * Replace empty values in 'opts' with values from 'defaults'
@@ -128,7 +130,8 @@ dns_catz_entry_getname(dns_catz_entry_t *entry);
  */
 
 isc_result_t
-dns_catz_entry_new(isc_mem_t *mctx, const dns_name_t *domain,
+dns_catz_entry_new(isc_mem_t *mctx,
+		   const dns_name_t *domain,
 		   dns_catz_entry_t **nentryp);
 /*%<
  * Allocate a new catz_entry on 'mctx', with the name 'domain'
@@ -144,7 +147,8 @@ dns_catz_entry_new(isc_mem_t *mctx, const dns_name_t *domain,
  */
 
 isc_result_t
-dns_catz_entry_copy(dns_catz_zone_t *zone, const dns_catz_entry_t *entry,
+dns_catz_entry_copy(dns_catz_zone_t *zone,
+		    const dns_catz_entry_t *entry,
 		    dns_catz_entry_t **nentryp);
 /*%<
  * Allocate a new catz_entry and deep copy 'entry' into 'nentryp'.
@@ -214,7 +218,7 @@ dns_catz_zone_attach(dns_catz_zone_t *zone, dns_catz_zone_t **zonep);
  */
 
 void
-dns_catz_zone_detach(dns_catz_zone_t** zonep);
+dns_catz_zone_detach(dns_catz_zone_t**zonep);
 /*%<
  * Detach a zone, free if no further references
  *
@@ -223,7 +227,8 @@ dns_catz_zone_detach(dns_catz_zone_t** zonep);
  */
 
 isc_result_t
-dns_catz_new_zone(dns_catz_zones_t *catzs, dns_catz_zone_t **zonep,
+dns_catz_new_zone(dns_catz_zones_t *catzs,
+		  dns_catz_zone_t **zonep,
 		  const dns_name_t *name);
 /*%<
  * Allocate a new catz zone on catzs mctx
@@ -276,8 +281,10 @@ dns_catz_zones_merge(dns_catz_zone_t *target, dns_catz_zone_t *newzone);
  */
 
 isc_result_t
-dns_catz_update_process(dns_catz_zones_t *catzs, dns_catz_zone_t *zone,
-			const dns_name_t *src_name, dns_rdataset_t *rdataset);
+dns_catz_update_process(dns_catz_zones_t *catzs,
+			dns_catz_zone_t *zone,
+			const dns_name_t *src_name,
+			dns_rdataset_t *rdataset);
 /*%<
  * Process a single rdataset from a catalog zone 'zone' update, src_name is the
  * record name.
@@ -290,7 +297,8 @@ dns_catz_update_process(dns_catz_zones_t *catzs, dns_catz_zone_t *zone,
  */
 
 isc_result_t
-dns_catz_generate_masterfilename(dns_catz_zone_t *zone, dns_catz_entry_t *entry,
+dns_catz_generate_masterfilename(dns_catz_zone_t *zone,
+				 dns_catz_entry_t *entry,
 				 isc_buffer_t **buffer);
 /*%<
  * Generate master file name and put it into *buffer (might be reallocated).
@@ -306,7 +314,8 @@ dns_catz_generate_masterfilename(dns_catz_zone_t *zone, dns_catz_entry_t *entry,
  */
 
 isc_result_t
-dns_catz_generate_zonecfg(dns_catz_zone_t *zone, dns_catz_entry_t *entry,
+dns_catz_generate_zonecfg(dns_catz_zone_t *zone,
+			  dns_catz_entry_t *entry,
 			  isc_buffer_t **buf);
 /*%<
  * Generate a zone config entry (in text form) from dns_catz_entry and puts
@@ -323,19 +332,23 @@ dns_catz_generate_zonecfg(dns_catz_zone_t *zone, dns_catz_entry_t *entry,
 /* Methods provided by named to dynamically modify the member zones */
 /* xxxwpk TODO config! */
 typedef isc_result_t (*dns_catz_zoneop_fn_t)(dns_catz_entry_t *entry,
-		dns_catz_zone_t *origin, dns_view_t *view,
-		isc_taskmgr_t *taskmgr, void *udata);
+					     dns_catz_zone_t *origin,
+					     dns_view_t *view,
+					     isc_taskmgr_t *taskmgr,
+					     void *udata);
 struct dns_catz_zonemodmethods {
-	dns_catz_zoneop_fn_t addzone;
-	dns_catz_zoneop_fn_t modzone;
-	dns_catz_zoneop_fn_t delzone;
-	void * udata;
+	dns_catz_zoneop_fn_t	    addzone;
+	dns_catz_zoneop_fn_t	    modzone;
+	dns_catz_zoneop_fn_t	    delzone;
+	void *			    udata;
 };
 
 
 isc_result_t
-dns_catz_new_zones(dns_catz_zones_t **catzsp, dns_catz_zonemodmethods_t *zmm,
-		   isc_mem_t *mctx, isc_taskmgr_t *taskmgr,
+dns_catz_new_zones(dns_catz_zones_t **catzsp,
+		   dns_catz_zonemodmethods_t *zmm,
+		   isc_mem_t *mctx,
+		   isc_taskmgr_t *taskmgr,
 		   isc_timermgr_t *timermgr);
 /*%<
  * Allocate a new catz_zones object, a collection storing all catalog zones
@@ -348,7 +361,8 @@ dns_catz_new_zones(dns_catz_zones_t **catzsp, dns_catz_zonemodmethods_t *zmm,
  */
 
 isc_result_t
-dns_catz_add_zone(dns_catz_zones_t *catzs, const dns_name_t *name,
+dns_catz_add_zone(dns_catz_zones_t *catzs,
+		  const dns_name_t *name,
 		  dns_catz_zone_t **catzp);
 /*%<
  * Allocate a new catz named 'name' and put it in 'catzs' collection.

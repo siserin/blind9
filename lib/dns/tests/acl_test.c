@@ -52,9 +52,9 @@ _teardown(void **state) {
 	return (0);
 }
 
-#define	BUFLEN		255
-#define	BIGBUFLEN	(70 * 1024)
-#define TEST_ORIGIN	"test"
+#define BUFLEN          255
+#define BIGBUFLEN       (70 * 1024)
+#define TEST_ORIGIN     "test"
 
 /* test that dns_acl_isinsecure works */
 static void
@@ -68,7 +68,7 @@ dns_acl_isinsecure_test(void **state) {
 	dns_acl_t *geoip = NULL;
 	dns_acl_t *notgeoip = NULL;
 	dns_aclelement_t *de;
-#endif
+#endif /* ifdef HAVE_GEOIP */
 
 	UNUSED(state);
 
@@ -111,17 +111,17 @@ dns_acl_isinsecure_test(void **state) {
 
 	result = dns_acl_merge(notgeoip, geoip, false);
 	assert_int_equal(result, ISC_R_SUCCESS);
-#endif
+#endif /* ifdef HAVE_GEOIP */
 
-	assert_true(dns_acl_isinsecure(any));		/* any; */
-	assert_false(dns_acl_isinsecure(none));		/* none; */
-	assert_false(dns_acl_isinsecure(notany));	/* !any; */
-	assert_false(dns_acl_isinsecure(notnone));	/* !none; */
+	assert_true(dns_acl_isinsecure(any));           /* any; */
+	assert_false(dns_acl_isinsecure(none));         /* none; */
+	assert_false(dns_acl_isinsecure(notany));       /* !any; */
+	assert_false(dns_acl_isinsecure(notnone));      /* !none; */
 
 #ifdef HAVE_GEOIP
-	assert_true(dns_acl_isinsecure(geoip));		/* geoip; */
-	assert_false(dns_acl_isinsecure(notgeoip));	/* !geoip; */
-#endif
+	assert_true(dns_acl_isinsecure(geoip));         /* geoip; */
+	assert_false(dns_acl_isinsecure(notgeoip));     /* !geoip; */
+#endif /* ifdef HAVE_GEOIP */
 
 	dns_acl_detach(&any);
 	dns_acl_detach(&none);
@@ -130,7 +130,7 @@ dns_acl_isinsecure_test(void **state) {
 #ifdef HAVE_GEOIP
 	dns_acl_detach(&geoip);
 	dns_acl_detach(&notgeoip);
-#endif
+#endif /* ifdef HAVE_GEOIP */
 }
 
 int
@@ -153,4 +153,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

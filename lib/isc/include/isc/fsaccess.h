@@ -112,7 +112,7 @@
  *      file or directory within it does not have DELETE, is that file
  *	or directory deletable?
  * \li  To implement isc_fsaccess_get(), mapping an existing Unix permission
- * 	mode_t back to an isc_fsaccess_t is pretty trivial; however, mapping
+ *      mode_t back to an isc_fsaccess_t is pretty trivial; however, mapping
  *	an NT DACL could be impossible to do in a responsible way.
  * \li  Similarly, trying to implement the functionality of being able to
  *	say "add group writability to whatever permissions already exist"
@@ -120,7 +120,7 @@
  *	with possibly having one or more matching ACEs already explicitly
  *	granting or denying access.  Because this functionality is
  *	not yet needed by the ISC, no code has been written to try to
- * 	solve this problem.
+ *      solve this problem.
  */
 
 #include <inttypes.h>
@@ -131,21 +131,21 @@
 /*
  * Trustees.
  */
-#define ISC_FSACCESS_OWNER	0x1 /*%< User account. */
-#define ISC_FSACCESS_GROUP	0x2 /*%< Primary group owner. */
-#define ISC_FSACCESS_OTHER	0x4 /*%< Not the owner or the group owner. */
-#define ISC_FSACCESS_WORLD	0x7 /*%< User, Group, Other. */
+#define ISC_FSACCESS_OWNER      0x1 /*%< User account. */
+#define ISC_FSACCESS_GROUP      0x2 /*%< Primary group owner. */
+#define ISC_FSACCESS_OTHER      0x4 /*%< Not the owner or the group owner. */
+#define ISC_FSACCESS_WORLD      0x7 /*%< User, Group, Other. */
 
 /*
  * Types of permission.
  */
-#define ISC_FSACCESS_READ		0x00000001 /*%< File only. */
-#define ISC_FSACCESS_WRITE		0x00000002 /*%< File only. */
-#define ISC_FSACCESS_EXECUTE		0x00000004 /*%< File only. */
-#define ISC_FSACCESS_CREATECHILD	0x00000008 /*%< Dir only. */
-#define ISC_FSACCESS_DELETECHILD	0x00000010 /*%< Dir only. */
-#define ISC_FSACCESS_LISTDIRECTORY	0x00000020 /*%< Dir only. */
-#define ISC_FSACCESS_ACCESSCHILD	0x00000040 /*%< Dir only. */
+#define ISC_FSACCESS_READ               0x00000001 /*%< File only. */
+#define ISC_FSACCESS_WRITE              0x00000002 /*%< File only. */
+#define ISC_FSACCESS_EXECUTE            0x00000004 /*%< File only. */
+#define ISC_FSACCESS_CREATECHILD        0x00000008 /*%< Dir only. */
+#define ISC_FSACCESS_DELETECHILD        0x00000010 /*%< Dir only. */
+#define ISC_FSACCESS_LISTDIRECTORY      0x00000020 /*%< Dir only. */
+#define ISC_FSACCESS_ACCESSCHILD        0x00000040 /*%< Dir only. */
 
 /*%
  * Adding any permission bits beyond 0x200 would mean typedef'ing

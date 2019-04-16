@@ -28,7 +28,7 @@ typedef uint32_t isc_stdtime_t;
 ISC_LANG_BEGINDECLS
 /* */
 void
-isc_stdtime_get(isc_stdtime_t *t);
+isc_stdtime_get(isc_stdtime_t*t);
 /*%<
  * Set 't' to the number of seconds since 00:00:00 UTC, January 1, 1970.
  *
@@ -37,7 +37,7 @@ isc_stdtime_get(isc_stdtime_t *t);
  *\li	't' is a valid pointer.
  */
 
-#define isc_stdtime_convert32(t, t32p) (*(t32p) = t)
+#define isc_stdtime_convert32(t,t32p) (*(t32p) = t)
 /*
  * Convert the standard time to its 32-bit version.
  */

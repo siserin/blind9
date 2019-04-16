@@ -55,13 +55,13 @@
 
 #if USE_PKCS11
 #include <pk11/result.h>
-#endif
+#endif /* if USE_PKCS11 */
 
 #include "dnssectool.h"
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024   /* WIN32, and others don't define this. */
-#endif
+#endif /* ifndef PATH_MAX */
 
 const char *program = "dnssec-cds";
 int verbose;
@@ -86,9 +86,9 @@ static dns_rdataclass_t rdclass = dns_rdataclass_in;
  */
 static dns_dsdigest_t dtype[8];
 
-static const char *startstr  = NULL;	/* from which we derive notbefore */
-static isc_stdtime_t notbefore = 0;	/* restrict sig inception times */
-static dns_rdata_rrsig_t oldestsig;	/* for recording inception time */
+static const char *startstr  = NULL;    /* from which we derive notbefore */
+static isc_stdtime_t notbefore = 0;     /* restrict sig inception times */
+static dns_rdata_rrsig_t oldestsig;     /* for recording inception time */
 
 static int nkey; /* number of child zone DNSKEY records */
 
@@ -125,15 +125,16 @@ static int nkey; /* number of child zone DNSKEY records */
  * match.
  */
 typedef struct keyinfo {
-	dns_rdata_t rdata;
-	dst_key_t *dst;
-	dns_secalg_t algo;
-	dns_keytag_t tag;
+	dns_rdata_t	    rdata;
+	dst_key_t *	    dst;
+	dns_secalg_t	    algo;
+	dns_keytag_t	    tag;
 } keyinfo_t;
 
 /* A replaceable function that can generate a DS RRset from some input */
 typedef isc_result_t
-ds_maker_func_t(dns_rdatalist_t *dslist, isc_buffer_t *buf, dns_rdata_t *rdata);
+	ds_maker_func_t (dns_rdatalist_t *dslist, isc_buffer_t *buf,
+			 dns_rdata_t *rdata);
 
 static dns_rdataset_t cdnskey_set, cdnskey_sig;
 static dns_rdataset_t cds_set, cds_sig;
@@ -142,7 +143,7 @@ static dns_rdataset_t old_ds_set, new_ds_set;
 
 static keyinfo_t *old_key_tbl, *new_key_tbl;
 
-isc_buffer_t *new_ds_buf = NULL;	/* backing store for new_ds_set */
+isc_buffer_t *new_ds_buf = NULL;        /* backing store for new_ds_set */
 
 static void
 verbose_time(int level, const char *msg, isc_stdtime_t time) {
@@ -183,8 +184,11 @@ initname(char *setname) {
 }
 
 static void
-findset(dns_db_t *db, dns_dbnode_t *node, dns_rdatatype_t type,
-	dns_rdataset_t *rdataset, dns_rdataset_t *sigrdataset)
+findset(dns_db_t *db,
+	dns_dbnode_t *node,
+	dns_rdatatype_t type,
+	dns_rdataset_t *rdataset,
+	dns_rdataset_t *sigrdataset)
 {
 	isc_result_t result;
 
@@ -283,8 +287,10 @@ load_child_sets(const char *file) {
 }
 
 static void
-get_dsset_name(char *filename, size_t size,
-	       const char *path, const char *suffix)
+get_dsset_name(char *filename,
+	       size_t size,
+	       const char *path,
+	       const char *suffix)
 {
 	isc_result_t result;
 	isc_buffer_t buf;
@@ -399,8 +405,10 @@ formatset(dns_rdataset_t *rdataset) {
 }
 
 static void
-write_parent_set(const char *path, const char *inplace,
-		 bool nsupdate, dns_rdataset_t *rdataset)
+write_parent_set(const char *path,
+		 const char *inplace,
+		 bool nsupdate,
+		 dns_rdataset_t *rdataset)
 {
 	isc_result_t result;
 	isc_buffer_t *buf = NULL;
@@ -509,7 +517,7 @@ match_key_dsset(keyinfo_t *ki, dns_rdataset_t *dsset, strictness_t strictness)
 			return (true);
 		} else if (strictness == TIGHT) {
 			vbprintf(0, "key does not match %s %d %d %d "
-				"when it looks like it should\n",
+				 "when it looks like it should\n",
 				 c ? "CDS" : "DS",
 				 ds.key_tag, ds.algorithm, ds.digest_type);
 			return (false);
@@ -531,7 +539,8 @@ match_key_dsset(keyinfo_t *ki, dns_rdataset_t *dsset, strictness_t strictness)
  * This creates a keyinfo_t key_tbl[nkey] array.
  */
 static keyinfo_t *
-match_keyset_dsset(dns_rdataset_t *keyset, dns_rdataset_t *dsset,
+match_keyset_dsset(dns_rdataset_t *keyset,
+		   dns_rdataset_t *dsset,
 		   strictness_t strictness)
 {
 	isc_result_t result;
@@ -613,7 +622,8 @@ free_keytable(keyinfo_t **keytable_p) {
  * check functions below.
  */
 static dns_secalg_t *
-matching_sigs(keyinfo_t *keytbl, dns_rdataset_t *rdataset,
+matching_sigs(keyinfo_t *keytbl,
+	      dns_rdataset_t *rdataset,
 	      dns_rdataset_t *sigset)
 {
 	isc_result_t result;
@@ -802,13 +812,14 @@ ds_from_cds(dns_rdatalist_t *dslist, isc_buffer_t *buf, dns_rdata_t *cds) {
 }
 
 static isc_result_t
-ds_from_cdnskey(dns_rdatalist_t *dslist, isc_buffer_t *buf,
-		 dns_rdata_t *cdnskey)
+ds_from_cdnskey(dns_rdatalist_t *dslist,
+		isc_buffer_t *buf,
+		dns_rdata_t *cdnskey)
 {
 	isc_result_t result;
 	unsigned i, n;
 
-	n = sizeof(dtype)/sizeof(dtype[0]);
+	n = sizeof(dtype) / sizeof(dtype[0]);
 	for (i = 0; i < n; i++) {
 		if (dtype[i] != 0) {
 			dns_rdata_t *rdata;
@@ -853,11 +864,11 @@ add_dtype(const char *dn) {
 	unsigned i, n;
 
 	dt = strtodsdigest(dn);
-	n = sizeof(dtype)/sizeof(dtype[0]);
+	n = sizeof(dtype) / sizeof(dtype[0]);
 	for (i = 0; i < n; i++) {
 		if (dtype[i] == 0 || dtype[i] == dt) {
 			dtype[i] = dt;
-			qsort(dtype, i+1, 1, cmp_dtype);
+			qsort(dtype, i + 1, 1, cmp_dtype);
 			return;
 		}
 	}
@@ -866,7 +877,8 @@ add_dtype(const char *dn) {
 
 static void
 make_new_ds_set(ds_maker_func_t *ds_from_rdata,
-		uint32_t ttl, dns_rdataset_t *rdset)
+		uint32_t ttl,
+		dns_rdataset_t *rdset)
 {
 	unsigned int size = 16;
 	for (;;) {
@@ -993,10 +1005,10 @@ consistent_digests(dns_rdataset_t *dsset) {
 	while (i < n) {
 		key_tag = ds[i].key_tag;
 		algorithm = ds[i].algorithm;
-		for (j = 0; j < d && i+j < n; j++) {
-			if (ds[i+j].key_tag != key_tag ||
-			    ds[i+j].algorithm != algorithm ||
-			    ds[i+j].digest_type != ds[j].digest_type)
+		for (j = 0; j < d && i + j < n; j++) {
+			if (ds[i + j].key_tag != key_tag ||
+			    ds[i + j].algorithm != algorithm ||
+			    ds[i + j].digest_type != ds[j].digest_type)
 			{
 				match = false;
 			}
@@ -1033,8 +1045,10 @@ print_diff(const char *cmd, dns_rdataset_t *rdataset) {
 }
 
 static void
-update_diff(const char *cmd, uint32_t ttl,
-	    dns_rdataset_t *addset, dns_rdataset_t *delset)
+update_diff(const char *cmd,
+	    uint32_t ttl,
+	    dns_rdataset_t *addset,
+	    dns_rdataset_t *delset)
 {
 	isc_result_t result;
 	dns_db_t *db;
@@ -1108,19 +1122,20 @@ usage(void) {
 		"    %s options [options] -f <file> -d <path> <domain>\n",
 		program);
 	fprintf(stderr, "Version: %s\n", VERSION);
-	fprintf(stderr, "Options:\n"
-"    -a <algorithm>     digest algorithm (SHA-1 / SHA-256 / SHA-384)\n"
-"    -c <class>         of domain (default IN)\n"
-"    -D                 prefer CDNSKEY records instead of CDS\n"
-"    -d <file|dir>      where to find parent dsset- file\n"
-"    -f <file>          child DNSKEY+CDNSKEY+CDS+RRSIG records\n"
-"    -i[extension]      update dsset- file in place\n"
-"    -s <start-time>    oldest permitted child signatures\n"
-"    -u                 emit nsupdate script\n"
-"    -T <ttl>           TTL of DS records\n"
-"    -V                 print version\n"
-"    -v <verbosity>\n"
-	);
+	fprintf(stderr,
+		"Options:\n"
+		"    -a <algorithm>     digest algorithm (SHA-1 / SHA-256 / SHA-384)\n"
+		"    -c <class>         of domain (default IN)\n"
+		"    -D                 prefer CDNSKEY records instead of CDS\n"
+		"    -d <file|dir>      where to find parent dsset- file\n"
+		"    -f <file>          child DNSKEY+CDNSKEY+CDS+RRSIG records\n"
+		"    -i[extension]      update dsset- file in place\n"
+		"    -s <start-time>    oldest permitted child signatures\n"
+		"    -u                 emit nsupdate script\n"
+		"    -T <ttl>           TTL of DS records\n"
+		"    -V                 print version\n"
+		"    -v <verbosity>\n"
+		);
 	exit(1);
 }
 
@@ -1143,7 +1158,7 @@ main(int argc, char *argv[]) {
 
 #if USE_PKCS11
 	pk11_result_register();
-#endif
+#endif /* if USE_PKCS11 */
 	dns_result_register();
 
 	isc_commandline_errprint = false;
@@ -1182,7 +1197,7 @@ main(int argc, char *argv[]) {
 			break;
 		case 'm':
 			isc_mem_debugging = ISC_MEM_DEBUGTRACE |
-				ISC_MEM_DEBUGRECORD;
+					    ISC_MEM_DEBUGRECORD;
 			break;
 		case 's':
 			startstr = isc_commandline_argument;
@@ -1280,7 +1295,8 @@ main(int argc, char *argv[]) {
 	 */
 
 	vbprintf(1, "verify DNSKEY signature(s)\n");
-	if (!signed_loose(matching_sigs(old_key_tbl, &dnskey_set, &dnskey_sig)))
+	if (!signed_loose(matching_sigs(old_key_tbl, &dnskey_set,
+					&dnskey_sig)))
 	{
 		fatal("could not validate child DNSKEY RRset for %s", namestr);
 	}

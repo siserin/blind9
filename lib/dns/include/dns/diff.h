@@ -14,8 +14,8 @@
 #define DNS_DIFF_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/diff.h
  * \brief
@@ -59,26 +59,26 @@
  */
 
 typedef enum {
-	DNS_DIFFOP_ADD = 0,		/*%< Add an RR. */
-	DNS_DIFFOP_DEL = 1,		/*%< Delete an RR. */
-	DNS_DIFFOP_EXISTS = 2,		/*%< Assert RR existence. */
-	DNS_DIFFOP_ADDRESIGN = 4,	/*%< ADD + RESIGN. */
-	DNS_DIFFOP_DELRESIGN = 5	/*%< DEL + RESIGN. */
+	DNS_DIFFOP_ADD = 0,             /*%< Add an RR. */
+	DNS_DIFFOP_DEL = 1,             /*%< Delete an RR. */
+	DNS_DIFFOP_EXISTS = 2,          /*%< Assert RR existence. */
+	DNS_DIFFOP_ADDRESIGN = 4,       /*%< ADD + RESIGN. */
+	DNS_DIFFOP_DELRESIGN = 5        /*%< DEL + RESIGN. */
 } dns_diffop_t;
 
 typedef struct dns_difftuple dns_difftuple_t;
 
-#define DNS_DIFFTUPLE_MAGIC	ISC_MAGIC('D','I','F','T')
-#define DNS_DIFFTUPLE_VALID(t)	ISC_MAGIC_VALID(t, DNS_DIFFTUPLE_MAGIC)
+#define DNS_DIFFTUPLE_MAGIC     ISC_MAGIC('D', 'I', 'F', 'T')
+#define DNS_DIFFTUPLE_VALID(t)  ISC_MAGIC_VALID(t, DNS_DIFFTUPLE_MAGIC)
 
 struct dns_difftuple {
-	unsigned int			magic;
-	isc_mem_t			*mctx;
-	dns_diffop_t			op;
-	dns_name_t			name;
-	dns_ttl_t			ttl;
-	dns_rdata_t			rdata;
-	ISC_LINK(dns_difftuple_t)	link;
+	unsigned int	    magic;
+	isc_mem_t *	    mctx;
+	dns_diffop_t	    op;
+	dns_name_t	    name;
+	dns_ttl_t	    ttl;
+	dns_rdata_t	    rdata;
+	ISC_LINK(dns_difftuple_t)       link;
 	/* Variable-size name data and rdata follows. */
 };
 
@@ -89,17 +89,17 @@ struct dns_difftuple {
  */
 typedef struct dns_diff dns_diff_t;
 
-#define DNS_DIFF_MAGIC		ISC_MAGIC('D','I','F','F')
-#define DNS_DIFF_VALID(t)	ISC_MAGIC_VALID(t, DNS_DIFF_MAGIC)
+#define DNS_DIFF_MAGIC          ISC_MAGIC('D', 'I', 'F', 'F')
+#define DNS_DIFF_VALID(t)       ISC_MAGIC_VALID(t, DNS_DIFF_MAGIC)
 
 struct dns_diff {
-	unsigned int			magic;
-	isc_mem_t *			mctx;
-	ISC_LIST(dns_difftuple_t)	tuples;
+	unsigned int	    magic;
+	isc_mem_t *	    mctx;
+	ISC_LIST(dns_difftuple_t)       tuples;
 };
 
 /* Type of comparison function for sorting diffs. */
-typedef int dns_diff_compare_func(const void *, const void *);
+typedef int dns_diff_compare_func (const void *, const void *);
 
 /***
  *** Functions
@@ -114,8 +114,11 @@ ISC_LANG_BEGINDECLS
 
 isc_result_t
 dns_difftuple_create(isc_mem_t *mctx,
-		     dns_diffop_t op, const dns_name_t *name, dns_ttl_t ttl,
-		     dns_rdata_t *rdata, dns_difftuple_t **tp);
+		     dns_diffop_t op,
+		     const dns_name_t *name,
+		     dns_ttl_t ttl,
+		     dns_rdata_t *rdata,
+		     dns_difftuple_t **tp);
 /*%<
  * Create a tuple.  Deep copies are made of the name and rdata, so
  * they need not remain valid after the call.
@@ -208,8 +211,9 @@ dns_diff_appendminimal(dns_diff_t *diff, dns_difftuple_t **tuple);
  *
  * Ensures:
  *\li	'diff' is still a minimal diff.
- *  \li 	*tuple is NULL.
- *   \li	The tuple has been freed, or will be freed when the diff is cleared.
+ *  \li         *tuple is NULL.
+ *   \li	The tuple has been freed, or will be freed when the diff is
+ * cleared.
  *
  */
 
@@ -235,13 +239,14 @@ dns_diff_applysilently(dns_diff_t *diff, dns_db_t *db, dns_dbversion_t *ver);
  *
  * Requires:
  *\li	*diff is a valid diff (possibly empty), containing
- *   	tuples of type #DNS_DIFFOP_ADD and/or
- *  	For #DNS_DIFFOP_DEL tuples, the TTL is ignored.
+ *      tuples of type #DNS_DIFFOP_ADD and/or
+ *      For #DNS_DIFFOP_DEL tuples, the TTL is ignored.
  *
  */
 
 isc_result_t
-dns_diff_load(dns_diff_t *diff, dns_addrdatasetfunc_t addfunc,
+dns_diff_load(dns_diff_t *diff,
+	      dns_addrdatasetfunc_t addfunc,
 	      void *add_private);
 /*%<
  * Like dns_diff_apply, but for use when loading a new database
@@ -249,8 +254,8 @@ dns_diff_load(dns_diff_t *diff, dns_addrdatasetfunc_t addfunc,
  * database transaction mechanisms.
  *
  * Requires:
- *\li 	'addfunc' is a valid dns_addradatasetfunc_t obtained from
- * 	dns_db_beginload()
+ *\li   'addfunc' is a valid dns_addradatasetfunc_t obtained from
+ *      dns_db_beginload()
  *
  *\li	'add_private' points to a corresponding dns_dbload_t *
  *      (XXX why is it a void pointer, then?)

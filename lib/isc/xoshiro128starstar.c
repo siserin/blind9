@@ -18,7 +18,7 @@
  * warranty.
  *
  * See <http://creativecommons.org/publicdomain/zero/1.0/>.
-*/
+ */
 
 #include <inttypes.h>
 
@@ -43,11 +43,11 @@ static thread_local uint32_t seed[4];
 static __thread uint32_t seed[4];
 #elif defined(HAVE___DECLSPEC_THREAD)
 static __declspec( thread ) uint32_t seed[4];
-#else
+#else  /* if defined(HAVE_THREAD_LOCAL) */
 #error "Unknown method for defining a TLS variable!"
-#endif
+#endif /* if defined(HAVE_THREAD_LOCAL) */
 
-#else
+#else  /* if defined(HAVE_TLS) */
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 static volatile HANDLE _mutex = NULL;
@@ -58,15 +58,15 @@ static volatile HANDLE _mutex = NULL;
  * global mutex. On failure to swap in the global mutex, the mutex is closed.
  */
 #define _LOCK() \
-	do {								\
-		if (!_mutex) {						\
-			HANDLE p = CreateMutex(NULL, FALSE, NULL);	\
-			if (InterlockedCompareExchangePointer		\
-			    ((void **)&_mutex, (void *)p, NULL)) {	\
-				CloseHandle(p);				\
-			}						\
-		}							\
-		WaitForSingleObject(_mutex, INFINITE);			\
+	do {                                                            \
+		if (!_mutex) {                                          \
+			HANDLE p = CreateMutex(NULL,FALSE,NULL);      \
+			if (InterlockedCompareExchangePointer           \
+				    ((void**)&_mutex,(void*)p,NULL)) {      \
+				CloseHandle(p);                         \
+			}                                               \
+		}                                                       \
+		WaitForSingleObject(_mutex,INFINITE);                  \
 	} while (0)
 
 #define _UNLOCK() ReleaseMutex(_mutex)
@@ -75,25 +75,26 @@ static volatile HANDLE _mutex = NULL;
 
 #include <pthread.h>
 static pthread_mutex_t _mutex = PTHREAD_MUTEX_INITIALIZER;
-#define _LOCK()   RUNTIME_CHECK(pthread_mutex_lock(&_mutex)==0)
-#define _UNLOCK() RUNTIME_CHECK(pthread_mutex_unlock(&_mutex)==0)
+#define _LOCK()   RUNTIME_CHECK(pthread_mutex_lock(&_mutex) == 0)
+#define _UNLOCK() RUNTIME_CHECK(pthread_mutex_unlock(&_mutex) == 0)
 #endif /* defined(_WIN32) || defined(_WIN64) */
 
 static uint32_t seed[4];
 
 #endif /* defined(HAVE_TLS) */
 
-static inline uint32_t rotl(const uint32_t x, int k) {
-	return (x << k) | (x >> (32 - k));
+static inline uint32_t
+rotl(const uint32_t x,int k) {
+	return((x << k) | (x >> (32 - k)));
 }
 
 static inline uint32_t
 next(void) {
-	uint32_t result_starstar, t;
+	uint32_t result_starstar,t;
 
 	_LOCK();
 
-	result_starstar = rotl(seed[0] * 5, 7) * 9;
+	result_starstar = rotl(seed[0] * 5,7) * 9;
 	t = seed[1] << 9;
 
 	seed[2] ^= seed[0];
@@ -103,7 +104,7 @@ next(void) {
 
 	seed[2] ^= t;
 
-	seed[3] = rotl(seed[3], 11);
+	seed[3] = rotl(seed[3],11);
 
 	_UNLOCK();
 

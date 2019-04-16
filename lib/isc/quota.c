@@ -89,8 +89,9 @@ isc_quota_attach(isc_quota_t *quota, isc_quota_t **p)
 	isc_result_t result;
 	INSIST(p != NULL && *p == NULL);
 	result = isc_quota_reserve(quota);
-	if (result == ISC_R_SUCCESS || result == ISC_R_SOFTQUOTA)
+	if (result == ISC_R_SUCCESS || result == ISC_R_SOFTQUOTA) {
 		*p = quota;
+	}
 	return (result);
 }
 

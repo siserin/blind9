@@ -13,7 +13,7 @@
 #include <dlfcn.h>
 #elif _WIN32
 #include <windows.h>
-#endif
+#endif /* if HAVE_DLFCN_H */
 
 #include <isc/buffer.h>
 #include <isc/mem.h>
@@ -33,21 +33,21 @@
 
 #include <string.h>
 
-#define CHECK(op)						\
-	do { result = (op);					\
-		if (result != ISC_R_SUCCESS) goto cleanup;	\
+#define CHECK(op)                                               \
+	do { result = (op);                                     \
+	     if (result != ISC_R_SUCCESS) { goto cleanup;}      \
 	} while (0)
 
 
 typedef struct dyndb_implementation dyndb_implementation_t;
 struct dyndb_implementation {
-	isc_mem_t			*mctx;
-	void				*handle;
-	dns_dyndb_register_t		*register_func;
-	dns_dyndb_destroy_t		*destroy_func;
-	char				*name;
-	void				*inst;
-	LINK(dyndb_implementation_t)	link;
+	isc_mem_t *		    mctx;
+	void *			    handle;
+	dns_dyndb_register_t *	    register_func;
+	dns_dyndb_destroy_t *	    destroy_func;
+	char *			    name;
+	void *			    inst;
+	LINK(dyndb_implementation_t)    link;
 };
 
 /*
@@ -75,15 +75,18 @@ impfind(const char *name) {
 	for (imp = ISC_LIST_HEAD(dyndb_implementations);
 	     imp != NULL;
 	     imp = ISC_LIST_NEXT(imp, link))
-		if (strcasecmp(name, imp->name) == 0)
+		if (strcasecmp(name, imp->name) == 0) {
 			return (imp);
+		}
 	return (NULL);
 }
 
 #if HAVE_DLFCN_H && HAVE_DLOPEN
 static isc_result_t
-load_symbol(void *handle, const char *filename,
-	    const char *symbol_name, void **symbolp)
+load_symbol(void *handle,
+	    const char *filename,
+	    const char *symbol_name,
+	    void **symbolp)
 {
 	const char *errmsg;
 	void *symbol;
@@ -94,8 +97,9 @@ load_symbol(void *handle, const char *filename,
 	symbol = dlsym(handle, symbol_name);
 	if (symbol == NULL) {
 		errmsg = dlerror();
-		if (errmsg == NULL)
+		if (errmsg == NULL) {
 			errmsg = "returned function pointer is NULL";
+		}
 		isc_log_write(dns_lctx, DNS_LOGCATEGORY_DATABASE,
 			      DNS_LOGMODULE_DYNDB, ISC_LOG_ERROR,
 			      "failed to lookup symbol %s in "
@@ -111,7 +115,9 @@ load_symbol(void *handle, const char *filename,
 }
 
 static isc_result_t
-load_library(isc_mem_t *mctx, const char *filename, const char *instname,
+load_library(isc_mem_t *mctx,
+	     const char *filename,
+	     const char *instname,
 	     dyndb_implementation_t **impp)
 {
 	isc_result_t result;
@@ -129,14 +135,15 @@ load_library(isc_mem_t *mctx, const char *filename, const char *instname,
 		      "loading DynDB instance '%s' driver '%s'",
 		      instname, filename);
 
-	flags = RTLD_NOW|RTLD_LOCAL;
+	flags = RTLD_NOW | RTLD_LOCAL;
 #if defined(RTLD_DEEPBIND) && !__SANITIZE_ADDRESS__
 	flags |= RTLD_DEEPBIND;
-#endif
+#endif /* if defined(RTLD_DEEPBIND) && !__SANITIZE_ADDRESS__ */
 
 	handle = dlopen(filename, flags);
-	if (handle == NULL)
+	if (handle == NULL) {
 		CHECK(ISC_R_FAILURE);
+	}
 
 	/* Clear dlerror */
 	dlerror();
@@ -161,8 +168,9 @@ load_library(isc_mem_t *mctx, const char *filename, const char *instname,
 			  (void **)&destroy_func));
 
 	imp = isc_mem_get(mctx, sizeof(dyndb_implementation_t));
-	if (imp == NULL)
+	if (imp == NULL) {
 		CHECK(ISC_R_NOMEMORY);
+	}
 
 	imp->mctx = NULL;
 	isc_mem_attach(mctx, &imp->mctx);
@@ -170,8 +178,9 @@ load_library(isc_mem_t *mctx, const char *filename, const char *instname,
 	imp->register_func = register_func;
 	imp->destroy_func = destroy_func;
 	imp->name = isc_mem_strdup(mctx, instname);
-	if (imp->name == NULL)
+	if (imp->name == NULL) {
 		CHECK(ISC_R_NOMEMORY);
+	}
 
 	imp->inst = NULL;
 	INIT_LINK(imp, link);
@@ -179,18 +188,21 @@ load_library(isc_mem_t *mctx, const char *filename, const char *instname,
 	*impp = imp;
 	imp = NULL;
 
-cleanup:
-	if (result != ISC_R_SUCCESS)
+ cleanup:
+	if (result != ISC_R_SUCCESS) {
 		isc_log_write(dns_lctx, DNS_LOGCATEGORY_DATABASE,
 			      DNS_LOGMODULE_DYNDB, ISC_LOG_ERROR,
 			      "failed to dynamically load instance '%s' "
 			      "driver '%s': %s (%s)", instname, filename,
 			      dlerror(), isc_result_totext(result));
-	if (imp != NULL)
+	}
+	if (imp != NULL) {
 		isc_mem_putanddetach(&imp->mctx, imp,
 				     sizeof(dyndb_implementation_t));
-	if (result != ISC_R_SUCCESS && handle != NULL)
+	}
+	if (result != ISC_R_SUCCESS && handle != NULL) {
 		dlclose(handle);
+	}
 
 	return (result);
 }
@@ -210,8 +222,10 @@ unload_library(dyndb_implementation_t **impp) {
 }
 #elif _WIN32
 static isc_result_t
-load_symbol(HMODULE handle, const char *filename,
-	    const char *symbol_name, void **symbolp)
+load_symbol(HMODULE handle,
+	    const char *filename,
+	    const char *symbol_name,
+	    void **symbolp)
 {
 	void *symbol;
 
@@ -235,7 +249,9 @@ load_symbol(HMODULE handle, const char *filename,
 }
 
 static isc_result_t
-load_library(isc_mem_t *mctx, const char *filename, const char *instname,
+load_library(isc_mem_t *mctx,
+	     const char *filename,
+	     const char *instname,
 	     dyndb_implementation_t **impp)
 {
 	isc_result_t result;
@@ -254,8 +270,9 @@ load_library(isc_mem_t *mctx, const char *filename, const char *instname,
 		      instname, filename);
 
 	handle = LoadLibraryA(filename);
-	if (handle == NULL)
+	if (handle == NULL) {
 		CHECK(ISC_R_FAILURE);
+	}
 
 	CHECK(load_symbol(handle, filename, "dyndb_version",
 			  (void **)&version_func));
@@ -277,8 +294,9 @@ load_library(isc_mem_t *mctx, const char *filename, const char *instname,
 			  (void **)&destroy_func));
 
 	imp = isc_mem_get(mctx, sizeof(dyndb_implementation_t));
-	if (imp == NULL)
+	if (imp == NULL) {
 		CHECK(ISC_R_NOMEMORY);
+	}
 
 	imp->mctx = NULL;
 	isc_mem_attach(mctx, &imp->mctx);
@@ -286,8 +304,9 @@ load_library(isc_mem_t *mctx, const char *filename, const char *instname,
 	imp->register_func = register_func;
 	imp->destroy_func = destroy_func;
 	imp->name = isc_mem_strdup(mctx, instname);
-	if (imp->name == NULL)
+	if (imp->name == NULL) {
 		CHECK(ISC_R_NOMEMORY);
+	}
 
 	imp->inst = NULL;
 	INIT_LINK(imp, link);
@@ -295,18 +314,21 @@ load_library(isc_mem_t *mctx, const char *filename, const char *instname,
 	*impp = imp;
 	imp = NULL;
 
-cleanup:
-	if (result != ISC_R_SUCCESS)
+ cleanup:
+	if (result != ISC_R_SUCCESS) {
 		isc_log_write(dns_lctx, DNS_LOGCATEGORY_DATABASE,
 			      DNS_LOGMODULE_DYNDB, ISC_LOG_ERROR,
 			      "failed to dynamically load instance '%s' "
 			      "driver '%s': %d (%s)", instname, filename,
 			      GetLastError(), isc_result_totext(result));
-	if (imp != NULL)
+	}
+	if (imp != NULL) {
 		isc_mem_putanddetach(&imp->mctx, imp,
 				     sizeof(dyndb_implementation_t));
-	if (result != ISC_R_SUCCESS && handle != NULL)
+	}
+	if (result != ISC_R_SUCCESS && handle != NULL) {
 		FreeLibrary(handle);
+	}
 
 	return (result);
 }
@@ -324,9 +346,11 @@ unload_library(dyndb_implementation_t **impp) {
 
 	*impp = NULL;
 }
-#else	/* HAVE_DLFCN_H || _WIN32 */
+#else   /* HAVE_DLFCN_H || _WIN32 */
 static isc_result_t
-load_library(isc_mem_t *mctx, const char *filename, const char *instname,
+load_library(isc_mem_t *mctx,
+	     const char *filename,
+	     const char *instname,
 	     dyndb_implementation_t **impp)
 {
 	UNUSED(mctx);
@@ -346,11 +370,15 @@ unload_library(dyndb_implementation_t **impp)
 {
 	UNUSED(impp);
 }
-#endif	/* HAVE_DLFCN_H */
+#endif  /* HAVE_DLFCN_H */
 
 isc_result_t
-dns_dyndb_load(const char *libname, const char *name, const char *parameters,
-	       const char *file, unsigned long line, isc_mem_t *mctx,
+dns_dyndb_load(const char *libname,
+	       const char *name,
+	       const char *parameters,
+	       const char *file,
+	       unsigned long line,
+	       isc_mem_t *mctx,
 	       const dns_dyndbctx_t *dctx)
 {
 	isc_result_t result;
@@ -364,8 +392,9 @@ dns_dyndb_load(const char *libname, const char *name, const char *parameters,
 	LOCK(&dyndb_lock);
 
 	/* duplicate instance names are not allowed */
-	if (impfind(name) != NULL)
+	if (impfind(name) != NULL) {
 		CHECK(ISC_R_EXISTS);
+	}
 
 	CHECK(load_library(mctx, libname, name, &implementation));
 	CHECK(implementation->register_func(mctx, name, parameters, file, line,
@@ -374,10 +403,12 @@ dns_dyndb_load(const char *libname, const char *name, const char *parameters,
 	APPEND(dyndb_implementations, implementation, link);
 	result = ISC_R_SUCCESS;
 
-cleanup:
-	if (result != ISC_R_SUCCESS)
-		if (implementation != NULL)
+ cleanup:
+	if (result != ISC_R_SUCCESS) {
+		if (implementation != NULL) {
 			unload_library(&implementation);
+		}
+	}
 
 	UNLOCK(&dyndb_lock);
 	return (result);
@@ -405,30 +436,40 @@ dns_dyndb_cleanup(bool exiting) {
 	}
 	UNLOCK(&dyndb_lock);
 
-	if (exiting == true)
+	if (exiting == true) {
 		isc_mutex_destroy(&dyndb_lock);
+	}
 }
 
 isc_result_t
-dns_dyndb_createctx(isc_mem_t *mctx, const void *hashinit, isc_log_t *lctx,
-		    dns_view_t *view, dns_zonemgr_t *zmgr, isc_task_t *task,
-		    isc_timermgr_t *tmgr, dns_dyndbctx_t **dctxp)
+dns_dyndb_createctx(isc_mem_t *mctx,
+		    const void *hashinit,
+		    isc_log_t *lctx,
+		    dns_view_t *view,
+		    dns_zonemgr_t *zmgr,
+		    isc_task_t *task,
+		    isc_timermgr_t *tmgr,
+		    dns_dyndbctx_t **dctxp)
 {
 	dns_dyndbctx_t *dctx;
 
 	REQUIRE(dctxp != NULL && *dctxp == NULL);
 
 	dctx = isc_mem_get(mctx, sizeof(*dctx));
-	if (dctx == NULL)
+	if (dctx == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	memset(dctx, 0, sizeof(*dctx));
-	if (view != NULL)
+	if (view != NULL) {
 		dns_view_attach(view, &dctx->view);
-	if (zmgr != NULL)
+	}
+	if (zmgr != NULL) {
 		dns_zonemgr_attach(zmgr, &dctx->zmgr);
-	if (task != NULL)
+	}
+	if (task != NULL) {
 		isc_task_attach(task, &dctx->task);
+	}
 	dctx->timermgr = tmgr;
 	dctx->hashinit = hashinit;
 	dctx->lctx = lctx;
@@ -453,12 +494,15 @@ dns_dyndb_destroyctx(dns_dyndbctx_t **dctxp) {
 
 	dctx->magic = 0;
 
-	if (dctx->view != NULL)
+	if (dctx->view != NULL) {
 		dns_view_detach(&dctx->view);
-	if (dctx->zmgr != NULL)
+	}
+	if (dctx->zmgr != NULL) {
 		dns_zonemgr_detach(&dctx->zmgr);
-	if (dctx->task != NULL)
+	}
+	if (dctx->task != NULL) {
 		isc_task_detach(&dctx->task);
+	}
 	dctx->timermgr = NULL;
 	dctx->lctx = NULL;
 

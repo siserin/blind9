@@ -19,7 +19,7 @@
  */
 #include <limits.h>             /* Required for CHAR_BIT. */
 #include <sys/types.h>
-#include <stddef.h>		/* For Linux Standard Base. */
+#include <stddef.h>             /* For Linux Standard Base. */
 
 typedef off_t isc_offset_t;
 

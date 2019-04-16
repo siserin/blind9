@@ -35,7 +35,7 @@
 
 #include "dnstest.h"
 
-#define TEST_ORIGIN	"test"
+#define TEST_ORIGIN     "test"
 
 static int
 _setup(void **state) {
@@ -200,8 +200,11 @@ printmessage(dns_message_t *msg) {
 }
 
 static void
-render(isc_buffer_t *buf, unsigned flags, dns_tsigkey_t *key,
-       isc_buffer_t **tsigin, isc_buffer_t **tsigout,
+render(isc_buffer_t *buf,
+       unsigned flags,
+       dns_tsigkey_t *key,
+       isc_buffer_t **tsigin,
+       isc_buffer_t **tsigout,
        dst_context_t *tsigctx)
 {
 	dns_message_t *msg = NULL;
@@ -233,7 +236,7 @@ render(isc_buffer_t *buf, unsigned flags, dns_tsigkey_t *key,
 		assert_int_equal(result, ISC_R_SUCCESS);
 
 		result = dns_message_setquerytsig(msg, *tsigin);
-		 assert_int_equal(result, ISC_R_SUCCESS);
+		assert_int_equal(result, ISC_R_SUCCESS);
 	}
 
 	result = dns_compress_init(&cctx, -1, mctx);
@@ -532,8 +535,9 @@ algfromname_test(void **state) {
  * the dns__tsig_algnamefromname function can correctly match it against the
  * static table of known algorithms.
  */
-static void test_name(const char *name_string, const dns_name_t *expected) {
-	dns_name_t	name;
+static void
+test_name(const char *name_string, const dns_name_t *expected) {
+	dns_name_t name;
 	dns_name_init(&name, NULL);
 	assert_int_equal(dns_name_fromstring(&name, name_string, 0, mctx),
 			 ISC_R_SUCCESS);
@@ -563,7 +567,6 @@ algnamefromname_test(void **state) {
 /* Tests the dns__tsig_algallocated function */
 static void
 algallocated_test(void **state) {
-
 	UNUSED(state);
 
 	/* test the standard algorithms */
@@ -606,4 +609,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

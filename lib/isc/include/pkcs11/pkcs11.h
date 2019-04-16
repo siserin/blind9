@@ -1,10 +1,13 @@
 /*
- * PKCS #11 Cryptographic Token Interface Base Specification Version 2.40 Errata 01
+ * PKCS #11 Cryptographic Token Interface Base Specification Version 2.40 Errata
+ * 01
  * Committee Specification Draft 01 / Public Review Draft 01
  * 09 December 2015
  * Copyright (c) OASIS Open 2015. All Rights Reserved.
- * Source: http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/errata01/csprd01/include/pkcs11-v2.40/
- * Latest version of the specification: http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/pkcs11-base-v2.40.html
+ * Source:
+ * http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/errata01/csprd01/include/pkcs11-v2.40/
+ * Latest version of the specification:
+ * http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/pkcs11-base-v2.40.html
  * https://www.oasis-open.org/policies-guidelines/ipr
  */
 
@@ -13,7 +16,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* ifdef __cplusplus */
 
 /* Before including this file (pkcs11.h) (or pkcs11t.h by
  * itself), 5 platform-specific macros must be defined.  These
@@ -186,7 +189,7 @@ extern "C" {
  */
 #include "pkcs11t.h"
 
-#define __PASTE(x,y)      x##y
+#define __PASTE(x, y)      x ## y
 
 
 /* ==============================================================
@@ -196,7 +199,7 @@ extern "C" {
 
 #define CK_NEED_ARG_LIST  1
 #define CK_PKCS11_FUNCTION_INFO(name) \
-  extern CK_DECLARE_FUNCTION(CK_RV, name)
+	extern CK_DECLARE_FUNCTION(CK_RV, name)
 
 /* pkcs11f.h has all the information about the Cryptoki
  * function prototypes.
@@ -216,7 +219,7 @@ extern "C" {
 
 #define CK_NEED_ARG_LIST  1
 #define CK_PKCS11_FUNCTION_INFO(name) \
-  typedef CK_DECLARE_FUNCTION_POINTER(CK_RV, __PASTE(CK_,name))
+	typedef CK_DECLARE_FUNCTION_POINTER (CK_RV, __PASTE (CK_, name))
 
 /* pkcs11f.h has all the information about the Cryptoki
  * function prototypes.
@@ -237,18 +240,16 @@ extern "C" {
  */
 
 #define CK_PKCS11_FUNCTION_INFO(name) \
-  __PASTE(CK_,name) name;
+	__PASTE(CK_, name) name;
 
 struct CK_FUNCTION_LIST {
-
-  CK_VERSION    version;  /* Cryptoki version */
+	CK_VERSION        version; /* Cryptoki version */
 
 /* Pile all the function pointers into the CK_FUNCTION_LIST. */
 /* pkcs11f.h has all the information about the Cryptoki
  * function prototypes.
  */
 #include "pkcs11f.h"
-
 };
 
 #undef CK_PKCS11_FUNCTION_INFO
@@ -258,7 +259,7 @@ struct CK_FUNCTION_LIST {
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* ifdef __cplusplus */
 
 #endif /* _PKCS11_H_ */
 

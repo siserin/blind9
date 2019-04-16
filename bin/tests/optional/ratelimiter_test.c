@@ -29,7 +29,7 @@ static void shutdown_rl(isc_task_t *task, isc_event_t *event);
 static void shutdown_all(isc_task_t *task, isc_event_t *event);
 
 typedef struct {
-	int milliseconds;
+	int        milliseconds;
 	void (*fun)(isc_task_t *, isc_event_t *);
 } schedule_t;
 
@@ -45,7 +45,7 @@ schedule_t schedule[] = {
 	{  6000, shutdown_all }
 };
 
-#define NEVENTS (int)(sizeof(schedule)/sizeof(schedule[0]))
+#define NEVENTS (int)(sizeof(schedule) / sizeof(schedule[0]))
 
 isc_timer_t *timers[NEVENTS];
 

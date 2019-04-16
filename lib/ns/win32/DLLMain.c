@@ -15,8 +15,8 @@
 /*
  * Called when we enter the DLL
  */
-__declspec(dllexport) BOOL WINAPI DllMain(HINSTANCE hinstDLL,
-					  DWORD fdwReason, LPVOID lpvReserved)
+__declspec(dllexport) BOOL WINAPI
+DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
 	switch (fdwReason) {
 	/*

@@ -13,9 +13,9 @@
 
 #if HAVE_STDATOMIC_H
 #include <stdatomic.h>
-#else
+#else /* if HAVE_STDATOMIC_H */
 #include <isc/stdatomic.h>
-#endif
+#endif /* if HAVE_STDATOMIC_H */
 
 /*
  * We define a few additional macros to make things easier

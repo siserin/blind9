@@ -42,18 +42,18 @@ extern librpz_emsg_t librpz_lib_open_emsg;
  * RRs or justifying NXDOMAIN.
  */
 typedef struct {
-	uint8_t			unused;
+	uint8_t        unused;
 } rpsnode_t;
 typedef struct rpsdb {
-	dns_db_t		common;
-	int			ref_cnt;
-	librpz_result_id_t	hit_id;
-	librpz_result_t		result;
-	librpz_rsp_t*		rsp;
-	librpz_domain_buf_t	origin_buf;
-	const dns_name_t	*qname;
-	rpsnode_t		origin_node;
-	rpsnode_t		data_node;
+	dns_db_t		   common;
+	int			   ref_cnt;
+	librpz_result_id_t	   hit_id;
+	librpz_result_t		   result;
+	librpz_rsp_t*		   rsp;
+	librpz_domain_buf_t	   origin_buf;
+	const dns_name_t *	   qname;
+	rpsnode_t		   origin_node;
+	rpsnode_t		   data_node;
 } rpsdb_t;
 
 
@@ -85,7 +85,7 @@ void dns_dnsrps_server_destroy(void);
 /*
  * Ready dnsrps for a view.
  */
-isc_result_t dns_dnsrps_view_init(dns_rpz_zones_t *new, char *rps_cstr);
+isc_result_t dns_dnsrps_view_init(dns_rpz_zones_t * new, char *rps_cstr);
 
 /*
  * Connect to and start the dnsrps daemon, dnsrpzd.
@@ -95,10 +95,12 @@ isc_result_t dns_dnsrps_connect(dns_rpz_zones_t *rpzs);
 /*
  * Get ready to try dnsrps rewriting.
  */
-isc_result_t dns_dnsrps_rewrite_init(librpz_emsg_t *emsg, dns_rpz_st_t *st,
-				      dns_rpz_zones_t *rpzs,
-				      const dns_name_t *qname, isc_mem_t *mctx,
-				      bool have_rd);
+isc_result_t dns_dnsrps_rewrite_init(librpz_emsg_t *emsg,
+				     dns_rpz_st_t *st,
+				     dns_rpz_zones_t *rpzs,
+				     const dns_name_t *qname,
+				     isc_mem_t *mctx,
+				     bool have_rd);
 
 #endif /* USE_DNSRPS */
 

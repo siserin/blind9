@@ -14,8 +14,8 @@
 #define DNS_NCACHE_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/ncache.h
  *\brief
@@ -55,16 +55,24 @@ ISC_LANG_BEGINDECLS
 #define DNS_NCACHETOWIRE_OMITDNSSEC   0x0001
 
 isc_result_t
-dns_ncache_add(dns_message_t *message, dns_db_t *cache, dns_dbnode_t *node,
-	       dns_rdatatype_t covers, isc_stdtime_t now,
-	       dns_ttl_t minttl, dns_ttl_t maxttl,
+dns_ncache_add(dns_message_t *message,
+	       dns_db_t *cache,
+	       dns_dbnode_t *node,
+	       dns_rdatatype_t covers,
+	       isc_stdtime_t now,
+	       dns_ttl_t minttl,
+	       dns_ttl_t maxttl,
 	       dns_rdataset_t *addedrdataset);
 isc_result_t
-dns_ncache_addoptout(dns_message_t *message, dns_db_t *cache,
-		     dns_dbnode_t *node, dns_rdatatype_t covers,
+dns_ncache_addoptout(dns_message_t *message,
+		     dns_db_t *cache,
+		     dns_dbnode_t *node,
+		     dns_rdatatype_t covers,
 		     isc_stdtime_t now,
-		     dns_ttl_t minttl, dns_ttl_t maxttl,
-		     bool optout, dns_rdataset_t *addedrdataset);
+		     dns_ttl_t minttl,
+		     dns_ttl_t maxttl,
+		     bool optout,
+		     dns_rdataset_t *addedrdataset);
 /*%<
  * Convert the authority data from 'message' into a negative cache
  * rdataset, and store it in 'cache' at 'node' with a TTL limited to
@@ -100,8 +108,10 @@ dns_ncache_addoptout(dns_message_t *message, dns_db_t *cache,
  */
 
 isc_result_t
-dns_ncache_towire(dns_rdataset_t *rdataset, dns_compress_t *cctx,
-		  isc_buffer_t *target, unsigned int options,
+dns_ncache_towire(dns_rdataset_t *rdataset,
+		  dns_compress_t *cctx,
+		  isc_buffer_t *target,
+		  unsigned int options,
 		  unsigned int *countp);
 /*%<
  * Convert the negative caching rdataset 'rdataset' to wire format,
@@ -136,8 +146,10 @@ dns_ncache_towire(dns_rdataset_t *rdataset, dns_compress_t *cctx,
  */
 
 isc_result_t
-dns_ncache_getrdataset(dns_rdataset_t *ncacherdataset, dns_name_t *name,
-		       dns_rdatatype_t type, dns_rdataset_t *rdataset);
+dns_ncache_getrdataset(dns_rdataset_t *ncacherdataset,
+		       dns_name_t *name,
+		       dns_rdatatype_t type,
+		       dns_rdataset_t *rdataset);
 /*%<
  * Search the negative caching rdataset for an rdataset with the
  * specified name and type.
@@ -164,14 +176,17 @@ dns_ncache_getrdataset(dns_rdataset_t *ncacherdataset, dns_name_t *name,
  */
 
 isc_result_t
-dns_ncache_getsigrdataset(dns_rdataset_t *ncacherdataset, dns_name_t *name,
-			  dns_rdatatype_t covers, dns_rdataset_t *rdataset);
+dns_ncache_getsigrdataset(dns_rdataset_t *ncacherdataset,
+			  dns_name_t *name,
+			  dns_rdatatype_t covers,
+			  dns_rdataset_t *rdataset);
 /*%<
  * Similar to dns_ncache_getrdataset() but get the rrsig that matches.
  */
 
 void
-dns_ncache_current(dns_rdataset_t *ncacherdataset, dns_name_t *found,
+dns_ncache_current(dns_rdataset_t *ncacherdataset,
+		   dns_name_t *found,
 		   dns_rdataset_t *rdataset);
 
 /*%<

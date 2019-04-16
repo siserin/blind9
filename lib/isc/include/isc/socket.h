@@ -13,8 +13,8 @@
 #define ISC_SOCKET_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file isc/socket.h
  * \brief Provides TCP and UDP sockets for network I/O.  The sockets are event
@@ -72,18 +72,18 @@ ISC_LANG_BEGINDECLS
  * Maximum number of buffers in a scatter/gather read/write.  The operating
  * system in use must support at least this number (plus one on some.)
  */
-#define ISC_SOCKET_MAXSCATTERGATHER	8
+#define ISC_SOCKET_MAXSCATTERGATHER     8
 
 /*@{*/
 /*!
  * Socket options:
  *
  * _REUSEADDRESS:	Set SO_REUSEADDR prior to calling bind(),
- * 			if a non-zero port is specified (applies to
- * 			AF_INET and AF_INET6).
+ *                      if a non-zero port is specified (applies to
+ *                      AF_INET and AF_INET6).
  */
 typedef enum {
-	ISC_SOCKET_REUSEADDRESS	= 0x01U,
+	ISC_SOCKET_REUSEADDRESS = 0x01U,
 } isc_socket_options_t;
 /*@}*/
 
@@ -182,14 +182,14 @@ enum {
  * _USEMINMTU:	Set the per packet IPV6_USE_MIN_MTU flag.
  */
 typedef enum {
-	ISC_SOCKEVENTATTR_ATTACHED =	0x10000000U, /* internal */
-	ISC_SOCKEVENTATTR_TRUNC =	0x00800000U, /* public */
-	ISC_SOCKEVENTATTR_CTRUNC =	0x00400000U, /* public */
-	ISC_SOCKEVENTATTR_TIMESTAMP =	0x00200000U, /* public */
-	ISC_SOCKEVENTATTR_PKTINFO =	0x00100000U, /* public */
-	ISC_SOCKEVENTATTR_MULTICAST =	0x00080000U, /* public */
-	ISC_SOCKEVENTATTR_DSCP =	0x00040000U, /* public */
-	ISC_SOCKEVENTATTR_USEMINMTU =	0x00020000U  /* public */
+	ISC_SOCKEVENTATTR_ATTACHED =    0x10000000U, /* internal */
+	ISC_SOCKEVENTATTR_TRUNC =       0x00800000U, /* public */
+	ISC_SOCKEVENTATTR_CTRUNC =      0x00400000U, /* public */
+	ISC_SOCKEVENTATTR_TIMESTAMP =   0x00200000U, /* public */
+	ISC_SOCKEVENTATTR_PKTINFO =     0x00100000U, /* public */
+	ISC_SOCKEVENTATTR_MULTICAST =   0x00080000U, /* public */
+	ISC_SOCKEVENTATTR_DSCP =        0x00040000U, /* public */
+	ISC_SOCKEVENTATTR_USEMINMTU =   0x00020000U  /* public */
 } isc_sockeventattr_t;
 /*@}*/
 
@@ -199,45 +199,45 @@ typedef enum {
 
 struct isc_socketevent {
 	ISC_EVENT_COMMON(isc_socketevent_t);
-	isc_result_t		result;		/*%< OK, EOF, whatever else */
-	unsigned int		minimum;	/*%< minimum i/o for event */
-	unsigned int		n;		/*%< bytes read or written */
-	unsigned int		offset;		/*%< offset into buffer list */
-	isc_region_t		region;		/*%< for single-buffer i/o */
-	isc_sockaddr_t		address;	/*%< source address */
-	isc_time_t		timestamp;	/*%< timestamp of packet recv */
-	struct in6_pktinfo	pktinfo;	/*%< ipv6 pktinfo */
-	isc_sockeventattr_t	attributes;	/*%< see isc_sockeventattr_t
-						     enum */
-	isc_eventdestructor_t   destroy;	/*%< original destructor */
-	unsigned int		dscp;		/*%< UDP dscp value */
+	isc_result_t		     result;    /*%< OK, EOF, whatever else */
+	unsigned int		     minimum;   /*%< minimum i/o for event */
+	unsigned int		     n;         /*%< bytes read or written */
+	unsigned int		     offset;    /*%< offset into buffer list */
+	isc_region_t		     region;    /*%< for single-buffer i/o */
+	isc_sockaddr_t		     address;   /*%< source address */
+	isc_time_t		     timestamp; /*%< timestamp of packet recv */
+	struct in6_pktinfo	     pktinfo;   /*%< ipv6 pktinfo */
+	isc_sockeventattr_t	     attributes; /*%< see isc_sockeventattr_t
+	                                          *   enum */
+	isc_eventdestructor_t	     destroy;   /*%< original destructor */
+	unsigned int		     dscp;      /*%< UDP dscp value */
 };
 
 typedef struct isc_socket_newconnev isc_socket_newconnev_t;
 struct isc_socket_newconnev {
 	ISC_EVENT_COMMON(isc_socket_newconnev_t);
-	isc_socket_t *		newsocket;
-	isc_result_t		result;		/*%< OK, EOF, whatever else */
-	isc_sockaddr_t		address;	/*%< source address */
+	isc_socket_t *	      newsocket;
+	isc_result_t	      result;           /*%< OK, EOF, whatever else */
+	isc_sockaddr_t	      address;          /*%< source address */
 };
 
 typedef struct isc_socket_connev isc_socket_connev_t;
 struct isc_socket_connev {
 	ISC_EVENT_COMMON(isc_socket_connev_t);
-	isc_result_t		result;		/*%< OK, EOF, whatever else */
+	isc_result_t        result;             /*%< OK, EOF, whatever else */
 };
 
 #define ISC_SOCKEVENT_ANYEVENT  (0)
-#define ISC_SOCKEVENT_RECVDONE	(ISC_EVENTCLASS_SOCKET + 1)
-#define ISC_SOCKEVENT_SENDDONE	(ISC_EVENTCLASS_SOCKET + 2)
-#define ISC_SOCKEVENT_NEWCONN	(ISC_EVENTCLASS_SOCKET + 3)
-#define ISC_SOCKEVENT_CONNECT	(ISC_EVENTCLASS_SOCKET + 4)
+#define ISC_SOCKEVENT_RECVDONE  (ISC_EVENTCLASS_SOCKET + 1)
+#define ISC_SOCKEVENT_SENDDONE  (ISC_EVENTCLASS_SOCKET + 2)
+#define ISC_SOCKEVENT_NEWCONN   (ISC_EVENTCLASS_SOCKET + 3)
+#define ISC_SOCKEVENT_CONNECT   (ISC_EVENTCLASS_SOCKET + 4)
 
 /*
  * Internal events.
  */
-#define ISC_SOCKEVENT_INTR	(ISC_EVENTCLASS_SOCKET + 256)
-#define ISC_SOCKEVENT_INTW	(ISC_EVENTCLASS_SOCKET + 257)
+#define ISC_SOCKEVENT_INTR      (ISC_EVENTCLASS_SOCKET + 256)
+#define ISC_SOCKEVENT_INTW      (ISC_EVENTCLASS_SOCKET + 257)
 
 typedef enum {
 	isc_sockettype_udp = 1,
@@ -250,28 +250,29 @@ typedef enum {
 /*!
  * How a socket should be shutdown in isc_socket_shutdown() calls.
  */
-#define ISC_SOCKSHUT_RECV	0x00000001	/*%< close read side */
-#define ISC_SOCKSHUT_SEND	0x00000002	/*%< close write side */
-#define ISC_SOCKSHUT_ALL	0x00000003	/*%< close them all */
+#define ISC_SOCKSHUT_RECV       0x00000001      /*%< close read side */
+#define ISC_SOCKSHUT_SEND       0x00000002      /*%< close write side */
+#define ISC_SOCKSHUT_ALL        0x00000003      /*%< close them all */
 /*@}*/
 
 /*@{*/
 /*!
  * What I/O events to cancel in isc_socket_cancel() calls.
  */
-#define ISC_SOCKCANCEL_RECV	0x00000001	/*%< cancel recv */
-#define ISC_SOCKCANCEL_SEND	0x00000002	/*%< cancel send */
-#define ISC_SOCKCANCEL_ACCEPT	0x00000004	/*%< cancel accept */
-#define ISC_SOCKCANCEL_CONNECT	0x00000008	/*%< cancel connect */
-#define ISC_SOCKCANCEL_ALL	0x0000000f	/*%< cancel everything */
+#define ISC_SOCKCANCEL_RECV     0x00000001      /*%< cancel recv */
+#define ISC_SOCKCANCEL_SEND     0x00000002      /*%< cancel send */
+#define ISC_SOCKCANCEL_ACCEPT   0x00000004      /*%< cancel accept */
+#define ISC_SOCKCANCEL_CONNECT  0x00000008      /*%< cancel connect */
+#define ISC_SOCKCANCEL_ALL      0x0000000f      /*%< cancel everything */
 /*@}*/
 
 /*@{*/
 /*!
  * Flags for isc_socket_send() and isc_socket_recv() calls.
  */
-#define ISC_SOCKFLAG_IMMEDIATE	0x00000001	/*%< send event only if needed */
-#define ISC_SOCKFLAG_NORETRY	0x00000002	/*%< drop failed UDP sends */
+#define ISC_SOCKFLAG_IMMEDIATE  0x00000001      /*%< send event only if needed
+	                                         * */
+#define ISC_SOCKFLAG_NORETRY    0x00000002      /*%< drop failed UDP sends */
 /*@}*/
 
 /*%
@@ -289,13 +290,13 @@ typedef enum {
  */
 #ifndef WIN32
 struct isc_socketmgr {
-	unsigned int		impmagic;
-	unsigned int		magic;
+	unsigned int	    impmagic;
+	unsigned int	    magic;
 };
-#endif
+#endif /* ifndef WIN32 */
 
-#define ISCAPI_SOCKETMGR_MAGIC		ISC_MAGIC('A','s','m','g')
-#define ISCAPI_SOCKETMGR_VALID(m)	((m) != NULL && \
+#define ISCAPI_SOCKETMGR_MAGIC          ISC_MAGIC('A', 's', 'm', 'g')
+#define ISCAPI_SOCKETMGR_VALID(m)       ((m) != NULL && \
 					 (m)->magic == ISCAPI_SOCKETMGR_MAGIC)
 
 /*%
@@ -304,13 +305,13 @@ struct isc_socketmgr {
  */
 #ifndef WIN32
 struct isc_socket {
-	unsigned int		impmagic;
-	unsigned int		magic;
+	unsigned int	    impmagic;
+	unsigned int	    magic;
 };
-#endif
+#endif /* ifndef WIN32 */
 
-#define ISCAPI_SOCKET_MAGIC	ISC_MAGIC('A','s','c','t')
-#define ISCAPI_SOCKET_VALID(s)	((s) != NULL && \
+#define ISCAPI_SOCKET_MAGIC     ISC_MAGIC('A', 's', 'c', 't')
+#define ISCAPI_SOCKET_VALID(s)  ((s) != NULL && \
 				 (s)->magic == ISCAPI_SOCKET_MAGIC)
 
 /***
@@ -357,8 +358,7 @@ isc_socket_dup(isc_socket_t *sock0, isc_socket_t **socketp);
  */
 
 void
-isc_socket_cancel(isc_socket_t *sock, isc_task_t *task,
-		  unsigned int how);
+isc_socket_cancel(isc_socket_t *sock, isc_task_t *task, unsigned int how);
 /*%<
  * Cancel pending I/O of the type specified by "how".
  *
@@ -501,7 +501,8 @@ isc_socket_close(isc_socket_t *sock);
  */
 
 isc_result_t
-isc_socket_bind(isc_socket_t *sock, const isc_sockaddr_t *addressp,
+isc_socket_bind(isc_socket_t *sock,
+		const isc_sockaddr_t *addressp,
 		isc_socket_options_t options);
 /*%<
  * Bind 'socket' to '*addressp'.
@@ -555,7 +556,9 @@ isc_socket_listen(isc_socket_t *sock, unsigned int backlog);
 
 isc_result_t
 isc_socket_accept(isc_socket_t *sock,
-		  isc_task_t *task, isc_taskaction_t action, void *arg);
+		  isc_task_t *task,
+		  isc_taskaction_t action,
+		  void *arg);
 /*%<
  * Queue accept event.  When a new connection is received, the task will
  * get an ISC_SOCKEVENT_NEWCONN event with the sender set to the listen
@@ -577,8 +580,10 @@ isc_socket_accept(isc_socket_t *sock,
  */
 
 isc_result_t
-isc_socket_connect(isc_socket_t *sock, const isc_sockaddr_t *addressp,
-		   isc_task_t *task, isc_taskaction_t action,
+isc_socket_connect(isc_socket_t *sock,
+		   const isc_sockaddr_t *addressp,
+		   isc_task_t *task,
+		   isc_taskaction_t action,
 		   void *arg);
 /*%<
  * Connect 'socket' to peer with address *saddr.  When the connection
@@ -644,14 +649,20 @@ isc_socket_getsockname(isc_socket_t *sock, isc_sockaddr_t *addressp);
 
 /*@{*/
 isc_result_t
-isc_socket_recv(isc_socket_t *sock, isc_region_t *region,
+isc_socket_recv(isc_socket_t *sock,
+		isc_region_t *region,
 		unsigned int minimum,
-		isc_task_t *task, isc_taskaction_t action, void *arg);
+		isc_task_t *task,
+		isc_taskaction_t action,
+		void *arg);
 
 isc_result_t
-isc_socket_recv2(isc_socket_t *sock, isc_region_t *region,
-		 unsigned int minimum, isc_task_t *task,
-		 isc_socketevent_t *event, unsigned int flags);
+isc_socket_recv2(isc_socket_t *sock,
+		 isc_region_t *region,
+		 unsigned int minimum,
+		 isc_task_t *task,
+		 isc_socketevent_t *event,
+		 unsigned int flags);
 
 /*!
  * Receive from 'socket', storing the results in region.
@@ -664,7 +675,7 @@ isc_socket_recv2(isc_socket_t *sock, isc_region_t *region,
  *\li	If 'minimum' is non-zero and at least that many bytes are read,
  *	the completion event will be posted to the task 'task.'  If minimum
  *	is zero, the exact number of bytes requested in the region must
- * 	be read for an event to be posted.  This only makes sense for TCP
+ *      be read for an event to be posted.  This only makes sense for TCP
  *	connections, and is always set to 1 byte for UDP.
  *
  *\li	The read will complete when the desired number of bytes have been
@@ -723,17 +734,27 @@ isc_socket_recv2(isc_socket_t *sock, isc_region_t *region,
 
 /*@{*/
 isc_result_t
-isc_socket_send(isc_socket_t *sock, isc_region_t *region,
-		isc_task_t *task, isc_taskaction_t action, void *arg);
+isc_socket_send(isc_socket_t *sock,
+		isc_region_t *region,
+		isc_task_t *task,
+		isc_taskaction_t action,
+		void *arg);
 isc_result_t
-isc_socket_sendto(isc_socket_t *sock, isc_region_t *region,
-		  isc_task_t *task, isc_taskaction_t action, void *arg,
-		  const isc_sockaddr_t *address, struct in6_pktinfo *pktinfo);
+isc_socket_sendto(isc_socket_t *sock,
+		  isc_region_t *region,
+		  isc_task_t *task,
+		  isc_taskaction_t action,
+		  void *arg,
+		  const isc_sockaddr_t *address,
+		  struct in6_pktinfo *pktinfo);
 isc_result_t
-isc_socket_sendto2(isc_socket_t *sock, isc_region_t *region,
+isc_socket_sendto2(isc_socket_t *sock,
+		   isc_region_t *region,
 		   isc_task_t *task,
-		   const isc_sockaddr_t *address, struct in6_pktinfo *pktinfo,
-		   isc_socketevent_t *event, unsigned int flags);
+		   const isc_sockaddr_t *address,
+		   struct in6_pktinfo *pktinfo,
+		   isc_socketevent_t *event,
+		   unsigned int flags);
 
 /*!
  * Send the contents of 'region' to the socket's peer.
@@ -805,15 +826,18 @@ isc_socket_sendto2(isc_socket_t *sock, isc_region_t *region,
 /*@}*/
 
 isc_result_t
-isc_socketmgr_createinctx(isc_mem_t *mctx, isc_appctx_t *actx,
+isc_socketmgr_createinctx(isc_mem_t *mctx,
+			  isc_appctx_t *actx,
 			  isc_socketmgr_t **managerp);
 
 isc_result_t
 isc_socketmgr_create(isc_mem_t *mctx, isc_socketmgr_t **managerp);
 
 isc_result_t
-isc_socketmgr_create2(isc_mem_t *mctx, isc_socketmgr_t **managerp,
-		      unsigned int maxsocks, int nthreads);
+isc_socketmgr_create2(isc_mem_t *mctx,
+		      isc_socketmgr_t **managerp,
+		      unsigned int maxsocks,
+		      int nthreads);
 /*%<
  * Create a socket manager.  If "maxsocks" is non-zero, it specifies the
  * maximum number of sockets that the created manager should handle.
@@ -933,8 +957,10 @@ isc_socket_dscp(isc_socket_t *sock, isc_dscp_t dscp);
  */
 
 isc_socketevent_t *
-isc_socket_socketevent(isc_mem_t *mctx, void *sender,
-		       isc_eventtype_t eventtype, isc_taskaction_t action,
+isc_socket_socketevent(isc_mem_t *mctx,
+		       void *sender,
+		       isc_eventtype_t eventtype,
+		       isc_taskaction_t action,
 		       void *arg);
 /*%<
  * Get a isc_socketevent_t to be used with isc_socket_sendto2(), etc.
@@ -959,8 +985,10 @@ isc_socket_cleanunix(const isc_sockaddr_t *addr, bool active);
  */
 
 isc_result_t
-isc_socket_permunix(const isc_sockaddr_t *sockaddr, uint32_t perm,
-		    uint32_t owner, uint32_t group);
+isc_socket_permunix(const isc_sockaddr_t *sockaddr,
+		    uint32_t perm,
+		    uint32_t owner,
+		    uint32_t group);
 /*%<
  * Set ownership and file permissions on the UNIX domain socket.
  *
@@ -999,7 +1027,7 @@ int isc_socket_getfd(isc_socket_t *socket);
  */
 
 void
-isc_socketmgr_setreserved(isc_socketmgr_t *mgr, uint32_t);
+	isc_socketmgr_setreserved(isc_socketmgr_t * mgr, uint32_t);
 /*%<
  * Temporary.  For use by named only.
  */

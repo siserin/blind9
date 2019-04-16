@@ -23,4 +23,4 @@ void named_geoip_load(char *dir);
 #ifdef HAVE_GEOIP
 extern dns_geoip_databases_t *named_g_geoip;
 #endif /* HAVE_GEOIP */
-#endif
+#endif /* ifndef _GEOIP_H */

@@ -260,10 +260,11 @@ isc_buffer_compact(isc_buffer_t *b) {
 		(void)memmove(b->base, src, (size_t)length);
 	}
 
-	if (b->active > b->current)
+	if (b->active > b->current) {
 		b->active -= b->current;
-	else
+	} else {
 		b->active = 0;
+	}
 	b->current = 0;
 	b->used = length;
 }
@@ -428,7 +429,8 @@ isc__buffer_putuint48(isc_buffer_t *b, uint64_t val) {
 }
 
 void
-isc__buffer_putmem(isc_buffer_t *b, const unsigned char *base,
+isc__buffer_putmem(isc_buffer_t *b,
+		   const unsigned char *base,
 		   unsigned int length)
 {
 	isc_result_t result;
@@ -468,7 +470,7 @@ isc__buffer_putstr(isc_buffer_t *b, const char *source) {
 
 void
 isc_buffer_putdecint(isc_buffer_t *b, int64_t v) {
-	unsigned int l=0;
+	unsigned int l = 0;
 	unsigned char *cp;
 	char buf[21];
 	isc_result_t result;
@@ -501,8 +503,9 @@ isc_buffer_dup(isc_mem_t *mctx, isc_buffer_t **dstp, const isc_buffer_t *src) {
 	isc_buffer_usedregion(src, &region);
 
 	result = isc_buffer_allocate(mctx, &dst, region.length);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	result = isc_buffer_copyregion(dst, &region);
 	RUNTIME_CHECK(result == ISC_R_SUCCESS); /* NOSPACE is impossible */
@@ -537,17 +540,19 @@ isc_buffer_copyregion(isc_buffer_t *b, const isc_region_t *r) {
 }
 
 isc_result_t
-isc_buffer_allocate(isc_mem_t *mctx, isc_buffer_t **dynbuffer,
+isc_buffer_allocate(isc_mem_t *mctx,
+		    isc_buffer_t **dynbuffer,
 		    unsigned int length)
 {
 	isc_buffer_t *dbuf;
-	unsigned char * bdata;
+	unsigned char *bdata;
 	REQUIRE(dynbuffer != NULL);
 	REQUIRE(*dynbuffer == NULL);
 
 	dbuf = isc_mem_get(mctx, sizeof(isc_buffer_t));
-	if (dbuf == NULL)
+	if (dbuf == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	bdata = isc_mem_get(mctx, length);
 	if (bdata == NULL) {
@@ -625,7 +630,7 @@ isc_buffer_free(isc_buffer_t **dynbuffer) {
 	REQUIRE((*dynbuffer)->mctx != NULL);
 
 	dbuf = *dynbuffer;
-	*dynbuffer = NULL;	/* destroy external reference */
+	*dynbuffer = NULL;      /* destroy external reference */
 	mctx = dbuf->mctx;
 	dbuf->mctx = NULL;
 

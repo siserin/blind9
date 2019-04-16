@@ -28,8 +28,8 @@
 #define CHECK(r) \
 	do { \
 		result = (r); \
-		if (result != ISC_R_SUCCESS) \
-			goto cleanup; \
+		if (result != ISC_R_SUCCESS) { \
+			goto cleanup;} \
 	} while (0)
 
 extern isc_mem_t *mctx;
@@ -40,8 +40,7 @@ extern isc_socketmgr_t *socketmgr;
 extern int ncpus;
 
 isc_result_t
-isc_test_begin(FILE *logfile, bool start_managers,
-	       unsigned int workers);
+isc_test_begin(FILE *logfile, bool start_managers, unsigned int workers);
 /*%<
  * Begin test, logging to 'logfile' or default if not specified.
  *

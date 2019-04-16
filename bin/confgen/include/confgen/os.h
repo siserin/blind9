@@ -24,10 +24,10 @@ int set_user(FILE *fd, const char *user);
 /*%<
  * Set the owner of the file referenced by 'fd' to 'user'.
  * Returns:
- *   0 		success
- *   -1 	insufficient permissions, or 'user' does not exist.
+ *   0          success
+ *   -1         insufficient permissions, or 'user' does not exist.
  */
 
 ISC_LANG_ENDDECLS
 
-#endif
+#endif /* ifndef RNDC_OS_H */

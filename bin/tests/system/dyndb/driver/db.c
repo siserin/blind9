@@ -31,21 +31,21 @@
 #include "syncptr.h"
 #include "util.h"
 
-#define SAMPLEDB_MAGIC			ISC_MAGIC('S', 'M', 'D', 'B')
+#define SAMPLEDB_MAGIC                  ISC_MAGIC('S', 'M', 'D', 'B')
 #define VALID_SAMPLEDB(sampledb) \
 	((sampledb) != NULL && (sampledb)->common.impmagic == SAMPLEDB_MAGIC)
 
 struct sampledb {
-	dns_db_t			common;
-	isc_refcount_t			refs;
-	sample_instance_t		*inst;
+	dns_db_t		 common;
+	isc_refcount_t		 refs;
+	sample_instance_t *	 inst;
 
 	/*
 	 * Internal RBT database implementation provided by BIND.
 	 * Most dns_db_* calls (find(), createiterator(), etc.)
 	 * are blindly forwarded to this RBT DB.
 	 */
-	dns_db_t			*rbtdb;
+	dns_db_t *      rbtdb;
 };
 
 typedef struct sampledb sampledb_t;
@@ -81,7 +81,9 @@ free_sampledb(sampledb_t *sampledb) {
 
 	dns_db_detach(&sampledb->rbtdb);
 	dns_name_free(&sampledb->common.origin, sampledb->common.mctx);
-	isc_mem_putanddetach(&sampledb->common.mctx, sampledb, sizeof(*sampledb));
+	isc_mem_putanddetach(&sampledb->common.mctx,
+			     sampledb,
+			     sizeof(*sampledb));
 }
 
 static void
@@ -137,10 +139,11 @@ serialize(dns_db_t *db, dns_dbversion_t *version, FILE *file) {
 }
 
 static isc_result_t
-dump(dns_db_t *db, dns_dbversion_t *version, const char *filename,
+dump(dns_db_t *db,
+     dns_dbversion_t *version,
+     const char *filename,
      dns_masterformat_t masterformat)
 {
-
 	UNUSED(db);
 	UNUSED(version);
 	UNUSED(filename);
@@ -171,8 +174,7 @@ newversion(dns_db_t *db, dns_dbversion_t **versionp) {
 }
 
 static void
-attachversion(dns_db_t *db, dns_dbversion_t *source,
-	      dns_dbversion_t **targetp)
+attachversion(dns_db_t *db, dns_dbversion_t *source, dns_dbversion_t **targetp)
 {
 	sampledb_t *sampledb = (sampledb_t *)db;
 
@@ -191,7 +193,9 @@ closeversion(dns_db_t *db, dns_dbversion_t **versionp, bool commit) {
 }
 
 static isc_result_t
-findnode(dns_db_t *db, const dns_name_t *name, bool create,
+findnode(dns_db_t *db,
+	 const dns_name_t *name,
+	 bool create,
 	 dns_dbnode_t **nodep)
 {
 	sampledb_t *sampledb = (sampledb_t *) db;
@@ -202,9 +206,15 @@ findnode(dns_db_t *db, const dns_name_t *name, bool create,
 }
 
 static isc_result_t
-find(dns_db_t *db, const dns_name_t *name, dns_dbversion_t *version,
-     dns_rdatatype_t type, unsigned int options, isc_stdtime_t now,
-     dns_dbnode_t **nodep, dns_name_t *foundname, dns_rdataset_t *rdataset,
+find(dns_db_t *db,
+     const dns_name_t *name,
+     dns_dbversion_t *version,
+     dns_rdatatype_t type,
+     unsigned int options,
+     isc_stdtime_t now,
+     dns_dbnode_t **nodep,
+     dns_name_t *foundname,
+     dns_rdataset_t *rdataset,
      dns_rdataset_t *sigrdataset)
 {
 	sampledb_t *sampledb = (sampledb_t *) db;
@@ -217,9 +227,14 @@ find(dns_db_t *db, const dns_name_t *name, dns_dbversion_t *version,
 }
 
 static isc_result_t
-findzonecut(dns_db_t *db, const dns_name_t *name, unsigned int options,
-	    isc_stdtime_t now, dns_dbnode_t **nodep, dns_name_t *foundname,
-	    dns_name_t *dcname, dns_rdataset_t *rdataset,
+findzonecut(dns_db_t *db,
+	    const dns_name_t *name,
+	    unsigned int options,
+	    isc_stdtime_t now,
+	    dns_dbnode_t **nodep,
+	    dns_name_t *foundname,
+	    dns_name_t *dcname,
+	    dns_rdataset_t *rdataset,
 	    dns_rdataset_t *sigrdataset)
 {
 	sampledb_t *sampledb = (sampledb_t *) db;
@@ -238,7 +253,6 @@ attachnode(dns_db_t *db, dns_dbnode_t *source, dns_dbnode_t **targetp) {
 	REQUIRE(VALID_SAMPLEDB(sampledb));
 
 	dns_db_attachnode(sampledb->rbtdb, source, targetp);
-
 }
 
 static void
@@ -280,9 +294,14 @@ createiterator(dns_db_t *db, unsigned int options,
 }
 
 static isc_result_t
-findrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
-	     dns_rdatatype_t type, dns_rdatatype_t covers, isc_stdtime_t now,
-	     dns_rdataset_t *rdataset, dns_rdataset_t *sigrdataset)
+findrdataset(dns_db_t *db,
+	     dns_dbnode_t *node,
+	     dns_dbversion_t *version,
+	     dns_rdatatype_t type,
+	     dns_rdatatype_t covers,
+	     isc_stdtime_t now,
+	     dns_rdataset_t *rdataset,
+	     dns_rdataset_t *sigrdataset)
 {
 	sampledb_t *sampledb = (sampledb_t *) db;
 
@@ -293,8 +312,11 @@ findrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 }
 
 static isc_result_t
-allrdatasets(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
-	     isc_stdtime_t now, dns_rdatasetiter_t **iteratorp)
+allrdatasets(dns_db_t *db,
+	     dns_dbnode_t *node,
+	     dns_dbversion_t *version,
+	     isc_stdtime_t now,
+	     dns_rdatasetiter_t **iteratorp)
 {
 	sampledb_t *sampledb = (sampledb_t *) db;
 
@@ -305,8 +327,12 @@ allrdatasets(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 }
 
 static isc_result_t
-addrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
-	    isc_stdtime_t now, dns_rdataset_t *rdataset, unsigned int options,
+addrdataset(dns_db_t *db,
+	    dns_dbnode_t *node,
+	    dns_dbversion_t *version,
+	    isc_stdtime_t now,
+	    dns_rdataset_t *rdataset,
+	    unsigned int options,
 	    dns_rdataset_t *addedrdataset)
 {
 	sampledb_t *sampledb = (sampledb_t *) db;
@@ -325,13 +351,16 @@ addrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 			       rdataset, DNS_DIFFOP_ADD));
 	}
 
-cleanup:
+ cleanup:
 	return (result);
 }
 
 static isc_result_t
-subtractrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
-		 dns_rdataset_t *rdataset, unsigned int options,
+subtractrdataset(dns_db_t *db,
+		 dns_dbnode_t *node,
+		 dns_dbversion_t *version,
+		 dns_rdataset_t *rdataset,
+		 unsigned int options,
 		 dns_rdataset_t *newrdataset)
 {
 	sampledb_t *sampledb = (sampledb_t *) db;
@@ -343,8 +372,9 @@ subtractrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 	dns_fixedname_init(&name);
 	result = dns_db_subtractrdataset(sampledb->rbtdb, node, version,
 					 rdataset, options, newrdataset);
-	if (result != ISC_R_SUCCESS && result != DNS_R_NXRRSET)
+	if (result != ISC_R_SUCCESS && result != DNS_R_NXRRSET) {
 		goto cleanup;
+	}
 
 	if (rdataset->type == dns_rdatatype_a ||
 	    rdataset->type == dns_rdatatype_aaaa) {
@@ -353,7 +383,7 @@ subtractrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 			       rdataset, DNS_DIFFOP_DEL));
 	}
 
-cleanup:
+ cleanup:
 	return (result);
 }
 
@@ -362,8 +392,11 @@ cleanup:
  * implementation is left as an exercise to the reader.
  */
 static isc_result_t
-deleterdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
-	       dns_rdatatype_t type, dns_rdatatype_t covers)
+deleterdataset(dns_db_t *db,
+	       dns_dbnode_t *node,
+	       dns_dbversion_t *version,
+	       dns_rdatatype_t type,
+	       dns_rdatatype_t covers)
 {
 	sampledb_t *sampledb = (sampledb_t *) db;
 
@@ -436,14 +469,16 @@ transfernode(dns_db_t *db, dns_dbnode_t **sourcep, dns_dbnode_t **targetp) {
 	REQUIRE(VALID_SAMPLEDB(sampledb));
 
 	dns_db_transfernode(sampledb->rbtdb, sourcep, targetp);
-
 }
 
 static isc_result_t
-getnsec3parameters(dns_db_t *db, dns_dbversion_t *version,
-		   dns_hash_t *hash, uint8_t *flags,
+getnsec3parameters(dns_db_t *db,
+		   dns_dbversion_t *version,
+		   dns_hash_t *hash,
+		   uint8_t *flags,
 		   uint16_t *iterations,
-		   unsigned char *salt, size_t *salt_length)
+		   unsigned char *salt,
+		   size_t *salt_length)
 {
 	sampledb_t *sampledb = (sampledb_t *) db;
 
@@ -452,11 +487,12 @@ getnsec3parameters(dns_db_t *db, dns_dbversion_t *version,
 	return (dns_db_getnsec3parameters(sampledb->rbtdb, version,
 					  hash, flags, iterations,
 					  salt, salt_length));
-
 }
 
 static isc_result_t
-findnsec3node(dns_db_t *db, const dns_name_t *name, bool create,
+findnsec3node(dns_db_t *db,
+	      const dns_name_t *name,
+	      bool create,
 	      dns_dbnode_t **nodep)
 {
 	sampledb_t *sampledb = (sampledb_t *) db;
@@ -509,13 +545,15 @@ getrrsetstats(dns_db_t *db) {
 	REQUIRE(VALID_SAMPLEDB(sampledb));
 
 	return (dns_db_getrrsetstats(sampledb->rbtdb));
-
 }
 
 static isc_result_t
-findnodeext(dns_db_t *db, const dns_name_t *name,
-	    bool create, dns_clientinfomethods_t *methods,
-	    dns_clientinfo_t *clientinfo, dns_dbnode_t **nodep)
+findnodeext(dns_db_t *db,
+	    const dns_name_t *name,
+	    bool create,
+	    dns_clientinfomethods_t *methods,
+	    dns_clientinfo_t *clientinfo,
+	    dns_dbnode_t **nodep)
 {
 	sampledb_t *sampledb = (sampledb_t *) db;
 
@@ -526,11 +564,18 @@ findnodeext(dns_db_t *db, const dns_name_t *name,
 }
 
 static isc_result_t
-findext(dns_db_t *db, const dns_name_t *name, dns_dbversion_t *version,
-	dns_rdatatype_t type, unsigned int options, isc_stdtime_t now,
-	dns_dbnode_t **nodep, dns_name_t *foundname,
-	dns_clientinfomethods_t *methods, dns_clientinfo_t *clientinfo,
-	dns_rdataset_t *rdataset, dns_rdataset_t *sigrdataset)
+findext(dns_db_t *db,
+	const dns_name_t *name,
+	dns_dbversion_t *version,
+	dns_rdatatype_t type,
+	unsigned int options,
+	isc_stdtime_t now,
+	dns_dbnode_t **nodep,
+	dns_name_t *foundname,
+	dns_clientinfomethods_t *methods,
+	dns_clientinfo_t *clientinfo,
+	dns_rdataset_t *rdataset,
+	dns_rdataset_t *sigrdataset)
 {
 	sampledb_t *sampledb = (sampledb_t *) db;
 
@@ -601,17 +646,17 @@ static dns_dbmethods_t sampledb_methods = {
 	resigned,
 	isdnssec,
 	getrrsetstats,
-	NULL,			/* rpz_attach */
-	NULL,			/* rpz_ready */
+	NULL,                   /* rpz_attach */
+	NULL,                   /* rpz_ready */
 	findnodeext,
 	findext,
 	setcachestats,
 	hashsize,
-	NULL,			/* nodefullname */
-	NULL,			/* getsize */
-	NULL,			/* setservestalettl */
-	NULL,			/* getservestalettl */
-	NULL			/* setgluecachestats */
+	NULL,                   /* nodefullname */
+	NULL,                   /* getsize */
+	NULL,                   /* setservestalettl */
+	NULL,                   /* getservestalettl */
+	NULL                    /* setgluecachestats */
 };
 
 /* Auxiliary driver functions. */
@@ -626,8 +671,11 @@ static dns_dbmethods_t sampledb_methods = {
  * credit goes to ISC.
  */
 static isc_result_t
-add_soa(dns_db_t *db, dns_dbversion_t *version, const dns_name_t *name,
-	const dns_name_t *origin, const dns_name_t *contact)
+add_soa(dns_db_t *db,
+	dns_dbversion_t *version,
+	const dns_name_t *name,
+	const dns_name_t *origin,
+	const dns_name_t *contact)
 {
 	dns_dbnode_t *node = NULL;
 	dns_rdata_t rdata = DNS_RDATA_INIT;
@@ -649,14 +697,17 @@ add_soa(dns_db_t *db, dns_dbversion_t *version, const dns_name_t *name,
 	CHECK(dns_db_findnode(db, name, true, &node));
 	CHECK(dns_db_addrdataset(db, node, version, 0, &rdataset, 0, NULL));
  cleanup:
-	if (node != NULL)
+	if (node != NULL) {
 		dns_db_detachnode(db, &node);
+	}
 	return (result);
 }
 
 
 static isc_result_t
-add_ns(dns_db_t *db, dns_dbversion_t *version, const dns_name_t *name,
+add_ns(dns_db_t *db,
+       dns_dbversion_t *version,
+       const dns_name_t *name,
        const dns_name_t *nsname)
 {
 	dns_dbnode_t *node = NULL;
@@ -688,13 +739,16 @@ add_ns(dns_db_t *db, dns_dbversion_t *version, const dns_name_t *name,
 	CHECK(dns_db_findnode(db, name, true, &node));
 	CHECK(dns_db_addrdataset(db, node, version, 0, &rdataset, 0, NULL));
  cleanup:
-	if (node != NULL)
+	if (node != NULL) {
 		dns_db_detachnode(db, &node);
+	}
 	return (result);
 }
 
 static isc_result_t
-add_a(dns_db_t *db, dns_dbversion_t *version, const dns_name_t *name,
+add_a(dns_db_t *db,
+      dns_dbversion_t *version,
+      const dns_name_t *name,
       struct in_addr addr)
 {
 	dns_dbnode_t *node = NULL;
@@ -724,8 +778,9 @@ add_a(dns_db_t *db, dns_dbversion_t *version, const dns_name_t *name,
 	CHECK(dns_db_findnode(db, name, true, &node));
 	CHECK(dns_db_addrdataset(db, node, version, 0, &rdataset, 0, NULL));
  cleanup:
-	if (node != NULL)
+	if (node != NULL) {
 		dns_db_detachnode(db, &node);
+	}
 	return (result);
 }
 
@@ -736,9 +791,14 @@ add_a(dns_db_t *db, dns_dbversion_t *version, const dns_name_t *name,
  * @param[in] driverarg Driver-specific parameter from dns_db_register().
  */
 isc_result_t
-create_db(isc_mem_t *mctx, const dns_name_t *origin, dns_dbtype_t type,
-	  dns_rdataclass_t rdclass, unsigned int argc, char *argv[],
-	  void *driverarg, dns_db_t **dbp)
+create_db(isc_mem_t *mctx,
+	  const dns_name_t *origin,
+	  dns_dbtype_t type,
+	  dns_rdataclass_t rdclass,
+	  unsigned int argc,
+	  char *argv[],
+	  void *driverarg,
+	  dns_db_t **dbp)
 {
 	sampledb_t *sampledb = NULL;
 	isc_result_t result;
@@ -791,10 +851,11 @@ create_db(isc_mem_t *mctx, const dns_name_t *origin, dns_dbtype_t type,
 
 	return (ISC_R_SUCCESS);
 
-cleanup:
+ cleanup:
 	if (sampledb != NULL) {
-		if (dns_name_dynamic(&sampledb->common.origin))
+		if (dns_name_dynamic(&sampledb->common.origin)) {
 			dns_name_free(&sampledb->common.origin, mctx);
+		}
 
 		isc_mem_putanddetach(&sampledb->common.mctx, sampledb,
 				     sizeof(*sampledb));

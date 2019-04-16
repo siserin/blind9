@@ -14,8 +14,8 @@
 #define DNS_KEYTABLE_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file
  * \brief
@@ -105,8 +105,10 @@ dns_keytable_detach(dns_keytable_t **keytablep);
  */
 
 isc_result_t
-dns_keytable_add(dns_keytable_t *keytable, bool managed,
-		 bool initial, dst_key_t **keyp);
+dns_keytable_add(dns_keytable_t *keytable,
+		 bool managed,
+		 bool initial,
+		 dst_key_t **keyp);
 /*%<
  * Add '*keyp' to 'keytable' (using the name in '*keyp').
  * The value of keynode->managed is set to 'managed', and the
@@ -208,7 +210,8 @@ dns_keytable_deletekeynode(dns_keytable_t *keytable, dst_key_t *dstkey);
  */
 
 isc_result_t
-dns_keytable_find(dns_keytable_t *keytable, const dns_name_t *keyname,
+dns_keytable_find(dns_keytable_t *keytable,
+		  const dns_name_t *keyname,
 		  dns_keynode_t **keynodep);
 /*%<
  * Search for the first instance of a key named 'name' in 'keytable',
@@ -232,7 +235,8 @@ dns_keytable_find(dns_keytable_t *keytable, const dns_name_t *keyname,
  */
 
 isc_result_t
-dns_keytable_nextkeynode(dns_keytable_t *keytable, dns_keynode_t *keynode,
+dns_keytable_nextkeynode(dns_keytable_t *keytable,
+			 dns_keynode_t *keynode,
 			 dns_keynode_t **nextnodep);
 /*%<
  * Return for the next key after 'keynode' in 'keytable', without regard to
@@ -255,8 +259,10 @@ dns_keytable_nextkeynode(dns_keytable_t *keytable, dns_keynode_t *keynode,
  */
 
 isc_result_t
-dns_keytable_findkeynode(dns_keytable_t *keytable, const dns_name_t *name,
-			 dns_secalg_t algorithm, dns_keytag_t tag,
+dns_keytable_findkeynode(dns_keytable_t *keytable,
+			 const dns_name_t *name,
+			 dns_secalg_t algorithm,
+			 dns_keytag_t tag,
 			 dns_keynode_t **keynodep);
 /*%<
  * Search for a key named 'name', matching 'algorithm' and 'tag' in
@@ -281,8 +287,9 @@ dns_keytable_findkeynode(dns_keytable_t *keytable, const dns_name_t *name,
  */
 
 isc_result_t
-dns_keytable_findnextkeynode(dns_keytable_t *keytable, dns_keynode_t *keynode,
-					     dns_keynode_t **nextnodep);
+dns_keytable_findnextkeynode(dns_keytable_t *keytable,
+			     dns_keynode_t *keynode,
+			     dns_keynode_t **nextnodep);
 /*%<
  * Search for the next key with the same properties as 'keynode' in
  * 'keytable' as found by dns_keytable_findkeynode().
@@ -304,7 +311,8 @@ dns_keytable_findnextkeynode(dns_keytable_t *keytable, dns_keynode_t *keynode,
  */
 
 isc_result_t
-dns_keytable_finddeepestmatch(dns_keytable_t *keytable, const dns_name_t *name,
+dns_keytable_finddeepestmatch(dns_keytable_t *keytable,
+			      const dns_name_t *name,
 			      dns_name_t *foundname);
 /*%<
  * Search for the deepest match of 'name' in 'keytable'.
@@ -326,7 +334,8 @@ dns_keytable_finddeepestmatch(dns_keytable_t *keytable, const dns_name_t *name,
  */
 
 void
-dns_keytable_attachkeynode(dns_keytable_t *keytable, dns_keynode_t *source,
+dns_keytable_attachkeynode(dns_keytable_t *keytable,
+			   dns_keynode_t *source,
 			   dns_keynode_t **target);
 /*%<
  * Attach a keynode and and increment the active_nodes counter in a
@@ -342,8 +351,7 @@ dns_keytable_attachkeynode(dns_keytable_t *keytable, dns_keynode_t *source,
  */
 
 void
-dns_keytable_detachkeynode(dns_keytable_t *keytable,
-			   dns_keynode_t **keynodep);
+dns_keytable_detachkeynode(dns_keytable_t *keytable, dns_keynode_t **keynodep);
 /*%<
  * Give back a keynode found via dns_keytable_findkeynode().
  *
@@ -360,8 +368,10 @@ dns_keytable_detachkeynode(dns_keytable_t *keytable,
  */
 
 isc_result_t
-dns_keytable_issecuredomain(dns_keytable_t *keytable, const dns_name_t *name,
-			    dns_name_t *foundname, bool *wantdnssecp);
+dns_keytable_issecuredomain(dns_keytable_t *keytable,
+			    const dns_name_t *name,
+			    dns_name_t *foundname,
+			    bool *wantdnssecp);
 /*%<
  * Is 'name' at or beneath a trusted key?
  *
@@ -374,7 +384,7 @@ dns_keytable_issecuredomain(dns_keytable_t *keytable, const dns_name_t *name,
  *\li	'foundanme' is NULL or is a pointer to an initialized dns_name_t
  *
  *\li	'*wantsdnssecp' is a valid bool.
-
+ *
  * Ensures:
  *
  *\li	On success, *wantsdnssecp will be true if and only if 'name'
@@ -452,9 +462,9 @@ dns_keynode_detachall(isc_mem_t *mctx, dns_keynode_t **target);
  */
 
 isc_result_t
-dns_keytable_forall(dns_keytable_t *keytable,
-		    void (*func)(dns_keytable_t *, dns_keynode_t *, void *),
-		    void *arg);
+dns_keytable_forall(dns_keytable_t *keytable, void (*func)(dns_keytable_t *,
+							   dns_keynode_t *,
+							   void *), void *arg);
 ISC_LANG_ENDDECLS
 
 #endif /* DNS_KEYTABLE_H */

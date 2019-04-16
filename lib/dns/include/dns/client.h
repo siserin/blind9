@@ -14,8 +14,8 @@
 #define DNS_CLIENT_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file
  *
@@ -66,42 +66,42 @@ ISC_LANG_BEGINDECLS
  * Optional flags for dns_client_create(x).
  */
 /*%< Enable caching resolution results (experimental). */
-#define DNS_CLIENTCREATEOPT_USECACHE	0x8000
+#define DNS_CLIENTCREATEOPT_USECACHE    0x8000
 
 /*%
  * Optional flags for dns_client_(start)resolve.
  */
 /*%< Do not return DNSSEC data (e.g. RRSIGS) with response. */
-#define DNS_CLIENTRESOPT_NODNSSEC	0x01
+#define DNS_CLIENTRESOPT_NODNSSEC       0x01
 /*%< Allow running external context. */
-#define DNS_CLIENTRESOPT_ALLOWRUN	0x02
+#define DNS_CLIENTRESOPT_ALLOWRUN       0x02
 /*%< Don't validate responses. */
-#define DNS_CLIENTRESOPT_NOVALIDATE	0x04
+#define DNS_CLIENTRESOPT_NOVALIDATE     0x04
 /*%< Don't set the CD flag on upstream queries. */
-#define DNS_CLIENTRESOPT_NOCDFLAG	0x08
+#define DNS_CLIENTRESOPT_NOCDFLAG       0x08
 /*%< Use TCP transport. */
-#define DNS_CLIENTRESOPT_TCP		0x10
+#define DNS_CLIENTRESOPT_TCP            0x10
 
 /*%
  * Optional flags for dns_client_(start)request.
  */
 /*%< Allow running external context. */
-#define DNS_CLIENTREQOPT_ALLOWRUN	0x01
+#define DNS_CLIENTREQOPT_ALLOWRUN       0x01
 /*%< Use TCP transport. */
-#define DNS_CLIENTREQOPT_TCP		0x02
+#define DNS_CLIENTREQOPT_TCP            0x02
 
 /*%
  * Optional flags for dns_client_(start)update.
  */
 /*%< Allow running external context. */
-#define DNS_CLIENTUPDOPT_ALLOWRUN	0x01
+#define DNS_CLIENTUPDOPT_ALLOWRUN       0x01
 /*%< Use TCP transport. */
-#define DNS_CLIENTUPDOPT_TCP		0x02
+#define DNS_CLIENTUPDOPT_TCP            0x02
 
 /*%
  * View name used in dns_client.
  */
-#define DNS_CLIENTVIEW_NAME			"_dnsclient"
+#define DNS_CLIENTVIEW_NAME                     "_dnsclient"
 
 /*%
  * A dns_clientresevent_t is sent when name resolution performed by a client
@@ -114,18 +114,18 @@ ISC_LANG_BEGINDECLS
  */
 typedef struct dns_clientresevent {
 	ISC_EVENT_COMMON(struct dns_clientresevent);
-	isc_result_t	result;
-	isc_result_t	vresult;
-	dns_namelist_t	answerlist;
-} dns_clientresevent_t;		/* too long? */
+	isc_result_t	      result;
+	isc_result_t	      vresult;
+	dns_namelist_t	      answerlist;
+} dns_clientresevent_t;         /* too long? */
 
 /*%
  * Status of a dynamic update procedure.
  */
 typedef enum {
-	dns_clientupdatestate_prepare,	/*%< no updates have been sent */
-	dns_clientupdatestate_sent,	/*%< updates were sent, no response */
-	dns_clientupdatestate_done	/*%< update was sent and succeeded */
+	dns_clientupdatestate_prepare,  /*%< no updates have been sent */
+	dns_clientupdatestate_sent,     /*%< updates were sent, no response */
+	dns_clientupdatestate_done      /*%< update was sent and succeeded */
 } dns_clientupdatestate_t;
 
 /*%
@@ -138,9 +138,9 @@ typedef enum {
  */
 typedef struct dns_clientreqevent {
 	ISC_EVENT_COMMON(struct dns_clientreqevent);
-	isc_result_t	result;
-	dns_message_t	*rmessage;
-} dns_clientreqevent_t;		/* too long? */
+	isc_result_t	     result;
+	dns_message_t *	     rmessage;
+} dns_clientreqevent_t;         /* too long? */
 
 /*%
  * A dns_clientupdateevent_t is sent when dynamic update performed by a client
@@ -153,18 +153,22 @@ typedef struct dns_clientreqevent {
  */
 typedef struct dns_clientupdateevent {
 	ISC_EVENT_COMMON(struct dns_clientupdateevent);
-	isc_result_t		result;
-	dns_clientupdatestate_t	state;
-} dns_clientupdateevent_t;	/* too long? */
+	isc_result_t		       result;
+	dns_clientupdatestate_t	       state;
+} dns_clientupdateevent_t;      /* too long? */
 
 isc_result_t
 dns_client_create(dns_client_t **clientp, unsigned int options);
 
 isc_result_t
-dns_client_createx(isc_mem_t *mctx, isc_appctx_t *actx,
-		   isc_taskmgr_t *taskmgr, isc_socketmgr_t *socketmgr,
-		   isc_timermgr_t *timermgr, unsigned int options,
-		   dns_client_t **clientp, const isc_sockaddr_t *localaddr4,
+dns_client_createx(isc_mem_t *mctx,
+		   isc_appctx_t *actx,
+		   isc_taskmgr_t *taskmgr,
+		   isc_socketmgr_t *socketmgr,
+		   isc_timermgr_t *timermgr,
+		   unsigned int options,
+		   dns_client_t **clientp,
+		   const isc_sockaddr_t *localaddr4,
 		   const isc_sockaddr_t *localaddr6);
 /*%<
  * Create a DNS client.  These functions create a new client object with
@@ -223,8 +227,10 @@ dns_client_destroy(dns_client_t **clientp);
  */
 
 isc_result_t
-dns_client_setservers(dns_client_t *client, dns_rdataclass_t rdclass,
-		      const dns_name_t *name_space, isc_sockaddrlist_t *addrs);
+dns_client_setservers(dns_client_t *client,
+		      dns_rdataclass_t rdclass,
+		      const dns_name_t *name_space,
+		      isc_sockaddrlist_t *addrs);
 /*%<
  * Specify a list of addresses of recursive name servers that the client will
  * use for name resolution.  A view for the 'rdclass' class must be created
@@ -251,7 +257,8 @@ dns_client_setservers(dns_client_t *client, dns_rdataclass_t rdclass,
  */
 
 isc_result_t
-dns_client_clearservers(dns_client_t *client, dns_rdataclass_t rdclass,
+dns_client_clearservers(dns_client_t *client,
+			dns_rdataclass_t rdclass,
 			const dns_name_t *name_space);
 /*%<
  * Remove configured recursive name servers for the 'rdclass' and 'name_space'
@@ -272,7 +279,8 @@ dns_client_clearservers(dns_client_t *client, dns_rdataclass_t rdclass,
  */
 
 isc_result_t
-dns_client_setdlv(dns_client_t *client, dns_rdataclass_t rdclass,
+dns_client_setdlv(dns_client_t *client,
+		  dns_rdataclass_t rdclass,
 		  const char *dlvname);
 /*%<
  * Specify a name to use for DNSSEC lookaside validation.
@@ -292,15 +300,22 @@ dns_client_setdlv(dns_client_t *client, dns_rdataclass_t rdclass,
  */
 
 isc_result_t
-dns_client_resolve(dns_client_t *client, const dns_name_t *name,
-		   dns_rdataclass_t rdclass, dns_rdatatype_t type,
-		   unsigned int options, dns_namelist_t *namelist);
+dns_client_resolve(dns_client_t *client,
+		   const dns_name_t *name,
+		   dns_rdataclass_t rdclass,
+		   dns_rdatatype_t type,
+		   unsigned int options,
+		   dns_namelist_t *namelist);
 
 isc_result_t
-dns_client_startresolve(dns_client_t *client, const dns_name_t *name,
-			dns_rdataclass_t rdclass, dns_rdatatype_t type,
-			unsigned int options, isc_task_t *task,
-			isc_taskaction_t action, void *arg,
+dns_client_startresolve(dns_client_t *client,
+			const dns_name_t *name,
+			dns_rdataclass_t rdclass,
+			dns_rdatatype_t type,
+			unsigned int options,
+			isc_task_t *task,
+			isc_taskaction_t action,
+			void *arg,
 			dns_clientrestrans_t **transp);
 /*%<
  * Perform name resolution for 'name', 'rdclass', and 'type'.
@@ -404,8 +419,10 @@ dns_client_freeresanswer(dns_client_t *client, dns_namelist_t *namelist);
  */
 
 isc_result_t
-dns_client_addtrustedkey(dns_client_t *client, dns_rdataclass_t rdclass,
-			 const dns_name_t *keyname, isc_buffer_t *keydatabuf);
+dns_client_addtrustedkey(dns_client_t *client,
+			 dns_rdataclass_t rdclass,
+			 const dns_name_t *keyname,
+			 isc_buffer_t *keydatabuf);
 /*%<
  * Add a DNSSEC trusted key for the 'rdclass' class.  A view for the 'rdclass'
  * class must be created beforehand.  'keyname' is the DNS name of the key,
@@ -427,19 +444,31 @@ dns_client_addtrustedkey(dns_client_t *client, dns_rdataclass_t rdclass,
  */
 
 isc_result_t
-dns_client_request(dns_client_t *client, dns_message_t *qmessage,
-		   dns_message_t *rmessage, const isc_sockaddr_t *server,
-		   unsigned int options, unsigned int parseoptions,
-		   dns_tsec_t *tsec, unsigned int timeout,
-		   unsigned int udptimeout, unsigned int udpretries);
+dns_client_request(dns_client_t *client,
+		   dns_message_t *qmessage,
+		   dns_message_t *rmessage,
+		   const isc_sockaddr_t *server,
+		   unsigned int options,
+		   unsigned int parseoptions,
+		   dns_tsec_t *tsec,
+		   unsigned int timeout,
+		   unsigned int udptimeout,
+		   unsigned int udpretries);
 
 isc_result_t
-dns_client_startrequest(dns_client_t *client, dns_message_t *qmessage,
-			dns_message_t *rmessage, const isc_sockaddr_t *server,
-			unsigned int options, unsigned int parseoptions,
-			dns_tsec_t *tsec, unsigned int timeout,
-			unsigned int udptimeout, unsigned int udpretries,
-			isc_task_t *task, isc_taskaction_t action, void *arg,
+dns_client_startrequest(dns_client_t *client,
+			dns_message_t *qmessage,
+			dns_message_t *rmessage,
+			const isc_sockaddr_t *server,
+			unsigned int options,
+			unsigned int parseoptions,
+			dns_tsec_t *tsec,
+			unsigned int timeout,
+			unsigned int udptimeout,
+			unsigned int udpretries,
+			isc_task_t *task,
+			isc_taskaction_t action,
+			void *arg,
 			dns_clientreqtrans_t **transp);
 
 /*%<
@@ -531,18 +560,27 @@ dns_client_destroyreqtrans(dns_clientreqtrans_t **transp);
  */
 
 isc_result_t
-dns_client_update(dns_client_t *client, dns_rdataclass_t rdclass,
-		  const dns_name_t *zonename, dns_namelist_t *prerequisites,
-		  dns_namelist_t *updates, isc_sockaddrlist_t *servers,
-		  dns_tsec_t *tsec, unsigned int options);
+dns_client_update(dns_client_t *client,
+		  dns_rdataclass_t rdclass,
+		  const dns_name_t *zonename,
+		  dns_namelist_t *prerequisites,
+		  dns_namelist_t *updates,
+		  isc_sockaddrlist_t *servers,
+		  dns_tsec_t *tsec,
+		  unsigned int options);
 
 isc_result_t
-dns_client_startupdate(dns_client_t *client, dns_rdataclass_t rdclass,
+dns_client_startupdate(dns_client_t *client,
+		       dns_rdataclass_t rdclass,
 		       const dns_name_t *zonename,
 		       dns_namelist_t *prerequisites,
-		       dns_namelist_t *updates, isc_sockaddrlist_t *servers,
-		       dns_tsec_t *tsec, unsigned int options,
-		       isc_task_t *task, isc_taskaction_t action, void *arg,
+		       dns_namelist_t *updates,
+		       isc_sockaddrlist_t *servers,
+		       dns_tsec_t *tsec,
+		       unsigned int options,
+		       isc_task_t *task,
+		       isc_taskaction_t action,
+		       void *arg,
 		       dns_clientupdatetrans_t **transp);
 /*%<
  * Perform DNS dynamic update for 'updates' of the 'rdclass' class with
@@ -652,11 +690,16 @@ dns_client_destroyupdatetrans(dns_clientupdatetrans_t **transp);
  */
 
 isc_result_t
-dns_client_updaterec(dns_client_updateop_t op, const dns_name_t *owner,
-		     dns_rdatatype_t type, dns_rdata_t *source,
-		     dns_ttl_t ttl, dns_name_t *target,
-		     dns_rdataset_t *rdataset, dns_rdatalist_t *rdatalist,
-		     dns_rdata_t *rdata, isc_mem_t *mctx);
+dns_client_updaterec(dns_client_updateop_t op,
+		     const dns_name_t *owner,
+		     dns_rdatatype_t type,
+		     dns_rdata_t *source,
+		     dns_ttl_t ttl,
+		     dns_name_t *target,
+		     dns_rdataset_t *rdataset,
+		     dns_rdatalist_t *rdatalist,
+		     dns_rdata_t *rdata,
+		     isc_mem_t *mctx);
 /*%<
  * TBD
  */

@@ -23,17 +23,20 @@
 #include <openssl/evp.h>
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
-#define EVP_CIPHER_CTX_new() &(_context), EVP_CIPHER_CTX_init(&_context)
+#define EVP_CIPHER_CTX_new() & (_context), EVP_CIPHER_CTX_init(&_context)
 #define EVP_CIPHER_CTX_free(c) RUNTIME_CHECK(EVP_CIPHER_CTX_cleanup(c) == 1)
-#endif
+#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L ||
+        * defined(LIBRESSL_VERSION_NUMBER) */
 
 void
-isc_aes128_crypt(const unsigned char *key, const unsigned char *in,
+isc_aes128_crypt(const unsigned char *key,
+		 const unsigned char *in,
 		 unsigned char *out)
 {
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 	EVP_CIPHER_CTX _context;
-#endif
+#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L ||
+	 * defined(LIBRESSL_VERSION_NUMBER) */
 	EVP_CIPHER_CTX *c;
 	int len;
 
@@ -48,12 +51,14 @@ isc_aes128_crypt(const unsigned char *key, const unsigned char *in,
 }
 
 void
-isc_aes192_crypt(const unsigned char *key, const unsigned char *in,
+isc_aes192_crypt(const unsigned char *key,
+		 const unsigned char *in,
 		 unsigned char *out)
 {
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 	EVP_CIPHER_CTX _context;
-#endif
+#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L ||
+	 * defined(LIBRESSL_VERSION_NUMBER) */
 	EVP_CIPHER_CTX *c;
 	int len;
 
@@ -68,12 +73,14 @@ isc_aes192_crypt(const unsigned char *key, const unsigned char *in,
 }
 
 void
-isc_aes256_crypt(const unsigned char *key, const unsigned char *in,
+isc_aes256_crypt(const unsigned char *key,
+		 const unsigned char *in,
 		 unsigned char *out)
 {
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 	EVP_CIPHER_CTX _context;
-#endif
+#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L ||
+	 * defined(LIBRESSL_VERSION_NUMBER) */
 	EVP_CIPHER_CTX *c;
 	int len;
 

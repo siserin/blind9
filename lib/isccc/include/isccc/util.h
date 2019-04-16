@@ -38,20 +38,20 @@
  * \note no side effects are allowed when invoking these macros!
  */
 
-#define GET8(v, w) \
+#define GET8(v,w) \
 	do { \
 		v = *w; \
 		w++; \
 	} while (0)
 
-#define GET16(v, w) \
+#define GET16(v,w) \
 	do { \
 		v = (unsigned int)w[0] << 8; \
 		v |= (unsigned int)w[1]; \
 		w += 2; \
 	} while (0)
 
-#define GET24(v, w) \
+#define GET24(v,w) \
 	do { \
 		v = (unsigned int)w[0] << 16; \
 		v |= (unsigned int)w[1] << 8; \
@@ -59,7 +59,7 @@
 		w += 3; \
 	} while (0)
 
-#define GET32(v, w) \
+#define GET32(v,w) \
 	do { \
 		v = (unsigned int)w[0] << 24; \
 		v |= (unsigned int)w[1] << 16; \
@@ -68,7 +68,7 @@
 		w += 4; \
 	} while (0)
 
-#define GET64(v, w) \
+#define GET64(v,w) \
 	do { \
 		v = (uint64_t)w[0] << 56; \
 		v |= (uint64_t)w[1] << 48; \
@@ -81,58 +81,58 @@
 		w += 8; \
 	} while (0)
 
-#define GETC16(v, w, d) \
+#define GETC16(v,w,d) \
 	do { \
-		GET8(v, w); \
-		if (v == 0) \
-			d = ISCCC_TRUE; \
+		GET8(v,w); \
+		if (v == 0) { \
+			d = ISCCC_TRUE;} \
 		else { \
 			d = ISCCC_FALSE; \
-			if (v == 255) \
-				GET16(v, w); \
+			if (v == 255) { \
+				GET16(v,w);} \
 		} \
 	} while (0)
 
-#define GETC32(v, w) \
+#define GETC32(v,w) \
 	do { \
-		GET24(v, w); \
-		if (v == 0xffffffu) \
-			GET32(v, w); \
+		GET24(v,w); \
+		if (v == 0xffffffu) { \
+			GET32(v,w);} \
 	} while (0)
 
-#define GET_OFFSET(v, w)		GET32(v, w)
+#define GET_OFFSET(v,w)                GET32(v,w)
 
-#define GET_MEM(v, c, w) \
+#define GET_MEM(v,c,w) \
 	do { \
-		memmove(v, w, c); \
+		memmove(v,w,c); \
 		w += c; \
 	} while (0)
 
-#define GET_TYPE(v, w) \
+#define GET_TYPE(v,w) \
 	do { \
-		GET8(v, w); \
+		GET8(v,w); \
 		if (v > 127) { \
-			if (v < 255) \
-				v = ((v & 0x7f) << 16) | ISCCC_RDATATYPE_SIG; \
-			else \
-				GET32(v, w); \
+			if (v < 255) { \
+				v = ((v & 0x7f) << 16) | ISCCC_RDATATYPE_SIG;} \
+			else { \
+				GET32(v,w);} \
 		} \
 	} while (0)
 
-#define PUT8(v, w) \
+#define PUT8(v,w) \
 	do { \
 		*w = (v & 0x000000ffU); \
 		w++; \
 	} while (0)
 
-#define PUT16(v, w) \
+#define PUT16(v,w) \
 	do { \
 		w[0] = (v & 0x0000ff00U) >> 8; \
 		w[1] = (v & 0x000000ffU); \
 		w += 2; \
 	} while (0)
 
-#define PUT24(v, w) \
+#define PUT24(v,w) \
 	do { \
 		w[0] = (v & 0x00ff0000U) >> 16; \
 		w[1] = (v & 0x0000ff00U) >> 8; \
@@ -140,7 +140,7 @@
 		w += 3; \
 	} while (0)
 
-#define PUT32(v, w) \
+#define PUT32(v,w) \
 	do { \
 		w[0] = (v & 0xff000000U) >> 24; \
 		w[1] = (v & 0x00ff0000U) >> 16; \
@@ -149,7 +149,7 @@
 		w += 4; \
 	} while (0)
 
-#define PUT64(v, w) \
+#define PUT64(v,w) \
 	do { \
 		w[0] = (v & 0xff00000000000000ULL) >> 56; \
 		w[1] = (v & 0x00ff000000000000ULL) >> 48; \
@@ -162,44 +162,44 @@
 		w += 8; \
 	} while (0)
 
-#define PUTC16(v, w) \
+#define PUTC16(v,w) \
 	do { \
-		if (v > 0 && v < 255) \
-			PUT8(v, w); \
+		if (v > 0 && v < 255) { \
+			PUT8(v,w);} \
 		else { \
-			PUT8(255, w); \
-			PUT16(v, w); \
+			PUT8(255,w); \
+			PUT16(v,w); \
 		} \
 	} while (0)
 
-#define PUTC32(v, w) \
+#define PUTC32(v,w) \
 	do { \
-		if (v < 0xffffffU) \
-			PUT24(v, w); \
+		if (v < 0xffffffU) { \
+			PUT24(v,w);} \
 		else { \
-			PUT24(0xffffffU, w); \
-			PUT32(v, w); \
+			PUT24(0xffffffU,w); \
+			PUT32(v,w); \
 		} \
 	} while (0)
 
-#define PUT_OFFSET(v, w)		PUT32(v, w)
+#define PUT_OFFSET(v,w)                PUT32(v,w)
 
 #include <string.h>
 
-#define PUT_MEM(s, c, w) \
+#define PUT_MEM(s,c,w) \
 	do { \
-		memmove(w, s, c); \
+		memmove(w,s,c); \
 		w += c; \
 	} while (0)
 
 /*
  * Regions.
  */
-#define REGION_SIZE(r)		((unsigned int)((r).rend - (r).rstart))
-#define REGION_EMPTY(r)		((r).rstart == (r).rend)
-#define REGION_FROMSTRING(r, s) do { \
-	(r).rstart = (unsigned char *)s; \
-	(r).rend = (r).rstart + strlen(s); \
+#define REGION_SIZE(r)          ((unsigned int)((r).rend - (r).rstart))
+#define REGION_EMPTY(r)         ((r).rstart == (r).rend)
+#define REGION_FROMSTRING(r,s) do { \
+		(r).rstart = (unsigned char*)s; \
+		(r).rend = (r).rstart + strlen(s); \
 } while (0)
 
 /*%
@@ -210,9 +210,9 @@
  * (as with gcc -Wcast-qual) when there is just no other good way to avoid the
  * situation.
  */
-#define DE_CONST(konst, var) \
+#define DE_CONST(konst,var) \
 	do { \
-		union { const void *k; void *v; } _u; \
+		union { const void*       k; void*v; } _u; \
 		_u.k = konst; \
 		var = _u.v; \
 	} while (0)

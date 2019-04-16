@@ -110,7 +110,7 @@ _teardown(void **state) {
 
 static void
 set(isc_task_t *task, isc_event_t *event) {
-	int *value = (int *) event->ev_arg;
+	int*value = (int *) event->ev_arg;
 
 	UNUSED(task);
 
@@ -122,7 +122,7 @@ set(isc_task_t *task, isc_event_t *event) {
 
 static void
 set_and_drop(isc_task_t *task, isc_event_t *event) {
-	int *value = (int *) event->ev_arg;
+	int*value = (int *) event->ev_arg;
 
 	UNUSED(task);
 
@@ -137,7 +137,7 @@ set_and_drop(isc_task_t *task, isc_event_t *event) {
 static void
 create_task(void **state) {
 	isc_result_t result;
-	isc_task_t *task = NULL;
+	isc_task_t*task = NULL;
 
 	UNUSED(state);
 
@@ -152,8 +152,8 @@ create_task(void **state) {
 static void
 all_events(void **state) {
 	isc_result_t result;
-	isc_task_t *task = NULL;
-	isc_event_t *event = NULL;
+	isc_task_t*task = NULL;
+	isc_event_t*event = NULL;
 	int a = 0, b = 0;
 	int i = 0;
 
@@ -194,8 +194,8 @@ all_events(void **state) {
 static void
 privileged_events(void **state) {
 	isc_result_t result;
-	isc_task_t *task1 = NULL, *task2 = NULL;
-	isc_event_t *event = NULL;
+	isc_task_t*task1 = NULL, *task2 = NULL;
+	isc_event_t*event = NULL;
 	int a = 0, b = 0, c = 0, d = 0, e = 0;
 	int i = 0;
 
@@ -263,12 +263,15 @@ privileged_events(void **state) {
 
 	assert_int_equal(isc_taskmgr_mode(taskmgr), isc_taskmgrmode_normal);
 	isc_taskmgr_setprivilegedmode(taskmgr);
-	assert_int_equal(isc_taskmgr_mode(taskmgr), isc_taskmgrmode_privileged);
+	assert_int_equal(isc_taskmgr_mode(taskmgr),
+			 isc_taskmgrmode_privileged);
 
 	isc__taskmgr_resume(taskmgr);
 
 	/* We're waiting for *all* variables to be set */
-	while ((a == 0 || b == 0 || c == 0 || d == 0 || e == 0) && i++ < 5000) {
+	while ((a == 0 || b == 0 || c == 0 || d == 0 || e == 0) &&
+	       i++ < 5000)
+	{
 		isc_test_nap(1000);
 	}
 
@@ -305,9 +308,9 @@ privileged_events(void **state) {
 static void
 privilege_drop(void **state) {
 	isc_result_t result;
-	isc_task_t *task1 = NULL, *task2 = NULL;
-	isc_event_t *event = NULL;
-	int a = -1, b = -1, c = -1, d = -1, e = -1;	/* non valid states */
+	isc_task_t*task1 = NULL, *task2 = NULL;
+	isc_event_t*event = NULL;
+	int a = -1, b = -1, c = -1, d = -1, e = -1;     /* non valid states */
 	int i = 0;
 
 	UNUSED(state);
@@ -374,13 +377,15 @@ privilege_drop(void **state) {
 
 	assert_int_equal(isc_taskmgr_mode(taskmgr), isc_taskmgrmode_normal);
 	isc_taskmgr_setprivilegedmode(taskmgr);
-	assert_int_equal(isc_taskmgr_mode(taskmgr), isc_taskmgrmode_privileged);
+	assert_int_equal(isc_taskmgr_mode(taskmgr),
+			 isc_taskmgrmode_privileged);
 
 	isc__taskmgr_resume(taskmgr);
 
 	/* We're waiting for all variables to be set. */
 	while ((a == -1 || b == -1 || c == -1 || d == -1 || e == -1) &&
-	       i++ < 5000) {
+	       i++ < 5000)
+	{
 		isc_test_nap(1000);
 	}
 
@@ -393,7 +398,8 @@ privilege_drop(void **state) {
 		    d == isc_taskmgrmode_privileged);
 
 	/* ...and neither of the non-privileged tasks did... */
-	assert_true(b == isc_taskmgrmode_normal || e == isc_taskmgrmode_normal);
+	assert_true(b == isc_taskmgrmode_normal ||
+		    e == isc_taskmgrmode_normal);
 
 	/* ...but all five of them did run. */
 	assert_int_equal(counter, 6);
@@ -440,7 +446,6 @@ basic_shutdown(isc_task_t *task, isc_event_t *event) {
 
 static void
 basic_tick(isc_task_t *task, isc_event_t *event) {
-
 	UNUSED(task);
 
 	if (verbose) {
@@ -460,16 +465,16 @@ static char tock[] = "tock";
 static void
 basic(void **state) {
 	isc_result_t result;
-	isc_task_t *task1 = NULL;
-	isc_task_t *task2 = NULL;
-	isc_task_t *task3 = NULL;
-	isc_task_t *task4 = NULL;
-	isc_event_t *event = NULL;
-	isc_timer_t *ti1 = NULL;
-	isc_timer_t *ti2 = NULL;
+	isc_task_t*task1 = NULL;
+	isc_task_t*task2 = NULL;
+	isc_task_t*task3 = NULL;
+	isc_task_t*task4 = NULL;
+	isc_event_t*event = NULL;
+	isc_timer_t*ti1 = NULL;
+	isc_timer_t*ti2 = NULL;
 	isc_time_t absolute;
 	isc_interval_t interval;
-	char *testarray[] = {
+	char*testarray[] = {
 		one, one, one, one, one, one, one, one, one,
 		two, three, four, two, three, four, NULL
 	};
@@ -498,8 +503,8 @@ basic(void **state) {
 	isc_time_settoepoch(&absolute);
 	isc_interval_set(&interval, 1, 0);
 	result = isc_timer_create(timermgr, isc_timertype_ticker,
-				&absolute, &interval,
-				task1, basic_tick, tick, &ti1);
+				  &absolute, &interval,
+				  task1, basic_tick, tick, &ti1);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	ti2 = NULL;
@@ -512,9 +517,9 @@ basic(void **state) {
 
 #ifndef WIN32
 	sleep(2);
-#else
+#else  /* ifndef WIN32 */
 	Sleep(2000);
-#endif
+#endif /* ifndef WIN32 */
 
 	for (i = 0; testarray[i] != NULL; i++) {
 		/*
@@ -541,9 +546,9 @@ basic(void **state) {
 
 #ifndef WIN32
 	sleep(10);
-#else
+#else  /* ifndef WIN32 */
 	Sleep(10000);
-#endif
+#endif /* ifndef WIN32 */
 	isc_timer_detach(&ti1);
 	isc_timer_detach(&ti2);
 }
@@ -599,7 +604,8 @@ exclusive_cb(isc_task_t *task, isc_event_t *event) {
 	}
 
 	if (done) {
-		isc_mem_put(event->ev_destroy_arg, event->ev_arg, sizeof (int));
+		isc_mem_put(event->ev_destroy_arg, event->ev_arg,
+			    sizeof (int));
 		isc_event_free(&event);
 	} else {
 		isc_task_send(task, &event);
@@ -608,15 +614,15 @@ exclusive_cb(isc_task_t *task, isc_event_t *event) {
 
 static void
 task_exclusive(void **state) {
-	isc_task_t *tasks[10];
+	isc_task_t*tasks[10];
 	isc_result_t result;
 	int i;
 
 	UNUSED(state);
 
 	for (i = 0; i < 10; i++) {
-		isc_event_t *event = NULL;
-		int *v;
+		isc_event_t*event = NULL;
+		int*v;
 
 		tasks[i] = NULL;
 
@@ -666,25 +672,25 @@ maxtask_shutdown(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-maxtask_cb(isc_task_t *task, isc_event_t *event) {
+maxtask_cb(isc_task_t*task,isc_event_t*event) {
 	isc_result_t result;
 
 	if (event->ev_arg != NULL) {
-		isc_task_t *newtask = NULL;
+		isc_task_t*newtask = NULL;
 
-		event->ev_arg = (void *)(((uintptr_t) event->ev_arg) - 1);
+		event->ev_arg = (void*)(((uintptr_t) event->ev_arg) - 1);
 
 		/*
 		 * Create a new task and forward the message.
 		 */
-		result = isc_task_create(taskmgr, 0, &newtask);
-		assert_int_equal(result, ISC_R_SUCCESS);
+		result = isc_task_create(taskmgr,0,&newtask);
+		assert_int_equal(result,ISC_R_SUCCESS);
 
-		result = isc_task_onshutdown(newtask, maxtask_shutdown,
-					     (void *)task);
-		assert_int_equal(result, ISC_R_SUCCESS);
+		result = isc_task_onshutdown(newtask,maxtask_shutdown,
+					     (void*)task);
+		assert_int_equal(result,ISC_R_SUCCESS);
 
-		isc_task_send(newtask, &event);
+		isc_task_send(newtask,&event);
 	} else if (task != NULL) {
 		isc_task_destroy(&task);
 		isc_event_free(&event);
@@ -692,9 +698,9 @@ maxtask_cb(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-manytasks(void **state) {
+manytasks(void**state) {
 	isc_result_t result;
-	isc_event_t *event = NULL;
+	isc_event_t*event = NULL;
 	uintptr_t ntasks = 10000;
 
 	UNUSED(state);
@@ -707,22 +713,22 @@ manytasks(void **state) {
 	isc_condition_init(&cv);
 
 	isc_mem_debugging = ISC_MEM_DEBUGRECORD;
-	result = isc_mem_create(0, 0, &mctx);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_mem_create(0,0,&mctx);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = isc_taskmgr_create(mctx, 4, 0, &taskmgr);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_taskmgr_create(mctx,4,0,&taskmgr);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	done = false;
 
-	event = isc_event_allocate(mctx, (void *)1, 1, maxtask_cb,
-				   (void *)ntasks, sizeof(*event));
+	event = isc_event_allocate(mctx,(void*)1,1,maxtask_cb,
+				   (void*)ntasks,sizeof(*event));
 	assert_non_null(event);
 
 	LOCK(&lock);
-	maxtask_cb(NULL, event);
+	maxtask_cb(NULL,event);
 	while (!done) {
-		WAIT(&cv, &lock);
+		WAIT(&cv,&lock);
 	}
 
 	isc_taskmgr_destroy(&taskmgr);
@@ -739,14 +745,14 @@ manytasks(void **state) {
 static int nevents = 0;
 static int nsdevents = 0;
 static int senders[4];
-bool ready = false, all_done = false;
+bool ready = false,all_done = false;
 
 static void
-sd_sde1(isc_task_t *task, isc_event_t *event) {
+sd_sde1(isc_task_t*task,isc_event_t*event) {
 	UNUSED(task);
 
-	assert_int_equal(nevents, 256);
-	assert_int_equal(nsdevents, 1);
+	assert_int_equal(nevents,256);
+	assert_int_equal(nsdevents,1);
 	++nsdevents;
 
 	if (verbose) {
@@ -759,11 +765,11 @@ sd_sde1(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-sd_sde2(isc_task_t *task, isc_event_t *event) {
+sd_sde2(isc_task_t*task,isc_event_t*event) {
 	UNUSED(task);
 
-	assert_int_equal(nevents, 256);
-	assert_int_equal(nsdevents, 0);
+	assert_int_equal(nevents,256);
+	assert_int_equal(nsdevents,0);
 	++nsdevents;
 
 	if (verbose) {
@@ -774,12 +780,12 @@ sd_sde2(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-sd_event1(isc_task_t *task, isc_event_t *event) {
+sd_event1(isc_task_t*task,isc_event_t*event) {
 	UNUSED(task);
 
 	LOCK(&lock);
 	while (!ready) {
-		WAIT(&cv, &lock);
+		WAIT(&cv,&lock);
 	}
 	UNLOCK(&lock);
 
@@ -791,7 +797,7 @@ sd_event1(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-sd_event2(isc_task_t *task, isc_event_t *event) {
+sd_event2(isc_task_t*task,isc_event_t*event) {
 	UNUSED(task);
 
 	++nevents;
@@ -804,11 +810,11 @@ sd_event2(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-shutdown(void **state) {
+shutdown(void**state) {
 	isc_result_t result;
 	isc_eventtype_t event_type;
-	isc_event_t *event = NULL;
-	isc_task_t *task = NULL;
+	isc_event_t*event = NULL;
+	isc_task_t*task = NULL;
 	int i;
 
 	UNUSED(state);
@@ -819,35 +825,35 @@ shutdown(void **state) {
 
 	LOCK(&lock);
 
-	result = isc_task_create(taskmgr, 0, &task);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_create(taskmgr,0,&task);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	/*
 	 * This event causes the task to wait on cv.
 	 */
-	event = isc_event_allocate(mctx, &senders[1], event_type, sd_event1,
-				   NULL, sizeof(*event));
+	event = isc_event_allocate(mctx,&senders[1],event_type,sd_event1,
+				   NULL,sizeof(*event));
 	assert_non_null(event);
-	isc_task_send(task, &event);
+	isc_task_send(task,&event);
 
 	/*
 	 * Now we fill up the task's event queue with some events.
 	 */
 	for (i = 0; i < 256; ++i) {
-		event = isc_event_allocate(mctx, &senders[1], event_type,
-					   sd_event2, NULL, sizeof(*event));
+		event = isc_event_allocate(mctx,&senders[1],event_type,
+					   sd_event2,NULL,sizeof(*event));
 		assert_non_null(event);
-		isc_task_send(task, &event);
+		isc_task_send(task,&event);
 	}
 
 	/*
 	 * Now we register two shutdown events.
 	 */
-	result = isc_task_onshutdown(task, sd_sde1, NULL);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_onshutdown(task,sd_sde1,NULL);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = isc_task_onshutdown(task, sd_sde2, NULL);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_onshutdown(task,sd_sde2,NULL);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	isc_task_shutdown(task);
 	isc_task_detach(&task);
@@ -863,7 +869,7 @@ shutdown(void **state) {
 		isc_test_nap(1000);
 	}
 
-	assert_int_equal(nsdevents, 2);
+	assert_int_equal(nsdevents,2);
 }
 
 /*
@@ -872,13 +878,13 @@ shutdown(void **state) {
  * isc_task_onshutdown() will return ISC_R_SHUTTINGDOWN.
  */
 static void
-psd_event1(isc_task_t *task, isc_event_t *event) {
+psd_event1(isc_task_t*task,isc_event_t*event) {
 	UNUSED(task);
 
 	LOCK(&lock);
 
 	while (!done) {
-		WAIT(&cv, &lock);
+		WAIT(&cv,&lock);
 	}
 
 	UNLOCK(&lock);
@@ -887,18 +893,18 @@ psd_event1(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-psd_sde(isc_task_t *task, isc_event_t *event) {
+psd_sde(isc_task_t*task,isc_event_t*event) {
 	UNUSED(task);
 
 	isc_event_free(&event);
 }
 
 static void
-post_shutdown(void **state) {
+post_shutdown(void**state) {
 	isc_result_t result;
 	isc_eventtype_t event_type;
-	isc_event_t *event;
-	isc_task_t *task;
+	isc_event_t*event;
+	isc_task_t*task;
 
 	UNUSED(state);
 
@@ -910,21 +916,21 @@ post_shutdown(void **state) {
 	LOCK(&lock);
 
 	task = NULL;
-	result = isc_task_create(taskmgr, 0, &task);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_create(taskmgr,0,&task);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	/*
 	 * This event causes the task to wait on cv.
 	 */
-	event = isc_event_allocate(mctx, &senders[1], event_type, psd_event1,
-				   NULL, sizeof(*event));
+	event = isc_event_allocate(mctx,&senders[1],event_type,psd_event1,
+				   NULL,sizeof(*event));
 	assert_non_null(event);
-	isc_task_send(task, &event);
+	isc_task_send(task,&event);
 
 	isc_task_shutdown(task);
 
-	result = isc_task_onshutdown(task, psd_sde, NULL);
-	assert_int_equal(result, ISC_R_SHUTTINGDOWN);
+	result = isc_task_onshutdown(task,psd_sde,NULL);
+	assert_int_equal(result,ISC_R_SHUTTINGDOWN);
 
 	/*
 	 * Release the task.
@@ -941,27 +947,27 @@ post_shutdown(void **state) {
  * Helper for the purge tests below:
  */
 
-#define	SENDERCNT 3
-#define	TYPECNT 4
-#define	TAGCNT 5
-#define	NEVENTS	(SENDERCNT * TYPECNT * TAGCNT)
+#define SENDERCNT 3
+#define TYPECNT 4
+#define TAGCNT 5
+#define NEVENTS (SENDERCNT * TYPECNT * TAGCNT)
 
 static bool testrange;
-static void *purge_sender;
+static void*purge_sender;
 static isc_eventtype_t purge_type_first;
 static isc_eventtype_t purge_type_last;
-static void *purge_tag;
+static void*purge_tag;
 static int eventcnt;
 
 bool started = false;
 
 static void
-pg_event1(isc_task_t *task, isc_event_t *event) {
+pg_event1(isc_task_t*task,isc_event_t*event) {
 	UNUSED(task);
 
 	LOCK(&lock);
 	while (!started) {
-		WAIT(&cv, &lock);
+		WAIT(&cv,&lock);
 	}
 	UNLOCK(&lock);
 
@@ -969,7 +975,7 @@ pg_event1(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-pg_event2(isc_task_t *task, isc_event_t *event) {
+pg_event2(isc_task_t*task,isc_event_t*event) {
 	bool sender_match = false;
 	bool type_match = false;
 	bool tag_match = false;
@@ -1009,7 +1015,7 @@ pg_event2(isc_task_t *task, isc_event_t *event) {
 			++eventcnt;
 		} else if (verbose) {
 			print_message("# event %p,%d,%p not purged\n",
-				      event->ev_sender, (int)event->ev_type,
+				      event->ev_sender,(int)event->ev_type,
 				      event->ev_tag);
 		}
 	} else {
@@ -1020,7 +1026,7 @@ pg_event2(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-pg_sde(isc_task_t *task, isc_event_t *event) {
+pg_sde(isc_task_t*task,isc_event_t*event) {
 	UNUSED(task);
 
 	LOCK(&lock);
@@ -1032,14 +1038,14 @@ pg_sde(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-test_purge(int sender, int type, int tag, int exp_purged) {
+test_purge(int sender,int type,int tag,int exp_purged) {
 	isc_result_t result;
-	isc_task_t *task = NULL;
-	isc_event_t *eventtab[NEVENTS];
-	isc_event_t *event = NULL;
+	isc_task_t*task = NULL;
+	isc_event_t*eventtab[NEVENTS];
+	isc_event_t*event = NULL;
 	isc_interval_t interval;
 	isc_time_t now;
-	int sender_cnt, type_cnt, tag_cnt, event_cnt, i;
+	int sender_cnt,type_cnt,tag_cnt,event_cnt,i;
 	int purged = 0;
 
 	started = false;
@@ -1048,20 +1054,20 @@ test_purge(int sender, int type, int tag, int exp_purged) {
 
 	isc_condition_init(&cv);
 
-	result = isc_task_create(taskmgr, 0, &task);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_create(taskmgr,0,&task);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = isc_task_onshutdown(task, pg_sde, NULL);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_onshutdown(task,pg_sde,NULL);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	/*
 	 * Block the task on cv.
 	 */
-	event = isc_event_allocate(mctx, (void *)1, 9999,
-				   pg_event1, NULL, sizeof(*event));
+	event = isc_event_allocate(mctx,(void*)1,9999,
+				   pg_event1,NULL,sizeof(*event));
 
 	assert_non_null(event);
-	isc_task_send(task, &event);
+	isc_task_send(task,&event);
 
 	/*
 	 * Fill the task's queue with some messages with varying
@@ -1073,14 +1079,19 @@ test_purge(int sender, int type, int tag, int exp_purged) {
 			for (tag_cnt = 0; tag_cnt < TAGCNT; ++tag_cnt) {
 				eventtab[event_cnt] =
 					isc_event_allocate(mctx,
-					    &senders[sender + sender_cnt],
-					    (isc_eventtype_t)(type + type_cnt),
-					    pg_event2, NULL, sizeof(*event));
+							   &senders[sender +
+								    sender_cnt],
+							   (isc_eventtype_t)(
+								   type +
+								   type_cnt),
+							   pg_event2,
+							   NULL,
+							   sizeof(*event));
 
 				assert_non_null(eventtab[event_cnt]);
 
 				eventtab[event_cnt]->ev_tag =
-					(void *)((uintptr_t)tag + tag_cnt);
+					(void*)((uintptr_t)tag + tag_cnt);
 
 				/*
 				 * Mark events as non-purgeable if
@@ -1101,36 +1112,37 @@ test_purge(int sender, int type, int tag, int exp_purged) {
 	}
 
 	for (i = 0; i < event_cnt; ++i) {
-		isc_task_send(task, &eventtab[i]);
+		isc_task_send(task,&eventtab[i]);
 	}
 
 	if (testrange) {
 		/*
 		 * We're testing isc_task_purgerange.
 		 */
-		purged  = isc_task_purgerange(task, purge_sender,
+		purged  = isc_task_purgerange(task,
+					      purge_sender,
 					      (isc_eventtype_t)purge_type_first,
 					      (isc_eventtype_t)purge_type_last,
 					      purge_tag);
-		assert_int_equal(purged, exp_purged);
+		assert_int_equal(purged,exp_purged);
 	} else {
 		/*
 		 * We're testing isc_task_purge.
 		 */
 		if (verbose) {
 			print_message("# purge events %p,%u,%p\n",
-				      purge_sender, purge_type_first,
+				      purge_sender,purge_type_first,
 				      purge_tag);
 		}
-		purged = isc_task_purge(task, purge_sender,
+		purged = isc_task_purge(task,purge_sender,
 					(isc_eventtype_t)purge_type_first,
 					purge_tag);
 		if (verbose) {
 			print_message("# purged %d expected %d\n",
-				      purged, exp_purged);
+				      purged,exp_purged);
 		}
 
-		assert_int_equal(purged, exp_purged);
+		assert_int_equal(purged,exp_purged);
 	}
 
 	/*
@@ -1142,23 +1154,23 @@ test_purge(int sender, int type, int tag, int exp_purged) {
 
 	isc_task_shutdown(task);
 
-	isc_interval_set(&interval, 5, 0);
+	isc_interval_set(&interval,5,0);
 
 	/*
 	 * Wait for shutdown processing to complete.
 	 */
 	while (!done) {
-		result = isc_time_nowplusinterval(&now, &interval);
-		assert_int_equal(result, ISC_R_SUCCESS);
+		result = isc_time_nowplusinterval(&now,&interval);
+		assert_int_equal(result,ISC_R_SUCCESS);
 
-		WAITUNTIL(&cv, &lock, &now);
+		WAITUNTIL(&cv,&lock,&now);
 	}
 
 	UNLOCK(&lock);
 
 	isc_task_detach(&task);
 
-	assert_int_equal(eventcnt, event_cnt - exp_purged);
+	assert_int_equal(eventcnt,event_cnt - exp_purged);
 }
 
 /*
@@ -1168,7 +1180,7 @@ test_purge(int sender, int type, int tag, int exp_purged) {
  * from the task's " queue and returns the number of events purged.
  */
 static void
-purge(void **state) {
+purge(void**state) {
 	UNUSED(state);
 
 	/* Try purging on a specific sender. */
@@ -1178,9 +1190,9 @@ purge(void **state) {
 	purge_sender = &senders[2];
 	purge_type_first = 4;
 	purge_type_last = 4;
-	purge_tag = (void *)8;
+	purge_tag = (void*)8;
 	testrange = false;
-	test_purge(1, 4, 7, 1);
+	test_purge(1,4,7,1);
 
 	/* Try purging on all senders. */
 	if (verbose) {
@@ -1189,9 +1201,9 @@ purge(void **state) {
 	purge_sender = NULL;
 	purge_type_first = 4;
 	purge_type_last = 4;
-	purge_tag = (void *)8;
+	purge_tag = (void*)8;
 	testrange = false;
-	test_purge(1, 4, 7, 3);
+	test_purge(1,4,7,3);
 
 	/* Try purging on all senders, specified type, all tags. */
 	if (verbose) {
@@ -1202,7 +1214,7 @@ purge(void **state) {
 	purge_type_last = 4;
 	purge_tag = NULL;
 	testrange = false;
-	test_purge(1, 4, 7, 15);
+	test_purge(1,4,7,15);
 
 	/* Try purging on a specified tag, no such type. */
 	if (verbose) {
@@ -1211,9 +1223,9 @@ purge(void **state) {
 	purge_sender = NULL;
 	purge_type_first = 99;
 	purge_type_last = 99;
-	purge_tag = (void *)8;
+	purge_tag = (void*)8;
 	testrange = false;
-	test_purge(1, 4, 7, 0);
+	test_purge(1,4,7,0);
 
 	/* Try purging on specified sender, type, all tags. */
 	if (verbose) {
@@ -1224,7 +1236,7 @@ purge(void **state) {
 	purge_type_last = 5;
 	purge_tag = NULL;
 	testrange = false;
-	test_purge(1, 4, 7, 5);
+	test_purge(1,4,7,5);
 }
 
 /*
@@ -1236,7 +1248,7 @@ purge(void **state) {
  */
 
 static void
-purgerange(void **state) {
+purgerange(void**state) {
 	UNUSED(state);
 
 	/* Now let's try some ranges. */
@@ -1244,9 +1256,9 @@ purgerange(void **state) {
 	purge_sender = &senders[2];
 	purge_type_first = 4;
 	purge_type_last = 5;
-	purge_tag = (void *)8;
+	purge_tag = (void*)8;
 	testrange = true;
-	test_purge(1, 4, 7, 1);
+	test_purge(1,4,7,1);
 
 	/* Try purging on all senders. */
 	if (verbose) {
@@ -1255,9 +1267,9 @@ purgerange(void **state) {
 	purge_sender = NULL;
 	purge_type_first = 4;
 	purge_type_last = 5;
-	purge_tag = (void *)8;
+	purge_tag = (void*)8;
 	testrange = true;
-	test_purge(1, 4, 7, 5);
+	test_purge(1,4,7,5);
 
 	/* Try purging on all senders, specified type, all tags. */
 	if (verbose) {
@@ -1268,7 +1280,7 @@ purgerange(void **state) {
 	purge_type_last = 6;
 	purge_tag = NULL;
 	testrange = true;
-	test_purge(1, 4, 7, 28);
+	test_purge(1,4,7,28);
 
 	/* Try purging on a specified tag, no such type. */
 	if (verbose) {
@@ -1277,9 +1289,9 @@ purgerange(void **state) {
 	purge_sender = NULL;
 	purge_type_first = 99;
 	purge_type_last = 101;
-	purge_tag = (void *)8;
+	purge_tag = (void*)8;
 	testrange = true;
-	test_purge(1, 4, 7, 0);
+	test_purge(1,4,7,0);
 
 	/* Try purging on specified sender, type, all tags. */
 	if (verbose) {
@@ -1290,19 +1302,19 @@ purgerange(void **state) {
 	purge_type_last = 6;
 	purge_tag = NULL;
 	testrange = true;
-	test_purge(1, 4, 7, 10);
+	test_purge(1,4,7,10);
 }
 
 /*
  * Helpers for purge event tests
  */
 static void
-pge_event1(isc_task_t *task, isc_event_t *event) {
+pge_event1(isc_task_t*task,isc_event_t*event) {
 	UNUSED(task);
 
 	LOCK(&lock);
 	while (!started) {
-		WAIT(&cv, &lock);
+		WAIT(&cv,&lock);
 	}
 	UNLOCK(&lock);
 
@@ -1310,7 +1322,7 @@ pge_event1(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-pge_event2(isc_task_t *task, isc_event_t *event) {
+pge_event2(isc_task_t*task,isc_event_t*event) {
 	UNUSED(task);
 
 	++eventcnt;
@@ -1319,7 +1331,7 @@ pge_event2(isc_task_t *task, isc_event_t *event) {
 
 
 static void
-pge_sde(isc_task_t *task, isc_event_t *event) {
+pge_sde(isc_task_t*task,isc_event_t*event) {
 	UNUSED(task);
 
 	LOCK(&lock);
@@ -1332,12 +1344,12 @@ pge_sde(isc_task_t *task, isc_event_t *event) {
 
 static void
 try_purgeevent(bool purgeable) {
-	isc_result_t	result;
-	isc_task_t *task = NULL;
+	isc_result_t result;
+	isc_task_t*task = NULL;
 	bool purged;
-	isc_event_t *event1 = NULL;
-	isc_event_t *event2 = NULL;
-	isc_event_t *event2_clone = NULL;;
+	isc_event_t*event1 = NULL;
+	isc_event_t*event2 = NULL;
+	isc_event_t*event2_clone = NULL;
 	isc_time_t now;
 	isc_interval_t interval;
 
@@ -1347,22 +1359,22 @@ try_purgeevent(bool purgeable) {
 
 	isc_condition_init(&cv);
 
-	result = isc_task_create(taskmgr, 0, &task);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_create(taskmgr,0,&task);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = isc_task_onshutdown(task, pge_sde, NULL);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_task_onshutdown(task,pge_sde,NULL);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	/*
 	 * Block the task on cv.
 	 */
-	event1 = isc_event_allocate(mctx, (void *)1, (isc_eventtype_t)1,
-				    pge_event1, NULL, sizeof(*event1));
+	event1 = isc_event_allocate(mctx,(void*)1,(isc_eventtype_t)1,
+				    pge_event1,NULL,sizeof(*event1));
 	assert_non_null(event1);
-	isc_task_send(task, &event1);
+	isc_task_send(task,&event1);
 
-	event2 = isc_event_allocate(mctx, (void *)1, (isc_eventtype_t)1,
-				    pge_event2, NULL, sizeof(*event2));
+	event2 = isc_event_allocate(mctx,(void*)1,(isc_eventtype_t)1,
+				    pge_event2,NULL,sizeof(*event2));
 	assert_non_null(event2);
 
 	event2_clone = event2;
@@ -1373,10 +1385,10 @@ try_purgeevent(bool purgeable) {
 		event2->ev_attributes |= ISC_EVENTATTR_NOPURGE;
 	}
 
-	isc_task_send(task, &event2);
+	isc_task_send(task,&event2);
 
-	purged = isc_task_purgeevent(task, event2_clone);
-	assert_int_equal(purgeable, purged);
+	purged = isc_task_purgeevent(task,event2_clone);
+	assert_int_equal(purgeable,purged);
 
 	/*
 	 * Unblock the task, allowing event processing.
@@ -1387,23 +1399,23 @@ try_purgeevent(bool purgeable) {
 
 	isc_task_shutdown(task);
 
-	isc_interval_set(&interval, 5, 0);
+	isc_interval_set(&interval,5,0);
 
 	/*
 	 * Wait for shutdown processing to complete.
 	 */
 	while (!done) {
-		result = isc_time_nowplusinterval(&now, &interval);
-		assert_int_equal(result, ISC_R_SUCCESS);
+		result = isc_time_nowplusinterval(&now,&interval);
+		assert_int_equal(result,ISC_R_SUCCESS);
 
-		WAITUNTIL(&cv, &lock, &now);
+		WAITUNTIL(&cv,&lock,&now);
 	}
 
 	UNLOCK(&lock);
 
 	isc_task_detach(&task);
 
-	assert_int_equal(eventcnt, (purgeable ? 0 : 1));
+	assert_int_equal(eventcnt,(purgeable ? 0 : 1));
 }
 
 /*
@@ -1414,7 +1426,7 @@ try_purgeevent(bool purgeable) {
  */
 
 static void
-purgeevent(void **state) {
+purgeevent(void**state) {
 	UNUSED(state);
 
 	try_purgeevent(true);
@@ -1428,37 +1440,37 @@ purgeevent(void **state) {
  */
 
 static void
-purgeevent_notpurge(void **state) {
+purgeevent_notpurge(void**state) {
 	UNUSED(state);
 
 	try_purgeevent(false);
 }
 
 int
-main(int argc, char **argv) {
+main(int argc,char**argv) {
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test_setup_teardown(create_task, _setup, _teardown),
-		cmocka_unit_test_setup_teardown(shutdown, _setup4, _teardown),
+		cmocka_unit_test_setup_teardown(create_task,_setup,_teardown),
+		cmocka_unit_test_setup_teardown(shutdown,_setup4,_teardown),
 		cmocka_unit_test(manytasks),
-		cmocka_unit_test_setup_teardown(all_events, _setup, _teardown),
-		cmocka_unit_test_setup_teardown(basic, _setup2, _teardown),
+		cmocka_unit_test_setup_teardown(all_events,_setup,_teardown),
+		cmocka_unit_test_setup_teardown(basic,_setup2,_teardown),
 		cmocka_unit_test_setup_teardown(privileged_events,
-						_setup, _teardown),
+						_setup,_teardown),
 		cmocka_unit_test_setup_teardown(privilege_drop,
-						_setup, _teardown),
+						_setup,_teardown),
 		cmocka_unit_test_setup_teardown(task_exclusive,
-						_setup4, _teardown),
+						_setup4,_teardown),
 		cmocka_unit_test_setup_teardown(post_shutdown,
-						_setup2, _teardown),
-		cmocka_unit_test_setup_teardown(purge, _setup2, _teardown),
-		cmocka_unit_test_setup_teardown(purgerange, _setup, _teardown),
-		cmocka_unit_test_setup_teardown(purgeevent, _setup2, _teardown),
+						_setup2,_teardown),
+		cmocka_unit_test_setup_teardown(purge,_setup2,_teardown),
+		cmocka_unit_test_setup_teardown(purgerange,_setup,_teardown),
+		cmocka_unit_test_setup_teardown(purgeevent,_setup2,_teardown),
 		cmocka_unit_test_setup_teardown(purgeevent_notpurge,
-						_setup, _teardown),
+						_setup,_teardown),
 	};
 	int c;
 
-	while ((c = isc_commandline_parse(argc, argv, "v")) != -1) {
+	while ((c = isc_commandline_parse(argc,argv,"v")) != -1) {
 		switch (c) {
 		case 'v':
 			verbose = true;
@@ -1469,7 +1481,7 @@ main(int argc, char **argv) {
 	}
 
 
-	return (cmocka_run_group_tests(tests, NULL, NULL));
+	return (cmocka_run_group_tests(tests,NULL,NULL));
 }
 
 #else /* HAVE_CMOCKA */
@@ -1482,4 +1494,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

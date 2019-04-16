@@ -44,13 +44,13 @@
  *** Types
  ***/
 struct isc_backtrace_symmap {
-	void		*addr;
-	const char	*symbol;
+	void *		  addr;
+	const char *	  symbol;
 };
 
 LIBISC_EXTERNAL_DATA extern const int isc__backtrace_nsymbols;
 LIBISC_EXTERNAL_DATA extern const
-	isc_backtrace_symmap_t isc__backtrace_symtable[];
+isc_backtrace_symmap_t isc__backtrace_symtable[];
 
 /***
  *** Functions
@@ -80,7 +80,8 @@ isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes);
  */
 
 isc_result_t
-isc_backtrace_getsymbolfromindex(int index, const void **addrp,
+isc_backtrace_getsymbolfromindex(int index,
+				 const void **addrp,
 				 const char **symbolp);
 /*%<
  * Returns the content of the internal symbol table of the given index.
@@ -101,7 +102,8 @@ isc_backtrace_getsymbolfromindex(int index, const void **addrp,
  */
 
 isc_result_t
-isc_backtrace_getsymbol(const void *addr, const char **symbolp,
+isc_backtrace_getsymbol(const void *addr,
+			const char **symbolp,
 			unsigned long *offsetp);
 /*%<
  * Searches the internal symbol table for the symbol that most matches the
@@ -123,4 +125,4 @@ isc_backtrace_getsymbol(const void *addr, const char **symbolp,
  */
 ISC_LANG_ENDDECLS
 
-#endif	/* ISC_BACKTRACE_H */
+#endif  /* ISC_BACKTRACE_H */

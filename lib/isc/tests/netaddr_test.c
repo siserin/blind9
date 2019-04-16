@@ -33,8 +33,8 @@ netaddr_isnetzero(void **state) {
 	unsigned int i;
 	struct in_addr ina;
 	struct {
-		const char *address;
-		bool expect;
+		const char *	  address;
+		bool		  expect;
 	} tests[] = {
 		{ "0.0.0.0", true },
 		{ "0.0.0.1", true },
@@ -52,7 +52,7 @@ netaddr_isnetzero(void **state) {
 
 	UNUSED(state);
 
-	for (i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+	for (i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
 		ina.s_addr = inet_addr(tests[i].address);
 		isc_netaddr_fromin(&netaddr, &ina);
 		result = isc_netaddr_isnetzero(&netaddr);
@@ -90,7 +90,7 @@ netaddr_masktoprefixlen(void **state) {
 	assert_int_equal(plen, 0);
 
 	assert_int_equal(isc_netaddr_masktoprefixlen(&ina_b, &plen),
-		     ISC_R_SUCCESS);
+			 ISC_R_SUCCESS);
 	assert_int_equal(plen, 31);
 
 	assert_int_equal(isc_netaddr_masktoprefixlen(&ina_c, &plen),
@@ -107,9 +107,9 @@ static void
 netaddr_multicast(void **state) {
 	unsigned int i;
 	struct {
-		int family;
-		const char *addr;
-		bool is_multicast;
+		int		  family;
+		const char *	  addr;
+		bool		  is_multicast;
 	} tests[] = {
 		{ AF_INET, "1.2.3.4", false },
 		{ AF_INET, "4.3.2.1", false },
@@ -165,4 +165,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

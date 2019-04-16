@@ -72,8 +72,8 @@ iteration_test(const char *file, unsigned int expected) {
  * Structure containing parameters for nsec3param_salttotext_test().
  */
 typedef struct {
-	const char *nsec3param_text;	/* NSEC3PARAM RDATA in text form */
-	const char *expected_salt;	/* string expected in target buffer */
+	const char *	  nsec3param_text; /* NSEC3PARAM RDATA in text form */
+	const char *	  expected_salt; /* string expected in target buffer */
 } nsec3param_salttotext_test_params_t;
 
 /*%
@@ -117,8 +117,8 @@ nsec3param_salttotext_test(const nsec3param_salttotext_test_params_t *params) {
 	 * terminating NULL byte.
 	 */
 	length = strlen(params->expected_salt);
-	assert_true(length < sizeof(salt) - 1);	/* prevent buffer overwrite */
-	assert_true(length > 0U);		/* prevent length underflow */
+	assert_true(length < sizeof(salt) - 1); /* prevent buffer overwrite */
+	assert_true(length > 0U);               /* prevent length underflow */
 
 	result = dns_nsec3param_salttotext(&nsec3param, salt, length - 1);
 	assert_int_equal(result, ISC_R_NOSPACE);
@@ -193,4 +193,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

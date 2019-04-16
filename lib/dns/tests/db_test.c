@@ -50,9 +50,9 @@ _teardown(void **state) {
 	return (0);
 }
 
-#define	BUFLEN		255
-#define	BIGBUFLEN	(64 * 1024)
-#define TEST_ORIGIN	"test"
+#define BUFLEN          255
+#define BIGBUFLEN       (64 * 1024)
+#define TEST_ORIGIN     "test"
 
 /*
  * Individual unit tests
@@ -216,12 +216,12 @@ dns_dbfind_staleok_test(void **state) {
 			count++;
 			assert_in_range(count, 0, 20); /* loop sanity */
 			assert_int_equal(rdataset.attributes &
-				     DNS_RDATASETATTR_STALE, 0);
+					 DNS_RDATASETATTR_STALE, 0);
 			assert_true(rdataset.ttl > 0);
 			dns_db_detachnode(db, &node);
 			dns_rdataset_disassociate(&rdataset);
 
-			usleep(100000);	/* 100 ms */
+			usleep(100000); /* 100 ms */
 
 			result = dns_db_find(db, example, NULL,
 					     dns_rdatatype_a, 0, 0,
@@ -252,12 +252,12 @@ dns_dbfind_staleok_test(void **state) {
 				assert_int_equal(result, ISC_R_SUCCESS);
 				assert_int_equal(rdataset.ttl, 0);
 				assert_int_equal(rdataset.attributes &
-					     DNS_RDATASETATTR_STALE,
-					     DNS_RDATASETATTR_STALE);
+						 DNS_RDATASETATTR_STALE,
+						 DNS_RDATASETATTR_STALE);
 				dns_db_detachnode(db, &node);
 				dns_rdataset_disassociate(&rdataset);
 
-				usleep(100000);	/* 100 ms */
+				usleep(100000); /* 100 ms */
 
 				result = dns_db_find(db, example, NULL,
 						     dns_rdatatype_a,
@@ -328,7 +328,6 @@ dbtype_test(void **state) {
 	assert_true(dns_db_iscache(db));
 	assert_false(dns_db_iszone(db));
 	dns_db_detach(&db);
-
 }
 
 /* database versions */
@@ -354,7 +353,7 @@ version_test(void **state) {
 	name = dns_fixedname_name(&fname);
 	foundname = dns_fixedname_initname(&ffound);
 	dns_rdataset_init(&rdataset);
-	result = dns_db_find(db, name , ver, dns_rdatatype_a, 0, 0, &node,
+	result = dns_db_find(db, name, ver, dns_rdatatype_a, 0, 0, &node,
 			     foundname, &rdataset, NULL);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	dns_rdataset_disassociate(&rdataset);
@@ -367,7 +366,7 @@ version_test(void **state) {
 	name = dns_fixedname_name(&fname);
 	foundname = dns_fixedname_initname(&ffound);
 	dns_rdataset_init(&rdataset);
-	result = dns_db_find(db, name , ver, dns_rdatatype_a, 0, 0, &node,
+	result = dns_db_find(db, name, ver, dns_rdatatype_a, 0, 0, &node,
 			     foundname, &rdataset, NULL);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
@@ -426,4 +425,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

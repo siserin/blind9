@@ -35,13 +35,13 @@
 
 #include <pk11/site.h>
 
-#define TEST_INPUT(x) (x), sizeof(x)-1
+#define TEST_INPUT(x) (x), sizeof(x) - 1
 
 typedef struct hash_testcase {
-	const char *input;
-	size_t input_len;
-	const char *result;
-	int repeats;
+	const char *	  input;
+	size_t		  input_len;
+	const char *	  result;
+	int		  repeats;
 } hash_testcase_t;
 
 /*Hash function test */
@@ -176,4 +176,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

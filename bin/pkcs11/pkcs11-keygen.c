@@ -154,20 +154,24 @@ static CK_ATTRIBUTE ecc_template[] = {
  */
 static key_class_t
 keyclass_fromtext(const char *name) {
-	if (name == NULL)
+	if (name == NULL) {
 		return (key_unknown);
+	}
 
 	if (strncasecmp(name, "rsa", 3) == 0 ||
-	    strncasecmp(name, "nsec3rsa", 8) == 0)
+	    strncasecmp(name, "nsec3rsa", 8) == 0) {
 		return (key_rsa);
-	else if (strncasecmp(name, "ecc", 3) == 0 ||
-		 strncasecmp(name, "ecdsa", 5) == 0)
+	} else if (strncasecmp(name, "ecc", 3) == 0 ||
+		   strncasecmp(name, "ecdsa", 5) == 0)
+	{
 		return (key_ecc);
-	else if (strncasecmp(name, "ecx", 3) == 0 ||
-		 strncasecmp(name, "ed", 2) == 0)
+	} else if (strncasecmp(name, "ecx", 3) == 0 ||
+		   strncasecmp(name, "ed", 2) == 0)
+	{
 		return (key_ecx);
-	else
+	} else {
 		return (key_unknown);
+	}
 }
 
 static void
@@ -176,7 +180,7 @@ usage(void) {
 		"Usage:\n"
 		"\tpkcs11-keygen -a algorithm -b keysize -l label\n"
 		"\t              [-P] [-m module] "
-			"[-s slot] [-e] [-S] [-i id] [-p PIN]\n");
+		"[-s slot] [-e] [-S] [-i id] [-p PIN]\n");
 	exit(2);
 }
 
@@ -263,25 +267,29 @@ main(int argc, char *argv[]) {
 		}
 	}
 
-	if (label == NULL && isc_commandline_index < argc)
+	if (label == NULL && isc_commandline_index < argc) {
 		label = (CK_CHAR *)argv[isc_commandline_index];
+	}
 
-	if (errflg || (label == NULL))
+	if (errflg || (label == NULL)) {
 		usage();
+	}
 
 	if (expsize != 0 && keyclass != key_rsa) {
 		fprintf(stderr, "The -e option is only compatible "
-				"with RSA key generation\n");
+			"with RSA key generation\n");
 		exit(2);
 	}
 
 	switch (keyclass) {
 	case key_rsa:
 		op_type = OP_RSA;
-		if (expsize == 0)
+		if (expsize == 0) {
 			expsize = 3;
-		if (bits == 0)
+		}
+		if (bits == 0) {
 			usage();
+		}
 
 		mech.mechanism = CKM_RSA_PKCS_KEY_PAIR_GEN;
 		mech.pParameter = NULL;
@@ -294,9 +302,9 @@ main(int argc, char *argv[]) {
 		/* Set public exponent to F4 or F5 */
 		exponent[0] = 0x01;
 		exponent[1] = 0x00;
-		if (expsize == 3)
+		if (expsize == 3) {
 			exponent[2] = 0x01;
-		else {
+		} else {
 			exponent[2] = 0x00;
 			exponent[3] = 0x00;
 			exponent[4] = 0x01;
@@ -309,11 +317,11 @@ main(int argc, char *argv[]) {
 		break;
 	case key_ecc:
 		op_type = OP_ECDSA;
-		if (bits == 0)
+		if (bits == 0) {
 			bits = 256;
-		else if (bits != 256 && bits != 384) {
+		} else if (bits != 256 && bits != 384) {
 			fprintf(stderr, "ECC keys only support bit sizes of "
-					"256 and 384\n");
+				"256 and 384\n");
 			exit(2);
 		}
 
@@ -340,13 +348,13 @@ main(int argc, char *argv[]) {
 #ifndef CKM_EDDSA_KEY_PAIR_GEN
 		fprintf(stderr, "CKM_EDDSA_KEY_PAIR_GEN is not defined\n");
 		usage();
-#else
+#else  /* ifndef CKM_EDDSA_KEY_PAIR_GEN */
 		op_type = OP_EDDSA;
-		if (bits == 0)
+		if (bits == 0) {
 			bits = 256;
-		else if (bits != 256 && bits != 456) {
+		} else if (bits != 256 && bits != 456) {
 			fprintf(stderr, "ECX keys only support bit sizes of "
-					"256 and 456\n");
+				"256 and 456\n");
 			exit(2);
 		}
 
@@ -368,7 +376,7 @@ main(int argc, char *argv[]) {
 				sizeof(pk11_ecc_ed448);
 		}
 
-#endif
+#endif /* ifndef CKM_EDDSA_KEY_PAIR_GEN */
 		break;
 	case key_unknown:
 		usage();
@@ -405,8 +413,9 @@ main(int argc, char *argv[]) {
 	pk11_result_register();
 
 	/* Initialize the CRYPTOKI library */
-	if (lib_name != NULL)
+	if (lib_name != NULL) {
 		pk11_set_lib_name(lib_name);
+	}
 
 	if (pin == NULL) {
 		pin = getpass("Enter Pin: ");
@@ -419,10 +428,10 @@ main(int argc, char *argv[]) {
 	    result == PK11_R_NOAESSERVICE) {
 		fprintf(stderr, "Warning: %s\n", isc_result_totext(result));
 		fprintf(stderr, "This HSM will not work with BIND 9 "
-				"using native PKCS#11.\n");
+			"using native PKCS#11.\n");
 	} else if (result != ISC_R_SUCCESS) {
 		fprintf(stderr, "Unrecoverable error initializing "
-				"PKCS#11: %s\n", isc_result_totext(result));
+			"PKCS#11: %s\n", isc_result_totext(result));
 		exit(1);
 	}
 
@@ -455,12 +464,14 @@ main(int argc, char *argv[]) {
 		private_template[5].pValue = &truevalue;
 	}
 
-	if (keyclass == key_rsa || keyclass == key_ecc || keyclass == key_ecx)
+	if (keyclass == key_rsa || keyclass == key_ecc ||
+	    keyclass == key_ecx) {
 		goto generate_keys;
+	}
 
 	/* Generate Domain parameters */
 	rv = pkcs_C_GenerateKey(hSession, &dpmech, domain_template,
-			   domain_attrcnt, &domainparams);
+				domain_attrcnt, &domainparams);
 
 	if (rv != CKR_OK) {
 		fprintf(stderr,
@@ -471,7 +482,7 @@ main(int argc, char *argv[]) {
 
 	/* Get Domain parameters */
 	rv = pkcs_C_GetAttributeValue(hSession, domainparams,
-				 param_template, param_attrcnt);
+				      param_template, param_attrcnt);
 
 	if (rv != CKR_OK) {
 		fprintf(stderr,
@@ -486,7 +497,8 @@ main(int argc, char *argv[]) {
 	}
 
 	for (i = 0; i < param_attrcnt; i++) {
-		param_template[i].pValue = malloc(param_template[i].ulValueLen);
+		param_template[i].pValue =
+			malloc(param_template[i].ulValueLen);
 		if (param_template[i].pValue == NULL) {
 			fprintf(stderr, "malloc failed\n");
 			error = 1;
@@ -497,15 +509,16 @@ main(int argc, char *argv[]) {
  generate_keys:
 	/* Generate Key pair for signing/verifying */
 	rv = pkcs_C_GenerateKeyPair(hSession, &mech,
-			       public_template, public_attrcnt,
-			       private_template, private_attrcnt,
-			       &publickey, &privatekey);
+				    public_template, public_attrcnt,
+				    private_template, private_attrcnt,
+				    &publickey, &privatekey);
 
 	if (rv != CKR_OK) {
 		fprintf(stderr, "C_GenerateKeyPair: Error = 0x%.8lX\n", rv);
 		error = 1;
-	 } else if (!quiet)
+	} else if (!quiet) {
 		printf("Key pair generation complete.\n");
+	}
 
  exit_search:
 	rv = pkcs_C_FindObjectsFinal(hSession);

@@ -14,8 +14,8 @@
 #define ISC_APP_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file isc/app.h
  * \brief ISC Application Support
@@ -90,9 +90,9 @@
 
 typedef isc_event_t isc_appevent_t;
 
-#define ISC_APPEVENT_FIRSTEVENT		(ISC_EVENTCLASS_APP + 0)
-#define ISC_APPEVENT_SHUTDOWN		(ISC_EVENTCLASS_APP + 1)
-#define ISC_APPEVENT_LASTEVENT		(ISC_EVENTCLASS_APP + 65535)
+#define ISC_APPEVENT_FIRSTEVENT         (ISC_EVENTCLASS_APP + 0)
+#define ISC_APPEVENT_SHUTDOWN           (ISC_EVENTCLASS_APP + 1)
+#define ISC_APPEVENT_LASTEVENT          (ISC_EVENTCLASS_APP + 65535)
 
 /*%
  * This structure is actually just the common prefix of an application context
@@ -104,12 +104,12 @@ typedef isc_event_t isc_appevent_t;
  * all app context invariants.
  */
 struct isc_appctx {
-	unsigned int		impmagic;
-	unsigned int		magic;
+	unsigned int	    impmagic;
+	unsigned int	    magic;
 };
 
-#define ISCAPI_APPCTX_MAGIC		ISC_MAGIC('A','a','p','c')
-#define ISCAPI_APPCTX_VALID(c)		((c) != NULL && \
+#define ISCAPI_APPCTX_MAGIC             ISC_MAGIC('A', 'a', 'p', 'c')
+#define ISCAPI_APPCTX_VALID(c)          ((c) != NULL && \
 					 (c)->magic == ISCAPI_APPCTX_MAGIC)
 
 ISC_LANG_BEGINDECLS
@@ -131,10 +131,15 @@ isc_app_start(void);
  */
 
 isc_result_t
-isc_app_ctxonrun(isc_appctx_t *ctx, isc_mem_t *mctx, isc_task_t *task,
-		 isc_taskaction_t action, void *arg);
+isc_app_ctxonrun(isc_appctx_t *ctx,
+		 isc_mem_t *mctx,
+		 isc_task_t *task,
+		 isc_taskaction_t action,
+		 void *arg);
 isc_result_t
-isc_app_onrun(isc_mem_t *mctx, isc_task_t *task, isc_taskaction_t action,
+isc_app_onrun(isc_mem_t *mctx,
+	      isc_task_t *task,
+	      isc_taskaction_t action,
 	      void *arg);
 /*!<
  * \brief Request delivery of an event when the application is run.
@@ -265,8 +270,8 @@ isc_app_unblock(void);
  *
  * Notes:
  * \li	When a blocking operation has completed, return the program to a
- * 	state where a call to isc_app_shutdown() or an external signal will
- * 	shutdown normally.
+ *      state where a call to isc_app_shutdown() or an external signal will
+ *      shutdown normally.
  *
  * Requires:
  * \li	isc_app_start() has been called.

@@ -20,15 +20,15 @@
 #include <isc/mem.h>
 #include <isc/util.h>
 
-#define COUNTER_MAGIC			ISC_MAGIC('C', 'n', 't', 'r')
-#define VALID_COUNTER(r)		ISC_MAGIC_VALID(r, COUNTER_MAGIC)
+#define COUNTER_MAGIC                   ISC_MAGIC('C', 'n', 't', 'r')
+#define VALID_COUNTER(r)                ISC_MAGIC_VALID(r, COUNTER_MAGIC)
 
 struct isc_counter {
-	unsigned int	magic;
-	isc_mem_t	*mctx;
-	atomic_uint_fast32_t	references;
-	atomic_uint_fast32_t	limit;
-	atomic_uint_fast32_t	used;
+	unsigned int		    magic;
+	isc_mem_t *		    mctx;
+	atomic_uint_fast32_t	    references;
+	atomic_uint_fast32_t	    limit;
+	atomic_uint_fast32_t	    used;
 };
 
 isc_result_t
@@ -38,8 +38,9 @@ isc_counter_create(isc_mem_t *mctx, int limit, isc_counter_t **counterp) {
 	REQUIRE(counterp != NULL && *counterp == NULL);
 
 	counter = isc_mem_get(mctx, sizeof(*counter));
-	if (counter == NULL)
+	if (counter == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	counter->mctx = NULL;
 	isc_mem_attach(mctx, &counter->mctx);

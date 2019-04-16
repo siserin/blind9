@@ -75,10 +75,10 @@ _teardown(void **state) {
  * prepared by dns__zone_updatesigs().
  */
 typedef struct {
-	dns_diffop_t op;
-	const char *owner;
-	dns_ttl_t ttl;
-	const char *type;
+	dns_diffop_t	    op;
+	const char *	    owner;
+	dns_ttl_t	    ttl;
+	const char *	    type;
 } zonediff_t;
 
 #define ZONEDIFF_SENTINEL { 0, NULL, 0, NULL }
@@ -87,9 +87,10 @@ typedef struct {
  * Structure defining a dns__zone_updatesigs() test.
  */
 typedef struct {
-	const char *description;	/* test description */
-	const zonechange_t *changes;	/* array of "raw" zone changes */
-	const zonediff_t *zonediff;	/* array of "processed" zone changes */
+	const char *		  description; /* test description */
+	const zonechange_t *	  changes; /* array of "raw" zone changes */
+	const zonediff_t *	  zonediff; /* array of "processed" zone changes
+	                                     * */
 } updatesigs_test_params_t;
 
 /*%
@@ -188,8 +189,11 @@ compare_tuples(const zonediff_t *expected, dns_difftuple_t *found,
  * this function.
  */
 static void
-updatesigs_test(const updatesigs_test_params_t *test, dns_zone_t *zone,
-		dns_db_t *db, dst_key_t *zone_keys[], unsigned int nkeys,
+updatesigs_test(const updatesigs_test_params_t *test,
+		dns_zone_t *zone,
+		dns_db_t *db,
+		dst_key_t *zone_keys[],
+		unsigned int nkeys,
 		isc_stdtime_t now)
 {
 	size_t tuples_expected, tuples_found, index;
@@ -461,4 +465,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

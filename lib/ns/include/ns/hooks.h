@@ -218,7 +218,7 @@ typedef enum {
 
 	/* XXX other files could be added later */
 
-	NS_HOOKPOINTS_COUNT	/* MUST BE LAST */
+	NS_HOOKPOINTS_COUNT     /* MUST BE LAST */
 } ns_hookpoint_t;
 
 /*
@@ -231,23 +231,23 @@ typedef enum {
 } ns_hookresult_t;
 
 typedef ns_hookresult_t
-(*ns_hook_action_t)(void *arg, void *data, isc_result_t *resultp);
+(*ns_hook_action_t)(void*arg,void*data,isc_result_t*resultp);
 
 typedef struct ns_hook {
-	isc_mem_t *mctx;
-	ns_hook_action_t action;
-	void *action_data;
+	isc_mem_t*		mctx;
+	ns_hook_action_t	action;
+	void*			action_data;
 	ISC_LINK(struct ns_hook) link;
 } ns_hook_t;
 
-typedef ISC_LIST(ns_hook_t) ns_hooklist_t;
+typedef ISC_LIST (ns_hook_t) ns_hooklist_t;
 typedef ns_hooklist_t ns_hooktable_t[NS_HOOKPOINTS_COUNT];
 
 /*%
  * ns__hook_table is a global hook table, which is used if view->hooktable
  * is NULL.  It's intended only for use by unit tests.
  */
-LIBNS_EXTERNAL_DATA extern ns_hooktable_t *ns__hook_table;
+LIBNS_EXTERNAL_DATA extern ns_hooktable_t*ns__hook_table;
 
 /*
  * Plugin API version
@@ -260,13 +260,14 @@ LIBNS_EXTERNAL_DATA extern ns_hooktable_t *ns__hook_table;
 #ifndef NS_PLUGIN_VERSION
 #define NS_PLUGIN_VERSION 1
 #define NS_PLUGIN_AGE 0
-#endif
+#endif /* ifndef NS_PLUGIN_VERSION */
 
 typedef isc_result_t
-ns_plugin_register_t(const char *parameters,
-		     const void *cfg, const char *file, unsigned long line,
-		     isc_mem_t *mctx, isc_log_t *lctx, void *actx,
-		     ns_hooktable_t *hooktable, void **instp);
+	ns_plugin_register_t (const char*parameters,
+			      const void*cfg,const char*file,
+			      unsigned long line,
+			      isc_mem_t*mctx,isc_log_t*lctx,void*actx,
+			      ns_hooktable_t*hooktable,void**instp);
 /*%<
  * Called when registering a new plugin.
  *
@@ -282,7 +283,7 @@ ns_plugin_register_t(const char *parameters,
  */
 
 typedef void
-ns_plugin_destroy_t(void **instp);
+	ns_plugin_destroy_t (void**instp);
 /*%<
  * Destroy a plugin instance.
  *
@@ -290,15 +291,15 @@ ns_plugin_destroy_t(void **instp);
  */
 
 typedef isc_result_t
-ns_plugin_check_t(const char *parameters,
-		  const void *cfg, const char *file, unsigned long line,
-		  isc_mem_t *mctx, isc_log_t *lctx, void *actx);
+	ns_plugin_check_t (const char*parameters,
+			   const void*cfg,const char*file,unsigned long line,
+			   isc_mem_t*mctx,isc_log_t*lctx,void*actx);
 /*%<
  * Check the validity of 'parameters'.
  */
 
 typedef int
-ns_plugin_version_t(void);
+	ns_plugin_version_t (void);
 /*%<
  * Return the API version number a plugin was compiled with.
  *
@@ -316,7 +317,7 @@ ns_plugin_register_t plugin_register;
 ns_plugin_version_t plugin_version;
 
 isc_result_t
-ns_plugin_expandpath(const char *src, char *dst, size_t dstsize);
+ns_plugin_expandpath(const char*src,char*dst,size_t dstsize);
 /*%<
  * Prepare the plugin location to be passed to dlopen() based on the plugin
  * path or filename found in the configuration file ('src').  Store the result
@@ -340,11 +341,15 @@ ns_plugin_expandpath(const char *src, char *dst, size_t dstsize);
  */
 
 isc_result_t
-ns_plugin_register(const char *modpath, const char *parameters,
-		   const void *cfg, const char *cfg_file,
+ns_plugin_register(const char*modpath,
+		   const char*parameters,
+		   const void*cfg,
+		   const char*cfg_file,
 		   unsigned long cfg_line,
-		   isc_mem_t *mctx, isc_log_t *lctx, void *actx,
-		   dns_view_t *view);
+		   isc_mem_t*mctx,
+		   isc_log_t*lctx,
+		   void*actx,
+		   dns_view_t*view);
 /*%<
  * Load the plugin module specified from the file 'modpath', and
  * register an instance using 'parameters'.
@@ -361,9 +366,14 @@ ns_plugin_register(const char *modpath, const char *parameters,
  */
 
 isc_result_t
-ns_plugin_check(const char *modpath, const char *parameters,
-		const void *cfg, const char *cfg_file, unsigned long cfg_line,
-		isc_mem_t *mctx, isc_log_t *lctx, void *actx);
+ns_plugin_check(const char*modpath,
+		const char*parameters,
+		const void*cfg,
+		const char*cfg_file,
+		unsigned long cfg_line,
+		isc_mem_t*mctx,
+		isc_log_t*lctx,
+		void*actx);
 /*%<
  * Open the plugin module at 'modpath' and check the validity of
  * 'parameters', logging any errors or warnings found, then
@@ -371,26 +381,28 @@ ns_plugin_check(const char *modpath, const char *parameters,
  */
 
 void
-ns_plugins_create(isc_mem_t *mctx, ns_plugins_t **listp);
+ns_plugins_create(isc_mem_t*mctx,ns_plugins_t**listp);
 /*%<
  * Create and initialize a plugin list.
  */
 
 void
-ns_plugins_free(isc_mem_t *mctx, void **listp);
+ns_plugins_free(isc_mem_t*mctx,void**listp);
 /*%<
  * Close each plugin module in a plugin list, then free the list object.
  */
 
 void
-ns_hooktable_free(isc_mem_t *mctx, void **tablep);
+ns_hooktable_free(isc_mem_t*mctx,void**tablep);
 /*%<
  * Free a hook table.
  */
 
 void
-ns_hook_add(ns_hooktable_t *hooktable, isc_mem_t *mctx,
-	    ns_hookpoint_t hookpoint, const ns_hook_t *hook);
+ns_hook_add(ns_hooktable_t*hooktable,
+	    isc_mem_t*mctx,
+	    ns_hookpoint_t hookpoint,
+	    const ns_hook_t*hook);
 /*%<
  * Allocate (using memory context 'mctx') a copy of the 'hook' structure
  * describing a hook action and append it to the list of hooks at 'hookpoint'
@@ -407,13 +419,13 @@ ns_hook_add(ns_hooktable_t *hooktable, isc_mem_t *mctx,
  */
 
 void
-ns_hooktable_init(ns_hooktable_t *hooktable);
+ns_hooktable_init(ns_hooktable_t*hooktable);
 /*%<
  * Initialize a hook table.
  */
 
 isc_result_t
-ns_hooktable_create(isc_mem_t *mctx, ns_hooktable_t **tablep);
+ns_hooktable_create(isc_mem_t*mctx,ns_hooktable_t**tablep);
 /*%<
  * Allocate and initialize a hook table.
  */

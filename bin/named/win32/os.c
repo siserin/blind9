@@ -50,8 +50,9 @@ static char *version_error =
 
 void
 named_paths_init(void) {
-	if (!Initialized)
+	if (!Initialized) {
 		isc_ntpaths_init();
+	}
 
 	named_g_conffile = isc_ntpaths_get(NAMED_CONF_PATH);
 	named_g_defaultpidfile = isc_ntpaths_get(NAMED_PID_PATH);
@@ -71,15 +72,17 @@ named_paths_init(void) {
  */
 static void
 version_check(const char *progname) {
-
 	if ((isc_win32os_versioncheck(4, 0, 0, 0) >= 0) &&
-	    (isc_win32os_versioncheck(5, 0, 0, 0) < 0))
-		return;	/* No problem with Version 4.0 */
-	if (isc_win32os_versioncheck(5, 0, 2, 0) < 0)
-		if (ntservice_isservice())
+	    (isc_win32os_versioncheck(5, 0, 0, 0) < 0)) {
+		return; /* No problem with Version 4.0 */
+	}
+	if (isc_win32os_versioncheck(5, 0, 2, 0) < 0) {
+		if (ntservice_isservice()) {
 			NTReportError(progname, version_error);
-		else
+		} else {
 			fprintf(stderr, "%s\n", version_error);
+		}
+	}
 }
 
 static void
@@ -89,7 +92,7 @@ setup_syslog(const char *progname) {
 	options = LOG_PID;
 #ifdef LOG_NDELAY
 	options |= LOG_NDELAY;
-#endif
+#endif /* ifdef LOG_NDELAY */
 
 	openlog(progname, options, LOG_DAEMON);
 }
@@ -150,8 +153,9 @@ named_os_closedevnull(void) {
 
 void
 named_os_chroot(const char *root) {
-	if (root != NULL)
+	if (root != NULL) {
 		named_main_earlyfatal("chroot(): isn't supported by Win32 API");
+	}
 }
 
 void
@@ -181,16 +185,18 @@ safe_open(const char *filename, int mode, bool append) {
 	struct stat sb;
 
 	if (stat(filename, &sb) == -1) {
-		if (errno != ENOENT)
+		if (errno != ENOENT) {
 			return (-1);
-	} else if ((sb.st_mode & S_IFREG) == 0)
+		}
+	} else if ((sb.st_mode & S_IFREG) == 0) {
 		return (-1);
+	}
 
-	if (append)
-		fd = open(filename, O_WRONLY|O_CREAT|O_APPEND, mode);
-	else {
+	if (append) {
+		fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, mode);
+	} else {
 		(void)unlink(filename);
-		fd = open(filename, O_WRONLY|O_CREAT|O_EXCL, mode);
+		fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, mode);
 	}
 	return (fd);
 }
@@ -213,9 +219,10 @@ cleanup_lockfile(void) {
 
 	if (lockfile != NULL) {
 		int n = unlink(lockfile);
-		if (n == -1 && errno != ENOENT)
+		if (n == -1 && errno != ENOENT) {
 			named_main_earlywarning("unlink '%s': failed",
 						lockfile);
+		}
 		free(lockfile);
 		lockfile = NULL;
 	}
@@ -262,8 +269,9 @@ named_os_writepidfile(const char *filename, bool first_time) {
 
 	cleanup_pidfile();
 
-	if (filename == NULL)
+	if (filename == NULL) {
 		return;
+	}
 
 	pidfile = strdup(filename);
 	if (pidfile == NULL) {
@@ -273,7 +281,7 @@ named_os_writepidfile(const char *filename, bool first_time) {
 	}
 
 	pidlockfile = named_os_openfile(filename,
-					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH,
+					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH,
 					false);
 	if (pidlockfile == NULL) {
 		free(pidfile);
@@ -303,11 +311,13 @@ named_os_issingleton(const char *filename) {
 	char strbuf[ISC_STRERRORSIZE];
 	OVERLAPPED o;
 
-	if (lockfilefd != -1)
+	if (lockfilefd != -1) {
 		return (true);
+	}
 
-	if (strcasecmp(filename, "none") == 0)
+	if (strcasecmp(filename, "none") == 0) {
 		return (true);
+	}
 
 	lockfile = strdup(filename);
 	if (lockfile == NULL) {
@@ -321,7 +331,7 @@ named_os_issingleton(const char *filename) {
 	 * files. We can't use that here.
 	 */
 	lockfilefd = open(filename, O_WRONLY | O_CREAT,
-			  S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+			  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	if (lockfilefd == -1) {
 		cleanup_lockfile();
 		return (false);
@@ -351,7 +361,7 @@ named_os_shutdown(void) {
 		close(lockfilefd);
 		lockfilefd = -1;
 	}
-	ntservice_shutdown();	/* This MUST be the last thing done */
+	ntservice_shutdown();   /* This MUST be the last thing done */
 }
 
 isc_result_t
@@ -372,7 +382,7 @@ void
 named_os_tzset(void) {
 #ifdef HAVE_TZSET
 	tzset();
-#endif
+#endif /* ifdef HAVE_TZSET */
 }
 
 void
@@ -439,7 +449,7 @@ getuname(void) {
 		 ffi->dwProductVersionLS & 0xffff,
 		 arch);
 
-    err:
+ err:
 	if (fvi != NULL) {
 		free(fvi);
 	}
@@ -452,7 +462,8 @@ getuname(void) {
  */
 char *
 named_os_uname(void) {
-	if (unamep == NULL)
+	if (unamep == NULL) {
 		getuname();
+	}
 	return (unamep);
 }

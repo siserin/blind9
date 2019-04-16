@@ -21,8 +21,8 @@
 
 #include <dns/types.h>
 
-#define DNS_ZTFIND_NOEXACT		0x01
-#define DNS_ZTFIND_MIRROR		0x02
+#define DNS_ZTFIND_NOEXACT              0x01
+#define DNS_ZTFIND_MIRROR               0x02
 
 ISC_LANG_BEGINDECLS
 
@@ -76,7 +76,7 @@ dns_zt_unmount(dns_zt_t *zt, dns_zone_t *zone);
  * Unmount the given zone from the table.
  *
  * Requires:
- * 	'zt' to be valid
+ *      'zt' to be valid
  * \li	'zone' to be valid
  *
  * Returns:
@@ -86,8 +86,11 @@ dns_zt_unmount(dns_zt_t *zt, dns_zone_t *zone);
  */
 
 isc_result_t
-dns_zt_find(dns_zt_t *zt, const dns_name_t *name, unsigned int options,
-	    dns_name_t *foundname, dns_zone_t **zone);
+dns_zt_find(dns_zt_t *zt,
+	    const dns_name_t *name,
+	    unsigned int options,
+	    dns_name_t *foundname,
+	    dns_zone_t **zone);
 /*%<
  * Find the best match for 'name' in 'zt'.  If foundname is non NULL
  * then the name of the zone found is returned.
@@ -144,7 +147,9 @@ isc_result_t
 dns_zt_load(dns_zt_t *zt, bool stop, bool newonly);
 
 isc_result_t
-dns_zt_asyncload(dns_zt_t *zt, bool newonly, dns_zt_allloaded_t alldone,
+dns_zt_asyncload(dns_zt_t *zt,
+		 bool newonly,
+		 dns_zt_allloaded_t alldone,
 		 void *arg);
 /*%<
  * Load all zones in the table.  If 'stop' is true,
@@ -170,8 +175,11 @@ dns_zt_freezezones(dns_zt_t *zt, bool freeze);
  */
 
 isc_result_t
-dns_zt_apply(dns_zt_t *zt, bool stop, isc_result_t *sub,
-	     isc_result_t (*action)(dns_zone_t *, void *), void *uap);
+dns_zt_apply(dns_zt_t *zt,
+	     bool stop,
+	     isc_result_t *sub,
+	     isc_result_t (*action)(dns_zone_t *, void *),
+	     void *uap);
 /*%<
  * Apply a given 'action' to all zone zones in the table.
  * If 'stop' is 'true' then walking the zone tree will stop if

@@ -27,15 +27,18 @@
 ISC_LANG_BEGINDECLS
 
 void
-isc_aes128_crypt(const unsigned char *key, const unsigned char *in,
+isc_aes128_crypt(const unsigned char *key,
+		 const unsigned char *in,
 		 unsigned char *out);
 
 void
-isc_aes192_crypt(const unsigned char *key, const unsigned char *in,
+isc_aes192_crypt(const unsigned char *key,
+		 const unsigned char *in,
 		 unsigned char *out);
 
 void
-isc_aes256_crypt(const unsigned char *key, const unsigned char *in,
+isc_aes256_crypt(const unsigned char *key,
+		 const unsigned char *in,
 		 unsigned char *out);
 
 ISC_LANG_ENDDECLS

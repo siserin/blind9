@@ -52,16 +52,18 @@ static dns_dbversion_t *v1 = NULL, *v2 = NULL;
  */
 jmp_buf assertion;
 
-#define check_assertion(function_call)				\
-	do {							\
-		const int r = setjmp(assertion);		\
-		if (r == 0) {					\
-			expect_assert_failure(function_call);	\
-		}						\
-	} while(false);
+#define check_assertion(function_call)                          \
+	do {                                                    \
+		const int r = setjmp(assertion);                \
+		if (r == 0) {                                   \
+			expect_assert_failure(function_call);   \
+		}                                               \
+	} while (false);
 
 static void
-local_callback(const char *file, int line, isc_assertiontype_t type,
+local_callback(const char *file,
+	       int line,
+	       isc_assertiontype_t type,
 	       const char *cond)
 {
 	UNUSED(type);
@@ -82,13 +84,13 @@ _setup(void **state) {
 	assert_int_equal(res, ISC_R_SUCCESS);
 
 	res = dns_db_create(mctx, "rbt", dns_rootname, dns_dbtype_zone,
-			       dns_rdataclass_in, 0, NULL, &db1);
+			    dns_rdataclass_in, 0, NULL, &db1);
 	assert_int_equal(res, ISC_R_SUCCESS);
 	dns_db_newversion(db1, &v1);
 	assert_non_null(v1);
 
 	res = dns_db_create(mctx, "rbt", dns_rootname, dns_dbtype_zone,
-			       dns_rdataclass_in, 0, NULL, &db2);
+			    dns_rdataclass_in, 0, NULL, &db2);
 	assert_int_equal(res, ISC_R_SUCCESS);
 	dns_db_newversion(db2, &v2);
 	assert_non_null(v1);
@@ -215,8 +217,6 @@ allrdatasets(void **state) {
 
 	dns_db_detachnode(db1, &node);
 	assert_null(node);
-
-
 }
 
 /*
@@ -236,7 +236,7 @@ findrdataset(void **state) {
 
 	dns_rdataset_init(&rdataset);
 	res = dns_db_findrdataset(db1, node, v1, dns_rdatatype_soa,
-				     0, 0, &rdataset, NULL);
+				  0, 0, &rdataset, NULL);
 	assert_int_equal(res, ISC_R_NOTFOUND);
 
 	if (dns_rdataset_isassociated(&rdataset)) {
@@ -389,7 +389,7 @@ getnsec3parameters(void **state) {
 
 	res = dns_db_getnsec3parameters(db1, v1, &hash,
 					&flags, &iterations, salt,
-					   &salt_length);
+					&salt_length);
 	assert_int_equal(res, ISC_R_NOTFOUND);
 
 	check_assertion(dns_db_getnsec3parameters(db1, v2, &hash,
@@ -503,4 +503,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

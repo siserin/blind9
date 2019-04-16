@@ -133,7 +133,7 @@ enum {
 	dns_statscounter_recursion = 4,  /*%< Recursion was used */
 	dns_statscounter_failure = 5,    /*%< Some other failure */
 	dns_statscounter_duplicate = 6,  /*%< Duplicate query */
-	dns_statscounter_dropped = 7,	 /*%< Duplicate query (dropped) */
+	dns_statscounter_dropped = 7,    /*%< Duplicate query (dropped) */
 
 	/*%
 	 * DNSTAP statistics counters.
@@ -450,8 +450,8 @@ enum {
  * ISC_STATSDUMP_VERBOSE should be used instead.  These two values are
  * intentionally defined to be the same value to ensure binary compatibility.
  */
-#define DNS_STATSDUMP_VERBOSE	0x00000001 /*%< dump 0-value counters */
-#endif
+#define DNS_STATSDUMP_VERBOSE   0x00000001 /*%< dump 0-value counters */
+#endif /* if 0 */
 
 /*%<
  * (Obsoleted)
@@ -467,7 +467,7 @@ LIBDNS_EXTERNAL_DATA extern const char *dns_statscounter_names[];
  *	the base type is of no use.
  *
  * _NXRRSET
- * 	RRset type counters only.  Indicates the RRset is non existent.
+ *      RRset type counters only.  Indicates the RRset is non existent.
  *
  * _NXDOMAIN
  *	RRset type counters only.  Indicates a non existent name.  When this
@@ -480,17 +480,17 @@ LIBDNS_EXTERNAL_DATA extern const char *dns_statscounter_names[];
  *	Note: incrementing _STALE will decrement the corresponding non-stale
  *	counter.
  */
-#define DNS_RDATASTATSTYPE_ATTR_OTHERTYPE	0x0001
-#define DNS_RDATASTATSTYPE_ATTR_NXRRSET		0x0002
-#define DNS_RDATASTATSTYPE_ATTR_NXDOMAIN	0x0004
-#define DNS_RDATASTATSTYPE_ATTR_STALE		0x0008
+#define DNS_RDATASTATSTYPE_ATTR_OTHERTYPE       0x0001
+#define DNS_RDATASTATSTYPE_ATTR_NXRRSET         0x0002
+#define DNS_RDATASTATSTYPE_ATTR_NXDOMAIN        0x0004
+#define DNS_RDATASTATSTYPE_ATTR_STALE           0x0008
 
 /*%<
  * Conversion macros among dns_rdatatype_t, attributes and isc_statscounter_t.
  */
-#define DNS_RDATASTATSTYPE_BASE(type)	((dns_rdatatype_t)((type) & 0xFFFF))
-#define DNS_RDATASTATSTYPE_ATTR(type)	((type) >> 16)
-#define DNS_RDATASTATSTYPE_VALUE(b, a)	(((a) << 16) | (b))
+#define DNS_RDATASTATSTYPE_BASE(type)   ((dns_rdatatype_t)((type) & 0xFFFF))
+#define DNS_RDATASTATSTYPE_ATTR(type)   ((type) >> 16)
+#define DNS_RDATASTATSTYPE_VALUE(b, a)  (((a) << 16) | (b))
 
 /*%<
  * Types of dump callbacks.
@@ -631,7 +631,8 @@ dns_rdatatypestats_increment(dns_stats_t *stats, dns_rdatatype_t type);
  */
 
 void
-dns_rdatasetstats_increment(dns_stats_t *stats, dns_rdatastatstype_t rrsettype);
+dns_rdatasetstats_increment(dns_stats_t *stats,
+			    dns_rdatastatstype_t rrsettype);
 /*%<
  * Increment the statistics counter for 'rrsettype'.
  *
@@ -643,7 +644,8 @@ dns_rdatasetstats_increment(dns_stats_t *stats, dns_rdatastatstype_t rrsettype);
  */
 
 void
-dns_rdatasetstats_decrement(dns_stats_t *stats, dns_rdatastatstype_t rrsettype);
+dns_rdatasetstats_decrement(dns_stats_t *stats,
+			    dns_rdatastatstype_t rrsettype);
 /*%<
  * Decrement the statistics counter for 'rrsettype'.
  *
@@ -670,8 +672,10 @@ dns_rcodestats_increment(dns_stats_t *stats, dns_opcode_t code);
  */
 
 void
-dns_generalstats_dump(dns_stats_t *stats, dns_generalstats_dumper_t dump_fn,
-		      void *arg, unsigned int options);
+dns_generalstats_dump(dns_stats_t *stats,
+		      dns_generalstats_dumper_t dump_fn,
+		      void *arg,
+		      unsigned int options);
 /*%<
  * Dump the current statistics counters in a specified way.  For each counter
  * in stats, dump_fn is called with its current value and the given argument
@@ -686,8 +690,10 @@ dns_generalstats_dump(dns_stats_t *stats, dns_generalstats_dumper_t dump_fn,
  */
 
 void
-dns_rdatatypestats_dump(dns_stats_t *stats, dns_rdatatypestats_dumper_t dump_fn,
-			void *arg, unsigned int options);
+dns_rdatatypestats_dump(dns_stats_t *stats,
+			dns_rdatatypestats_dumper_t dump_fn,
+			void *arg,
+			unsigned int options);
 /*%<
  * Dump the current statistics counters in a specified way.  For each counter
  * in stats, dump_fn is called with the corresponding type in the form of
@@ -700,8 +706,10 @@ dns_rdatatypestats_dump(dns_stats_t *stats, dns_rdatatypestats_dumper_t dump_fn,
  */
 
 void
-dns_rdatasetstats_dump(dns_stats_t *stats, dns_rdatatypestats_dumper_t dump_fn,
-		       void *arg, unsigned int options);
+dns_rdatasetstats_dump(dns_stats_t *stats,
+		       dns_rdatatypestats_dumper_t dump_fn,
+		       void *arg,
+		       unsigned int options);
 /*%<
  * Dump the current statistics counters in a specified way.  For each counter
  * in stats, dump_fn is called with the corresponding type in the form of
@@ -714,8 +722,10 @@ dns_rdatasetstats_dump(dns_stats_t *stats, dns_rdatatypestats_dumper_t dump_fn,
  */
 
 void
-dns_opcodestats_dump(dns_stats_t *stats, dns_opcodestats_dumper_t dump_fn,
-		     void *arg, unsigned int options);
+dns_opcodestats_dump(dns_stats_t *stats,
+		     dns_opcodestats_dumper_t dump_fn,
+		     void *arg,
+		     unsigned int options);
 /*%<
  * Dump the current statistics counters in a specified way.  For each counter
  * in stats, dump_fn is called with the corresponding opcode, the current
@@ -728,8 +738,10 @@ dns_opcodestats_dump(dns_stats_t *stats, dns_opcodestats_dumper_t dump_fn,
  */
 
 void
-dns_rcodestats_dump(dns_stats_t *stats, dns_rcodestats_dumper_t dump_fn,
-		    void *arg, unsigned int options);
+dns_rcodestats_dump(dns_stats_t *stats,
+		    dns_rcodestats_dumper_t dump_fn,
+		    void *arg,
+		    unsigned int options);
 /*%<
  * Dump the current statistics counters in a specified way.  For each counter
  * in stats, dump_fn is called with the corresponding rcode, the current

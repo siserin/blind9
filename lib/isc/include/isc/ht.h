@@ -60,8 +60,10 @@ isc_ht_destroy(isc_ht_t **htp);
  *\li	#ISC_R_SUCCESS		-- all is well.
  */
 isc_result_t
-isc_ht_add(isc_ht_t *ht, const unsigned char *key, uint32_t keysize,
-		   void *value);
+isc_ht_add(isc_ht_t *ht,
+	   const unsigned char *key,
+	   uint32_t keysize,
+	   void *value);
 
 /*%
  * Find a node matching 'key'/'keysize' in hashtable 'ht';
@@ -77,8 +79,10 @@ isc_ht_add(isc_ht_t *ht, const unsigned char *key, uint32_t keysize,
  * \li	#ISC_R_NOTFOUND		-- key not found
  */
 isc_result_t
-isc_ht_find(const isc_ht_t *ht, const unsigned char *key,
-	    uint32_t keysize, void **valuep);
+isc_ht_find(const isc_ht_t *ht,
+	    const unsigned char *key,
+	    uint32_t keysize,
+	    void **valuep);
 
 /*%
  * Delete node from hashtable
@@ -119,7 +123,7 @@ isc_ht_iter_destroy(isc_ht_iter_t **itp);
  *\li	'it' is non NULL.
  *
  * Returns:
- * \li 	#ISC_R_SUCCESS	-- success
+ * \li  #ISC_R_SUCCESS	-- success
  * \li	#ISC_R_NOMORE	-- no data in the hashtable
  */
 isc_result_t
@@ -132,7 +136,7 @@ isc_ht_iter_first(isc_ht_iter_t *it);
  *\li	'it' is non NULL.
  *
  * Returns:
- * \li 	#ISC_R_SUCCESS	-- success
+ * \li  #ISC_R_SUCCESS	-- success
  * \li	#ISC_R_NOMORE	-- end of hashtable reached
  */
 isc_result_t
@@ -145,7 +149,7 @@ isc_ht_iter_next(isc_ht_iter_t *it);
  *\li	'it' is non NULL.
  *
  * Returns:
- * \li 	#ISC_R_SUCCESS	-- success
+ * \li  #ISC_R_SUCCESS	-- success
  * \li	#ISC_R_NOMORE	-- end of hashtable reached
  */
 isc_result_t
@@ -172,7 +176,8 @@ isc_ht_iter_current(isc_ht_iter_t *it, void **valuep);
  *\li	'keysize' is non NULL.
  */
 void
-isc_ht_iter_currentkey(isc_ht_iter_t *it, unsigned char **key, size_t *keysize);
+isc_ht_iter_currentkey(isc_ht_iter_t *it, unsigned char **key,
+		       size_t *keysize);
 
 /*%
  * Returns the number of items in the hashtable.
@@ -182,4 +187,4 @@ isc_ht_iter_currentkey(isc_ht_iter_t *it, unsigned char **key, size_t *keysize);
  */
 unsigned int
 isc_ht_count(isc_ht_t *ht);
-#endif
+#endif /* ifndef ISC_HT_H */

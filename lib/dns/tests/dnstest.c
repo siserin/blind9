@@ -71,15 +71,15 @@ static bool test_running = false;
  * Logging categories: this needs to match the list in bin/named/log.c.
  */
 static isc_logcategory_t categories[] = {
-		{ "",                0 },
-		{ "client",          0 },
-		{ "network",         0 },
-		{ "update",          0 },
-		{ "queries",         0 },
-		{ "unmatched",       0 },
-		{ "update-security", 0 },
-		{ "query-errors",    0 },
-		{ NULL,              0 }
+	{ "",                0 },
+	{ "client",          0 },
+	{ "network",         0 },
+	{ "update",          0 },
+	{ "queries",         0 },
+	{ "unmatched",       0 },
+	{ "update-security", 0 },
+	{ "query-errors",    0 },
+	{ NULL,              0 }
 };
 
 static void
@@ -219,13 +219,16 @@ dns_test_makeview(const char *name, dns_view_t **viewp) {
 	return (ISC_R_SUCCESS);
 
  cleanup:
-	if (view != NULL)
+	if (view != NULL) {
 		dns_view_detach(&view);
+	}
 	return (result);
 }
 
 isc_result_t
-dns_test_makezone(const char *name, dns_zone_t **zonep, dns_view_t *view,
+dns_test_makezone(const char *name,
+		  dns_zone_t **zonep,
+		  dns_view_t *view,
 		  bool createview)
 {
 	dns_fixedname_t fixed_origin;
@@ -305,8 +308,9 @@ dns_test_managezone(dns_zone_t *zone) {
 	REQUIRE(zonemgr != NULL);
 
 	result = dns_zonemgr_setsize(zonemgr, 1);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	result = dns_zonemgr_managezone(zonemgr, zone);
 	return (result);
@@ -339,33 +343,37 @@ dns_test_nap(uint32_t usec) {
 	nanosleep(&ts, NULL);
 #elif HAVE_USLEEP
 	usleep(usec);
-#else
+#else  /* ifdef HAVE_NANOSLEEP */
 	/*
 	 * No fractional-second sleep function is available, so we
 	 * round up to the nearest second and sleep instead
 	 */
 	sleep((usec / 1000000) + 1);
-#endif
+#endif /* ifdef HAVE_NANOSLEEP */
 }
 
 isc_result_t
-dns_test_loaddb(dns_db_t **db, dns_dbtype_t dbtype, const char *origin,
+dns_test_loaddb(dns_db_t **db,
+		dns_dbtype_t dbtype,
+		const char *origin,
 		const char *testfile)
 {
-	isc_result_t		result;
-	dns_fixedname_t		fixed;
-	dns_name_t		*name;
+	isc_result_t result;
+	dns_fixedname_t fixed;
+	dns_name_t *name;
 
 	name = dns_fixedname_initname(&fixed);
 
 	result = dns_name_fromstring(name, origin, 0, NULL);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return(result);
+	}
 
 	result = dns_db_create(mctx, "rbt", name, dbtype, dns_rdataclass_in,
 			       0, NULL, db);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	result = dns_db_load(*db, testfile, dns_masterformat_text, 0);
 	return (result);
@@ -373,12 +381,13 @@ dns_test_loaddb(dns_db_t **db, dns_dbtype_t dbtype, const char *origin,
 
 static int
 fromhex(char c) {
-	if (c >= '0' && c <= '9')
+	if (c >= '0' && c <= '9') {
 		return (c - '0');
-	else if (c >= 'a' && c <= 'f')
+	} else if (c >= 'a' && c <= 'f') {
 		return (c - 'a' + 10);
-	else if (c >= 'A' && c <= 'F')
+	} else if (c >= 'A' && c <= 'F') {
 		return (c - 'A' + 10);
+	}
 
 	printf("bad input format: %02x\n", c);
 	exit(3);
@@ -409,8 +418,10 @@ dns_test_tohex(const unsigned char *data, size_t len, char *buf, size_t buflen)
 }
 
 isc_result_t
-dns_test_getdata(const char *file, unsigned char *buf,
-		 size_t bufsiz, size_t *sizep)
+dns_test_getdata(const char *file,
+		 unsigned char *buf,
+		 size_t bufsiz,
+		 size_t *sizep)
 {
 	isc_result_t result;
 	unsigned char *bp;
@@ -421,8 +432,9 @@ dns_test_getdata(const char *file, unsigned char *buf,
 	int n;
 
 	result = isc_stdio_open(file, "r", &f);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	bp = buf;
 	while (fgets(s, sizeof(s), f) != NULL) {
@@ -430,8 +442,9 @@ dns_test_getdata(const char *file, unsigned char *buf,
 		wp = s;
 		len = 0;
 		while (*rp != '\0') {
-			if (*rp == '#')
+			if (*rp == '#') {
 				break;
+			}
 			if (*rp != ' ' && *rp != '\t' &&
 			    *rp != '\r' && *rp != '\n') {
 				*wp++ = *rp;
@@ -439,12 +452,15 @@ dns_test_getdata(const char *file, unsigned char *buf,
 			}
 			rp++;
 		}
-		if (len == 0U)
+		if (len == 0U) {
 			continue;
-		if (len % 2 != 0U)
+		}
+		if (len % 2 != 0U) {
 			CHECK(ISC_R_UNEXPECTEDEND);
-		if (len > bufsiz * 2)
+		}
+		if (len > bufsiz * 2) {
 			CHECK(ISC_R_NOSPACE);
+		}
 		rp = s;
 		for (i = 0; i < len; i += 2) {
 			n = fromhex(*rp++);
@@ -474,9 +490,13 @@ nullmsg(dns_rdatacallbacks_t *cb, const char *fmt, ...) {
 }
 
 isc_result_t
-dns_test_rdatafromstring(dns_rdata_t *rdata, dns_rdataclass_t rdclass,
-			 dns_rdatatype_t rdtype, unsigned char *dst,
-			 size_t dstlen, const char *src, bool warnings)
+dns_test_rdatafromstring(dns_rdata_t *rdata,
+			 dns_rdataclass_t rdclass,
+			 dns_rdatatype_t rdtype,
+			 unsigned char *dst,
+			 size_t dstlen,
+			 const char *src,
+			 bool warnings)
 {
 	dns_rdatacallbacks_t callbacks;
 	isc_buffer_t source, target;
@@ -576,7 +596,8 @@ dns_test_namefromstring(const char *namestr, dns_fixedname_t *fname) {
 }
 
 isc_result_t
-dns_test_difffromchanges(dns_diff_t *diff, const zonechange_t *changes,
+dns_test_difffromchanges(dns_diff_t *diff,
+			 const zonechange_t *changes,
 			 bool warnings)
 {
 	isc_result_t result = ISC_R_SUCCESS;

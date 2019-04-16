@@ -29,7 +29,7 @@
  ***/
 
 void
-ns_notify_start(ns_client_t *client);
+ns_notify_start(ns_client_t*client);
 
 /*%<
  *	Examines the incoming message to determine appropriate zone.

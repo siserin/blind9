@@ -36,7 +36,7 @@ typedef EVP_MD_CTX isc_md_t;
  *
  * Enumeration of supported message digest algorithms.
  */
-typedef const EVP_MD * isc_md_type_t;
+typedef const EVP_MD *isc_md_type_t;
 
 #define ISC_MD_MD5    EVP_md5()
 #define ISC_MD_SHA1   EVP_sha1()
@@ -75,8 +75,11 @@ typedef const EVP_MD * isc_md_type_t;
  * at @digestlen, at most ISC_MAX_MD_SIZE bytes will be written.
  */
 isc_result_t
-isc_md(isc_md_type_t type, const unsigned char *buf, const size_t len,
-       unsigned char *digest, unsigned int *digestlen);
+isc_md(isc_md_type_t type,
+       const unsigned char *buf,
+       const size_t len,
+       unsigned char *digest,
+       unsigned int *digestlen);
 
 /**
  * isc_md_new:

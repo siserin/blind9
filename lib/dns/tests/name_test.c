@@ -73,11 +73,11 @@ fullcompare_test(void **state) {
 	int i;
 	isc_result_t result;
 	struct {
-		const char *name1;
-		const char *name2;
-		dns_namereln_t relation;
-		int order;
-		unsigned int nlabels;
+		const char *	      name1;
+		const char *	      name2;
+		dns_namereln_t	      relation;
+		int		      order;
+		unsigned int	      nlabels;
 	} data[] = {
 		/* relative */
 		{ "", "", dns_namereln_equal, 0, 0 },
@@ -127,7 +127,8 @@ fullcompare_test(void **state) {
 						      NULL, 0, NULL);
 			assert_int_equal(result, ISC_R_SUCCESS);
 		}
-		relation = dns_name_fullcompare(name1, name1, &order, &nlabels);
+		relation =
+			dns_name_fullcompare(name1, name1, &order, &nlabels);
 		assert_int_equal(relation, dns_namereln_equal);
 		assert_int_equal(order, 0);
 		assert_int_equal(nlabels, name1->labels);
@@ -136,7 +137,8 @@ fullcompare_test(void **state) {
 		order = 3001;
 		nlabels = 3001;
 
-		relation = dns_name_fullcompare(name1, name2, &order, &nlabels);
+		relation =
+			dns_name_fullcompare(name1, name2, &order, &nlabels);
 		assert_int_equal(relation, data[i].relation);
 		assert_int_equal(order, data[i].order);
 		assert_int_equal(nlabels, data[i].nlabels);
@@ -144,9 +146,13 @@ fullcompare_test(void **state) {
 }
 
 static void
-compress_test(dns_name_t *name1, dns_name_t *name2, dns_name_t *name3,
-	      unsigned char *expected, unsigned int length,
-	      dns_compress_t *cctx, dns_decompress_t *dctx)
+compress_test(dns_name_t *name1,
+	      dns_name_t *name2,
+	      dns_name_t *name3,
+	      unsigned char *expected,
+	      unsigned int length,
+	      dns_compress_t *cctx,
+	      dns_decompress_t *dctx)
 {
 	isc_buffer_t source;
 	isc_buffer_t target;
@@ -303,8 +309,8 @@ istat_test(void **state) {
 	isc_result_t result;
 	size_t i;
 	struct {
-		const char *name;
-		bool istat;
+		const char *	  name;
+		bool		  istat;
 	} data[] = {
 		{ ".", false },
 		{ "_ta-", false },
@@ -398,8 +404,8 @@ buffer_test(void **state) {
 static void
 isabsolute_test(void **state) {
 	struct {
-		const char *namestr;
-		bool expect;
+		const char *	  namestr;
+		bool		  expect;
 	} testcases[] = {
 		{ "x", false },
 		{ "a.b.c.d.", true },
@@ -435,10 +441,10 @@ isabsolute_test(void **state) {
 static void
 hash_test(void **state) {
 	struct {
-		const char *name1;
-		const char *name2;
-		bool expect;
-		bool expecti;
+		const char *	  name1;
+		const char *	  name2;
+		bool		  expect;
+		bool		  expecti;
 	} testcases[] = {
 		{ "a.b.c.d", "A.B.C.D", true, false },
 		{ "a.b.c.d.", "A.B.C.D.", true, false },
@@ -499,9 +505,9 @@ hash_test(void **state) {
 static void
 issubdomain_test(void **state) {
 	struct {
-		const char *name1;
-		const char *name2;
-		bool expect;
+		const char *	  name1;
+		const char *	  name2;
+		bool		  expect;
 	} testcases[] = {
 		{ "c.d", "a.b.c.d", false },
 		{ "c.d.", "a.b.c.d.", false },
@@ -538,7 +544,7 @@ issubdomain_test(void **state) {
 		}
 
 		assert_int_equal(dns_name_issubdomain(n1, n2),
-			     testcases[i].expect);
+				 testcases[i].expect);
 	}
 }
 
@@ -546,8 +552,8 @@ issubdomain_test(void **state) {
 static void
 countlabels_test(void **state) {
 	struct {
-		const char *namestr;
-		unsigned int expect;
+		const char *	    namestr;
+		unsigned int	    expect;
 	} testcases[] = {
 		{ "c.d", 2 },
 		{ "c.d.", 3 },
@@ -578,7 +584,7 @@ countlabels_test(void **state) {
 		}
 
 		assert_int_equal(dns_name_countlabels(name),
-			       testcases[i].expect);
+				 testcases[i].expect);
 	}
 }
 
@@ -586,14 +592,14 @@ countlabels_test(void **state) {
 static void
 getlabel_test(void **state) {
 	struct {
-		const char *name1;
-		unsigned int pos1;
-		const char *name2;
-		unsigned int pos2;
+		const char *	    name1;
+		unsigned int	    pos1;
+		const char *	    name2;
+		unsigned int	    pos2;
 	} testcases[] = {
-		{ "c.d", 	1, "a.b.c.d", 	3 },
-		{ "a.b.c.d", 	3, "c.d", 	1 },
-		{ "a.b.c.", 	3, "A.B.C.", 	3 },
+		{ "c.d",        1, "a.b.c.d",   3 },
+		{ "a.b.c.d",    3, "c.d",       1 },
+		{ "a.b.c.",     3, "A.B.C.",    3 },
 	};
 	unsigned int i;
 
@@ -630,16 +636,15 @@ getlabel_test(void **state) {
 static void
 getlabelsequence_test(void **state) {
 	struct {
-		const char *name1;
-		unsigned int pos1;
-		const char *name2;
-		unsigned int pos2;
-		unsigned int range;
+		const char *	    name1;
+		unsigned int	    pos1;
+		const char *	    name2;
+		unsigned int	    pos2;
+		unsigned int	    range;
 	} testcases[] = {
-		{ "c.d",	1,	"a.b.c.d",	3,	1 },
-		{ "a.b.c.d.e",	2,	"c.d",		0,	2 },
-		{ "a.b.c",	0,	"a.b.c",	0,	3 },
-
+		{ "c.d",        1,      "a.b.c.d",      3,      1 },
+		{ "a.b.c.d.e",  2,      "c.d",          0,      2 },
+		{ "a.b.c",      0,      "a.b.c",        0,      3 },
 	};
 	unsigned int i;
 
@@ -810,4 +815,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

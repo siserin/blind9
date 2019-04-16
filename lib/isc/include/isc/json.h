@@ -32,13 +32,13 @@
 #include <json-c/json_tokener.h>
 #include <json-c/json_object_iterator.h>
 #include <json-c/json_c_version.h>
-#else
+#else /* ifdef HAVE_JSON_C */
 #include <json/json.h>
-#endif
-#endif
+#endif /* ifdef HAVE_JSON_C */
+#endif /* ifdef HAVE_JSON */
 
-#define ISC_JSON_RENDERCONFIG		0x00000001 /* render config data */
-#define ISC_JSON_RENDERSTATS		0x00000002 /* render stats */
-#define ISC_JSON_RENDERALL		0x000000ff /* render everything */
+#define ISC_JSON_RENDERCONFIG           0x00000001 /* render config data */
+#define ISC_JSON_RENDERSTATS            0x00000002 /* render stats */
+#define ISC_JSON_RENDERALL              0x000000ff /* render everything */
 
 #endif /* ISC_JSON_H */

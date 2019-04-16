@@ -16,10 +16,10 @@
 /* Core Types.  Alphabetized by defined type. */
 
 /*%< per-thread IRS context */
-typedef struct irs_context		irs_context_t;
+typedef struct irs_context irs_context_t;
 /*%< resolv.conf configuration information */
-typedef struct irs_resconf		irs_resconf_t;
+typedef struct irs_resconf irs_resconf_t;
 /*%< advanced DNS-related configuration information */
-typedef struct irs_dnsconf		irs_dnsconf_t;
+typedef struct irs_dnsconf irs_dnsconf_t;
 
 #endif /* IRS_TYPES_H */

@@ -23,14 +23,14 @@
 
 struct dns_iptable {
 	unsigned int		magic;
-	isc_mem_t		*mctx;
+	isc_mem_t *		mctx;
 	isc_refcount_t		refcount;
-	isc_radix_tree_t	*radix;
-	ISC_LINK(dns_iptable_t)	nextincache;
+	isc_radix_tree_t *	radix;
+	ISC_LINK(dns_iptable_t) nextincache;
 };
 
-#define DNS_IPTABLE_MAGIC	ISC_MAGIC('T','a','b','l')
-#define DNS_IPTABLE_VALID(a)	ISC_MAGIC_VALID(a, DNS_IPTABLE_MAGIC)
+#define DNS_IPTABLE_MAGIC       ISC_MAGIC('T', 'a', 'b', 'l')
+#define DNS_IPTABLE_VALID(a)    ISC_MAGIC_VALID(a, DNS_IPTABLE_MAGIC)
 
 /***
  *** Functions
@@ -45,8 +45,10 @@ dns_iptable_create(isc_mem_t *mctx, dns_iptable_t **target);
  */
 
 isc_result_t
-dns_iptable_addprefix(dns_iptable_t *tab, const isc_netaddr_t *addr,
-		      uint16_t bitlen, bool pos);
+dns_iptable_addprefix(dns_iptable_t *tab,
+		      const isc_netaddr_t *addr,
+		      uint16_t bitlen,
+		      bool pos);
 /*
  * Add an IP prefix to an existing IP table
  */

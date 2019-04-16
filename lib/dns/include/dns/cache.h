@@ -14,15 +14,15 @@
 #define DNS_CACHE_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/cache.h
  * \brief
  * Defines dns_cache_t, the cache object.
  *
  * Notes:
- *\li 	A cache object contains DNS data of a single class.
+ *\li   A cache object contains DNS data of a single class.
  *	Multiple classes will be handled by creating multiple
  *	views, each with a different class and its own cache.
  *
@@ -57,10 +57,16 @@ ISC_LANG_BEGINDECLS
  ***	Functions
  ***/
 isc_result_t
-dns_cache_create(isc_mem_t *cmctx, isc_mem_t *hmctx, isc_taskmgr_t *taskmgr,
-		 isc_timermgr_t *timermgr, dns_rdataclass_t rdclass,
-		 const char *cachename, const char *db_type,
-		 unsigned int db_argc, char **db_argv, dns_cache_t **cachep);
+dns_cache_create(isc_mem_t *cmctx,
+		 isc_mem_t *hmctx,
+		 isc_taskmgr_t *taskmgr,
+		 isc_timermgr_t *timermgr,
+		 dns_rdataclass_t rdclass,
+		 const char *cachename,
+		 const char *db_type,
+		 unsigned int db_argc,
+		 char **db_argv,
+		 dns_cache_t **cachep);
 /*%<
  * Create a new DNS cache.
  *
@@ -79,8 +85,8 @@ dns_cache_create(isc_mem_t *cmctx, isc_mem_t *hmctx, isc_taskmgr_t *taskmgr,
  *\li	'cmctx' (and 'hmctx' if applicable) is a valid memory context.
  *
  *\li	'taskmgr' is a valid task manager and 'timermgr' is a valid timer
- * 	manager, or both are NULL.  If NULL, no periodic cleaning of the
- * 	cache will take place.
+ *      manager, or both are NULL.  If NULL, no periodic cleaning of the
+ *      cache will take place.
  *
  *\li	'cachename' is a valid string.  This must not be NULL.
  *
@@ -138,9 +144,9 @@ dns_cache_attachdb(dns_cache_t *cache, dns_db_t **dbp);
  *
  *\li	This may be used to get a reference to the database for
  *	the purpose of cache lookups (XXX currently it is also
- * 	the way to add data to the cache, but having a
- * 	separate dns_cache_add() interface instead would allow
- * 	more control over memory usage).
+ *      the way to add data to the cache, but having a
+ *      separate dns_cache_add() interface instead would allow
+ *      more control over memory usage).
  *	The caller should call dns_db_detach() on the reference
  *	when it is no longer needed.
  *
@@ -179,11 +185,11 @@ dns_cache_load(dns_cache_t *cache);
  *
  * MT:
  *\li	Multiple simultaneous attempts to load or dump the cache
- * 	will be serialized with respect to one another, but
+ *      will be serialized with respect to one another, but
  *	the cache may be read and updated while the dump is
  *	in progress.  Updates performed during loading
  *	may or may not be preserved, and reads may return
- * 	either the old or the newly loaded data.
+ *      either the old or the newly loaded data.
  *
  * Returns:
  *
@@ -200,10 +206,10 @@ dns_cache_dump(dns_cache_t *cache);
  *
  * MT:
  *\li	Multiple simultaneous attempts to load or dump the cache
- * 	will be serialized with respect to one another, but
+ *      will be serialized with respect to one another, but
  *	the cache may be read and updated while the dump is
  *	in progress.  Updates performed during the dump may
- * 	or may not be reflected in the dumped file.
+ *      or may not be reflected in the dumped file.
  *
  * Returns:
  *
@@ -281,8 +287,7 @@ dns_cache_flush(dns_cache_t *cache);
  */
 
 isc_result_t
-dns_cache_flushnode(dns_cache_t *cache, const dns_name_t *name,
-		    bool tree);
+dns_cache_flushnode(dns_cache_t *cache, const dns_name_t *name, bool tree);
 /*
  * Flush a given name from the cache.  If 'tree' is true, then
  * also flush all names under 'name'.

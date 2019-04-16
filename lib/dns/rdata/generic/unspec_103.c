@@ -17,7 +17,6 @@
 
 static inline isc_result_t
 fromtext_unspec(ARGS_FROMTEXT) {
-
 	REQUIRE(type == dns_rdatatype_unspec);
 
 	UNUSED(type);
@@ -31,7 +30,6 @@ fromtext_unspec(ARGS_FROMTEXT) {
 
 static inline isc_result_t
 totext_unspec(ARGS_TOTEXT) {
-
 	REQUIRE(rdata->type == dns_rdatatype_unspec);
 
 	UNUSED(tctx);
@@ -57,7 +55,6 @@ fromwire_unspec(ARGS_FROMWIRE) {
 
 static inline isc_result_t
 towire_unspec(ARGS_TOWIRE) {
-
 	REQUIRE(rdata->type == dns_rdatatype_unspec);
 
 	UNUSED(cctx);
@@ -110,8 +107,9 @@ tostruct_unspec(ARGS_TOSTRUCT) {
 	dns_rdata_toregion(rdata, &r);
 	unspec->datalen = r.length;
 	unspec->data = mem_maybedup(mctx, r.base, r.length);
-	if (unspec->data == NULL)
+	if (unspec->data == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	unspec->mctx = mctx;
 	return (ISC_R_SUCCESS);
@@ -124,11 +122,13 @@ freestruct_unspec(ARGS_FREESTRUCT) {
 	REQUIRE(source != NULL);
 	REQUIRE(unspec->common.rdtype == dns_rdatatype_unspec);
 
-	if (unspec->mctx == NULL)
+	if (unspec->mctx == NULL) {
 		return;
+	}
 
-	if (unspec->data != NULL)
+	if (unspec->data != NULL) {
 		isc_mem_free(unspec->mctx, unspec->data);
+	}
 	unspec->mctx = NULL;
 }
 
@@ -156,7 +156,6 @@ digest_unspec(ARGS_DIGEST) {
 
 static inline bool
 checkowner_unspec(ARGS_CHECKOWNER) {
-
 	REQUIRE(type == dns_rdatatype_unspec);
 
 	UNUSED(name);
@@ -169,7 +168,6 @@ checkowner_unspec(ARGS_CHECKOWNER) {
 
 static inline bool
 checknames_unspec(ARGS_CHECKNAMES) {
-
 	REQUIRE(rdata->type == dns_rdatatype_unspec);
 
 	UNUSED(rdata);
@@ -184,4 +182,4 @@ casecompare_unspec(ARGS_COMPARE) {
 	return (compare_unspec(rdata1, rdata2));
 }
 
-#endif	/* RDATA_GENERIC_UNSPEC_103_C */
+#endif  /* RDATA_GENERIC_UNSPEC_103_C */

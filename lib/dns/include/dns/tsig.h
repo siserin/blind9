@@ -34,55 +34,55 @@
  * Algorithms.
  */
 LIBDNS_EXTERNAL_DATA extern const dns_name_t *dns_tsig_hmacmd5_name;
-#define DNS_TSIG_HMACMD5_NAME		dns_tsig_hmacmd5_name
+#define DNS_TSIG_HMACMD5_NAME           dns_tsig_hmacmd5_name
 LIBDNS_EXTERNAL_DATA extern const dns_name_t *dns_tsig_gssapi_name;
-#define DNS_TSIG_GSSAPI_NAME		dns_tsig_gssapi_name
+#define DNS_TSIG_GSSAPI_NAME            dns_tsig_gssapi_name
 LIBDNS_EXTERNAL_DATA extern const dns_name_t *dns_tsig_gssapims_name;
-#define DNS_TSIG_GSSAPIMS_NAME		dns_tsig_gssapims_name
+#define DNS_TSIG_GSSAPIMS_NAME          dns_tsig_gssapims_name
 LIBDNS_EXTERNAL_DATA extern const dns_name_t *dns_tsig_hmacsha1_name;
-#define DNS_TSIG_HMACSHA1_NAME		dns_tsig_hmacsha1_name
+#define DNS_TSIG_HMACSHA1_NAME          dns_tsig_hmacsha1_name
 LIBDNS_EXTERNAL_DATA extern const dns_name_t *dns_tsig_hmacsha224_name;
-#define DNS_TSIG_HMACSHA224_NAME	dns_tsig_hmacsha224_name
+#define DNS_TSIG_HMACSHA224_NAME        dns_tsig_hmacsha224_name
 LIBDNS_EXTERNAL_DATA extern const dns_name_t *dns_tsig_hmacsha256_name;
-#define DNS_TSIG_HMACSHA256_NAME	dns_tsig_hmacsha256_name
+#define DNS_TSIG_HMACSHA256_NAME        dns_tsig_hmacsha256_name
 LIBDNS_EXTERNAL_DATA extern const dns_name_t *dns_tsig_hmacsha384_name;
-#define DNS_TSIG_HMACSHA384_NAME	dns_tsig_hmacsha384_name
+#define DNS_TSIG_HMACSHA384_NAME        dns_tsig_hmacsha384_name
 LIBDNS_EXTERNAL_DATA extern const dns_name_t *dns_tsig_hmacsha512_name;
-#define DNS_TSIG_HMACSHA512_NAME	dns_tsig_hmacsha512_name
+#define DNS_TSIG_HMACSHA512_NAME        dns_tsig_hmacsha512_name
 
 /*%
  * Default fudge value.
  */
-#define DNS_TSIG_FUDGE			300
+#define DNS_TSIG_FUDGE                  300
 
 struct dns_tsig_keyring {
-	dns_rbt_t *keys;
-	unsigned int writecount;
-	isc_rwlock_t lock;
-	isc_mem_t *mctx;
+	dns_rbt_t *	    keys;
+	unsigned int	    writecount;
+	isc_rwlock_t	    lock;
+	isc_mem_t *	    mctx;
 	/*
 	 * LRU list of generated key along with a count of the keys on the
 	 * list and a maximum size.
 	 */
-	unsigned int generated;
-	unsigned int maxgenerated;
+	unsigned int	    generated;
+	unsigned int	    maxgenerated;
 	ISC_LIST(dns_tsigkey_t) lru;
-	unsigned int references;
+	unsigned int	    references;
 };
 
 struct dns_tsigkey {
 	/* Unlocked */
-	unsigned int		magic;		/*%< Magic number. */
-	isc_mem_t		*mctx;
-	dst_key_t		*key;		/*%< Key */
-	dns_name_t		name;		/*%< Key name */
-	const dns_name_t	*algorithm;	/*%< Algorithm name */
-	dns_name_t		*creator;	/*%< name that created secret */
-	bool		generated;	/*%< was this generated? */
-	isc_stdtime_t		inception;	/*%< start of validity period */
-	isc_stdtime_t		expire;		/*%< end of validity period */
-	dns_tsig_keyring_t	*ring;		/*%< the enclosing keyring */
-	isc_refcount_t		refs;		/*%< reference counter */
+	unsigned int		  magic;        /*%< Magic number. */
+	isc_mem_t *		  mctx;
+	dst_key_t *		  key;          /*%< Key */
+	dns_name_t		  name;         /*%< Key name */
+	const dns_name_t *	  algorithm;    /*%< Algorithm name */
+	dns_name_t *		  creator;      /*%< name that created secret */
+	bool			  generated; /*%< was this generated? */
+	isc_stdtime_t		  inception;    /*%< start of validity period */
+	isc_stdtime_t		  expire;       /*%< end of validity period */
+	dns_tsig_keyring_t *	  ring;         /*%< the enclosing keyring */
+	isc_refcount_t		  refs;         /*%< reference counter */
 	ISC_LINK(dns_tsigkey_t) link;
 };
 
@@ -94,18 +94,29 @@ struct dns_tsigkey {
 ISC_LANG_BEGINDECLS
 
 isc_result_t
-dns_tsigkey_create(const dns_name_t *name, const dns_name_t *algorithm,
-		   unsigned char *secret, int length, bool generated,
-		   const dns_name_t *creator, isc_stdtime_t inception,
-		   isc_stdtime_t expire, isc_mem_t *mctx,
-		   dns_tsig_keyring_t *ring, dns_tsigkey_t **key);
+dns_tsigkey_create(const dns_name_t *name,
+		   const dns_name_t *algorithm,
+		   unsigned char *secret,
+		   int length,
+		   bool generated,
+		   const dns_name_t *creator,
+		   isc_stdtime_t inception,
+		   isc_stdtime_t expire,
+		   isc_mem_t *mctx,
+		   dns_tsig_keyring_t *ring,
+		   dns_tsigkey_t **key);
 
 isc_result_t
-dns_tsigkey_createfromkey(const dns_name_t *name, const dns_name_t *algorithm,
-			  dst_key_t *dstkey, bool generated,
-			  const dns_name_t *creator, isc_stdtime_t inception,
-			  isc_stdtime_t expire, isc_mem_t *mctx,
-			  dns_tsig_keyring_t *ring, dns_tsigkey_t **key);
+dns_tsigkey_createfromkey(const dns_name_t *name,
+			  const dns_name_t *algorithm,
+			  dst_key_t *dstkey,
+			  bool generated,
+			  const dns_name_t *creator,
+			  isc_stdtime_t inception,
+			  isc_stdtime_t expire,
+			  isc_mem_t *mctx,
+			  dns_tsig_keyring_t *ring,
+			  dns_tsigkey_t **key);
 /*%<
  *	Creates a tsig key structure and saves it in the keyring.  If key is
  *	not NULL, *key will contain a copy of the key.  The keys validity
@@ -190,8 +201,10 @@ dns_tsig_sign(dns_message_t *msg);
  */
 
 isc_result_t
-dns_tsig_verify(isc_buffer_t *source, dns_message_t *msg,
-		dns_tsig_keyring_t *ring1, dns_tsig_keyring_t *ring2);
+dns_tsig_verify(isc_buffer_t *source,
+		dns_message_t *msg,
+		dns_tsig_keyring_t *ring1,
+		dns_tsig_keyring_t *ring2);
 /*%<
  *	Verifies the TSIG record in this message
  *
@@ -219,8 +232,10 @@ dns_tsig_verify(isc_buffer_t *source, dns_message_t *msg,
  */
 
 isc_result_t
-dns_tsigkey_find(dns_tsigkey_t **tsigkey, const dns_name_t *name,
-		 const dns_name_t *algorithm, dns_tsig_keyring_t *ring);
+dns_tsigkey_find(dns_tsigkey_t **tsigkey,
+		 const dns_name_t *name,
+		 const dns_name_t *algorithm,
+		 dns_tsig_keyring_t *ring);
 /*%<
  *	Returns the TSIG key corresponding to this name and (possibly)
  *	algorithm.  Also increments the key's reference counter.
@@ -253,7 +268,8 @@ dns_tsigkeyring_create(isc_mem_t *mctx, dns_tsig_keyring_t **ringp);
  */
 
 isc_result_t
-dns_tsigkeyring_add(dns_tsig_keyring_t *ring, const dns_name_t *name,
+dns_tsigkeyring_add(dns_tsig_keyring_t *ring,
+		    const dns_name_t *name,
 		    dns_tsigkey_t *tkey);
 /*%<
  *      Place a TSIG key onto a key ring.
@@ -268,7 +284,8 @@ dns_tsigkeyring_add(dns_tsig_keyring_t *ring, const dns_name_t *name,
 
 
 void
-dns_tsigkeyring_attach(dns_tsig_keyring_t *source, dns_tsig_keyring_t **target);
+dns_tsigkeyring_attach(dns_tsig_keyring_t *source,
+		       dns_tsig_keyring_t **target);
 
 void
 dns_tsigkeyring_detach(dns_tsig_keyring_t **ringp);

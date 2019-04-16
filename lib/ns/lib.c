@@ -28,7 +28,7 @@
  *** Globals
  ***/
 
-LIBNS_EXTERNAL_DATA unsigned int			ns_pps = 0U;
+LIBNS_EXTERNAL_DATA unsigned int ns_pps = 0U;
 
 
 /***
@@ -36,7 +36,7 @@ LIBNS_EXTERNAL_DATA unsigned int			ns_pps = 0U;
  ***/
 
 static isc_once_t init_once = ISC_ONCE_INIT;
-static isc_mem_t *ns_g_mctx = NULL;
+static isc_mem_t*ns_g_mctx = NULL;
 static bool initialize_done = false;
 static isc_mutex_t reflock;
 static unsigned int references = 0;
@@ -47,9 +47,10 @@ initialize(void) {
 
 	REQUIRE(initialize_done == false);
 
-	result = isc_mem_create(0, 0, &ns_g_mctx);
-	if (result != ISC_R_SUCCESS)
+	result = isc_mem_create(0,0,&ns_g_mctx);
+	if (result != ISC_R_SUCCESS) {
 		return;
+	}
 
 	isc_mutex_init(&reflock);
 
@@ -66,12 +67,14 @@ ns_lib_init(void) {
 	 * it should be better to return an error, instead of an emergency
 	 * abort, on any failure.
 	 */
-	result = isc_once_do(&init_once, initialize);
-	if (result != ISC_R_SUCCESS)
+	result = isc_once_do(&init_once,initialize);
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
-	if (!initialize_done)
+	if (!initialize_done) {
 		return (ISC_R_FAILURE);
+	}
 
 	LOCK(&reflock);
 	references++;
@@ -85,13 +88,16 @@ ns_lib_shutdown(void) {
 	bool cleanup_ok = false;
 
 	LOCK(&reflock);
-	if (--references == 0)
+	if (--references == 0) {
 		cleanup_ok = true;
+	}
 	UNLOCK(&reflock);
 
-	if (!cleanup_ok)
+	if (!cleanup_ok) {
 		return;
+	}
 
-	if (ns_g_mctx != NULL)
+	if (ns_g_mctx != NULL) {
 		isc_mem_detach(&ns_g_mctx);
+	}
 }

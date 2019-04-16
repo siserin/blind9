@@ -36,23 +36,23 @@
 #include <isccc/types.h>
 
 /*% Unknown Version */
-#define ISCCC_R_UNKNOWNVERSION		(ISC_RESULTCLASS_ISCCC + 0)
+#define ISCCC_R_UNKNOWNVERSION          (ISC_RESULTCLASS_ISCCC + 0)
 /*% Syntax Error */
-#define ISCCC_R_SYNTAX			(ISC_RESULTCLASS_ISCCC + 1)
+#define ISCCC_R_SYNTAX                  (ISC_RESULTCLASS_ISCCC + 1)
 /*% Bad Authorization */
-#define ISCCC_R_BADAUTH			(ISC_RESULTCLASS_ISCCC + 2)
+#define ISCCC_R_BADAUTH                 (ISC_RESULTCLASS_ISCCC + 2)
 /*% Expired */
-#define ISCCC_R_EXPIRED			(ISC_RESULTCLASS_ISCCC + 3)
+#define ISCCC_R_EXPIRED                 (ISC_RESULTCLASS_ISCCC + 3)
 /*% Clock Skew */
-#define ISCCC_R_CLOCKSKEW		(ISC_RESULTCLASS_ISCCC + 4)
+#define ISCCC_R_CLOCKSKEW               (ISC_RESULTCLASS_ISCCC + 4)
 /*% Duplicate */
-#define ISCCC_R_DUPLICATE		(ISC_RESULTCLASS_ISCCC + 5)
+#define ISCCC_R_DUPLICATE               (ISC_RESULTCLASS_ISCCC + 5)
 
-#define ISCCC_R_NRESULTS 		6	/*%< Number of results */
+#define ISCCC_R_NRESULTS                6       /*%< Number of results */
 
 ISC_LANG_BEGINDECLS
 
-const char *
+const char*
 isccc_result_totext(isc_result_t result);
 /*%
  * Convert a isccc_result_t into a string message describing the result.

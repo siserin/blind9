@@ -40,19 +40,19 @@
 #include "nstest.h"
 
 static int
-_setup(void **state) {
+_setup(void**state) {
 	isc_result_t result;
 
 	UNUSED(state);
 
-	result = ns_test_begin(NULL, true);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = ns_test_begin(NULL,true);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	return (0);
 }
 
 static int
-_teardown(void **state) {
+_teardown(void**state) {
 	UNUSED(state);
 
 	ns_test_end();
@@ -61,48 +61,48 @@ _teardown(void **state) {
 }
 
 static void
-check_response(isc_buffer_t *buf) {
+check_response(isc_buffer_t*buf) {
 	isc_result_t result;
-	dns_message_t *message = NULL;
+	dns_message_t*message = NULL;
 	char rcodebuf[20];
 	isc_buffer_t b;
 
-	result = dns_message_create(mctx, DNS_MESSAGE_INTENTPARSE, &message);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = dns_message_create(mctx,DNS_MESSAGE_INTENTPARSE,&message);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = dns_message_parse(message, buf, 0);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = dns_message_parse(message,buf,0);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	isc_buffer_init(&b, rcodebuf, sizeof(rcodebuf));
-	result = dns_rcode_totext(message->rcode, &b);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	isc_buffer_init(&b,rcodebuf,sizeof(rcodebuf));
+	result = dns_rcode_totext(message->rcode,&b);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	assert_int_equal(message->rcode, dns_rcode_noerror);
+	assert_int_equal(message->rcode,dns_rcode_noerror);
 
 	dns_message_destroy(&message);
 }
 
 /* test ns_notify_start() */
 static void
-notify_start(void **state) {
+notify_start(void**state) {
 	isc_result_t result;
-	ns_client_t *client = NULL;
-	dns_message_t *nmsg = NULL;
+	ns_client_t*client = NULL;
+	dns_message_t*nmsg = NULL;
 	unsigned char ndata[4096];
 	isc_buffer_t nbuf;
 	size_t nsize;
 
 	UNUSED(state);
 
-	result = ns_test_getclient(NULL, false, &client);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = ns_test_getclient(NULL,false,&client);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = ns_test_makeview("view", false, &client->view);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = ns_test_makeview("view",false,&client->view);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = ns_test_serve_zone("example.com", "testdata/notify/zone1.db",
+	result = ns_test_serve_zone("example.com","testdata/notify/zone1.db",
 				    client->view);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	/*
 	 * Create a NOTIFY message by parsing a file in testdata.
@@ -110,16 +110,16 @@ notify_start(void **state) {
 	 */
 
 	result = ns_test_getdata("testdata/notify/notify1.msg",
-				  ndata, sizeof(ndata), &nsize);
-	assert_int_equal(result, ISC_R_SUCCESS);
-	isc_buffer_init(&nbuf, ndata, nsize);
-	isc_buffer_add(&nbuf, nsize);
+				 ndata,sizeof(ndata),&nsize);
+	assert_int_equal(result,ISC_R_SUCCESS);
+	isc_buffer_init(&nbuf,ndata,nsize);
+	isc_buffer_add(&nbuf,nsize);
 
-	result = dns_message_create(mctx, DNS_MESSAGE_INTENTPARSE, &nmsg);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = dns_message_create(mctx,DNS_MESSAGE_INTENTPARSE,&nmsg);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
-	result = dns_message_parse(nmsg, &nbuf, 0);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = dns_message_parse(nmsg,&nbuf,0);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	/*
 	 * Set up client object with this message and test the NOTIFY
@@ -145,10 +145,10 @@ int
 main(void) {
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test_setup_teardown(notify_start,
-						_setup, _teardown),
+						_setup,_teardown),
 	};
 
-	return (cmocka_run_group_tests(tests, NULL, NULL));
+	return (cmocka_run_group_tests(tests,NULL,NULL));
 }
 #else /* HAVE_CMOCKA */
 
@@ -160,4 +160,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

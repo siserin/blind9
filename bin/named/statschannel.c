@@ -47,38 +47,38 @@
 
 struct named_statschannel {
 	/* Unlocked */
-	isc_httpdmgr_t				*httpdmgr;
-	isc_sockaddr_t				address;
-	isc_mem_t				*mctx;
+	isc_httpdmgr_t *      httpdmgr;
+	isc_sockaddr_t	      address;
+	isc_mem_t *	      mctx;
 
 	/*
 	 * Locked by channel lock: can be referenced and modified by both
 	 * the server task and the channel task.
 	 */
-	isc_mutex_t				lock;
-	dns_acl_t				*acl;
+	isc_mutex_t	   lock;
+	dns_acl_t *	   acl;
 
 	/* Locked by server task */
-	ISC_LINK(struct named_statschannel)	link;
+	ISC_LINK(struct named_statschannel)     link;
 };
 
 typedef struct
-stats_dumparg {
-	isc_statsformat_t	type;
-	void			*arg;		/* type dependent argument */
-	int			ncounters;	/* for general statistics */
-	int			*counterindices; /* for general statistics */
-	uint64_t		*countervalues;	 /* for general statistics */
-	isc_result_t		result;
+	stats_dumparg {
+	isc_statsformat_t	 type;
+	void *			 arg;           /* type dependent argument */
+	int			 ncounters;     /* for general statistics */
+	int *			 counterindices; /* for general statistics */
+	uint64_t *		 countervalues;  /* for general statistics */
+	isc_result_t		 result;
 } stats_dumparg_t;
 
 static isc_once_t once = ISC_ONCE_INIT;
 
 #if defined(HAVE_LIBXML2) || defined(HAVE_JSON)
 #define EXTENDED_STATS
-#else
+#else  /* if defined(HAVE_LIBXML2) || defined(HAVE_JSON) */
 #undef EXTENDED_STATS
-#endif
+#endif /* if defined(HAVE_LIBXML2) || defined(HAVE_JSON) */
 
 #ifdef EXTENDED_STATS
 static const char *
@@ -86,8 +86,8 @@ user_zonetype( dns_zone_t *zone ) {
 	dns_zonetype_t ztype;
 	dns_view_t *view;
 	static const struct zt {
-		const dns_zonetype_t type;
-		const char *const string;
+		const dns_zonetype_t	    type;
+		const char *const	    string;
 	} typemap[] = {
 		{ dns_zone_none, "none" },
 		{ dns_zone_master, "master" },
@@ -102,19 +102,21 @@ user_zonetype( dns_zone_t *zone ) {
 	};
 	const struct zt *tp;
 
-	if ((dns_zone_getoptions(zone) & DNS_ZONEOPT_AUTOEMPTY) != 0)
+	if ((dns_zone_getoptions(zone) & DNS_ZONEOPT_AUTOEMPTY) != 0) {
 		return ("builtin");
+	}
 
 	view = dns_zone_getview(zone);
-	if (view != NULL && strcmp(view->name, "_bind") == 0)
+	if (view != NULL && strcmp(view->name, "_bind") == 0) {
 		return ("builtin");
+	}
 
 	ztype = dns_zone_gettype(zone);
 	for  (tp = typemap; tp->string != NULL && tp->type != ztype; tp++)
 		/* empty */;
 	return (tp->string);
 }
-#endif
+#endif /* ifdef EXTENDED_STATS */
 
 /*%
  * Statistics descriptions.  These could be statistically initialized at
@@ -146,7 +148,7 @@ static const char *tcpinsizestats_xmldesc[dns_sizecounter_in_max];
 static const char *tcpoutsizestats_xmldesc[dns_sizecounter_out_max];
 static const char *dnstapstats_xmldesc[dns_dnstapcounter_max];
 static const char *gluecachestats_xmldesc[dns_gluecachestatscounter_max];
-#else
+#else  /* if defined(EXTENDED_STATS) */
 #define nsstats_xmldesc NULL
 #define resstats_xmldesc NULL
 #define adbstats_xmldesc NULL
@@ -159,9 +161,9 @@ static const char *gluecachestats_xmldesc[dns_gluecachestatscounter_max];
 #define tcpoutsizestats_xmldesc NULL
 #define dnstapstats_xmldesc NULL
 #define gluecachestats_xmldesc NULL
-#endif	/* EXTENDED_STATS */
+#endif  /* EXTENDED_STATS */
 
-#define TRY0(a) do { xmlrc = (a); if (xmlrc < 0) goto error; } while(0)
+#define TRY0(a) do { xmlrc = (a); if (xmlrc < 0) {goto error;}} while (0)
 
 /*%
  * Mapping arrays to represent statistics counters in the order of our
@@ -182,22 +184,26 @@ static int dnstapstats_index[dns_dnstapcounter_max];
 static int gluecachestats_index[dns_gluecachestatscounter_max];
 
 static inline void
-set_desc(int counter, int maxcounter, const char *fdesc, const char **fdescs,
-	 const char *xdesc, const char **xdescs)
+set_desc(int counter,
+	 int maxcounter,
+	 const char *fdesc,
+	 const char **fdescs,
+	 const char *xdesc,
+	 const char **xdescs)
 {
 	REQUIRE(counter < maxcounter);
 	REQUIRE(fdescs != NULL && fdescs[counter] == NULL);
 #if defined(EXTENDED_STATS)
 	REQUIRE(xdescs != NULL && xdescs[counter] == NULL);
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 	fdescs[counter] = fdesc;
 #if defined(EXTENDED_STATS)
 	xdescs[counter] = xdesc;
-#else
+#else  /* if defined(EXTENDED_STATS) */
 	UNUSED(xdesc);
 	UNUSED(xdescs);
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 }
 
 static void
@@ -210,7 +216,7 @@ init_desc(void) {
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < ns_statscounter_max; i++)
 		nsstats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_NSSTATDESC(counterid, desc, xmldesc) \
 	do { \
@@ -252,11 +258,14 @@ init_desc(void) {
 	SET_NSSTATDESC(referral, "queries resulted in referral answer",
 		       "QryReferral");
 	SET_NSSTATDESC(nxrrset, "queries resulted in nxrrset", "QryNxrrset");
-	SET_NSSTATDESC(servfail, "queries resulted in SERVFAIL", "QrySERVFAIL");
+	SET_NSSTATDESC(servfail, "queries resulted in SERVFAIL",
+		       "QrySERVFAIL");
 	SET_NSSTATDESC(formerr, "queries resulted in FORMERR", "QryFORMERR");
-	SET_NSSTATDESC(nxdomain, "queries resulted in NXDOMAIN", "QryNXDOMAIN");
+	SET_NSSTATDESC(nxdomain, "queries resulted in NXDOMAIN",
+		       "QryNXDOMAIN");
 	SET_NSSTATDESC(recursion, "queries caused recursion", "QryRecursion");
-	SET_NSSTATDESC(duplicate, "duplicate queries received", "QryDuplicate");
+	SET_NSSTATDESC(duplicate, "duplicate queries received",
+		       "QryDuplicate");
 	SET_NSSTATDESC(dropped, "queries dropped", "QryDropped");
 	SET_NSSTATDESC(failure, "other query failures", "QryFailure");
 	SET_NSSTATDESC(xfrdone, "requested transfers completed", "XfrReqDone");
@@ -264,14 +273,15 @@ init_desc(void) {
 		       "UpdateReqFwd");
 	SET_NSSTATDESC(updaterespfwd, "update responses forwarded",
 		       "UpdateRespFwd");
-	SET_NSSTATDESC(updatefwdfail, "update forward failed", "UpdateFwdFail");
+	SET_NSSTATDESC(updatefwdfail, "update forward failed",
+		       "UpdateFwdFail");
 	SET_NSSTATDESC(updatedone, "updates completed", "UpdateDone");
 	SET_NSSTATDESC(updatefail, "updates failed", "UpdateFail");
 	SET_NSSTATDESC(updatebadprereq,
 		       "updates rejected due to prerequisite failure",
 		       "UpdateBadPrereq");
 	SET_NSSTATDESC(recursclients, "recursing clients",
-			"RecursClients");
+		       "RecursClients");
 	SET_NSSTATDESC(dns64, "queries answered by DNS64", "DNS64");
 	SET_NSSTATDESC(ratedropped, "responses dropped for rate limits",
 		       "RateDropped");
@@ -295,16 +305,22 @@ init_desc(void) {
 	SET_NSSTATDESC(cookiematch, "COOKIE - match", "CookieMatch");
 	SET_NSSTATDESC(ecsopt, "EDNS client subnet option received", "ECSOpt");
 	SET_NSSTATDESC(nxdomainredirect,
-		"queries resulted in NXDOMAIN that were redirected",
-		"QryNXRedir");
+		       "queries resulted in NXDOMAIN that were redirected",
+		       "QryNXRedir");
 	SET_NSSTATDESC(nxdomainredirect_rlookup,
-		"queries resulted in NXDOMAIN that were redirected and "
-		"resulted in a successful remote lookup",
-		"QryNXRedirRLookup");
+		       "queries resulted in NXDOMAIN that were redirected and "
+		       "resulted in a successful remote lookup",
+		       "QryNXRedirRLookup");
 	SET_NSSTATDESC(badcookie, "sent badcookie response", "QryBADCOOKIE");
-	SET_NSSTATDESC(nxdomainsynth, "synthesized a NXDOMAIN response", "SynthNXDOMAIN");
-	SET_NSSTATDESC(nodatasynth, "syththesized a no-data response", "SynthNODATA");
-	SET_NSSTATDESC(wildcardsynth, "synthesized a wildcard response", "SynthWILDCARD");
+	SET_NSSTATDESC(nxdomainsynth,
+		       "synthesized a NXDOMAIN response",
+		       "SynthNXDOMAIN");
+	SET_NSSTATDESC(nodatasynth,
+		       "syththesized a no-data response",
+		       "SynthNODATA");
+	SET_NSSTATDESC(wildcardsynth,
+		       "synthesized a wildcard response",
+		       "SynthWILDCARD");
 	SET_NSSTATDESC(trystale,
 		       "attempts to use stale cache data after lookup failure",
 		       "QryTryStale");
@@ -321,7 +337,7 @@ init_desc(void) {
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < dns_resstatscounter_max; i++)
 		resstats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_RESSTATDESC(counterid, desc, xmldesc) \
 	do { \
@@ -342,7 +358,8 @@ init_desc(void) {
 	SET_RESSTATDESC(othererror, "other errors received", "OtherError");
 	SET_RESSTATDESC(edns0fail, "EDNS(0) query failures", "EDNS0Fail");
 	SET_RESSTATDESC(mismatch, "mismatch responses received", "Mismatch");
-	SET_RESSTATDESC(truncated, "truncated responses received", "Truncated");
+	SET_RESSTATDESC(truncated, "truncated responses received",
+			"Truncated");
 	SET_RESSTATDESC(lame, "lame delegations received", "Lame");
 	SET_RESSTATDESC(retry, "query retries", "Retry");
 	SET_RESSTATDESC(dispabort, "queries aborted due to quota",
@@ -410,7 +427,7 @@ init_desc(void) {
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < dns_adbstats_max; i++)
 		adbstats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_ADBSTATDESC(id, desc, xmldesc) \
 	do { \
@@ -432,7 +449,7 @@ init_desc(void) {
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < dns_zonestatscounter_max; i++)
 		zonestats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_ZONESTATDESC(counterid, desc, xmldesc) \
 	do { \
@@ -465,7 +482,7 @@ init_desc(void) {
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < isc_sockstatscounter_max; i++)
 		sockstats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_SOCKSTATDESC(counterid, desc, xmldesc) \
 	do { \
@@ -522,7 +539,8 @@ init_desc(void) {
 			 "TCP4ConnFail");
 	SET_SOCKSTATDESC(tcp6connectfail, "TCP/IPv6 socket connect failures",
 			 "TCP6ConnFail");
-	SET_SOCKSTATDESC(unixconnectfail, "Unix domain socket connect failures",
+	SET_SOCKSTATDESC(unixconnectfail,
+			 "Unix domain socket connect failures",
 			 "UnixConnFail");
 	SET_SOCKSTATDESC(fdwatchconnectfail, "FDwatch socket connect failures",
 			 "FDwatchConnFail");
@@ -584,7 +602,7 @@ init_desc(void) {
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < dns_dnssecstats_max; i++)
 		dnssecstats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_DNSSECSTATDESC(counterid, desc, xmldesc) \
 	do { \
@@ -611,7 +629,7 @@ init_desc(void) {
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < dns_dnstapcounter_max; i++)
 		dnstapstats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_DNSTAPSTATDESC(counterid, desc, xmldesc) \
 	do { \
@@ -627,13 +645,13 @@ init_desc(void) {
 	INSIST(i == dns_dnstapcounter_max);
 
 #define SET_GLUECACHESTATDESC(counterid, desc, xmldesc) \
-	do {							  \
+	do {                                                      \
 		set_desc(dns_gluecachestatscounter_ ## counterid, \
-			 dns_gluecachestatscounter_max,		  \
-			 desc, gluecachestats_desc,		  \
-			 xmldesc, gluecachestats_xmldesc);		\
-		gluecachestats_index[i++] =				\
-			dns_gluecachestatscounter_ ## counterid;	\
+			 dns_gluecachestatscounter_max,           \
+			 desc, gluecachestats_desc,               \
+			 xmldesc, gluecachestats_xmldesc);              \
+		gluecachestats_index[i++] =                             \
+			dns_gluecachestatscounter_ ## counterid;        \
 	} while (0)
 	i = 0;
 	SET_GLUECACHESTATDESC(hits_present,
@@ -684,7 +702,7 @@ init_desc(void) {
 		INSIST(dnstapstats_xmldesc[i] != NULL);
 	for (i = 0; i < dns_gluecachestatscounter_max; i++)
 		INSIST(gluecachestats_xmldesc[i] != NULL);
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 	/* Initialize traffic size statistics */
 	for (i = 0; i < dns_sizecounter_in_max; i++) {
@@ -693,7 +711,7 @@ init_desc(void) {
 #if defined(EXTENDED_STATS)
 		udpinsizestats_xmldesc[i] = NULL;
 		tcpinsizestats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 	}
 	for (i = 0; i < dns_sizecounter_out_max; i++) {
 		udpoutsizestats_desc[i] = NULL;
@@ -701,7 +719,7 @@ init_desc(void) {
 #if defined(EXTENDED_STATS)
 		udpoutsizestats_xmldesc[i] = NULL;
 		tcpoutsizestats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 	}
 
 #define SET_SIZESTATDESC(counterid, desc, xmldesc, inout) \
@@ -714,8 +732,10 @@ init_desc(void) {
 			 dns_sizecounter_ ## inout ## _max, \
 			 desc, tcp ## inout ## sizestats_desc, \
 			 xmldesc, tcp ## inout ## sizestats_xmldesc); \
-		udp ## inout ## sizestats_index[i] = dns_sizecounter_ ## inout ## _ ## counterid; \
-		tcp ## inout ## sizestats_index[i] = dns_sizecounter_ ## inout ## _ ## counterid; \
+		udp ## inout ## sizestats_index[i] = \
+			dns_sizecounter_ ## inout ## _ ## counterid; \
+		tcp ## inout ## sizestats_index[i] = \
+			dns_sizecounter_ ## inout ## _ ## counterid; \
 		i++; \
 	} while (0)
 
@@ -727,17 +747,28 @@ init_desc(void) {
 	SET_SIZESTATDESC(64, "requests received 64-79 bytes", "64-79", in);
 	SET_SIZESTATDESC(80, "requests received 80-95 bytes", "80-95", in);
 	SET_SIZESTATDESC(96, "requests received 96-111 bytes", "96-111", in);
-	SET_SIZESTATDESC(112, "requests received 112-127 bytes", "112-127", in);
-	SET_SIZESTATDESC(128, "requests received 128-143 bytes", "128-143", in);
-	SET_SIZESTATDESC(144, "requests received 144-159 bytes", "144-159", in);
-	SET_SIZESTATDESC(160, "requests received 160-175 bytes", "160-175", in);
-	SET_SIZESTATDESC(176, "requests received 176-191 bytes", "176-191", in);
-	SET_SIZESTATDESC(192, "requests received 192-207 bytes", "192-207", in);
-	SET_SIZESTATDESC(208, "requests received 208-223 bytes", "208-223", in);
-	SET_SIZESTATDESC(224, "requests received 224-239 bytes", "224-239", in);
-	SET_SIZESTATDESC(240, "requests received 240-255 bytes", "240-255", in);
-	SET_SIZESTATDESC(256, "requests received 256-271 bytes", "256-271", in);
-	SET_SIZESTATDESC(272, "requests received 272-287 bytes", "272-287", in);
+	SET_SIZESTATDESC(112, "requests received 112-127 bytes", "112-127",
+			 in);
+	SET_SIZESTATDESC(128, "requests received 128-143 bytes", "128-143",
+			 in);
+	SET_SIZESTATDESC(144, "requests received 144-159 bytes", "144-159",
+			 in);
+	SET_SIZESTATDESC(160, "requests received 160-175 bytes", "160-175",
+			 in);
+	SET_SIZESTATDESC(176, "requests received 176-191 bytes", "176-191",
+			 in);
+	SET_SIZESTATDESC(192, "requests received 192-207 bytes", "192-207",
+			 in);
+	SET_SIZESTATDESC(208, "requests received 208-223 bytes", "208-223",
+			 in);
+	SET_SIZESTATDESC(224, "requests received 224-239 bytes", "224-239",
+			 in);
+	SET_SIZESTATDESC(240, "requests received 240-255 bytes", "240-255",
+			 in);
+	SET_SIZESTATDESC(256, "requests received 256-271 bytes", "256-271",
+			 in);
+	SET_SIZESTATDESC(272, "requests received 272-287 bytes", "272-287",
+			 in);
 	SET_SIZESTATDESC(288, "requests received 288+ bytes", "288+", in);
 	INSIST(i == dns_sizecounter_in_max);
 
@@ -804,200 +835,780 @@ init_desc(void) {
 	SET_SIZESTATDESC(944, "responses sent 944-959 bytes", "944-959", out);
 	SET_SIZESTATDESC(960, "responses sent 960-975 bytes", "960-975", out);
 	SET_SIZESTATDESC(976, "responses sent 976-991 bytes", "976-991", out);
-	SET_SIZESTATDESC(992, "responses sent 992-1007 bytes", "992-1007", out);
-	SET_SIZESTATDESC(1008, "responses sent 1008-1023 bytes", "1008-1023", out);
-	SET_SIZESTATDESC(1024, "responses sent 1024-1039 bytes", "1024-1039", out);
-	SET_SIZESTATDESC(1040, "responses sent 1040-1055 bytes", "1040-1055", out);
-	SET_SIZESTATDESC(1056, "responses sent 1056-1071 bytes", "1056-1071", out);
-	SET_SIZESTATDESC(1072, "responses sent 1072-1087 bytes", "1072-1087", out);
-	SET_SIZESTATDESC(1088, "responses sent 1088-1103 bytes", "1088-1103", out);
-	SET_SIZESTATDESC(1104, "responses sent 1104-1119 bytes", "1104-1119", out);
-	SET_SIZESTATDESC(1120, "responses sent 1120-1135 bytes", "1120-1135", out);
-	SET_SIZESTATDESC(1136, "responses sent 1136-1151 bytes", "1136-1151", out);
-	SET_SIZESTATDESC(1152, "responses sent 1152-1167 bytes", "1152-1167", out);
-	SET_SIZESTATDESC(1168, "responses sent 1168-1183 bytes", "1168-1183", out);
-	SET_SIZESTATDESC(1184, "responses sent 1184-1199 bytes", "1184-1199", out);
-	SET_SIZESTATDESC(1200, "responses sent 1200-1215 bytes", "1200-1215", out);
-	SET_SIZESTATDESC(1216, "responses sent 1216-1231 bytes", "1216-1231", out);
-	SET_SIZESTATDESC(1232, "responses sent 1232-1247 bytes", "1232-1247", out);
-	SET_SIZESTATDESC(1248, "responses sent 1248-1263 bytes", "1248-1263", out);
-	SET_SIZESTATDESC(1264, "responses sent 1264-1279 bytes", "1264-1279", out);
-	SET_SIZESTATDESC(1280, "responses sent 1280-1295 bytes", "1280-1295", out);
-	SET_SIZESTATDESC(1296, "responses sent 1296-1311 bytes", "1296-1311", out);
-	SET_SIZESTATDESC(1312, "responses sent 1312-1327 bytes", "1312-1327", out);
-	SET_SIZESTATDESC(1328, "responses sent 1328-1343 bytes", "1328-1343", out);
-	SET_SIZESTATDESC(1344, "responses sent 1344-1359 bytes", "1344-1359", out);
-	SET_SIZESTATDESC(1360, "responses sent 1360-1375 bytes", "1360-1375", out);
-	SET_SIZESTATDESC(1376, "responses sent 1376-1391 bytes", "1376-1391", out);
-	SET_SIZESTATDESC(1392, "responses sent 1392-1407 bytes", "1392-1407", out);
-	SET_SIZESTATDESC(1408, "responses sent 1408-1423 bytes", "1408-1423", out);
-	SET_SIZESTATDESC(1424, "responses sent 1424-1439 bytes", "1424-1439", out);
-	SET_SIZESTATDESC(1440, "responses sent 1440-1455 bytes", "1440-1455", out);
-	SET_SIZESTATDESC(1456, "responses sent 1456-1471 bytes", "1456-1471", out);
-	SET_SIZESTATDESC(1472, "responses sent 1472-1487 bytes", "1472-1487", out);
-	SET_SIZESTATDESC(1488, "responses sent 1488-1503 bytes", "1488-1503", out);
-	SET_SIZESTATDESC(1504, "responses sent 1504-1519 bytes", "1504-1519", out);
-	SET_SIZESTATDESC(1520, "responses sent 1520-1535 bytes", "1520-1535", out);
-	SET_SIZESTATDESC(1536, "responses sent 1536-1551 bytes", "1536-1551", out);
-	SET_SIZESTATDESC(1552, "responses sent 1552-1567 bytes", "1552-1567", out);
-	SET_SIZESTATDESC(1568, "responses sent 1568-1583 bytes", "1568-1583", out);
-	SET_SIZESTATDESC(1584, "responses sent 1584-1599 bytes", "1584-1599", out);
-	SET_SIZESTATDESC(1600, "responses sent 1600-1615 bytes", "1600-1615", out);
-	SET_SIZESTATDESC(1616, "responses sent 1616-1631 bytes", "1616-1631", out);
-	SET_SIZESTATDESC(1632, "responses sent 1632-1647 bytes", "1632-1647", out);
-	SET_SIZESTATDESC(1648, "responses sent 1648-1663 bytes", "1648-1663", out);
-	SET_SIZESTATDESC(1664, "responses sent 1664-1679 bytes", "1664-1679", out);
-	SET_SIZESTATDESC(1680, "responses sent 1680-1695 bytes", "1680-1695", out);
-	SET_SIZESTATDESC(1696, "responses sent 1696-1711 bytes", "1696-1711", out);
-	SET_SIZESTATDESC(1712, "responses sent 1712-1727 bytes", "1712-1727", out);
-	SET_SIZESTATDESC(1728, "responses sent 1728-1743 bytes", "1728-1743", out);
-	SET_SIZESTATDESC(1744, "responses sent 1744-1759 bytes", "1744-1759", out);
-	SET_SIZESTATDESC(1760, "responses sent 1760-1775 bytes", "1760-1775", out);
-	SET_SIZESTATDESC(1776, "responses sent 1776-1791 bytes", "1776-1791", out);
-	SET_SIZESTATDESC(1792, "responses sent 1792-1807 bytes", "1792-1807", out);
-	SET_SIZESTATDESC(1808, "responses sent 1808-1823 bytes", "1808-1823", out);
-	SET_SIZESTATDESC(1824, "responses sent 1824-1839 bytes", "1824-1839", out);
-	SET_SIZESTATDESC(1840, "responses sent 1840-1855 bytes", "1840-1855", out);
-	SET_SIZESTATDESC(1856, "responses sent 1856-1871 bytes", "1856-1871", out);
-	SET_SIZESTATDESC(1872, "responses sent 1872-1887 bytes", "1872-1887", out);
-	SET_SIZESTATDESC(1888, "responses sent 1888-1903 bytes", "1888-1903", out);
-	SET_SIZESTATDESC(1904, "responses sent 1904-1919 bytes", "1904-1919", out);
-	SET_SIZESTATDESC(1920, "responses sent 1920-1935 bytes", "1920-1935", out);
-	SET_SIZESTATDESC(1936, "responses sent 1936-1951 bytes", "1936-1951", out);
-	SET_SIZESTATDESC(1952, "responses sent 1952-1967 bytes", "1952-1967", out);
-	SET_SIZESTATDESC(1968, "responses sent 1968-1983 bytes", "1968-1983", out);
-	SET_SIZESTATDESC(1984, "responses sent 1984-1999 bytes", "1984-1999", out);
-	SET_SIZESTATDESC(2000, "responses sent 2000-2015 bytes", "2000-2015", out);
-	SET_SIZESTATDESC(2016, "responses sent 2016-2031 bytes", "2016-2031", out);
-	SET_SIZESTATDESC(2032, "responses sent 2032-2047 bytes", "2032-2047", out);
-	SET_SIZESTATDESC(2048, "responses sent 2048-2063 bytes", "2048-2063", out);
-	SET_SIZESTATDESC(2064, "responses sent 2064-2079 bytes", "2064-2079", out);
-	SET_SIZESTATDESC(2080, "responses sent 2080-2095 bytes", "2080-2095", out);
-	SET_SIZESTATDESC(2096, "responses sent 2096-2111 bytes", "2096-2111", out);
-	SET_SIZESTATDESC(2112, "responses sent 2112-2127 bytes", "2112-2127", out);
-	SET_SIZESTATDESC(2128, "responses sent 2128-2143 bytes", "2128-2143", out);
-	SET_SIZESTATDESC(2144, "responses sent 2144-2159 bytes", "2144-2159", out);
-	SET_SIZESTATDESC(2160, "responses sent 2160-2175 bytes", "2160-2175", out);
-	SET_SIZESTATDESC(2176, "responses sent 2176-2191 bytes", "2176-2191", out);
-	SET_SIZESTATDESC(2192, "responses sent 2192-2207 bytes", "2192-2207", out);
-	SET_SIZESTATDESC(2208, "responses sent 2208-2223 bytes", "2208-2223", out);
-	SET_SIZESTATDESC(2224, "responses sent 2224-2239 bytes", "2224-2239", out);
-	SET_SIZESTATDESC(2240, "responses sent 2240-2255 bytes", "2240-2255", out);
-	SET_SIZESTATDESC(2256, "responses sent 2256-2271 bytes", "2256-2271", out);
-	SET_SIZESTATDESC(2272, "responses sent 2272-2287 bytes", "2272-2287", out);
-	SET_SIZESTATDESC(2288, "responses sent 2288-2303 bytes", "2288-2303", out);
-	SET_SIZESTATDESC(2304, "responses sent 2304-2319 bytes", "2304-2319", out);
-	SET_SIZESTATDESC(2320, "responses sent 2320-2335 bytes", "2320-2335", out);
-	SET_SIZESTATDESC(2336, "responses sent 2336-2351 bytes", "2336-2351", out);
-	SET_SIZESTATDESC(2352, "responses sent 2352-2367 bytes", "2352-2367", out);
-	SET_SIZESTATDESC(2368, "responses sent 2368-2383 bytes", "2368-2383", out);
-	SET_SIZESTATDESC(2384, "responses sent 2384-2399 bytes", "2384-2399", out);
-	SET_SIZESTATDESC(2400, "responses sent 2400-2415 bytes", "2400-2415", out);
-	SET_SIZESTATDESC(2416, "responses sent 2416-2431 bytes", "2416-2431", out);
-	SET_SIZESTATDESC(2432, "responses sent 2432-2447 bytes", "2432-2447", out);
-	SET_SIZESTATDESC(2448, "responses sent 2448-2463 bytes", "2448-2463", out);
-	SET_SIZESTATDESC(2464, "responses sent 2464-2479 bytes", "2464-2479", out);
-	SET_SIZESTATDESC(2480, "responses sent 2480-2495 bytes", "2480-2495", out);
-	SET_SIZESTATDESC(2496, "responses sent 2496-2511 bytes", "2496-2511", out);
-	SET_SIZESTATDESC(2512, "responses sent 2512-2527 bytes", "2512-2527", out);
-	SET_SIZESTATDESC(2528, "responses sent 2528-2543 bytes", "2528-2543", out);
-	SET_SIZESTATDESC(2544, "responses sent 2544-2559 bytes", "2544-2559", out);
-	SET_SIZESTATDESC(2560, "responses sent 2560-2575 bytes", "2560-2575", out);
-	SET_SIZESTATDESC(2576, "responses sent 2576-2591 bytes", "2576-2591", out);
-	SET_SIZESTATDESC(2592, "responses sent 2592-2607 bytes", "2592-2607", out);
-	SET_SIZESTATDESC(2608, "responses sent 2608-2623 bytes", "2608-2623", out);
-	SET_SIZESTATDESC(2624, "responses sent 2624-2639 bytes", "2624-2639", out);
-	SET_SIZESTATDESC(2640, "responses sent 2640-2655 bytes", "2640-2655", out);
-	SET_SIZESTATDESC(2656, "responses sent 2656-2671 bytes", "2656-2671", out);
-	SET_SIZESTATDESC(2672, "responses sent 2672-2687 bytes", "2672-2687", out);
-	SET_SIZESTATDESC(2688, "responses sent 2688-2703 bytes", "2688-2703", out);
-	SET_SIZESTATDESC(2704, "responses sent 2704-2719 bytes", "2704-2719", out);
-	SET_SIZESTATDESC(2720, "responses sent 2720-2735 bytes", "2720-2735", out);
-	SET_SIZESTATDESC(2736, "responses sent 2736-2751 bytes", "2736-2751", out);
-	SET_SIZESTATDESC(2752, "responses sent 2752-2767 bytes", "2752-2767", out);
-	SET_SIZESTATDESC(2768, "responses sent 2768-2783 bytes", "2768-2783", out);
-	SET_SIZESTATDESC(2784, "responses sent 2784-2799 bytes", "2784-2799", out);
-	SET_SIZESTATDESC(2800, "responses sent 2800-2815 bytes", "2800-2815", out);
-	SET_SIZESTATDESC(2816, "responses sent 2816-2831 bytes", "2816-2831", out);
-	SET_SIZESTATDESC(2832, "responses sent 2832-2847 bytes", "2832-2847", out);
-	SET_SIZESTATDESC(2848, "responses sent 2848-2863 bytes", "2848-2863", out);
-	SET_SIZESTATDESC(2864, "responses sent 2864-2879 bytes", "2864-2879", out);
-	SET_SIZESTATDESC(2880, "responses sent 2880-2895 bytes", "2880-2895", out);
-	SET_SIZESTATDESC(2896, "responses sent 2896-2911 bytes", "2896-2911", out);
-	SET_SIZESTATDESC(2912, "responses sent 2912-2927 bytes", "2912-2927", out);
-	SET_SIZESTATDESC(2928, "responses sent 2928-2943 bytes", "2928-2943", out);
-	SET_SIZESTATDESC(2944, "responses sent 2944-2959 bytes", "2944-2959", out);
-	SET_SIZESTATDESC(2960, "responses sent 2960-2975 bytes", "2960-2975", out);
-	SET_SIZESTATDESC(2976, "responses sent 2976-2991 bytes", "2976-2991", out);
-	SET_SIZESTATDESC(2992, "responses sent 2992-3007 bytes", "2992-3007", out);
-	SET_SIZESTATDESC(3008, "responses sent 3008-3023 bytes", "3008-3023", out);
-	SET_SIZESTATDESC(3024, "responses sent 3024-3039 bytes", "3024-3039", out);
-	SET_SIZESTATDESC(3040, "responses sent 3040-3055 bytes", "3040-3055", out);
-	SET_SIZESTATDESC(3056, "responses sent 3056-3071 bytes", "3056-3071", out);
-	SET_SIZESTATDESC(3072, "responses sent 3072-3087 bytes", "3072-3087", out);
-	SET_SIZESTATDESC(3088, "responses sent 3088-3103 bytes", "3088-3103", out);
-	SET_SIZESTATDESC(3104, "responses sent 3104-3119 bytes", "3104-3119", out);
-	SET_SIZESTATDESC(3120, "responses sent 3120-3135 bytes", "3120-3135", out);
-	SET_SIZESTATDESC(3136, "responses sent 3136-3151 bytes", "3136-3151", out);
-	SET_SIZESTATDESC(3152, "responses sent 3152-3167 bytes", "3152-3167", out);
-	SET_SIZESTATDESC(3168, "responses sent 3168-3183 bytes", "3168-3183", out);
-	SET_SIZESTATDESC(3184, "responses sent 3184-3199 bytes", "3184-3199", out);
-	SET_SIZESTATDESC(3200, "responses sent 3200-3215 bytes", "3200-3215", out);
-	SET_SIZESTATDESC(3216, "responses sent 3216-3231 bytes", "3216-3231", out);
-	SET_SIZESTATDESC(3232, "responses sent 3232-3247 bytes", "3232-3247", out);
-	SET_SIZESTATDESC(3248, "responses sent 3248-3263 bytes", "3248-3263", out);
-	SET_SIZESTATDESC(3264, "responses sent 3264-3279 bytes", "3264-3279", out);
-	SET_SIZESTATDESC(3280, "responses sent 3280-3295 bytes", "3280-3295", out);
-	SET_SIZESTATDESC(3296, "responses sent 3296-3311 bytes", "3296-3311", out);
-	SET_SIZESTATDESC(3312, "responses sent 3312-3327 bytes", "3312-3327", out);
-	SET_SIZESTATDESC(3328, "responses sent 3328-3343 bytes", "3328-3343", out);
-	SET_SIZESTATDESC(3344, "responses sent 3344-3359 bytes", "3344-3359", out);
-	SET_SIZESTATDESC(3360, "responses sent 3360-3375 bytes", "3360-3375", out);
-	SET_SIZESTATDESC(3376, "responses sent 3376-3391 bytes", "3376-3391", out);
-	SET_SIZESTATDESC(3392, "responses sent 3392-3407 bytes", "3392-3407", out);
-	SET_SIZESTATDESC(3408, "responses sent 3408-3423 bytes", "3408-3423", out);
-	SET_SIZESTATDESC(3424, "responses sent 3424-3439 bytes", "3424-3439", out);
-	SET_SIZESTATDESC(3440, "responses sent 3440-3455 bytes", "3440-3455", out);
-	SET_SIZESTATDESC(3456, "responses sent 3456-3471 bytes", "3456-3471", out);
-	SET_SIZESTATDESC(3472, "responses sent 3472-3487 bytes", "3472-3487", out);
-	SET_SIZESTATDESC(3488, "responses sent 3488-3503 bytes", "3488-3503", out);
-	SET_SIZESTATDESC(3504, "responses sent 3504-3519 bytes", "3504-3519", out);
-	SET_SIZESTATDESC(3520, "responses sent 3520-3535 bytes", "3520-3535", out);
-	SET_SIZESTATDESC(3536, "responses sent 3536-3551 bytes", "3536-3551", out);
-	SET_SIZESTATDESC(3552, "responses sent 3552-3567 bytes", "3552-3567", out);
-	SET_SIZESTATDESC(3568, "responses sent 3568-3583 bytes", "3568-3583", out);
-	SET_SIZESTATDESC(3584, "responses sent 3584-3599 bytes", "3584-3599", out);
-	SET_SIZESTATDESC(3600, "responses sent 3600-3615 bytes", "3600-3615", out);
-	SET_SIZESTATDESC(3616, "responses sent 3616-3631 bytes", "3616-3631", out);
-	SET_SIZESTATDESC(3632, "responses sent 3632-3647 bytes", "3632-3647", out);
-	SET_SIZESTATDESC(3648, "responses sent 3648-3663 bytes", "3648-3663", out);
-	SET_SIZESTATDESC(3664, "responses sent 3664-3679 bytes", "3664-3679", out);
-	SET_SIZESTATDESC(3680, "responses sent 3680-3695 bytes", "3680-3695", out);
-	SET_SIZESTATDESC(3696, "responses sent 3696-3711 bytes", "3696-3711", out);
-	SET_SIZESTATDESC(3712, "responses sent 3712-3727 bytes", "3712-3727", out);
-	SET_SIZESTATDESC(3728, "responses sent 3728-3743 bytes", "3728-3743", out);
-	SET_SIZESTATDESC(3744, "responses sent 3744-3759 bytes", "3744-3759", out);
-	SET_SIZESTATDESC(3760, "responses sent 3760-3775 bytes", "3760-3775", out);
-	SET_SIZESTATDESC(3776, "responses sent 3776-3791 bytes", "3776-3791", out);
-	SET_SIZESTATDESC(3792, "responses sent 3792-3807 bytes", "3792-3807", out);
-	SET_SIZESTATDESC(3808, "responses sent 3808-3823 bytes", "3808-3823", out);
-	SET_SIZESTATDESC(3824, "responses sent 3824-3839 bytes", "3824-3839", out);
-	SET_SIZESTATDESC(3840, "responses sent 3840-3855 bytes", "3840-3855", out);
-	SET_SIZESTATDESC(3856, "responses sent 3856-3871 bytes", "3856-3871", out);
-	SET_SIZESTATDESC(3872, "responses sent 3872-3887 bytes", "3872-3887", out);
-	SET_SIZESTATDESC(3888, "responses sent 3888-3903 bytes", "3888-3903", out);
-	SET_SIZESTATDESC(3904, "responses sent 3904-3919 bytes", "3904-3919", out);
-	SET_SIZESTATDESC(3920, "responses sent 3920-3935 bytes", "3920-3935", out);
-	SET_SIZESTATDESC(3936, "responses sent 3936-3951 bytes", "3936-3951", out);
-	SET_SIZESTATDESC(3952, "responses sent 3952-3967 bytes", "3952-3967", out);
-	SET_SIZESTATDESC(3968, "responses sent 3968-3983 bytes", "3968-3983", out);
-	SET_SIZESTATDESC(3984, "responses sent 3984-3999 bytes", "3984-3999", out);
-	SET_SIZESTATDESC(4000, "responses sent 4000-4015 bytes", "4000-4015", out);
-	SET_SIZESTATDESC(4016, "responses sent 4016-4031 bytes", "4016-4031", out);
-	SET_SIZESTATDESC(4032, "responses sent 4032-4047 bytes", "4032-4047", out);
-	SET_SIZESTATDESC(4048, "responses sent 4048-4063 bytes", "4048-4063", out);
-	SET_SIZESTATDESC(4064, "responses sent 4064-4079 bytes", "4064-4079", out);
-	SET_SIZESTATDESC(4080, "responses sent 4080-4095 bytes", "4080-4095", out);
+	SET_SIZESTATDESC(992, "responses sent 992-1007 bytes", "992-1007",
+			 out);
+	SET_SIZESTATDESC(1008,
+			 "responses sent 1008-1023 bytes",
+			 "1008-1023",
+			 out);
+	SET_SIZESTATDESC(1024,
+			 "responses sent 1024-1039 bytes",
+			 "1024-1039",
+			 out);
+	SET_SIZESTATDESC(1040,
+			 "responses sent 1040-1055 bytes",
+			 "1040-1055",
+			 out);
+	SET_SIZESTATDESC(1056,
+			 "responses sent 1056-1071 bytes",
+			 "1056-1071",
+			 out);
+	SET_SIZESTATDESC(1072,
+			 "responses sent 1072-1087 bytes",
+			 "1072-1087",
+			 out);
+	SET_SIZESTATDESC(1088,
+			 "responses sent 1088-1103 bytes",
+			 "1088-1103",
+			 out);
+	SET_SIZESTATDESC(1104,
+			 "responses sent 1104-1119 bytes",
+			 "1104-1119",
+			 out);
+	SET_SIZESTATDESC(1120,
+			 "responses sent 1120-1135 bytes",
+			 "1120-1135",
+			 out);
+	SET_SIZESTATDESC(1136,
+			 "responses sent 1136-1151 bytes",
+			 "1136-1151",
+			 out);
+	SET_SIZESTATDESC(1152,
+			 "responses sent 1152-1167 bytes",
+			 "1152-1167",
+			 out);
+	SET_SIZESTATDESC(1168,
+			 "responses sent 1168-1183 bytes",
+			 "1168-1183",
+			 out);
+	SET_SIZESTATDESC(1184,
+			 "responses sent 1184-1199 bytes",
+			 "1184-1199",
+			 out);
+	SET_SIZESTATDESC(1200,
+			 "responses sent 1200-1215 bytes",
+			 "1200-1215",
+			 out);
+	SET_SIZESTATDESC(1216,
+			 "responses sent 1216-1231 bytes",
+			 "1216-1231",
+			 out);
+	SET_SIZESTATDESC(1232,
+			 "responses sent 1232-1247 bytes",
+			 "1232-1247",
+			 out);
+	SET_SIZESTATDESC(1248,
+			 "responses sent 1248-1263 bytes",
+			 "1248-1263",
+			 out);
+	SET_SIZESTATDESC(1264,
+			 "responses sent 1264-1279 bytes",
+			 "1264-1279",
+			 out);
+	SET_SIZESTATDESC(1280,
+			 "responses sent 1280-1295 bytes",
+			 "1280-1295",
+			 out);
+	SET_SIZESTATDESC(1296,
+			 "responses sent 1296-1311 bytes",
+			 "1296-1311",
+			 out);
+	SET_SIZESTATDESC(1312,
+			 "responses sent 1312-1327 bytes",
+			 "1312-1327",
+			 out);
+	SET_SIZESTATDESC(1328,
+			 "responses sent 1328-1343 bytes",
+			 "1328-1343",
+			 out);
+	SET_SIZESTATDESC(1344,
+			 "responses sent 1344-1359 bytes",
+			 "1344-1359",
+			 out);
+	SET_SIZESTATDESC(1360,
+			 "responses sent 1360-1375 bytes",
+			 "1360-1375",
+			 out);
+	SET_SIZESTATDESC(1376,
+			 "responses sent 1376-1391 bytes",
+			 "1376-1391",
+			 out);
+	SET_SIZESTATDESC(1392,
+			 "responses sent 1392-1407 bytes",
+			 "1392-1407",
+			 out);
+	SET_SIZESTATDESC(1408,
+			 "responses sent 1408-1423 bytes",
+			 "1408-1423",
+			 out);
+	SET_SIZESTATDESC(1424,
+			 "responses sent 1424-1439 bytes",
+			 "1424-1439",
+			 out);
+	SET_SIZESTATDESC(1440,
+			 "responses sent 1440-1455 bytes",
+			 "1440-1455",
+			 out);
+	SET_SIZESTATDESC(1456,
+			 "responses sent 1456-1471 bytes",
+			 "1456-1471",
+			 out);
+	SET_SIZESTATDESC(1472,
+			 "responses sent 1472-1487 bytes",
+			 "1472-1487",
+			 out);
+	SET_SIZESTATDESC(1488,
+			 "responses sent 1488-1503 bytes",
+			 "1488-1503",
+			 out);
+	SET_SIZESTATDESC(1504,
+			 "responses sent 1504-1519 bytes",
+			 "1504-1519",
+			 out);
+	SET_SIZESTATDESC(1520,
+			 "responses sent 1520-1535 bytes",
+			 "1520-1535",
+			 out);
+	SET_SIZESTATDESC(1536,
+			 "responses sent 1536-1551 bytes",
+			 "1536-1551",
+			 out);
+	SET_SIZESTATDESC(1552,
+			 "responses sent 1552-1567 bytes",
+			 "1552-1567",
+			 out);
+	SET_SIZESTATDESC(1568,
+			 "responses sent 1568-1583 bytes",
+			 "1568-1583",
+			 out);
+	SET_SIZESTATDESC(1584,
+			 "responses sent 1584-1599 bytes",
+			 "1584-1599",
+			 out);
+	SET_SIZESTATDESC(1600,
+			 "responses sent 1600-1615 bytes",
+			 "1600-1615",
+			 out);
+	SET_SIZESTATDESC(1616,
+			 "responses sent 1616-1631 bytes",
+			 "1616-1631",
+			 out);
+	SET_SIZESTATDESC(1632,
+			 "responses sent 1632-1647 bytes",
+			 "1632-1647",
+			 out);
+	SET_SIZESTATDESC(1648,
+			 "responses sent 1648-1663 bytes",
+			 "1648-1663",
+			 out);
+	SET_SIZESTATDESC(1664,
+			 "responses sent 1664-1679 bytes",
+			 "1664-1679",
+			 out);
+	SET_SIZESTATDESC(1680,
+			 "responses sent 1680-1695 bytes",
+			 "1680-1695",
+			 out);
+	SET_SIZESTATDESC(1696,
+			 "responses sent 1696-1711 bytes",
+			 "1696-1711",
+			 out);
+	SET_SIZESTATDESC(1712,
+			 "responses sent 1712-1727 bytes",
+			 "1712-1727",
+			 out);
+	SET_SIZESTATDESC(1728,
+			 "responses sent 1728-1743 bytes",
+			 "1728-1743",
+			 out);
+	SET_SIZESTATDESC(1744,
+			 "responses sent 1744-1759 bytes",
+			 "1744-1759",
+			 out);
+	SET_SIZESTATDESC(1760,
+			 "responses sent 1760-1775 bytes",
+			 "1760-1775",
+			 out);
+	SET_SIZESTATDESC(1776,
+			 "responses sent 1776-1791 bytes",
+			 "1776-1791",
+			 out);
+	SET_SIZESTATDESC(1792,
+			 "responses sent 1792-1807 bytes",
+			 "1792-1807",
+			 out);
+	SET_SIZESTATDESC(1808,
+			 "responses sent 1808-1823 bytes",
+			 "1808-1823",
+			 out);
+	SET_SIZESTATDESC(1824,
+			 "responses sent 1824-1839 bytes",
+			 "1824-1839",
+			 out);
+	SET_SIZESTATDESC(1840,
+			 "responses sent 1840-1855 bytes",
+			 "1840-1855",
+			 out);
+	SET_SIZESTATDESC(1856,
+			 "responses sent 1856-1871 bytes",
+			 "1856-1871",
+			 out);
+	SET_SIZESTATDESC(1872,
+			 "responses sent 1872-1887 bytes",
+			 "1872-1887",
+			 out);
+	SET_SIZESTATDESC(1888,
+			 "responses sent 1888-1903 bytes",
+			 "1888-1903",
+			 out);
+	SET_SIZESTATDESC(1904,
+			 "responses sent 1904-1919 bytes",
+			 "1904-1919",
+			 out);
+	SET_SIZESTATDESC(1920,
+			 "responses sent 1920-1935 bytes",
+			 "1920-1935",
+			 out);
+	SET_SIZESTATDESC(1936,
+			 "responses sent 1936-1951 bytes",
+			 "1936-1951",
+			 out);
+	SET_SIZESTATDESC(1952,
+			 "responses sent 1952-1967 bytes",
+			 "1952-1967",
+			 out);
+	SET_SIZESTATDESC(1968,
+			 "responses sent 1968-1983 bytes",
+			 "1968-1983",
+			 out);
+	SET_SIZESTATDESC(1984,
+			 "responses sent 1984-1999 bytes",
+			 "1984-1999",
+			 out);
+	SET_SIZESTATDESC(2000,
+			 "responses sent 2000-2015 bytes",
+			 "2000-2015",
+			 out);
+	SET_SIZESTATDESC(2016,
+			 "responses sent 2016-2031 bytes",
+			 "2016-2031",
+			 out);
+	SET_SIZESTATDESC(2032,
+			 "responses sent 2032-2047 bytes",
+			 "2032-2047",
+			 out);
+	SET_SIZESTATDESC(2048,
+			 "responses sent 2048-2063 bytes",
+			 "2048-2063",
+			 out);
+	SET_SIZESTATDESC(2064,
+			 "responses sent 2064-2079 bytes",
+			 "2064-2079",
+			 out);
+	SET_SIZESTATDESC(2080,
+			 "responses sent 2080-2095 bytes",
+			 "2080-2095",
+			 out);
+	SET_SIZESTATDESC(2096,
+			 "responses sent 2096-2111 bytes",
+			 "2096-2111",
+			 out);
+	SET_SIZESTATDESC(2112,
+			 "responses sent 2112-2127 bytes",
+			 "2112-2127",
+			 out);
+	SET_SIZESTATDESC(2128,
+			 "responses sent 2128-2143 bytes",
+			 "2128-2143",
+			 out);
+	SET_SIZESTATDESC(2144,
+			 "responses sent 2144-2159 bytes",
+			 "2144-2159",
+			 out);
+	SET_SIZESTATDESC(2160,
+			 "responses sent 2160-2175 bytes",
+			 "2160-2175",
+			 out);
+	SET_SIZESTATDESC(2176,
+			 "responses sent 2176-2191 bytes",
+			 "2176-2191",
+			 out);
+	SET_SIZESTATDESC(2192,
+			 "responses sent 2192-2207 bytes",
+			 "2192-2207",
+			 out);
+	SET_SIZESTATDESC(2208,
+			 "responses sent 2208-2223 bytes",
+			 "2208-2223",
+			 out);
+	SET_SIZESTATDESC(2224,
+			 "responses sent 2224-2239 bytes",
+			 "2224-2239",
+			 out);
+	SET_SIZESTATDESC(2240,
+			 "responses sent 2240-2255 bytes",
+			 "2240-2255",
+			 out);
+	SET_SIZESTATDESC(2256,
+			 "responses sent 2256-2271 bytes",
+			 "2256-2271",
+			 out);
+	SET_SIZESTATDESC(2272,
+			 "responses sent 2272-2287 bytes",
+			 "2272-2287",
+			 out);
+	SET_SIZESTATDESC(2288,
+			 "responses sent 2288-2303 bytes",
+			 "2288-2303",
+			 out);
+	SET_SIZESTATDESC(2304,
+			 "responses sent 2304-2319 bytes",
+			 "2304-2319",
+			 out);
+	SET_SIZESTATDESC(2320,
+			 "responses sent 2320-2335 bytes",
+			 "2320-2335",
+			 out);
+	SET_SIZESTATDESC(2336,
+			 "responses sent 2336-2351 bytes",
+			 "2336-2351",
+			 out);
+	SET_SIZESTATDESC(2352,
+			 "responses sent 2352-2367 bytes",
+			 "2352-2367",
+			 out);
+	SET_SIZESTATDESC(2368,
+			 "responses sent 2368-2383 bytes",
+			 "2368-2383",
+			 out);
+	SET_SIZESTATDESC(2384,
+			 "responses sent 2384-2399 bytes",
+			 "2384-2399",
+			 out);
+	SET_SIZESTATDESC(2400,
+			 "responses sent 2400-2415 bytes",
+			 "2400-2415",
+			 out);
+	SET_SIZESTATDESC(2416,
+			 "responses sent 2416-2431 bytes",
+			 "2416-2431",
+			 out);
+	SET_SIZESTATDESC(2432,
+			 "responses sent 2432-2447 bytes",
+			 "2432-2447",
+			 out);
+	SET_SIZESTATDESC(2448,
+			 "responses sent 2448-2463 bytes",
+			 "2448-2463",
+			 out);
+	SET_SIZESTATDESC(2464,
+			 "responses sent 2464-2479 bytes",
+			 "2464-2479",
+			 out);
+	SET_SIZESTATDESC(2480,
+			 "responses sent 2480-2495 bytes",
+			 "2480-2495",
+			 out);
+	SET_SIZESTATDESC(2496,
+			 "responses sent 2496-2511 bytes",
+			 "2496-2511",
+			 out);
+	SET_SIZESTATDESC(2512,
+			 "responses sent 2512-2527 bytes",
+			 "2512-2527",
+			 out);
+	SET_SIZESTATDESC(2528,
+			 "responses sent 2528-2543 bytes",
+			 "2528-2543",
+			 out);
+	SET_SIZESTATDESC(2544,
+			 "responses sent 2544-2559 bytes",
+			 "2544-2559",
+			 out);
+	SET_SIZESTATDESC(2560,
+			 "responses sent 2560-2575 bytes",
+			 "2560-2575",
+			 out);
+	SET_SIZESTATDESC(2576,
+			 "responses sent 2576-2591 bytes",
+			 "2576-2591",
+			 out);
+	SET_SIZESTATDESC(2592,
+			 "responses sent 2592-2607 bytes",
+			 "2592-2607",
+			 out);
+	SET_SIZESTATDESC(2608,
+			 "responses sent 2608-2623 bytes",
+			 "2608-2623",
+			 out);
+	SET_SIZESTATDESC(2624,
+			 "responses sent 2624-2639 bytes",
+			 "2624-2639",
+			 out);
+	SET_SIZESTATDESC(2640,
+			 "responses sent 2640-2655 bytes",
+			 "2640-2655",
+			 out);
+	SET_SIZESTATDESC(2656,
+			 "responses sent 2656-2671 bytes",
+			 "2656-2671",
+			 out);
+	SET_SIZESTATDESC(2672,
+			 "responses sent 2672-2687 bytes",
+			 "2672-2687",
+			 out);
+	SET_SIZESTATDESC(2688,
+			 "responses sent 2688-2703 bytes",
+			 "2688-2703",
+			 out);
+	SET_SIZESTATDESC(2704,
+			 "responses sent 2704-2719 bytes",
+			 "2704-2719",
+			 out);
+	SET_SIZESTATDESC(2720,
+			 "responses sent 2720-2735 bytes",
+			 "2720-2735",
+			 out);
+	SET_SIZESTATDESC(2736,
+			 "responses sent 2736-2751 bytes",
+			 "2736-2751",
+			 out);
+	SET_SIZESTATDESC(2752,
+			 "responses sent 2752-2767 bytes",
+			 "2752-2767",
+			 out);
+	SET_SIZESTATDESC(2768,
+			 "responses sent 2768-2783 bytes",
+			 "2768-2783",
+			 out);
+	SET_SIZESTATDESC(2784,
+			 "responses sent 2784-2799 bytes",
+			 "2784-2799",
+			 out);
+	SET_SIZESTATDESC(2800,
+			 "responses sent 2800-2815 bytes",
+			 "2800-2815",
+			 out);
+	SET_SIZESTATDESC(2816,
+			 "responses sent 2816-2831 bytes",
+			 "2816-2831",
+			 out);
+	SET_SIZESTATDESC(2832,
+			 "responses sent 2832-2847 bytes",
+			 "2832-2847",
+			 out);
+	SET_SIZESTATDESC(2848,
+			 "responses sent 2848-2863 bytes",
+			 "2848-2863",
+			 out);
+	SET_SIZESTATDESC(2864,
+			 "responses sent 2864-2879 bytes",
+			 "2864-2879",
+			 out);
+	SET_SIZESTATDESC(2880,
+			 "responses sent 2880-2895 bytes",
+			 "2880-2895",
+			 out);
+	SET_SIZESTATDESC(2896,
+			 "responses sent 2896-2911 bytes",
+			 "2896-2911",
+			 out);
+	SET_SIZESTATDESC(2912,
+			 "responses sent 2912-2927 bytes",
+			 "2912-2927",
+			 out);
+	SET_SIZESTATDESC(2928,
+			 "responses sent 2928-2943 bytes",
+			 "2928-2943",
+			 out);
+	SET_SIZESTATDESC(2944,
+			 "responses sent 2944-2959 bytes",
+			 "2944-2959",
+			 out);
+	SET_SIZESTATDESC(2960,
+			 "responses sent 2960-2975 bytes",
+			 "2960-2975",
+			 out);
+	SET_SIZESTATDESC(2976,
+			 "responses sent 2976-2991 bytes",
+			 "2976-2991",
+			 out);
+	SET_SIZESTATDESC(2992,
+			 "responses sent 2992-3007 bytes",
+			 "2992-3007",
+			 out);
+	SET_SIZESTATDESC(3008,
+			 "responses sent 3008-3023 bytes",
+			 "3008-3023",
+			 out);
+	SET_SIZESTATDESC(3024,
+			 "responses sent 3024-3039 bytes",
+			 "3024-3039",
+			 out);
+	SET_SIZESTATDESC(3040,
+			 "responses sent 3040-3055 bytes",
+			 "3040-3055",
+			 out);
+	SET_SIZESTATDESC(3056,
+			 "responses sent 3056-3071 bytes",
+			 "3056-3071",
+			 out);
+	SET_SIZESTATDESC(3072,
+			 "responses sent 3072-3087 bytes",
+			 "3072-3087",
+			 out);
+	SET_SIZESTATDESC(3088,
+			 "responses sent 3088-3103 bytes",
+			 "3088-3103",
+			 out);
+	SET_SIZESTATDESC(3104,
+			 "responses sent 3104-3119 bytes",
+			 "3104-3119",
+			 out);
+	SET_SIZESTATDESC(3120,
+			 "responses sent 3120-3135 bytes",
+			 "3120-3135",
+			 out);
+	SET_SIZESTATDESC(3136,
+			 "responses sent 3136-3151 bytes",
+			 "3136-3151",
+			 out);
+	SET_SIZESTATDESC(3152,
+			 "responses sent 3152-3167 bytes",
+			 "3152-3167",
+			 out);
+	SET_SIZESTATDESC(3168,
+			 "responses sent 3168-3183 bytes",
+			 "3168-3183",
+			 out);
+	SET_SIZESTATDESC(3184,
+			 "responses sent 3184-3199 bytes",
+			 "3184-3199",
+			 out);
+	SET_SIZESTATDESC(3200,
+			 "responses sent 3200-3215 bytes",
+			 "3200-3215",
+			 out);
+	SET_SIZESTATDESC(3216,
+			 "responses sent 3216-3231 bytes",
+			 "3216-3231",
+			 out);
+	SET_SIZESTATDESC(3232,
+			 "responses sent 3232-3247 bytes",
+			 "3232-3247",
+			 out);
+	SET_SIZESTATDESC(3248,
+			 "responses sent 3248-3263 bytes",
+			 "3248-3263",
+			 out);
+	SET_SIZESTATDESC(3264,
+			 "responses sent 3264-3279 bytes",
+			 "3264-3279",
+			 out);
+	SET_SIZESTATDESC(3280,
+			 "responses sent 3280-3295 bytes",
+			 "3280-3295",
+			 out);
+	SET_SIZESTATDESC(3296,
+			 "responses sent 3296-3311 bytes",
+			 "3296-3311",
+			 out);
+	SET_SIZESTATDESC(3312,
+			 "responses sent 3312-3327 bytes",
+			 "3312-3327",
+			 out);
+	SET_SIZESTATDESC(3328,
+			 "responses sent 3328-3343 bytes",
+			 "3328-3343",
+			 out);
+	SET_SIZESTATDESC(3344,
+			 "responses sent 3344-3359 bytes",
+			 "3344-3359",
+			 out);
+	SET_SIZESTATDESC(3360,
+			 "responses sent 3360-3375 bytes",
+			 "3360-3375",
+			 out);
+	SET_SIZESTATDESC(3376,
+			 "responses sent 3376-3391 bytes",
+			 "3376-3391",
+			 out);
+	SET_SIZESTATDESC(3392,
+			 "responses sent 3392-3407 bytes",
+			 "3392-3407",
+			 out);
+	SET_SIZESTATDESC(3408,
+			 "responses sent 3408-3423 bytes",
+			 "3408-3423",
+			 out);
+	SET_SIZESTATDESC(3424,
+			 "responses sent 3424-3439 bytes",
+			 "3424-3439",
+			 out);
+	SET_SIZESTATDESC(3440,
+			 "responses sent 3440-3455 bytes",
+			 "3440-3455",
+			 out);
+	SET_SIZESTATDESC(3456,
+			 "responses sent 3456-3471 bytes",
+			 "3456-3471",
+			 out);
+	SET_SIZESTATDESC(3472,
+			 "responses sent 3472-3487 bytes",
+			 "3472-3487",
+			 out);
+	SET_SIZESTATDESC(3488,
+			 "responses sent 3488-3503 bytes",
+			 "3488-3503",
+			 out);
+	SET_SIZESTATDESC(3504,
+			 "responses sent 3504-3519 bytes",
+			 "3504-3519",
+			 out);
+	SET_SIZESTATDESC(3520,
+			 "responses sent 3520-3535 bytes",
+			 "3520-3535",
+			 out);
+	SET_SIZESTATDESC(3536,
+			 "responses sent 3536-3551 bytes",
+			 "3536-3551",
+			 out);
+	SET_SIZESTATDESC(3552,
+			 "responses sent 3552-3567 bytes",
+			 "3552-3567",
+			 out);
+	SET_SIZESTATDESC(3568,
+			 "responses sent 3568-3583 bytes",
+			 "3568-3583",
+			 out);
+	SET_SIZESTATDESC(3584,
+			 "responses sent 3584-3599 bytes",
+			 "3584-3599",
+			 out);
+	SET_SIZESTATDESC(3600,
+			 "responses sent 3600-3615 bytes",
+			 "3600-3615",
+			 out);
+	SET_SIZESTATDESC(3616,
+			 "responses sent 3616-3631 bytes",
+			 "3616-3631",
+			 out);
+	SET_SIZESTATDESC(3632,
+			 "responses sent 3632-3647 bytes",
+			 "3632-3647",
+			 out);
+	SET_SIZESTATDESC(3648,
+			 "responses sent 3648-3663 bytes",
+			 "3648-3663",
+			 out);
+	SET_SIZESTATDESC(3664,
+			 "responses sent 3664-3679 bytes",
+			 "3664-3679",
+			 out);
+	SET_SIZESTATDESC(3680,
+			 "responses sent 3680-3695 bytes",
+			 "3680-3695",
+			 out);
+	SET_SIZESTATDESC(3696,
+			 "responses sent 3696-3711 bytes",
+			 "3696-3711",
+			 out);
+	SET_SIZESTATDESC(3712,
+			 "responses sent 3712-3727 bytes",
+			 "3712-3727",
+			 out);
+	SET_SIZESTATDESC(3728,
+			 "responses sent 3728-3743 bytes",
+			 "3728-3743",
+			 out);
+	SET_SIZESTATDESC(3744,
+			 "responses sent 3744-3759 bytes",
+			 "3744-3759",
+			 out);
+	SET_SIZESTATDESC(3760,
+			 "responses sent 3760-3775 bytes",
+			 "3760-3775",
+			 out);
+	SET_SIZESTATDESC(3776,
+			 "responses sent 3776-3791 bytes",
+			 "3776-3791",
+			 out);
+	SET_SIZESTATDESC(3792,
+			 "responses sent 3792-3807 bytes",
+			 "3792-3807",
+			 out);
+	SET_SIZESTATDESC(3808,
+			 "responses sent 3808-3823 bytes",
+			 "3808-3823",
+			 out);
+	SET_SIZESTATDESC(3824,
+			 "responses sent 3824-3839 bytes",
+			 "3824-3839",
+			 out);
+	SET_SIZESTATDESC(3840,
+			 "responses sent 3840-3855 bytes",
+			 "3840-3855",
+			 out);
+	SET_SIZESTATDESC(3856,
+			 "responses sent 3856-3871 bytes",
+			 "3856-3871",
+			 out);
+	SET_SIZESTATDESC(3872,
+			 "responses sent 3872-3887 bytes",
+			 "3872-3887",
+			 out);
+	SET_SIZESTATDESC(3888,
+			 "responses sent 3888-3903 bytes",
+			 "3888-3903",
+			 out);
+	SET_SIZESTATDESC(3904,
+			 "responses sent 3904-3919 bytes",
+			 "3904-3919",
+			 out);
+	SET_SIZESTATDESC(3920,
+			 "responses sent 3920-3935 bytes",
+			 "3920-3935",
+			 out);
+	SET_SIZESTATDESC(3936,
+			 "responses sent 3936-3951 bytes",
+			 "3936-3951",
+			 out);
+	SET_SIZESTATDESC(3952,
+			 "responses sent 3952-3967 bytes",
+			 "3952-3967",
+			 out);
+	SET_SIZESTATDESC(3968,
+			 "responses sent 3968-3983 bytes",
+			 "3968-3983",
+			 out);
+	SET_SIZESTATDESC(3984,
+			 "responses sent 3984-3999 bytes",
+			 "3984-3999",
+			 out);
+	SET_SIZESTATDESC(4000,
+			 "responses sent 4000-4015 bytes",
+			 "4000-4015",
+			 out);
+	SET_SIZESTATDESC(4016,
+			 "responses sent 4016-4031 bytes",
+			 "4016-4031",
+			 out);
+	SET_SIZESTATDESC(4032,
+			 "responses sent 4032-4047 bytes",
+			 "4032-4047",
+			 out);
+	SET_SIZESTATDESC(4048,
+			 "responses sent 4048-4063 bytes",
+			 "4048-4063",
+			 out);
+	SET_SIZESTATDESC(4064,
+			 "responses sent 4064-4079 bytes",
+			 "4064-4079",
+			 out);
+	SET_SIZESTATDESC(4080,
+			 "responses sent 4080-4095 bytes",
+			 "4080-4095",
+			 out);
 	SET_SIZESTATDESC(4096, "responses sent 4096+ bytes", "4096+", out);
 	INSIST(i == dns_sizecounter_out_max);
 
@@ -1043,7 +1654,7 @@ init_desc(void) {
 		INSIST(udpoutsizestats_xmldesc[i] != NULL);
 		INSIST(tcpoutsizestats_xmldesc[i] != NULL);
 	}
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 }
 
 /*%
@@ -1058,9 +1669,15 @@ generalstat_dump(isc_statscounter_t counter, uint64_t val, void *arg) {
 }
 
 static isc_result_t
-dump_counters(isc_stats_t *stats, isc_statsformat_t type, void *arg,
-	      const char *category, const char **desc, int ncounters,
-	      int *indices, uint64_t *values, int options)
+dump_counters(isc_stats_t *stats,
+	      isc_statsformat_t type,
+	      void *arg,
+	      const char *category,
+	      const char **desc,
+	      int ncounters,
+	      int *indices,
+	      uint64_t *values,
+	      int options)
 {
 	int i, idx;
 	uint64_t value;
@@ -1069,14 +1686,14 @@ dump_counters(isc_stats_t *stats, isc_statsformat_t type, void *arg,
 #ifdef HAVE_LIBXML2
 	xmlTextWriterPtr writer;
 	int xmlrc;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON
 	json_object *job, *cat, *counter;
-#endif
+#endif /* ifdef HAVE_JSON */
 
 #if !defined(EXTENDED_STATS)
 	UNUSED(category);
-#endif
+#endif /* if !defined(EXTENDED_STATS) */
 
 	dumparg.type = type;
 	dumparg.ncounters = ncounters;
@@ -1091,19 +1708,21 @@ dump_counters(isc_stats_t *stats, isc_statsformat_t type, void *arg,
 	if (ncounters > 0 && type == isc_statsformat_json) {
 		if (category != NULL) {
 			cat = json_object_new_object();
-			if (cat == NULL)
+			if (cat == NULL) {
 				return (ISC_R_NOMEMORY);
+			}
 			json_object_object_add(job, category, cat);
 		}
 	}
-#endif
+#endif /* ifdef HAVE_JSON */
 
 	for (i = 0; i < ncounters; i++) {
 		idx = indices[i];
 		value = values[idx];
 
-		if (value == 0 && (options & ISC_STATSDUMP_VERBOSE) == 0)
+		if (value == 0 && (options & ISC_STATSDUMP_VERBOSE) == 0) {
 			continue;
+		}
 
 		switch (dumparg.type) {
 		case isc_statsformat_file:
@@ -1136,13 +1755,13 @@ dump_counters(isc_stats_t *stats, isc_statsformat_t type, void *arg,
 							       ISC_XMLCHAR
 							       "counter"));
 				TRY0(xmlTextWriterWriteFormatString(writer,
-					"%" PRIu64, value));
+								    "%" PRIu64,
+								    value));
 
 				TRY0(xmlTextWriterEndElement(writer));
 				/* </counter> */
 				TRY0(xmlTextWriterEndElement(writer));
 				/* </NameOfCategory> */
-
 			} else {
 				TRY0(xmlTextWriterStartElement(writer,
 							       ISC_XMLCHAR
@@ -1153,20 +1772,22 @@ dump_counters(isc_stats_t *stats, isc_statsformat_t type, void *arg,
 								 ISC_XMLCHAR
 								 desc[idx]));
 				TRY0(xmlTextWriterWriteFormatString(writer,
-					"%" PRIu64, value));
+								    "%" PRIu64,
+								    value));
 				TRY0(xmlTextWriterEndElement(writer));
 				/* counter */
 			}
 
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 			break;
 		case isc_statsformat_json:
 #ifdef HAVE_JSON
 			counter = json_object_new_int64(value);
-			if (counter == NULL)
+			if (counter == NULL) {
 				return (ISC_R_NOMEMORY);
+			}
 			json_object_object_add(cat, desc[idx], counter);
-#endif
+#endif /* ifdef HAVE_JSON */
 			break;
 		}
 	}
@@ -1177,7 +1798,7 @@ dump_counters(isc_stats_t *stats, isc_statsformat_t type, void *arg,
 		      NAMED_LOGMODULE_SERVER, ISC_LOG_ERROR,
 		      "failed at dump_counters()");
 	return (ISC_R_FAILURE);
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 }
 
 static void
@@ -1189,18 +1810,19 @@ rdtypestat_dump(dns_rdatastatstype_t type, uint64_t val, void *arg) {
 #ifdef HAVE_LIBXML2
 	xmlTextWriterPtr writer;
 	int xmlrc;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON
 	json_object *zoneobj, *obj;
-#endif
+#endif /* ifdef HAVE_JSON */
 
 	if ((DNS_RDATASTATSTYPE_ATTR(type) & DNS_RDATASTATSTYPE_ATTR_OTHERTYPE)
 	    == 0) {
 		dns_rdatatype_format(DNS_RDATASTATSTYPE_BASE(type), typebuf,
 				     sizeof(typebuf));
 		typestr = typebuf;
-	} else
+	} else {
 		typestr = "Others";
+	}
 
 	switch (dumparg->type) {
 	case isc_statsformat_file:
@@ -1217,20 +1839,21 @@ rdtypestat_dump(dns_rdatastatstype_t type, uint64_t val, void *arg) {
 						 ISC_XMLCHAR typestr));
 
 		TRY0(xmlTextWriterWriteFormatString(writer,
-					       "%" PRIu64,
-					       val));
+						    "%" PRIu64,
+						    val));
 
 		TRY0(xmlTextWriterEndElement(writer)); /* type */
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 		break;
 	case isc_statsformat_json:
 #ifdef HAVE_JSON
 		zoneobj = (json_object *) dumparg->arg;
 		obj = json_object_new_int64(val);
-		if (obj == NULL)
+		if (obj == NULL) {
 			return;
+		}
 		json_object_object_add(zoneobj, typestr, obj);
-#endif
+#endif /* ifdef HAVE_JSON */
 		break;
 	}
 	return;
@@ -1241,7 +1864,7 @@ rdtypestat_dump(dns_rdatastatstype_t type, uint64_t val, void *arg) {
 		      "failed at rdtypestat_dump()");
 	dumparg->result = ISC_R_FAILURE;
 	return;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 }
 
 static void
@@ -1255,17 +1878,18 @@ rdatasetstats_dump(dns_rdatastatstype_t type, uint64_t val, void *arg) {
 #ifdef HAVE_LIBXML2
 	xmlTextWriterPtr writer;
 	int xmlrc;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON
 	json_object *zoneobj, *obj;
 	char buf[1024];
-#endif
+#endif /* ifdef HAVE_JSON */
 
 	if ((DNS_RDATASTATSTYPE_ATTR(type) & DNS_RDATASTATSTYPE_ATTR_NXDOMAIN)
 	    != 0) {
 		typestr = "NXDOMAIN";
 	} else if ((DNS_RDATASTATSTYPE_ATTR(type) &
-		    DNS_RDATASTATSTYPE_ATTR_OTHERTYPE) != 0) {
+		    DNS_RDATASTATSTYPE_ATTR_OTHERTYPE) != 0)
+	{
 		typestr = "Others";
 	} else {
 		dns_rdatatype_format(DNS_RDATASTATSTYPE_BASE(type), typebuf,
@@ -1274,12 +1898,14 @@ rdatasetstats_dump(dns_rdatastatstype_t type, uint64_t val, void *arg) {
 	}
 
 	if ((DNS_RDATASTATSTYPE_ATTR(type) & DNS_RDATASTATSTYPE_ATTR_NXRRSET)
-	    != 0)
+	    != 0) {
 		nxrrset = true;
+	}
 
 	if ((DNS_RDATASTATSTYPE_ATTR(type) & DNS_RDATASTATSTYPE_ATTR_STALE)
-	    != 0)
+	    != 0) {
 		stale = true;
+	}
 
 	switch (dumparg->type) {
 	case isc_statsformat_file:
@@ -1294,18 +1920,19 @@ rdatasetstats_dump(dns_rdatastatstype_t type, uint64_t val, void *arg) {
 		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "rrset"));
 		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "name"));
 		TRY0(xmlTextWriterWriteFormatString(writer, "%s%s%s",
-					       stale ? "#" : "",
-					       nxrrset ? "!" : "", typestr));
+						    stale ? "#" : "",
+						    nxrrset ? "!" : "",
+						    typestr));
 		TRY0(xmlTextWriterEndElement(writer)); /* name */
 
 		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counter"));
 		TRY0(xmlTextWriterWriteFormatString(writer,
-					       "%" PRIu64,
-					       val));
+						    "%" PRIu64,
+						    val));
 		TRY0(xmlTextWriterEndElement(writer)); /* counter */
 
 		TRY0(xmlTextWriterEndElement(writer)); /* rrset */
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 		break;
 	case isc_statsformat_json:
 #ifdef HAVE_JSON
@@ -1313,10 +1940,11 @@ rdatasetstats_dump(dns_rdatastatstype_t type, uint64_t val, void *arg) {
 		snprintf(buf, sizeof(buf), "%s%s%s",
 			 stale ? "#" : "", nxrrset ? "!" : "", typestr);
 		obj = json_object_new_int64(val);
-		if (obj == NULL)
+		if (obj == NULL) {
 			return;
+		}
 		json_object_object_add(zoneobj, buf, obj);
-#endif
+#endif /* ifdef HAVE_JSON */
 		break;
 	}
 	return;
@@ -1326,8 +1954,7 @@ rdatasetstats_dump(dns_rdatastatstype_t type, uint64_t val, void *arg) {
 		      NAMED_LOGMODULE_SERVER, ISC_LOG_ERROR,
 		      "failed at rdatasetstats_dump()");
 	dumparg->result = ISC_R_FAILURE;
-#endif
-
+#endif /* ifdef HAVE_LIBXML2 */
 }
 
 static void
@@ -1339,10 +1966,10 @@ opcodestat_dump(dns_opcode_t code, uint64_t val, void *arg) {
 #ifdef HAVE_LIBXML2
 	xmlTextWriterPtr writer;
 	int xmlrc;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON
 	json_object *zoneobj, *obj;
-#endif
+#endif /* ifdef HAVE_JSON */
 
 	isc_buffer_init(&b, codebuf, sizeof(codebuf) - 1);
 	dns_opcode_totext(code, &b);
@@ -1360,19 +1987,20 @@ opcodestat_dump(dns_opcode_t code, uint64_t val, void *arg) {
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "name",
 						 ISC_XMLCHAR codebuf ));
 		TRY0(xmlTextWriterWriteFormatString(writer,
-						"%" PRIu64,
-						val));
+						    "%" PRIu64,
+						    val));
 		TRY0(xmlTextWriterEndElement(writer)); /* counter */
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 		break;
 	case isc_statsformat_json:
 #ifdef HAVE_JSON
 		zoneobj = (json_object *) dumparg->arg;
 		obj = json_object_new_int64(val);
-		if (obj == NULL)
+		if (obj == NULL) {
 			return;
+		}
 		json_object_object_add(zoneobj, codebuf, obj);
-#endif
+#endif /* ifdef HAVE_JSON */
 		break;
 	}
 	return;
@@ -1384,7 +2012,7 @@ opcodestat_dump(dns_opcode_t code, uint64_t val, void *arg) {
 		      "failed at opcodestat_dump()");
 	dumparg->result = ISC_R_FAILURE;
 	return;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 }
 
 static void
@@ -1396,10 +2024,10 @@ rcodestat_dump(dns_rcode_t code, uint64_t val, void *arg) {
 #ifdef HAVE_LIBXML2
 	xmlTextWriterPtr writer;
 	int xmlrc;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON
 	json_object *zoneobj, *obj;
-#endif
+#endif /* ifdef HAVE_JSON */
 
 	isc_buffer_init(&b, codebuf, sizeof(codebuf) - 1);
 	dns_rcode_totext(code, &b);
@@ -1417,19 +2045,20 @@ rcodestat_dump(dns_rcode_t code, uint64_t val, void *arg) {
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "name",
 						 ISC_XMLCHAR codebuf ));
 		TRY0(xmlTextWriterWriteFormatString(writer,
-						"%" PRIu64,
-						val));
+						    "%" PRIu64,
+						    val));
 		TRY0(xmlTextWriterEndElement(writer)); /* counter */
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 		break;
 	case isc_statsformat_json:
 #ifdef HAVE_JSON
 		zoneobj = (json_object *) dumparg->arg;
 		obj = json_object_new_int64(val);
-		if (obj == NULL)
+		if (obj == NULL) {
 			return;
+		}
 		json_object_object_add(zoneobj, codebuf, obj);
-#endif
+#endif /* ifdef HAVE_JSON */
 		break;
 	}
 	return;
@@ -1441,26 +2070,26 @@ rcodestat_dump(dns_rcode_t code, uint64_t val, void *arg) {
 		      "failed at rcodestat_dump()");
 	dumparg->result = ISC_R_FAILURE;
 	return;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 }
 
 #ifdef HAVE_LIBXML2
 /*
  * Which statistics to include when rendering to XML
  */
-#define STATS_XML_STATUS	0x00	/* display only common statistics */
-#define STATS_XML_SERVER	0x01
-#define STATS_XML_ZONES		0x02
-#define STATS_XML_TASKS		0x04
-#define STATS_XML_NET		0x08
-#define STATS_XML_MEM		0x10
-#define STATS_XML_TRAFFIC	0x20
-#define STATS_XML_ALL		0xff
+#define STATS_XML_STATUS        0x00    /* display only common statistics */
+#define STATS_XML_SERVER        0x01
+#define STATS_XML_ZONES         0x02
+#define STATS_XML_TASKS         0x04
+#define STATS_XML_NET           0x08
+#define STATS_XML_MEM           0x10
+#define STATS_XML_TRAFFIC       0x20
+#define STATS_XML_ALL           0xff
 
 static isc_result_t
 zone_xmlrender(dns_zone_t *zone, void *arg) {
 	isc_result_t result;
-	char buf[1024 + 32];	/* sufficiently large for zone name and class */
+	char buf[1024 + 32];    /* sufficiently large for zone name and class */
 	dns_rdataclass_t rdclass;
 	uint32_t serial;
 	xmlTextWriterPtr writer = arg;
@@ -1470,8 +2099,9 @@ zone_xmlrender(dns_zone_t *zone, void *arg) {
 	const char *ztype;
 
 	statlevel = dns_zone_getstatlevel(zone);
-	if (statlevel == dns_zonestat_none)
+	if (statlevel == dns_zonestat_none) {
 		return (ISC_R_SUCCESS);
+	}
 
 	dumparg.type = isc_statsformat_xml;
 	dumparg.arg = writer;
@@ -1489,17 +2119,19 @@ zone_xmlrender(dns_zone_t *zone, void *arg) {
 
 	TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "type"));
 	ztype = user_zonetype(zone);
-	if (ztype != NULL)
+	if (ztype != NULL) {
 		TRY0(xmlTextWriterWriteString(writer, ISC_XMLCHAR ztype));
-	else
+	} else {
 		TRY0(xmlTextWriterWriteString(writer, ISC_XMLCHAR "unknown"));
+	}
 	TRY0(xmlTextWriterEndElement(writer)); /* type */
 
 	TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "serial"));
-	if (dns_zone_getserial(zone, &serial) == ISC_R_SUCCESS)
+	if (dns_zone_getserial(zone, &serial) == ISC_R_SUCCESS) {
 		TRY0(xmlTextWriterWriteFormatString(writer, "%u", serial));
-	else
+	} else {
 		TRY0(xmlTextWriterWriteString(writer, ISC_XMLCHAR "-"));
+	}
 	TRY0(xmlTextWriterEndElement(writer)); /* serial */
 
 	if (statlevel == dns_zonestat_full) {
@@ -1522,8 +2154,9 @@ zone_xmlrender(dns_zone_t *zone, void *arg) {
 					       ns_statscounter_max,
 					       nsstats_index, nsstat_values,
 					       ISC_STATSDUMP_VERBOSE);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				goto error;
+			}
 			/* counters type="rcode"*/
 			TRY0(xmlTextWriterEndElement(writer));
 		}
@@ -1534,7 +2167,8 @@ zone_xmlrender(dns_zone_t *zone, void *arg) {
 						       ISC_XMLCHAR "counters"));
 			TRY0(xmlTextWriterWriteAttribute(writer,
 							 ISC_XMLCHAR "type",
-							 ISC_XMLCHAR "gluecache"));
+							 ISC_XMLCHAR
+							 "gluecache"));
 
 			result = dump_counters(gluecachestats,
 					       isc_statsformat_xml,
@@ -1544,8 +2178,9 @@ zone_xmlrender(dns_zone_t *zone, void *arg) {
 					       gluecachestats_index,
 					       gluecachestats_values,
 					       ISC_STATSDUMP_VERBOSE);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				goto error;
+			}
 			/* counters type="rcode"*/
 			TRY0(xmlTextWriterEndElement(writer));
 		}
@@ -1561,8 +2196,9 @@ zone_xmlrender(dns_zone_t *zone, void *arg) {
 			dumparg.result = ISC_R_SUCCESS;
 			dns_rdatatypestats_dump(rcvquerystats, rdtypestat_dump,
 						&dumparg, 0);
-			if(dumparg.result != ISC_R_SUCCESS)
+			if (dumparg.result != ISC_R_SUCCESS) {
 				goto error;
+			}
 
 			/* counters type="qtype"*/
 			TRY0(xmlTextWriterEndElement(writer));
@@ -1580,8 +2216,7 @@ zone_xmlrender(dns_zone_t *zone, void *arg) {
 }
 
 static isc_result_t
-generatexml(named_server_t *server, uint32_t flags,
-	    int *buflen, xmlChar **buf)
+generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 {
 	char boottime[sizeof "yyyy-mm-ddThh:mm:ss.sssZ"];
 	char configtime[sizeof "yyyy-mm-ddThh:mm:ss.sssZ"];
@@ -1604,7 +2239,7 @@ generatexml(named_server_t *server, uint32_t flags,
 	uint64_t tcpoutsizestat_values[dns_sizecounter_out_max];
 #ifdef HAVE_DNSTAP
 	uint64_t dnstapstat_values[dns_dnstapcounter_max];
-#endif
+#endif /* ifdef HAVE_DNSTAP */
 	isc_result_t result;
 
 	isc_time_now(&now);
@@ -1614,11 +2249,13 @@ generatexml(named_server_t *server, uint32_t flags,
 	isc_time_formatISO8601ms(&now, nowstr, sizeof nowstr);
 
 	writer = xmlNewTextWriterDoc(&doc, 0);
-	if (writer == NULL)
+	if (writer == NULL) {
 		goto error;
+	}
 	TRY0(xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL));
 	TRY0(xmlTextWriterWritePI(writer, ISC_XMLCHAR "xml-stylesheet",
-			ISC_XMLCHAR "type=\"text/xsl\" href=\"/bind9.xsl\""));
+				  ISC_XMLCHAR
+				  "type=\"text/xsl\" href=\"/bind9.xsl\""));
 	TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "statistics"));
 	TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "version",
 					 ISC_XMLCHAR "3.11"));
@@ -1645,42 +2282,49 @@ generatexml(named_server_t *server, uint32_t flags,
 	if ((flags & STATS_XML_SERVER) != 0) {
 		dumparg.result = ISC_R_SUCCESS;
 
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "opcode"));
 
 		dns_opcodestats_dump(server->sctx->opcodestats,
 				     opcodestat_dump, &dumparg,
 				     ISC_STATSDUMP_VERBOSE);
-		if (dumparg.result != ISC_R_SUCCESS)
+		if (dumparg.result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer));
 
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "rcode"));
 
 		dns_rcodestats_dump(server->sctx->rcodestats,
 				    rcodestat_dump, &dumparg,
 				    ISC_STATSDUMP_VERBOSE);
-		if (dumparg.result != ISC_R_SUCCESS)
+		if (dumparg.result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer));
 
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "qtype"));
 
 		dumparg.result = ISC_R_SUCCESS;
 		dns_rdatatypestats_dump(server->sctx->rcvquerystats,
 					rdtypestat_dump, &dumparg, 0);
-		if (dumparg.result != ISC_R_SUCCESS)
+		if (dumparg.result != ISC_R_SUCCESS) {
 			goto error;
+		}
 		TRY0(xmlTextWriterEndElement(writer)); /* counters */
 
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "nsstat"));
 
@@ -1690,12 +2334,14 @@ generatexml(named_server_t *server, uint32_t flags,
 				       ns_statscounter_max,
 				       nsstats_index, nsstat_values,
 				       ISC_STATSDUMP_VERBOSE);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* /nsstat */
 
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "zonestat"));
 
@@ -1704,8 +2350,9 @@ generatexml(named_server_t *server, uint32_t flags,
 				       dns_zonestatscounter_max,
 				       zonestats_index, zonestat_values,
 				       ISC_STATSDUMP_VERBOSE);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* /zonestat */
 
@@ -1713,7 +2360,8 @@ generatexml(named_server_t *server, uint32_t flags,
 		 * Most of the common resolver statistics entries are 0, so
 		 * we don't use the verbose dump here.
 		 */
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "resstat"));
 		result = dump_counters(server->resolverstats,
@@ -1721,8 +2369,9 @@ generatexml(named_server_t *server, uint32_t flags,
 				       NULL, resstats_xmldesc,
 				       dns_resstatscounter_max,
 				       resstats_index, resstat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 		TRY0(xmlTextWriterEndElement(writer)); /* resstat */
 
 #ifdef HAVE_DNSTAP
@@ -1741,15 +2390,17 @@ generatexml(named_server_t *server, uint32_t flags,
 					       dnstapstats_index,
 					       dnstapstat_values, 0);
 			isc_stats_detach(&dnstapstats);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				goto error;
+			}
 			TRY0(xmlTextWriterEndElement(writer)); /* dnstap */
 		}
-#endif
+#endif /* ifdef HAVE_DNSTAP */
 	}
 
 	if ((flags & STATS_XML_NET) != 0) {
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "sockstat"));
 
@@ -1758,8 +2409,9 @@ generatexml(named_server_t *server, uint32_t flags,
 				       isc_sockstatscounter_max,
 				       sockstats_index, sockstat_values,
 				       ISC_STATSDUMP_VERBOSE);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* /sockstat */
 	}
@@ -1769,7 +2421,8 @@ generatexml(named_server_t *server, uint32_t flags,
 		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "traffic"));
 		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "ipv4"));
 		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "udp"));
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "request-size"));
 
@@ -1779,12 +2432,14 @@ generatexml(named_server_t *server, uint32_t flags,
 				       dns_sizecounter_in_max,
 				       udpinsizestats_index,
 				       udpinsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "response-size"));
 
@@ -1794,14 +2449,16 @@ generatexml(named_server_t *server, uint32_t flags,
 				       dns_sizecounter_out_max,
 				       udpoutsizestats_index,
 				       udpoutsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 		TRY0(xmlTextWriterEndElement(writer)); /* </udp> */
 
 		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "tcp"));
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "request-size"));
 
@@ -1811,12 +2468,14 @@ generatexml(named_server_t *server, uint32_t flags,
 				       dns_sizecounter_in_max,
 				       tcpinsizestats_index,
 				       tcpinsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "response-size"));
 
@@ -1826,8 +2485,9 @@ generatexml(named_server_t *server, uint32_t flags,
 				       dns_sizecounter_out_max,
 				       tcpoutsizestats_index,
 				       tcpoutsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 		TRY0(xmlTextWriterEndElement(writer)); /* </tcp> */
@@ -1835,7 +2495,8 @@ generatexml(named_server_t *server, uint32_t flags,
 
 		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "ipv6"));
 		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "udp"));
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "request-size"));
 
@@ -1845,12 +2506,14 @@ generatexml(named_server_t *server, uint32_t flags,
 				       dns_sizecounter_in_max,
 				       udpinsizestats_index,
 				       udpinsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "response-size"));
 
@@ -1860,14 +2523,16 @@ generatexml(named_server_t *server, uint32_t flags,
 				       dns_sizecounter_out_max,
 				       udpoutsizestats_index,
 				       udpoutsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 		TRY0(xmlTextWriterEndElement(writer)); /* </udp> */
 
 		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "tcp"));
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "request-size"));
 
@@ -1877,12 +2542,14 @@ generatexml(named_server_t *server, uint32_t flags,
 				       dns_sizecounter_in_max,
 				       tcpinsizestats_index,
 				       tcpinsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "response-size"));
 
@@ -1892,8 +2559,9 @@ generatexml(named_server_t *server, uint32_t flags,
 				       dns_sizecounter_out_max,
 				       tcpoutsizestats_index,
 				       tcpoutsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 		TRY0(xmlTextWriterEndElement(writer)); /* </tcp> */
@@ -1919,8 +2587,9 @@ generatexml(named_server_t *server, uint32_t flags,
 						       ISC_XMLCHAR "zones"));
 			result = dns_zt_apply(view->zonetable, true,
 					      NULL, zone_xmlrender, writer);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				goto error;
+			}
 			TRY0(xmlTextWriterEndElement(writer)); /* /zones */
 		}
 
@@ -1939,13 +2608,15 @@ generatexml(named_server_t *server, uint32_t flags,
 			dumparg.result = ISC_R_SUCCESS;
 			dns_rdatatypestats_dump(view->resquerystats,
 						rdtypestat_dump, &dumparg, 0);
-			if (dumparg.result != ISC_R_SUCCESS)
+			if (dumparg.result != ISC_R_SUCCESS) {
 				goto error;
+			}
 		}
 		TRY0(xmlTextWriterEndElement(writer));
 
 		/* <resstats> */
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "resstats"));
 		if (view->resstats != NULL) {
@@ -1955,8 +2626,9 @@ generatexml(named_server_t *server, uint32_t flags,
 					       dns_resstatscounter_max,
 					       resstats_index, resstat_values,
 					       ISC_STATSDUMP_VERBOSE);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				goto error;
+			}
 		}
 		TRY0(xmlTextWriterEndElement(writer)); /* </resstats> */
 
@@ -1965,19 +2637,25 @@ generatexml(named_server_t *server, uint32_t flags,
 			TRY0(xmlTextWriterStartElement(writer,
 						       ISC_XMLCHAR "cache"));
 			TRY0(xmlTextWriterWriteAttribute(writer,
-					 ISC_XMLCHAR "name",
-					 ISC_XMLCHAR
-					 dns_cache_getname(view->cache)));
+							 ISC_XMLCHAR "name",
+							 ISC_XMLCHAR
+							 dns_cache_getname(view
+									   ->
+									   cache)));
 			dumparg.result = ISC_R_SUCCESS;
-			dns_rdatasetstats_dump(cacherrstats, rdatasetstats_dump,
-					       &dumparg, 0);
-			if (dumparg.result != ISC_R_SUCCESS)
+			dns_rdatasetstats_dump(cacherrstats,
+					       rdatasetstats_dump,
+					       &dumparg,
+					       0);
+			if (dumparg.result != ISC_R_SUCCESS) {
 				goto error;
+			}
 			TRY0(xmlTextWriterEndElement(writer)); /* cache */
 		}
 
 		/* <adbstats> */
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "adbstat"));
 		if (view->adbstats != NULL) {
@@ -1987,13 +2665,15 @@ generatexml(named_server_t *server, uint32_t flags,
 					       dns_adbstats_max,
 					       adbstats_index, adbstat_values,
 					       ISC_STATSDUMP_VERBOSE);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				goto error;
+			}
 		}
 		TRY0(xmlTextWriterEndElement(writer)); /* </adbstats> */
 
 		/* <cachestats> */
-		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
+		TRY0(xmlTextWriterStartElement(writer,
+					       ISC_XMLCHAR "counters"));
 		TRY0(xmlTextWriterWriteAttribute(writer, ISC_XMLCHAR "type",
 						 ISC_XMLCHAR "cachestats"));
 		TRY0(dns_cache_renderxml(view->cache, writer));
@@ -2031,8 +2711,9 @@ generatexml(named_server_t *server, uint32_t flags,
 	xmlFreeTextWriter(writer);
 
 	xmlDocDumpFormatMemoryEnc(doc, buf, buflen, "UTF-8", 0);
-	if (*buf == NULL)
+	if (*buf == NULL) {
 		goto error;
+	}
 	xmlFreeDoc(doc);
 	return (ISC_R_SUCCESS);
 
@@ -2040,10 +2721,12 @@ generatexml(named_server_t *server, uint32_t flags,
 	isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
 		      NAMED_LOGMODULE_SERVER, ISC_LOG_ERROR,
 		      "failed generating XML response");
-	if (writer != NULL)
+	if (writer != NULL) {
 		xmlFreeTextWriter(writer);
-	if (doc != NULL)
+	}
+	if (doc != NULL) {
 		xmlFreeDoc(doc);
+	}
 	return (ISC_R_FAILURE);
 }
 
@@ -2055,11 +2738,18 @@ wrap_xmlfree(isc_buffer_t *buffer, void *arg) {
 }
 
 static isc_result_t
-render_xml(uint32_t flags, const char *url, isc_httpdurl_t *urlinfo,
-	   const char *querystring, const char *headers, void *arg,
-	   unsigned int *retcode, const char **retmsg,
-	   const char **mimetype, isc_buffer_t *b,
-	   isc_httpdfree_t **freecb, void **freecb_args)
+render_xml(uint32_t flags,
+	   const char *url,
+	   isc_httpdurl_t *urlinfo,
+	   const char *querystring,
+	   const char *headers,
+	   void *arg,
+	   unsigned int *retcode,
+	   const char **retmsg,
+	   const char **mimetype,
+	   isc_buffer_t *b,
+	   isc_httpdfree_t **freecb,
+	   void **freecb_args)
 {
 	unsigned char *msg = NULL;
 	int msglen;
@@ -2081,20 +2771,27 @@ render_xml(uint32_t flags, const char *url, isc_httpdurl_t *urlinfo,
 		isc_buffer_add(b, msglen);
 		*freecb = wrap_xmlfree;
 		*freecb_args = NULL;
-	} else
+	} else {
 		isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
 			      NAMED_LOGMODULE_SERVER, ISC_LOG_ERROR,
 			      "failed at rendering XML()");
+	}
 
 	return (result);
 }
 
 static isc_result_t
-render_xml_all(const char *url, isc_httpdurl_t *urlinfo,
-	       const char *querystring, const char *headers, void *arg,
-	       unsigned int *retcode, const char **retmsg,
-	       const char **mimetype, isc_buffer_t *b,
-	       isc_httpdfree_t **freecb, void **freecb_args)
+render_xml_all(const char *url,
+	       isc_httpdurl_t *urlinfo,
+	       const char *querystring,
+	       const char *headers,
+	       void *arg,
+	       unsigned int *retcode,
+	       const char **retmsg,
+	       const char **mimetype,
+	       isc_buffer_t *b,
+	       isc_httpdfree_t **freecb,
+	       void **freecb_args)
 {
 	return (render_xml(STATS_XML_ALL, url, urlinfo,
 			   querystring, headers, arg,
@@ -2103,11 +2800,17 @@ render_xml_all(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_xml_status(const char *url, isc_httpdurl_t *urlinfo,
-		  const char *querystring, const char *headers, void *arg,
-		  unsigned int *retcode, const char **retmsg,
-		  const char **mimetype, isc_buffer_t *b,
-		  isc_httpdfree_t **freecb, void **freecb_args)
+render_xml_status(const char *url,
+		  isc_httpdurl_t *urlinfo,
+		  const char *querystring,
+		  const char *headers,
+		  void *arg,
+		  unsigned int *retcode,
+		  const char **retmsg,
+		  const char **mimetype,
+		  isc_buffer_t *b,
+		  isc_httpdfree_t **freecb,
+		  void **freecb_args)
 {
 	return (render_xml(STATS_XML_STATUS, url, urlinfo,
 			   querystring, headers, arg,
@@ -2116,11 +2819,17 @@ render_xml_status(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_xml_server(const char *url, isc_httpdurl_t *urlinfo,
-		  const char *querystring, const char *headers, void *arg,
-		  unsigned int *retcode, const char **retmsg,
-		  const char **mimetype, isc_buffer_t *b,
-		  isc_httpdfree_t **freecb, void **freecb_args)
+render_xml_server(const char *url,
+		  isc_httpdurl_t *urlinfo,
+		  const char *querystring,
+		  const char *headers,
+		  void *arg,
+		  unsigned int *retcode,
+		  const char **retmsg,
+		  const char **mimetype,
+		  isc_buffer_t *b,
+		  isc_httpdfree_t **freecb,
+		  void **freecb_args)
 {
 	return (render_xml(STATS_XML_SERVER, url, urlinfo,
 			   querystring, headers, arg,
@@ -2129,11 +2838,17 @@ render_xml_server(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_xml_zones(const char *url, isc_httpdurl_t *urlinfo,
-		 const char *querystring, const char *headers, void *arg,
-		 unsigned int *retcode, const char **retmsg,
-		 const char **mimetype, isc_buffer_t *b,
-		 isc_httpdfree_t **freecb, void **freecb_args)
+render_xml_zones(const char *url,
+		 isc_httpdurl_t *urlinfo,
+		 const char *querystring,
+		 const char *headers,
+		 void *arg,
+		 unsigned int *retcode,
+		 const char **retmsg,
+		 const char **mimetype,
+		 isc_buffer_t *b,
+		 isc_httpdfree_t **freecb,
+		 void **freecb_args)
 {
 	return (render_xml(STATS_XML_ZONES, url, urlinfo,
 			   querystring, headers, arg,
@@ -2142,11 +2857,17 @@ render_xml_zones(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_xml_net(const char *url, isc_httpdurl_t *urlinfo,
-	       const char *querystring, const char *headers, void *arg,
-	       unsigned int *retcode, const char **retmsg,
-	       const char **mimetype, isc_buffer_t *b,
-	       isc_httpdfree_t **freecb, void **freecb_args)
+render_xml_net(const char *url,
+	       isc_httpdurl_t *urlinfo,
+	       const char *querystring,
+	       const char *headers,
+	       void *arg,
+	       unsigned int *retcode,
+	       const char **retmsg,
+	       const char **mimetype,
+	       isc_buffer_t *b,
+	       isc_httpdfree_t **freecb,
+	       void **freecb_args)
 {
 	return (render_xml(STATS_XML_NET, url, urlinfo,
 			   querystring, headers, arg,
@@ -2155,11 +2876,17 @@ render_xml_net(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_xml_tasks(const char *url, isc_httpdurl_t *urlinfo,
-		 const char *querystring, const char *headers, void *arg,
-		 unsigned int *retcode, const char **retmsg,
-		 const char **mimetype, isc_buffer_t *b,
-		 isc_httpdfree_t **freecb, void **freecb_args)
+render_xml_tasks(const char *url,
+		 isc_httpdurl_t *urlinfo,
+		 const char *querystring,
+		 const char *headers,
+		 void *arg,
+		 unsigned int *retcode,
+		 const char **retmsg,
+		 const char **mimetype,
+		 isc_buffer_t *b,
+		 isc_httpdfree_t **freecb,
+		 void **freecb_args)
 {
 	return (render_xml(STATS_XML_TASKS, url, urlinfo,
 			   querystring, headers, arg,
@@ -2168,11 +2895,17 @@ render_xml_tasks(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_xml_mem(const char *url, isc_httpdurl_t *urlinfo,
-	       const char *querystring, const char *headers, void *arg,
-	       unsigned int *retcode, const char **retmsg,
-	       const char **mimetype, isc_buffer_t *b,
-	       isc_httpdfree_t **freecb, void **freecb_args)
+render_xml_mem(const char *url,
+	       isc_httpdurl_t *urlinfo,
+	       const char *querystring,
+	       const char *headers,
+	       void *arg,
+	       unsigned int *retcode,
+	       const char **retmsg,
+	       const char **mimetype,
+	       isc_buffer_t *b,
+	       isc_httpdfree_t **freecb,
+	       void **freecb_args)
 {
 	return (render_xml(STATS_XML_MEM, url, urlinfo,
 			   querystring, headers, arg,
@@ -2181,11 +2914,17 @@ render_xml_mem(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_xml_traffic(const char *url, isc_httpdurl_t *urlinfo,
-		   const char *querystring, const char *headers, void *arg,
-		   unsigned int *retcode, const char **retmsg,
-		   const char **mimetype, isc_buffer_t *b,
-		   isc_httpdfree_t **freecb, void **freecb_args)
+render_xml_traffic(const char *url,
+		   isc_httpdurl_t *urlinfo,
+		   const char *querystring,
+		   const char *headers,
+		   void *arg,
+		   unsigned int *retcode,
+		   const char **retmsg,
+		   const char **mimetype,
+		   isc_buffer_t *b,
+		   isc_httpdfree_t **freecb,
+		   void **freecb_args)
 {
 	return (render_xml(STATS_XML_TRAFFIC, url, urlinfo,
 			   querystring, headers, arg,
@@ -2193,67 +2932,74 @@ render_xml_traffic(const char *url, isc_httpdurl_t *urlinfo,
 			   freecb, freecb_args));
 }
 
-#endif	/* HAVE_LIBXML2 */
+#endif  /* HAVE_LIBXML2 */
 
 #ifdef HAVE_JSON
 /*
  * Which statistics to include when rendering to JSON
  */
-#define STATS_JSON_STATUS	0x00	/* display only common statistics */
-#define STATS_JSON_SERVER	0x01
-#define STATS_JSON_ZONES	0x02
-#define STATS_JSON_TASKS	0x04
-#define STATS_JSON_NET		0x08
-#define STATS_JSON_MEM		0x10
-#define STATS_JSON_TRAFFIC	0x20
-#define STATS_JSON_ALL		0xff
+#define STATS_JSON_STATUS       0x00    /* display only common statistics */
+#define STATS_JSON_SERVER       0x01
+#define STATS_JSON_ZONES        0x02
+#define STATS_JSON_TASKS        0x04
+#define STATS_JSON_NET          0x08
+#define STATS_JSON_MEM          0x10
+#define STATS_JSON_TRAFFIC      0x20
+#define STATS_JSON_ALL          0xff
 
 #define CHECK(m) do { \
-	result = (m); \
-	if (result != ISC_R_SUCCESS) \
-		goto error; \
+		result = (m); \
+		if (result != ISC_R_SUCCESS) { \
+			goto error;} \
 } while (0)
 
 #define CHECKMEM(m) do { \
-	if (m == NULL) { \
-		result = ISC_R_NOMEMORY;\
-		goto error;\
-	} \
-} while(0)
+		if (m == NULL) { \
+			result = ISC_R_NOMEMORY; \
+			goto error; \
+		} \
+} while (0)
 
 static void
 wrap_jsonfree(isc_buffer_t *buffer, void *arg) {
 	json_object_put(isc_buffer_base(buffer));
-	if (arg != NULL)
+	if (arg != NULL) {
 		json_object_put((json_object *) arg);
+	}
 }
 
 static json_object *
-addzone(char *name, char *classname, const char *ztype,
-	uint32_t serial, bool add_serial)
+addzone(char *name,
+	char *classname,
+	const char *ztype,
+	uint32_t serial,
+	bool add_serial)
 {
 	json_object *node = json_object_new_object();
 
-	if (node == NULL)
+	if (node == NULL) {
 		return (NULL);
+	}
 
 	json_object_object_add(node, "name", json_object_new_string(name));
 	json_object_object_add(node, "class",
 			       json_object_new_string(classname));
-	if (add_serial)
+	if (add_serial) {
 		json_object_object_add(node, "serial",
 				       json_object_new_int64(serial));
-	if (ztype != NULL)
+	}
+	if (ztype != NULL) {
 		json_object_object_add(node, "type",
 				       json_object_new_string(ztype));
+	}
 	return (node);
 }
 
 static isc_result_t
 zone_jsonrender(dns_zone_t *zone, void *arg) {
 	isc_result_t result = ISC_R_SUCCESS;
-	char buf[1024 + 32];	/* sufficiently large for zone name and class */
-	char classbuf[64];	/* sufficiently large for class */
+	char buf[1024 + 32];    /* sufficiently large for zone name and class */
+	char classbuf[64];      /* sufficiently large for class */
 	char *zone_name_only = NULL;
 	char *class_only = NULL;
 	dns_rdataclass_t rdclass;
@@ -2263,8 +3009,9 @@ zone_jsonrender(dns_zone_t *zone, void *arg) {
 	dns_zonestat_level_t statlevel;
 
 	statlevel = dns_zone_getstatlevel(zone);
-	if (statlevel == dns_zonestat_none)
+	if (statlevel == dns_zonestat_none) {
 		return (ISC_R_SUCCESS);
+	}
 
 	dns_zone_nameonly(zone, buf, sizeof(buf));
 	zone_name_only = buf;
@@ -2273,15 +3020,17 @@ zone_jsonrender(dns_zone_t *zone, void *arg) {
 	dns_rdataclass_format(rdclass, classbuf, sizeof(classbuf));
 	class_only = classbuf;
 
-	if (dns_zone_getserial(zone, &serial) != ISC_R_SUCCESS)
+	if (dns_zone_getserial(zone, &serial) != ISC_R_SUCCESS) {
 		zoneobj = addzone(zone_name_only, class_only,
 				  user_zonetype(zone), 0, false);
-	else
+	} else {
 		zoneobj = addzone(zone_name_only, class_only,
 				  user_zonetype(zone), serial, true);
+	}
 
-	if (zoneobj == NULL)
+	if (zoneobj == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	if (statlevel == dns_zonestat_full) {
 		isc_stats_t *zonestats;
@@ -2308,11 +3057,12 @@ zone_jsonrender(dns_zone_t *zone, void *arg) {
 				goto error;
 			}
 
-			if (json_object_get_object(counters)->count != 0)
+			if (json_object_get_object(counters)->count != 0) {
 				json_object_object_add(zoneobj,
 						       "rcodes", counters);
-			else
+			} else {
 				json_object_put(counters);
+			}
 		}
 
 		gluecachestats = dns_zone_getgluecachestats(zone);
@@ -2335,11 +3085,12 @@ zone_jsonrender(dns_zone_t *zone, void *arg) {
 				goto error;
 			}
 
-			if (json_object_get_object(counters)->count != 0)
+			if (json_object_get_object(counters)->count != 0) {
 				json_object_object_add(zoneobj,
 						       "gluecache", counters);
-			else
+			} else {
 				json_object_put(counters);
+			}
 		}
 
 		rcvquerystats = dns_zone_getrcvquerystats(zone);
@@ -2358,11 +3109,12 @@ zone_jsonrender(dns_zone_t *zone, void *arg) {
 				goto error;
 			}
 
-			if (json_object_get_object(counters)->count != 0)
+			if (json_object_get_object(counters)->count != 0) {
 				json_object_object_add(zoneobj,
 						       "qtypes", counters);
-			else
+			} else {
 				json_object_put(counters);
+			}
 		}
 	}
 
@@ -2371,14 +3123,18 @@ zone_jsonrender(dns_zone_t *zone, void *arg) {
 	result = ISC_R_SUCCESS;
 
  error:
-	if (zoneobj != NULL)
+	if (zoneobj != NULL) {
 		json_object_put(zoneobj);
+	}
 	return (result);
 }
 
 static isc_result_t
-generatejson(named_server_t *server, size_t *msglen,
-	     const char **msg, json_object **rootp, uint32_t flags)
+generatejson(named_server_t *server,
+	     size_t *msglen,
+	     const char **msg,
+	     json_object **rootp,
+	     uint32_t flags)
 {
 	dns_view_t *view;
 	isc_result_t result = ISC_R_SUCCESS;
@@ -2399,7 +3155,7 @@ generatejson(named_server_t *server, size_t *msglen,
 	uint64_t tcpoutsizestat_values[dns_sizecounter_out_max];
 #ifdef HAVE_DNSTAP
 	uint64_t dnstapstat_values[dns_dnstapcounter_max];
-#endif
+#endif /* ifdef HAVE_DNSTAP */
 	stats_dumparg_t dumparg;
 	char boottime[sizeof "yyyy-mm-ddThh:mm:ss.sssZ"];
 	char configtime[sizeof "yyyy-mm-ddThh:mm:ss.sssZ"];
@@ -2411,8 +3167,9 @@ generatejson(named_server_t *server, size_t *msglen,
 	REQUIRE(rootp == NULL || *rootp == NULL);
 
 	bindstats = json_object_new_object();
-	if (bindstats == NULL)
+	if (bindstats == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	/*
 	 * These statistics are included no matter which URL we use.
@@ -2459,10 +3216,11 @@ generatejson(named_server_t *server, size_t *msglen,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "opcodes", counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 		/* OPCODE counters */
 		counters = json_object_new_object();
@@ -2477,10 +3235,11 @@ generatejson(named_server_t *server, size_t *msglen,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "rcodes", counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 		/* QTYPE counters */
 		counters = json_object_new_object();
@@ -2495,10 +3254,11 @@ generatejson(named_server_t *server, size_t *msglen,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "qtypes", counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 		/* server stat counters */
 		counters = json_object_new_object();
@@ -2516,10 +3276,11 @@ generatejson(named_server_t *server, size_t *msglen,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "nsstats", counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 		/* zone stat counters */
 		counters = json_object_new_object();
@@ -2537,11 +3298,12 @@ generatejson(named_server_t *server, size_t *msglen,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "zonestats",
 					       counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 		/* resolver stat counters */
 		counters = json_object_new_object();
@@ -2559,10 +3321,12 @@ generatejson(named_server_t *server, size_t *msglen,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
-			json_object_object_add(bindstats, "resstats", counters);
-		else
+		if (json_object_get_object(counters)->count != 0) {
+			json_object_object_add(bindstats, "resstats",
+					       counters);
+		} else {
 			json_object_put(counters);
+		}
 
 #ifdef HAVE_DNSTAP
 		/* dnstap stat counters */
@@ -2584,14 +3348,15 @@ generatejson(named_server_t *server, size_t *msglen,
 				goto error;
 			}
 
-			if (json_object_get_object(counters)->count != 0)
+			if (json_object_get_object(counters)->count != 0) {
 				json_object_object_add(bindstats,
 						       "dnstapstats",
 						       counters);
-			else
+			} else {
 				json_object_put(counters);
+			}
 		}
-#endif
+#endif /* ifdef HAVE_DNSTAP */
 	}
 
 	if ((flags & (STATS_JSON_ZONES | STATS_JSON_SERVER)) != 0) {
@@ -2620,10 +3385,11 @@ generatejson(named_server_t *server, size_t *msglen,
 				}
 			}
 
-			if (json_object_array_length(za) != 0)
+			if (json_object_array_length(za) != 0) {
 				json_object_object_add(v, "zones", za);
-			else
+			} else {
 				json_object_put(za);
+			}
 
 			if ((flags & STATS_JSON_SERVER) != 0) {
 				json_object *res;
@@ -2640,12 +3406,14 @@ generatejson(named_server_t *server, size_t *msglen,
 					CHECKMEM(counters);
 
 					result = dump_counters(istats,
-						       isc_statsformat_json,
-						       counters, NULL,
-						       resstats_xmldesc,
-						       dns_resstatscounter_max,
-						       resstats_index,
-						       resstat_values, 0);
+							       isc_statsformat_json,
+							       counters,
+							       NULL,
+							       resstats_xmldesc,
+							       dns_resstatscounter_max,
+							       resstats_index,
+							       resstat_values,
+							       0);
 					if (result != ISC_R_SUCCESS) {
 						json_object_put(counters);
 						result = dumparg.result;
@@ -2665,7 +3433,8 @@ generatejson(named_server_t *server, size_t *msglen,
 					dumparg.result = ISC_R_SUCCESS;
 					dns_rdatatypestats_dump(dstats,
 								rdtypestat_dump,
-								&dumparg, 0);
+								&dumparg,
+								0);
 					if (dumparg.result != ISC_R_SUCCESS) {
 						json_object_put(counters);
 						result = dumparg.result;
@@ -2684,8 +3453,9 @@ generatejson(named_server_t *server, size_t *msglen,
 					dumparg.arg = counters;
 					dumparg.result = ISC_R_SUCCESS;
 					dns_rdatasetstats_dump(dstats,
-						       rdatasetstats_dump,
-						       &dumparg, 0);
+							       rdatasetstats_dump,
+							       &dumparg,
+							       0);
 					if (dumparg.result != ISC_R_SUCCESS) {
 						json_object_put(counters);
 						result = dumparg.result;
@@ -2716,12 +3486,14 @@ generatejson(named_server_t *server, size_t *msglen,
 					CHECKMEM(counters);
 
 					result = dump_counters(istats,
-						       isc_statsformat_json,
-						       counters, NULL,
-						       adbstats_xmldesc,
-						       dns_adbstats_max,
-						       adbstats_index,
-						       adbstat_values, 0);
+							       isc_statsformat_json,
+							       counters,
+							       NULL,
+							       adbstats_xmldesc,
+							       dns_adbstats_max,
+							       adbstats_index,
+							       adbstat_values,
+							       0);
 					if (result != ISC_R_SUCCESS) {
 						json_object_put(counters);
 						result = dumparg.result;
@@ -2755,11 +3527,12 @@ generatejson(named_server_t *server, size_t *msglen,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "sockstats",
 					       counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 		sockets = json_object_new_object();
 		CHECKMEM(sockets);
@@ -2800,7 +3573,6 @@ generatejson(named_server_t *server, size_t *msglen,
 	}
 
 	if ((flags & STATS_JSON_TRAFFIC) != 0) {
-
 		traffic = json_object_new_object();
 		CHECKMEM(traffic);
 
@@ -2931,38 +3703,54 @@ generatejson(named_server_t *server, size_t *msglen,
 
 	result = ISC_R_SUCCESS;
 
-  error:
-	if (udpreq4 != NULL)
+ error:
+	if (udpreq4 != NULL) {
 		json_object_put(udpreq4);
-	if (udpresp4 != NULL)
+	}
+	if (udpresp4 != NULL) {
 		json_object_put(udpresp4);
-	if (tcpreq4 != NULL)
+	}
+	if (tcpreq4 != NULL) {
 		json_object_put(tcpreq4);
-	if (tcpresp4 != NULL)
+	}
+	if (tcpresp4 != NULL) {
 		json_object_put(tcpresp4);
-	if (udpreq6 != NULL)
+	}
+	if (udpreq6 != NULL) {
 		json_object_put(udpreq6);
-	if (udpresp6 != NULL)
+	}
+	if (udpresp6 != NULL) {
 		json_object_put(udpresp6);
-	if (tcpreq6 != NULL)
+	}
+	if (tcpreq6 != NULL) {
 		json_object_put(tcpreq6);
-	if (tcpresp6 != NULL)
+	}
+	if (tcpresp6 != NULL) {
 		json_object_put(tcpresp6);
-	if (traffic != NULL)
+	}
+	if (traffic != NULL) {
 		json_object_put(traffic);
-	if (bindstats != NULL)
+	}
+	if (bindstats != NULL) {
 		json_object_put(bindstats);
+	}
 
 	return (result);
 }
 
 static isc_result_t
 render_json(uint32_t flags,
-	    const char *url, isc_httpdurl_t *urlinfo,
-	    const char *querystring, const char *headers,
-	    void *arg, unsigned int *retcode, const char **retmsg,
-	    const char **mimetype, isc_buffer_t *b,
-	    isc_httpdfree_t **freecb, void **freecb_args)
+	    const char *url,
+	    isc_httpdurl_t *urlinfo,
+	    const char *querystring,
+	    const char *headers,
+	    void *arg,
+	    unsigned int *retcode,
+	    const char **retmsg,
+	    const char **mimetype,
+	    isc_buffer_t *b,
+	    isc_httpdfree_t **freecb,
+	    void **freecb_args)
 {
 	isc_result_t result;
 	json_object *bindstats = NULL;
@@ -2986,20 +3774,27 @@ render_json(uint32_t flags,
 		isc_buffer_add(b, msglen);
 		*freecb = wrap_jsonfree;
 		*freecb_args = bindstats;
-	} else
+	} else {
 		isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
 			      NAMED_LOGMODULE_SERVER, ISC_LOG_ERROR,
 			      "failed at rendering JSON()");
+	}
 
 	return (result);
 }
 
 static isc_result_t
-render_json_all(const char *url, isc_httpdurl_t *urlinfo,
-		const char *querystring, const char *headers, void *arg,
-		unsigned int *retcode, const char **retmsg,
-		const char **mimetype, isc_buffer_t *b,
-		isc_httpdfree_t **freecb, void **freecb_args)
+render_json_all(const char *url,
+		isc_httpdurl_t *urlinfo,
+		const char *querystring,
+		const char *headers,
+		void *arg,
+		unsigned int *retcode,
+		const char **retmsg,
+		const char **mimetype,
+		isc_buffer_t *b,
+		isc_httpdfree_t **freecb,
+		void **freecb_args)
 {
 	return (render_json(STATS_JSON_ALL, url, urlinfo,
 			    querystring, headers, arg,
@@ -3008,11 +3803,17 @@ render_json_all(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_json_status(const char *url, isc_httpdurl_t *urlinfo,
-		   const char *querystring, const char *headers, void *arg,
-		   unsigned int *retcode, const char **retmsg,
-		   const char **mimetype, isc_buffer_t *b,
-		   isc_httpdfree_t **freecb, void **freecb_args)
+render_json_status(const char *url,
+		   isc_httpdurl_t *urlinfo,
+		   const char *querystring,
+		   const char *headers,
+		   void *arg,
+		   unsigned int *retcode,
+		   const char **retmsg,
+		   const char **mimetype,
+		   isc_buffer_t *b,
+		   isc_httpdfree_t **freecb,
+		   void **freecb_args)
 {
 	return (render_json(STATS_JSON_STATUS, url, urlinfo,
 			    querystring, headers, arg,
@@ -3021,11 +3822,17 @@ render_json_status(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_json_server(const char *url, isc_httpdurl_t *urlinfo,
-		   const char *querystring, const char *headers, void *arg,
-		   unsigned int *retcode, const char **retmsg,
-		   const char **mimetype, isc_buffer_t *b,
-		   isc_httpdfree_t **freecb, void **freecb_args)
+render_json_server(const char *url,
+		   isc_httpdurl_t *urlinfo,
+		   const char *querystring,
+		   const char *headers,
+		   void *arg,
+		   unsigned int *retcode,
+		   const char **retmsg,
+		   const char **mimetype,
+		   isc_buffer_t *b,
+		   isc_httpdfree_t **freecb,
+		   void **freecb_args)
 {
 	return (render_json(STATS_JSON_SERVER, url, urlinfo,
 			    querystring, headers, arg,
@@ -3034,11 +3841,17 @@ render_json_server(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_json_zones(const char *url, isc_httpdurl_t *urlinfo,
-		  const char *querystring, const char *headers, void *arg,
-		  unsigned int *retcode, const char **retmsg,
-		  const char **mimetype, isc_buffer_t *b,
-		  isc_httpdfree_t **freecb, void **freecb_args)
+render_json_zones(const char *url,
+		  isc_httpdurl_t *urlinfo,
+		  const char *querystring,
+		  const char *headers,
+		  void *arg,
+		  unsigned int *retcode,
+		  const char **retmsg,
+		  const char **mimetype,
+		  isc_buffer_t *b,
+		  isc_httpdfree_t **freecb,
+		  void **freecb_args)
 {
 	return (render_json(STATS_JSON_ZONES, url, urlinfo,
 			    querystring, headers, arg,
@@ -3047,11 +3860,17 @@ render_json_zones(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_json_mem(const char *url, isc_httpdurl_t *urlinfo,
-		const char *querystring, const char *headers, void *arg,
-		unsigned int *retcode, const char **retmsg,
-		const char **mimetype, isc_buffer_t *b,
-		isc_httpdfree_t **freecb, void **freecb_args)
+render_json_mem(const char *url,
+		isc_httpdurl_t *urlinfo,
+		const char *querystring,
+		const char *headers,
+		void *arg,
+		unsigned int *retcode,
+		const char **retmsg,
+		const char **mimetype,
+		isc_buffer_t *b,
+		isc_httpdfree_t **freecb,
+		void **freecb_args)
 {
 	return (render_json(STATS_JSON_MEM, url, urlinfo,
 			    querystring, headers, arg,
@@ -3060,11 +3879,17 @@ render_json_mem(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_json_tasks(const char *url, isc_httpdurl_t *urlinfo,
-		  const char *querystring, const char *headers, void *arg,
-		  unsigned int *retcode, const char **retmsg,
-		  const char **mimetype, isc_buffer_t *b,
-		  isc_httpdfree_t **freecb, void **freecb_args)
+render_json_tasks(const char *url,
+		  isc_httpdurl_t *urlinfo,
+		  const char *querystring,
+		  const char *headers,
+		  void *arg,
+		  unsigned int *retcode,
+		  const char **retmsg,
+		  const char **mimetype,
+		  isc_buffer_t *b,
+		  isc_httpdfree_t **freecb,
+		  void **freecb_args)
 {
 	return (render_json(STATS_JSON_TASKS, url, urlinfo,
 			    querystring, headers, arg,
@@ -3073,11 +3898,17 @@ render_json_tasks(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_json_net(const char *url, isc_httpdurl_t *urlinfo,
-		const char *querystring, const char *headers, void *arg,
-		unsigned int *retcode, const char **retmsg,
-		const char **mimetype, isc_buffer_t *b,
-		isc_httpdfree_t **freecb, void **freecb_args)
+render_json_net(const char *url,
+		isc_httpdurl_t *urlinfo,
+		const char *querystring,
+		const char *headers,
+		void *arg,
+		unsigned int *retcode,
+		const char **retmsg,
+		const char **mimetype,
+		isc_buffer_t *b,
+		isc_httpdfree_t **freecb,
+		void **freecb_args)
 {
 	return (render_json(STATS_JSON_NET, url, urlinfo,
 			    querystring, headers, arg,
@@ -3086,11 +3917,17 @@ render_json_net(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_json_traffic(const char *url, isc_httpdurl_t *urlinfo,
-		    const char *querystring, const char *headers, void *arg,
-		    unsigned int *retcode, const char **retmsg,
-		    const char **mimetype, isc_buffer_t *b,
-		    isc_httpdfree_t **freecb, void **freecb_args)
+render_json_traffic(const char *url,
+		    isc_httpdurl_t *urlinfo,
+		    const char *querystring,
+		    const char *headers,
+		    void *arg,
+		    unsigned int *retcode,
+		    const char **retmsg,
+		    const char **mimetype,
+		    isc_buffer_t *b,
+		    isc_httpdfree_t **freecb,
+		    void **freecb_args)
 {
 	return (render_json(STATS_JSON_TRAFFIC, url, urlinfo,
 			    querystring, headers, arg,
@@ -3101,11 +3938,17 @@ render_json_traffic(const char *url, isc_httpdurl_t *urlinfo,
 #endif /* HAVE_JSON */
 
 static isc_result_t
-render_xsl(const char *url, isc_httpdurl_t *urlinfo,
-	   const char *querystring, const char *headers,
-	   void *args, unsigned int *retcode, const char **retmsg,
-	   const char **mimetype, isc_buffer_t *b,
-	   isc_httpdfree_t **freecb, void **freecb_args)
+render_xsl(const char *url,
+	   isc_httpdurl_t *urlinfo,
+	   const char *querystring,
+	   const char *headers,
+	   void *args,
+	   unsigned int *retcode,
+	   const char **retmsg,
+	   const char **mimetype,
+	   isc_buffer_t *b,
+	   isc_httpdfree_t **freecb,
+	   void **freecb_args)
 {
 	isc_result_t result;
 	char *_headers = NULL;
@@ -3131,12 +3974,14 @@ render_xsl(const char *url, isc_httpdurl_t *urlinfo,
 		saveptr = NULL;
 		for (line = strtok_r(_headers, "\n", &saveptr);
 		     line;
-		     line = strtok_r(NULL, "\n", &saveptr)) {
+		     line = strtok_r(NULL, "\n", &saveptr))
+		{
 			if (strncasecmp(line, if_modified_since,
 					strlen(if_modified_since)) == 0) {
 				time_t t1, t2;
 				line += strlen(if_modified_since);
-				result = isc_time_parsehttptimestamp(line, &when);
+				result = isc_time_parsehttptimestamp(line,
+								     &when);
 				if (result != ISC_R_SUCCESS) {
 					goto send;
 				}
@@ -3146,7 +3991,9 @@ render_xsl(const char *url, isc_httpdurl_t *urlinfo,
 					goto send;
 				}
 
-				result = isc_time_secondsastimet(&urlinfo->loadtime, &t2);
+				result = isc_time_secondsastimet(
+					&urlinfo->loadtime,
+					&t2);
 				if (result != ISC_R_SUCCESS) {
 					goto send;
 				}
@@ -3167,7 +4014,7 @@ render_xsl(const char *url, isc_httpdurl_t *urlinfo,
 	*retmsg = "OK";
 	isc_buffer_reinit(b, xslmsg, strlen(xslmsg));
 	isc_buffer_add(b, strlen(xslmsg));
-end:
+ end:
 	free(_headers);
 	return (ISC_R_SUCCESS);
 }
@@ -3229,9 +4076,12 @@ destroy_listener(void *arg) {
 }
 
 static isc_result_t
-add_listener(named_server_t *server, named_statschannel_t **listenerp,
-	     const cfg_obj_t *listen_params, const cfg_obj_t *config,
-	     isc_sockaddr_t *addr, cfg_aclconfctx_t *aclconfctx,
+add_listener(named_server_t *server,
+	     named_statschannel_t **listenerp,
+	     const cfg_obj_t *listen_params,
+	     const cfg_obj_t *config,
+	     isc_sockaddr_t *addr,
+	     cfg_aclconfctx_t *aclconfctx,
 	     const char *socktext)
 {
 	isc_result_t result;
@@ -3242,8 +4092,9 @@ add_listener(named_server_t *server, named_statschannel_t **listenerp,
 	dns_acl_t *new_acl = NULL;
 
 	listener = isc_mem_get(server->mctx, sizeof(*listener));
-	if (listener == NULL)
+	if (listener == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	listener->httpdmgr = NULL;
 	listener->address = *addr;
@@ -3260,37 +4111,43 @@ add_listener(named_server_t *server, named_statschannel_t **listenerp,
 		result = cfg_acl_fromconfig(allow, config, named_g_lctx,
 					    aclconfctx, listener->mctx, 0,
 					    &new_acl);
-	} else
+	} else {
 		result = dns_acl_any(listener->mctx, &new_acl);
-	if (result != ISC_R_SUCCESS)
+	}
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 	dns_acl_attach(new_acl, &listener->acl);
 	dns_acl_detach(&new_acl);
 
 	result = isc_task_create(named_g_taskmgr, 0, &task);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 	isc_task_setname(task, "statchannel", NULL);
 
 	result = isc_socket_create(named_g_socketmgr, isc_sockaddr_pf(addr),
 				   isc_sockettype_tcp, &sock);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 	isc_socket_setname(sock, "statchannel", NULL);
 
 #ifndef ISC_ALLOW_MAPPED
 	isc_socket_ipv6only(sock, true);
-#endif
+#endif /* ifndef ISC_ALLOW_MAPPED */
 
 	result = isc_socket_bind(sock, addr, ISC_SOCKET_REUSEADDRESS);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	result = isc_httpdmgr_create(server->mctx, sock, task, client_ok,
 				     destroy_listener, listener,
 				     named_g_timermgr, &listener->httpdmgr);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 #ifdef HAVE_LIBXML2
 	isc_httpdmgr_addurl(listener->httpdmgr, "/",
@@ -3313,7 +4170,7 @@ add_listener(named_server_t *server, named_statschannel_t **listenerp,
 			    render_xml_mem, server);
 	isc_httpdmgr_addurl(listener->httpdmgr, "/xml/v3/traffic",
 			    render_xml_traffic, server);
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON
 	isc_httpdmgr_addurl(listener->httpdmgr, "/json",
 			    render_json_all, server);
@@ -3333,7 +4190,7 @@ add_listener(named_server_t *server, named_statschannel_t **listenerp,
 			    render_json_mem, server);
 	isc_httpdmgr_addurl(listener->httpdmgr, "/json/v1/traffic",
 			    render_json_traffic, server);
-#endif
+#endif /* ifdef HAVE_JSON */
 	isc_httpdmgr_addurl2(listener->httpdmgr, "/bind9.xsl", true,
 			     render_xsl, server);
 
@@ -3342,26 +4199,32 @@ add_listener(named_server_t *server, named_statschannel_t **listenerp,
 		      NAMED_LOGMODULE_SERVER, ISC_LOG_NOTICE,
 		      "statistics channel listening on %s", socktext);
 
-cleanup:
+ cleanup:
 	if (result != ISC_R_SUCCESS) {
-		if (listener->acl != NULL)
+		if (listener->acl != NULL) {
 			dns_acl_detach(&listener->acl);
+		}
 		isc_mutex_destroy(&listener->lock);
 		isc_mem_putanddetach(&listener->mctx, listener,
 				     sizeof(*listener));
 	}
-	if (task != NULL)
+	if (task != NULL) {
 		isc_task_detach(&task);
-	if (sock != NULL)
+	}
+	if (sock != NULL) {
 		isc_socket_detach(&sock);
+	}
 
 	return (result);
 }
 
 static void
-update_listener(named_server_t *server, named_statschannel_t **listenerp,
-		const cfg_obj_t *listen_params, const cfg_obj_t *config,
-		isc_sockaddr_t *addr, cfg_aclconfctx_t *aclconfctx,
+update_listener(named_server_t *server,
+		named_statschannel_t **listenerp,
+		const cfg_obj_t *listen_params,
+		const cfg_obj_t *config,
+		isc_sockaddr_t *addr,
+		cfg_aclconfctx_t *aclconfctx,
 		const char *socktext)
 {
 	named_statschannel_t *listener;
@@ -3372,8 +4235,9 @@ update_listener(named_server_t *server, named_statschannel_t **listenerp,
 	for (listener = ISC_LIST_HEAD(server->statschannels);
 	     listener != NULL;
 	     listener = ISC_LIST_NEXT(listener, link))
-		if (isc_sockaddr_equal(addr, &listener->address))
+		if (isc_sockaddr_equal(addr, &listener->address)) {
 			break;
+		}
 
 	if (listener == NULL) {
 		*listenerp = NULL;
@@ -3388,8 +4252,9 @@ update_listener(named_server_t *server, named_statschannel_t **listenerp,
 		result = cfg_acl_fromconfig(allow, config, named_g_lctx,
 					    aclconfctx, listener->mctx, 0,
 					    &new_acl);
-	} else
+	} else {
 		result = dns_acl_any(listener->mctx, &new_acl);
+	}
 
 	if (result == ISC_R_SUCCESS) {
 		LOCK(&listener->lock);
@@ -3410,7 +4275,8 @@ update_listener(named_server_t *server, named_statschannel_t **listenerp,
 }
 
 isc_result_t
-named_statschannels_configure(named_server_t *server, const cfg_obj_t *config,
+named_statschannels_configure(named_server_t *server,
+			      const cfg_obj_t *config,
 			      cfg_aclconfctx_t *aclconfctx)
 {
 	named_statschannel_t *listener, *listener_next;
@@ -3438,8 +4304,10 @@ named_statschannels_configure(named_server_t *server, const cfg_obj_t *config,
 	 */
 	if (statschannellist != NULL) {
 #ifndef EXTENDED_STATS
-		isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
-			      NAMED_LOGMODULE_SERVER, ISC_LOG_WARNING,
+		isc_log_write(named_g_lctx,
+			      NAMED_LOGCATEGORY_GENERAL,
+			      NAMED_LOGMODULE_SERVER,
+			      ISC_LOG_WARNING,
 			      "statistics-channels specified but not effective "
 			      "due to missing XML and/or JSON library");
 #else /* EXTENDED_STATS */
@@ -3459,19 +4327,22 @@ named_statschannels_configure(named_server_t *server, const cfg_obj_t *config,
 
 		for (element = cfg_list_first(statschannellist);
 		     element != NULL;
-		     element = cfg_list_next(element)) {
+		     element = cfg_list_next(element))
+		{
 			const cfg_obj_t *statschannel;
 			const cfg_obj_t *listenercfg = NULL;
 
 			statschannel = cfg_listelt_value(element);
 			(void)cfg_map_get(statschannel, "inet",
 					  &listenercfg);
-			if (listenercfg == NULL)
+			if (listenercfg == NULL) {
 				continue;
+			}
 
 			for (element2 = cfg_list_first(listenercfg);
 			     element2 != NULL;
-			     element2 = cfg_list_next(element2)) {
+			     element2 = cfg_list_next(element2))
+			{
 				const cfg_obj_t *listen_params;
 				const cfg_obj_t *obj;
 				isc_sockaddr_t addr;
@@ -3480,9 +4351,10 @@ named_statschannels_configure(named_server_t *server, const cfg_obj_t *config,
 
 				obj = cfg_tuple_get(listen_params, "address");
 				addr = *cfg_obj_assockaddr(obj);
-				if (isc_sockaddr_getport(&addr) == 0)
+				if (isc_sockaddr_getport(&addr) == 0) {
 					isc_sockaddr_setport(&addr,
-						   NAMED_STATSCHANNEL_HTTPPORT);
+							     NAMED_STATSCHANNEL_HTTPPORT);
+				}
 
 				isc_sockaddr_format(&addr, socktext,
 						    sizeof(socktext));
@@ -3518,26 +4390,30 @@ named_statschannels_configure(named_server_t *server, const cfg_obj_t *config,
 							 socktext);
 					if (r != ISC_R_SUCCESS) {
 						cfg_obj_log(listen_params,
-							 named_g_lctx,
-							 ISC_LOG_WARNING,
-							 "couldn't allocate "
-							 "statistics channel"
-							 " %s: %s",
-							 socktext,
-							 isc_result_totext(r));
+							    named_g_lctx,
+							    ISC_LOG_WARNING,
+							    "couldn't allocate "
+							    "statistics channel"
+							    " %s: %s",
+							    socktext,
+							    isc_result_totext(
+								    r));
 					}
 				}
 
-				if (listener != NULL)
-					ISC_LIST_APPEND(new_listeners, listener,
+				if (listener != NULL) {
+					ISC_LIST_APPEND(new_listeners,
+							listener,
 							link);
+				}
 			}
 		}
 	}
 
 	for (listener = ISC_LIST_HEAD(server->statschannels);
 	     listener != NULL;
-	     listener = listener_next) {
+	     listener = listener_next)
+	{
 		listener_next = ISC_LIST_NEXT(listener, link);
 		ISC_LIST_UNLINK(server->statschannels, listener, link);
 		shutdown_listener(listener);
@@ -3595,13 +4471,16 @@ named_stats_dump(named_server_t *server, FILE *fp) {
 	fprintf(fp, "++ Outgoing Queries ++\n");
 	for (view = ISC_LIST_HEAD(server->viewlist);
 	     view != NULL;
-	     view = ISC_LIST_NEXT(view, link)) {
-		if (view->resquerystats == NULL)
+	     view = ISC_LIST_NEXT(view, link))
+	{
+		if (view->resquerystats == NULL) {
 			continue;
-		if (strcmp(view->name, "_default") == 0)
+		}
+		if (strcmp(view->name, "_default") == 0) {
 			fprintf(fp, "[View: default]\n");
-		else
+		} else {
 			fprintf(fp, "[View: %s]\n", view->name);
+		}
 		dns_rdatatypestats_dump(view->resquerystats, rdtypestat_dump,
 					&dumparg, 0);
 	}
@@ -3624,13 +4503,16 @@ named_stats_dump(named_server_t *server, FILE *fp) {
 			     resstats_index, resstat_values, 0);
 	for (view = ISC_LIST_HEAD(server->viewlist);
 	     view != NULL;
-	     view = ISC_LIST_NEXT(view, link)) {
-		if (view->resstats == NULL)
+	     view = ISC_LIST_NEXT(view, link))
+	{
+		if (view->resstats == NULL) {
 			continue;
-		if (strcmp(view->name, "_default") == 0)
+		}
+		if (strcmp(view->name, "_default") == 0) {
 			fprintf(fp, "[View: default]\n");
-		else
+		} else {
 			fprintf(fp, "[View: %s]\n", view->name);
+		}
 		(void) dump_counters(view->resstats, isc_statsformat_file, fp,
 				     NULL, resstats_desc,
 				     dns_resstatscounter_max, resstats_index,
@@ -3640,34 +4522,40 @@ named_stats_dump(named_server_t *server, FILE *fp) {
 	fprintf(fp, "++ Cache Statistics ++\n");
 	for (view = ISC_LIST_HEAD(server->viewlist);
 	     view != NULL;
-	     view = ISC_LIST_NEXT(view, link)) {
-		if (strcmp(view->name, "_default") == 0)
+	     view = ISC_LIST_NEXT(view, link))
+	{
+		if (strcmp(view->name, "_default") == 0) {
 			fprintf(fp, "[View: default]\n");
-		else
+		} else {
 			fprintf(fp, "[View: %s (Cache: %s)]\n", view->name,
 				dns_cache_getname(view->cache));
+		}
 		/*
 		 * Avoid dumping redundant statistics when the cache is shared.
 		 */
-		if (dns_view_iscacheshared(view))
+		if (dns_view_iscacheshared(view)) {
 			continue;
+		}
 		dns_cache_dumpstats(view->cache, fp);
 	}
 
 	fprintf(fp, "++ Cache DB RRsets ++\n");
 	for (view = ISC_LIST_HEAD(server->viewlist);
 	     view != NULL;
-	     view = ISC_LIST_NEXT(view, link)) {
+	     view = ISC_LIST_NEXT(view, link))
+	{
 		dns_stats_t *cacherrstats;
 
 		cacherrstats = dns_db_getrrsetstats(view->cachedb);
-		if (cacherrstats == NULL)
+		if (cacherrstats == NULL) {
 			continue;
-		if (strcmp(view->name, "_default") == 0)
+		}
+		if (strcmp(view->name, "_default") == 0) {
 			fprintf(fp, "[View: default]\n");
-		else
+		} else {
 			fprintf(fp, "[View: %s (Cache: %s)]\n", view->name,
 				dns_cache_getname(view->cache));
+		}
 		if (dns_view_iscacheshared(view)) {
 			/*
 			 * Avoid dumping redundant statistics when the cache is
@@ -3682,13 +4570,16 @@ named_stats_dump(named_server_t *server, FILE *fp) {
 	fprintf(fp, "++ ADB stats ++\n");
 	for (view = ISC_LIST_HEAD(server->viewlist);
 	     view != NULL;
-	     view = ISC_LIST_NEXT(view, link)) {
-		if (view->adbstats == NULL)
+	     view = ISC_LIST_NEXT(view, link))
+	{
+		if (view->adbstats == NULL) {
 			continue;
-		if (strcmp(view->name, "_default") == 0)
+		}
+		if (strcmp(view->name, "_default") == 0) {
 			fprintf(fp, "[View: default]\n");
-		else
+		} else {
 			fprintf(fp, "[View: %s]\n", view->name);
+		}
 		(void) dump_counters(view->adbstats, isc_statsformat_file, fp,
 				     NULL, adbstats_desc, dns_adbstats_max,
 				     adbstats_index, adbstat_values, 0);
@@ -3710,14 +4601,16 @@ named_stats_dump(named_server_t *server, FILE *fp) {
 			char zonename[DNS_NAME_FORMATSIZE];
 
 			view = dns_zone_getview(zone);
-			if (view == NULL)
+			if (view == NULL) {
 				continue;
+			}
 
 			dns_name_format(dns_zone_getorigin(zone),
 					zonename, sizeof(zonename));
 			fprintf(fp, "[%s", zonename);
-			if (strcmp(view->name, "_default") != 0)
+			if (strcmp(view->name, "_default") != 0) {
 				fprintf(fp, " (view: %s)", view->name);
+			}
 			fprintf(fp, "]\n");
 
 			(void) dump_counters(zonestats, isc_statsformat_file,
@@ -3738,14 +4631,16 @@ named_stats_dump(named_server_t *server, FILE *fp) {
 			char zonename[DNS_NAME_FORMATSIZE];
 
 			view = dns_zone_getview(zone);
-			if (view == NULL)
+			if (view == NULL) {
 				continue;
+			}
 
 			dns_name_format(dns_zone_getorigin(zone),
 					zonename, sizeof(zonename));
 			fprintf(fp, "[%s", zonename);
-			if (strcmp(view->name, "_default") != 0)
+			if (strcmp(view->name, "_default") != 0) {
 				fprintf(fp, " (view: %s)", view->name);
+			}
 			fprintf(fp, "]\n");
 
 			(void) dump_counters(gluecachestats,
@@ -3759,5 +4654,5 @@ named_stats_dump(named_server_t *server, FILE *fp) {
 
 	fprintf(fp, "--- Statistics Dump --- (%lu)\n", (unsigned long)now);
 
-	return (ISC_R_SUCCESS);	/* this function currently always succeeds */
+	return (ISC_R_SUCCESS); /* this function currently always succeeds */
 }

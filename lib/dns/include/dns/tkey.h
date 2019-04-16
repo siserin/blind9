@@ -28,18 +28,18 @@
 ISC_LANG_BEGINDECLS
 
 /* Key agreement modes */
-#define DNS_TKEYMODE_SERVERASSIGNED		1
-#define DNS_TKEYMODE_DIFFIEHELLMAN		2
-#define DNS_TKEYMODE_GSSAPI			3
-#define DNS_TKEYMODE_RESOLVERASSIGNED		4
-#define DNS_TKEYMODE_DELETE			5
+#define DNS_TKEYMODE_SERVERASSIGNED             1
+#define DNS_TKEYMODE_DIFFIEHELLMAN              2
+#define DNS_TKEYMODE_GSSAPI                     3
+#define DNS_TKEYMODE_RESOLVERASSIGNED           4
+#define DNS_TKEYMODE_DELETE                     5
 
 struct dns_tkeyctx {
-	dst_key_t *dhkey;
-	dns_name_t *domain;
-	gss_cred_id_t gsscred;
-	isc_mem_t *mctx;
-	char *gssapi_keytab;
+	dst_key_t *	     dhkey;
+	dns_name_t *	     domain;
+	gss_cred_id_t	     gsscred;
+	isc_mem_t *	     mctx;
+	char *		     gssapi_keytab;
 };
 
 isc_result_t
@@ -47,7 +47,7 @@ dns_tkeyctx_create(isc_mem_t *mctx, dns_tkeyctx_t **tctxp);
 /*%<
  *	Create an empty TKEY context.
  *
- * 	Requires:
+ *      Requires:
  *\li		'mctx' is not NULL
  *\li		'tctx' is not NULL
  *\li		'*tctx' is NULL
@@ -63,13 +63,14 @@ dns_tkeyctx_destroy(dns_tkeyctx_t **tctxp);
 /*%<
  *      Frees all data associated with the TKEY context
  *
- * 	Requires:
+ *      Requires:
  *\li		'tctx' is not NULL
  *\li		'*tctx' is not NULL
  */
 
 isc_result_t
-dns_tkey_processquery(dns_message_t *msg, dns_tkeyctx_t *tctx,
+dns_tkey_processquery(dns_message_t *msg,
+		      dns_tkeyctx_t *tctx,
 		      dns_tsig_keyring_t *ring);
 /*%<
  *	Processes a query containing a TKEY record, adding or deleting TSIG
@@ -89,9 +90,12 @@ dns_tkey_processquery(dns_message_t *msg, dns_tkeyctx_t *tctx,
  */
 
 isc_result_t
-dns_tkey_builddhquery(dns_message_t *msg, dst_key_t *key,
-		      const dns_name_t *name, const dns_name_t *algorithm,
-		      isc_buffer_t *nonce, uint32_t lifetime);
+dns_tkey_builddhquery(dns_message_t *msg,
+		      dst_key_t *key,
+		      const dns_name_t *name,
+		      const dns_name_t *algorithm,
+		      isc_buffer_t *nonce,
+		      uint32_t lifetime);
 /*%<
  *	Builds a query containing a TKEY that will generate a shared
  *	secret using a Diffie-Hellman key exchange.  The shared key
@@ -116,10 +120,14 @@ dns_tkey_builddhquery(dns_message_t *msg, dst_key_t *key,
  */
 
 isc_result_t
-dns_tkey_buildgssquery(dns_message_t *msg, const dns_name_t *name,
-		       const dns_name_t *gname, isc_buffer_t *intoken,
-		       uint32_t lifetime, gss_ctx_id_t *context,
-		       bool win2k, isc_mem_t *mctx,
+dns_tkey_buildgssquery(dns_message_t *msg,
+		       const dns_name_t *name,
+		       const dns_name_t *gname,
+		       isc_buffer_t *intoken,
+		       uint32_t lifetime,
+		       gss_ctx_id_t *context,
+		       bool win2k,
+		       isc_mem_t *mctx,
 		       char **err_message);
 /*%<
  *	Builds a query containing a TKEY that will generate a GSSAPI context.
@@ -159,9 +167,12 @@ dns_tkey_builddeletequery(dns_message_t *msg, dns_tsigkey_t *key);
  */
 
 isc_result_t
-dns_tkey_processdhresponse(dns_message_t *qmsg, dns_message_t *rmsg,
-			   dst_key_t *key, isc_buffer_t *nonce,
-			   dns_tsigkey_t **outkey, dns_tsig_keyring_t *ring);
+dns_tkey_processdhresponse(dns_message_t *qmsg,
+			   dns_message_t *rmsg,
+			   dst_key_t *key,
+			   isc_buffer_t *nonce,
+			   dns_tsigkey_t **outkey,
+			   dns_tsig_keyring_t *ring);
 /*%<
  *	Processes a response to a query containing a TKEY that was
  *	designed to generate a shared secret using a Diffie-Hellman key
@@ -182,16 +193,21 @@ dns_tkey_processdhresponse(dns_message_t *qmsg, dns_message_t *rmsg,
  */
 
 isc_result_t
-dns_tkey_processgssresponse(dns_message_t *qmsg, dns_message_t *rmsg,
-			    const dns_name_t *gname, gss_ctx_id_t *context,
-			    isc_buffer_t *outtoken, dns_tsigkey_t **outkey,
-			    dns_tsig_keyring_t *ring, char **err_message);
+dns_tkey_processgssresponse(dns_message_t *qmsg,
+			    dns_message_t *rmsg,
+			    const dns_name_t *gname,
+			    gss_ctx_id_t *context,
+			    isc_buffer_t *outtoken,
+			    dns_tsigkey_t **outkey,
+			    dns_tsig_keyring_t *ring,
+			    char **err_message);
 /*%<
  * XXX
  */
 
 isc_result_t
-dns_tkey_processdeleteresponse(dns_message_t *qmsg, dns_message_t *rmsg,
+dns_tkey_processdeleteresponse(dns_message_t *qmsg,
+			       dns_message_t *rmsg,
 			       dns_tsig_keyring_t *ring);
 /*%<
  *	Processes a response to a query containing a TKEY that was
@@ -210,10 +226,14 @@ dns_tkey_processdeleteresponse(dns_message_t *qmsg, dns_message_t *rmsg,
  */
 
 isc_result_t
-dns_tkey_gssnegotiate(dns_message_t *qmsg, dns_message_t *rmsg,
-		      const dns_name_t *server, gss_ctx_id_t *context,
-		      dns_tsigkey_t **outkey, dns_tsig_keyring_t *ring,
-		      bool win2k, char **err_message);
+dns_tkey_gssnegotiate(dns_message_t *qmsg,
+		      dns_message_t *rmsg,
+		      const dns_name_t *server,
+		      gss_ctx_id_t *context,
+		      dns_tsigkey_t **outkey,
+		      dns_tsig_keyring_t *ring,
+		      bool win2k,
+		      char **err_message);
 
 /*
  *	Client side negotiation of GSS-TSIG.  Process the response

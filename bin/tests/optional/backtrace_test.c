@@ -39,8 +39,9 @@ func3() {
 		return (1);
 	}
 
-	if (nframes < 4)
+	if (nframes < 4) {
 		error++;
+	}
 
 	for (i = 0; i < 4 && i < nframes; i++) {
 		fname = NULL;
@@ -49,8 +50,9 @@ func3() {
 			error++;
 			continue;
 		}
-		if (strcmp(fname, expected_symbols[i]) != 0)
+		if (strcmp(fname, expected_symbols[i]) != 0) {
 			error++;
+		}
 	}
 
 	if (error) {
@@ -61,9 +63,9 @@ func3() {
 			fname = NULL;
 			result = isc_backtrace_getsymbol(tracebuf[i], &fname,
 							 &offset);
-			if (result == ISC_R_SUCCESS)
+			if (result == ISC_R_SUCCESS) {
 				printf("  [%d] %s\n", i, fname);
-			else {
+			} else {
 				printf("  [%d] %p getsymbol failed: %s\n", i,
 				       tracebuf[i], isc_result_totext(result));
 			}

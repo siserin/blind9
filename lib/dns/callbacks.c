@@ -20,23 +20,23 @@
 
 static void
 stdio_error_warn_callback(dns_rdatacallbacks_t *, const char *, ...)
-     ISC_FORMAT_PRINTF(2, 3);
+ISC_FORMAT_PRINTF(2, 3);
 
 static void
 isclog_error_callback(dns_rdatacallbacks_t *callbacks, const char *fmt, ...)
-     ISC_FORMAT_PRINTF(2, 3);
+ISC_FORMAT_PRINTF(2, 3);
 
 static void
 isclog_warn_callback(dns_rdatacallbacks_t *callbacks, const char *fmt, ...)
-     ISC_FORMAT_PRINTF(2, 3);
+ISC_FORMAT_PRINTF(2, 3);
 
 /*
  * Private
  */
 
 static void
-stdio_error_warn_callback(dns_rdatacallbacks_t *callbacks,
-			  const char *fmt, ...)
+stdio_error_warn_callback(dns_rdatacallbacks_t *callbacks, const char *fmt,
+			  ...)
 {
 	va_list ap;
 

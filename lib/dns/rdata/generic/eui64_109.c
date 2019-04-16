@@ -36,8 +36,9 @@ fromtext_eui64(ARGS_FROMTEXT) {
 	n = sscanf(DNS_AS_STR(token), "%2x-%2x-%2x-%2x-%2x-%2x-%2x-%2x",
 		   &l0, &l1, &l2, &l3, &l4, &l5, &l6, &l7);
 	if (n != 8 || l0 > 255U || l1 > 255U || l2 > 255U || l3 > 255U ||
-	    l4 > 255U || l5 > 255U || l6 > 255U || l7 > 255U)
+	    l4 > 255U || l5 > 255U || l6 > 255U || l7 > 255U) {
 		return (DNS_R_BADEUI);
+	}
 
 	eui64[0] = l0;
 	eui64[1] = l1;
@@ -80,15 +81,15 @@ fromwire_eui64(ARGS_FROMWIRE) {
 	UNUSED(dctx);
 
 	isc_buffer_activeregion(source, &sregion);
-	if (sregion.length != 8)
+	if (sregion.length != 8) {
 		return (DNS_R_FORMERR);
+	}
 	isc_buffer_forward(source, sregion.length);
 	return (mem_tobuffer(target, sregion.base, sregion.length));
 }
 
 static inline isc_result_t
 towire_eui64(ARGS_TOWIRE) {
-
 	REQUIRE(rdata->type == dns_rdatatype_eui64);
 	REQUIRE(rdata->length == 8);
 
@@ -158,7 +159,6 @@ freestruct_eui64(ARGS_FREESTRUCT) {
 
 static inline isc_result_t
 additionaldata_eui64(ARGS_ADDLDATA) {
-
 	REQUIRE(rdata->type == dns_rdatatype_eui64);
 	REQUIRE(rdata->length == 8);
 
@@ -183,7 +183,6 @@ digest_eui64(ARGS_DIGEST) {
 
 static inline bool
 checkowner_eui64(ARGS_CHECKOWNER) {
-
 	REQUIRE(type == dns_rdatatype_eui64);
 
 	UNUSED(name);
@@ -196,7 +195,6 @@ checkowner_eui64(ARGS_CHECKOWNER) {
 
 static inline bool
 checknames_eui64(ARGS_CHECKNAMES) {
-
 	REQUIRE(rdata->type == dns_rdatatype_eui64);
 	REQUIRE(rdata->length == 8);
 
@@ -212,4 +210,4 @@ casecompare_eui64(ARGS_COMPARE) {
 	return (compare_eui64(rdata1, rdata2));
 }
 
-#endif	/* RDATA_GENERIC_EUI64_109_C */
+#endif  /* RDATA_GENERIC_EUI64_109_C */

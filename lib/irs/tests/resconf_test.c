@@ -53,10 +53,10 @@ irs_resconf_load_test(void **state) {
 	irs_resconf_t *resconf = NULL;
 	unsigned int i;
 	struct {
-		const char *file;
-		isc_result_t loadres;
-		isc_result_t (*check)(irs_resconf_t *resconf);
-		isc_result_t checkres;
+		const char *	    file;
+		isc_result_t	    loadres;
+		isc_result_t	    (*check)(irs_resconf_t *resconf);
+		isc_result_t	    checkres;
 	} tests[] = {
 		{
 			"testdata/domain.conf", ISC_R_SUCCESS,
@@ -110,14 +110,13 @@ irs_resconf_load_test(void **state) {
 			"testdata/unknown.conf", ISC_R_SUCCESS,
 			NULL, ISC_R_SUCCESS
 		}
-
 	};
 
 	UNUSED(state);
 
 	setup_test();
 
-	for (i = 0; i < sizeof(tests)/sizeof(tests[1]); i++) {
+	for (i = 0; i < sizeof(tests) / sizeof(tests[1]); i++) {
 		result = irs_resconf_load(mctx, tests[i].file, &resconf);
 		if (result != tests[i].loadres) {
 			fail_msg("# unexpected result %s loading %s",
@@ -167,4 +166,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

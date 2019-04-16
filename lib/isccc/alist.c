@@ -37,24 +37,25 @@
 #include <isccc/sexpr.h>
 #include <isccc/util.h>
 
-#define CAR(s)			(s)->value.as_dottedpair.car
-#define CDR(s)			(s)->value.as_dottedpair.cdr
+#define CAR(s)                  (s)->value.as_dottedpair.car
+#define CDR(s)                  (s)->value.as_dottedpair.cdr
 
-#define ALIST_TAG		"*alist*"
-#define MAX_INDENT		64
+#define ALIST_TAG               "*alist*"
+#define MAX_INDENT              64
 
 static char spaces[MAX_INDENT + 1] =
 	"                                                                ";
 
-isccc_sexpr_t *
+isccc_sexpr_t*
 isccc_alist_create(void)
 {
-	isccc_sexpr_t *alist, *tag;
+	isccc_sexpr_t*alist,*tag;
 
 	tag = isccc_sexpr_fromstring(ALIST_TAG);
-	if (tag == NULL)
+	if (tag == NULL) {
 		return (NULL);
-	alist = isccc_sexpr_cons(tag, NULL);
+	}
+	alist = isccc_sexpr_cons(tag,NULL);
 	if (alist == NULL) {
 		isccc_sexpr_free(&tag);
 		return (NULL);
@@ -64,42 +65,46 @@ isccc_alist_create(void)
 }
 
 bool
-isccc_alist_alistp(isccc_sexpr_t *alist)
+isccc_alist_alistp(isccc_sexpr_t*alist)
 {
-	isccc_sexpr_t *car;
+	isccc_sexpr_t*car;
 
-	if (alist == NULL || alist->type != ISCCC_SEXPRTYPE_DOTTEDPAIR)
+	if (alist == NULL || alist->type != ISCCC_SEXPRTYPE_DOTTEDPAIR) {
 		return (false);
+	}
 	car = CAR(alist);
-	if (car == NULL || car->type != ISCCC_SEXPRTYPE_STRING)
+	if (car == NULL || car->type != ISCCC_SEXPRTYPE_STRING) {
 		return (false);
-	if (strcmp(car->value.as_string, ALIST_TAG) != 0)
+	}
+	if (strcmp(car->value.as_string,ALIST_TAG) != 0) {
 		return (false);
+	}
 	return (true);
 }
 
 bool
-isccc_alist_emptyp(isccc_sexpr_t *alist)
+isccc_alist_emptyp(isccc_sexpr_t*alist)
 {
 	REQUIRE(isccc_alist_alistp(alist));
 
-	if (CDR(alist) == NULL)
+	if (CDR(alist) == NULL) {
 		return (true);
+	}
 	return (false);
 }
 
-isccc_sexpr_t *
-isccc_alist_first(isccc_sexpr_t *alist)
+isccc_sexpr_t*
+isccc_alist_first(isccc_sexpr_t*alist)
 {
 	REQUIRE(isccc_alist_alistp(alist));
 
 	return (CDR(alist));
 }
 
-isccc_sexpr_t *
-isccc_alist_assq(isccc_sexpr_t *alist, const char *key)
+isccc_sexpr_t*
+isccc_alist_assq(isccc_sexpr_t*alist,const char*key)
 {
-	isccc_sexpr_t *car, *caar;
+	isccc_sexpr_t*car,*caar;
 
 	REQUIRE(isccc_alist_alistp(alist));
 
@@ -114,8 +119,9 @@ isccc_alist_assq(isccc_sexpr_t *alist, const char *key)
 		INSIST(car->type == ISCCC_SEXPRTYPE_DOTTEDPAIR);
 		caar = CAR(car);
 		if (caar->type == ISCCC_SEXPRTYPE_STRING &&
-		    strcmp(caar->value.as_string, key) == 0)
+		    strcmp(caar->value.as_string,key) == 0) {
 			return (car);
+		}
 		alist = CDR(alist);
 	}
 
@@ -123,9 +129,9 @@ isccc_alist_assq(isccc_sexpr_t *alist, const char *key)
 }
 
 void
-isccc_alist_delete(isccc_sexpr_t *alist, const char *key)
+isccc_alist_delete(isccc_sexpr_t*alist,const char*key)
 {
-	isccc_sexpr_t *car, *caar, *rest, *prev;
+	isccc_sexpr_t*car,*caar,*rest,*prev;
 
 	REQUIRE(isccc_alist_alistp(alist));
 
@@ -137,7 +143,7 @@ isccc_alist_delete(isccc_sexpr_t *alist, const char *key)
 		INSIST(car != NULL && car->type == ISCCC_SEXPRTYPE_DOTTEDPAIR);
 		caar = CAR(car);
 		if (caar->type == ISCCC_SEXPRTYPE_STRING &&
-		    strcmp(caar->value.as_string, key) == 0) {
+		    strcmp(caar->value.as_string,key) == 0) {
 			CDR(prev) = CDR(rest);
 			CDR(rest) = NULL;
 			isccc_sexpr_free(&rest);
@@ -148,25 +154,26 @@ isccc_alist_delete(isccc_sexpr_t *alist, const char *key)
 	}
 }
 
-isccc_sexpr_t *
-isccc_alist_define(isccc_sexpr_t *alist, const char *key, isccc_sexpr_t *value)
+isccc_sexpr_t*
+isccc_alist_define(isccc_sexpr_t*alist,const char*key,isccc_sexpr_t*value)
 {
-	isccc_sexpr_t *kv, *k, *elt;
+	isccc_sexpr_t*kv,*k,*elt;
 
-	kv = isccc_alist_assq(alist, key);
+	kv = isccc_alist_assq(alist,key);
 	if (kv == NULL) {
 		/*
 		 * New association.
 		 */
 		k = isccc_sexpr_fromstring(key);
-		if (k == NULL)
+		if (k == NULL) {
 			return (NULL);
-		kv = isccc_sexpr_cons(k, value);
+		}
+		kv = isccc_sexpr_cons(k,value);
 		if (kv == NULL) {
 			isccc_sexpr_free(&kv);
 			return (NULL);
 		}
-		elt = isccc_sexpr_addtolist(&alist, kv);
+		elt = isccc_sexpr_addtolist(&alist,kv);
 		if (elt == NULL) {
 			isccc_sexpr_free(&kv);
 			return (NULL);
@@ -182,124 +189,138 @@ isccc_alist_define(isccc_sexpr_t *alist, const char *key, isccc_sexpr_t *value)
 	return (kv);
 }
 
-isccc_sexpr_t *
-isccc_alist_definestring(isccc_sexpr_t *alist, const char *key, const char *str)
+isccc_sexpr_t*
+isccc_alist_definestring(isccc_sexpr_t*alist,const char*key,const char*str)
 {
-	isccc_sexpr_t *v, *kv;
+	isccc_sexpr_t*v,*kv;
 
 	v = isccc_sexpr_fromstring(str);
-	if (v == NULL)
+	if (v == NULL) {
 		return (NULL);
-	kv = isccc_alist_define(alist, key, v);
-	if (kv == NULL)
+	}
+	kv = isccc_alist_define(alist,key,v);
+	if (kv == NULL) {
 		isccc_sexpr_free(&v);
+	}
 
 	return (kv);
 }
 
-isccc_sexpr_t *
-isccc_alist_definebinary(isccc_sexpr_t *alist, const char *key, isccc_region_t *r)
+isccc_sexpr_t*
+isccc_alist_definebinary(isccc_sexpr_t*alist,const char*key,isccc_region_t*r)
 {
-	isccc_sexpr_t *v, *kv;
+	isccc_sexpr_t*v,*kv;
 
 	v = isccc_sexpr_frombinary(r);
-	if (v == NULL)
+	if (v == NULL) {
 		return (NULL);
-	kv = isccc_alist_define(alist, key, v);
-	if (kv == NULL)
+	}
+	kv = isccc_alist_define(alist,key,v);
+	if (kv == NULL) {
 		isccc_sexpr_free(&v);
+	}
 
 	return (kv);
 }
 
-isccc_sexpr_t *
-isccc_alist_lookup(isccc_sexpr_t *alist, const char *key)
+isccc_sexpr_t*
+isccc_alist_lookup(isccc_sexpr_t*alist,const char*key)
 {
-	isccc_sexpr_t *kv;
+	isccc_sexpr_t*kv;
 
-	kv = isccc_alist_assq(alist, key);
-	if (kv != NULL)
+	kv = isccc_alist_assq(alist,key);
+	if (kv != NULL) {
 		return (CDR(kv));
+	}
 	return (NULL);
 }
 
 isc_result_t
-isccc_alist_lookupstring(isccc_sexpr_t *alist, const char *key, char **strp)
+isccc_alist_lookupstring(isccc_sexpr_t*alist,const char*key,char**strp)
 {
-	isccc_sexpr_t *kv, *v;
+	isccc_sexpr_t*kv,*v;
 
-	kv = isccc_alist_assq(alist, key);
+	kv = isccc_alist_assq(alist,key);
 	if (kv != NULL) {
 		v = CDR(kv);
 		if (isccc_sexpr_stringp(v)) {
-			if (strp != NULL)
+			if (strp != NULL) {
 				*strp = isccc_sexpr_tostring(v);
+			}
 			return (ISC_R_SUCCESS);
-		} else
+		} else {
 			return (ISC_R_EXISTS);
+		}
 	}
 
 	return (ISC_R_NOTFOUND);
 }
 
 isc_result_t
-isccc_alist_lookupbinary(isccc_sexpr_t *alist, const char *key, isccc_region_t **r)
+isccc_alist_lookupbinary(isccc_sexpr_t*alist,const char*key,isccc_region_t**r)
 {
-	isccc_sexpr_t *kv, *v;
+	isccc_sexpr_t*kv,*v;
 
-	kv = isccc_alist_assq(alist, key);
+	kv = isccc_alist_assq(alist,key);
 	if (kv != NULL) {
 		v = CDR(kv);
 		if (isccc_sexpr_binaryp(v)) {
-			if (r != NULL)
+			if (r != NULL) {
 				*r = isccc_sexpr_tobinary(v);
+			}
 			return (ISC_R_SUCCESS);
-		} else
+		} else {
 			return (ISC_R_EXISTS);
+		}
 	}
 
 	return (ISC_R_NOTFOUND);
 }
 
 void
-isccc_alist_prettyprint(isccc_sexpr_t *sexpr, unsigned int indent, FILE *stream)
+isccc_alist_prettyprint(isccc_sexpr_t*sexpr,unsigned int indent,FILE*stream)
 {
-	isccc_sexpr_t *elt, *kv, *k, *v;
+	isccc_sexpr_t*elt,*kv,*k,*v;
 
 	if (isccc_alist_alistp(sexpr)) {
-		fprintf(stream, "{\n");
+		fprintf(stream,"{\n");
 		indent += 4;
 		for (elt = isccc_alist_first(sexpr);
 		     elt != NULL;
-		     elt = CDR(elt)) {
+		     elt = CDR(elt))
+		{
 			kv = CAR(elt);
 			INSIST(isccc_sexpr_listp(kv));
 			k = CAR(kv);
 			v = CDR(kv);
 			INSIST(isccc_sexpr_stringp(k));
-			fprintf(stream, "%.*s%s => ", (int)indent, spaces,
+			fprintf(stream,"%.*s%s => ",(int)indent,spaces,
 				isccc_sexpr_tostring(k));
-			isccc_alist_prettyprint(v, indent, stream);
-			if (CDR(elt) != NULL)
-				fprintf(stream, ",");
-			fprintf(stream, "\n");
+			isccc_alist_prettyprint(v,indent,stream);
+			if (CDR(elt) != NULL) {
+				fprintf(stream,",");
+			}
+			fprintf(stream,"\n");
 		}
 		indent -= 4;
-		fprintf(stream, "%.*s}", (int)indent, spaces);
+		fprintf(stream,"%.*s}",(int)indent,spaces);
 	} else if (isccc_sexpr_listp(sexpr)) {
-		fprintf(stream, "(\n");
+		fprintf(stream,"(\n");
 		indent += 4;
 		for (elt = sexpr;
 		     elt != NULL;
-		     elt = CDR(elt)) {
-			fprintf(stream, "%.*s", (int)indent, spaces);
-			isccc_alist_prettyprint(CAR(elt), indent, stream);
-			if (CDR(elt) != NULL)
-				fprintf(stream, ",");
-			fprintf(stream, "\n");
+		     elt = CDR(elt))
+		{
+			fprintf(stream,"%.*s",(int)indent,spaces);
+			isccc_alist_prettyprint(CAR(elt),indent,stream);
+			if (CDR(elt) != NULL) {
+				fprintf(stream,",");
+			}
+			fprintf(stream,"\n");
 		}
 		indent -= 4;
-		fprintf(stream, "%.*s)", (int)indent, spaces);
-	} else
-		isccc_sexpr_print(sexpr, stream);
+		fprintf(stream,"%.*s)",(int)indent,spaces);
+	} else {
+		isccc_sexpr_print(sexpr,stream);
+	}
 }

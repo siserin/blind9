@@ -28,8 +28,8 @@
 #include <isc/util.h>
 
 struct e {
-	unsigned int value;
-	unsigned int index;
+	unsigned int	    value;
+	unsigned int	    index;
 };
 
 static bool
@@ -97,4 +97,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

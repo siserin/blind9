@@ -44,10 +44,10 @@
 #include <dst/dst.h>
 
 #define CHECK(str, x) { \
-	if ((x) != ISC_R_SUCCESS) { \
-		printf("%s: %s\n", (str), isc_result_totext(x)); \
-		exit(-1); \
-	} \
+		if ((x) != ISC_R_SUCCESS) { \
+			printf("%s: %s\n", (str), isc_result_totext(x)); \
+			exit(-1); \
+		} \
 }
 
 isc_mutex_t lock;
@@ -236,7 +236,8 @@ main(int argc, char *argv[]) {
 	socketmgr = NULL;
 	RUNTIME_CHECK(isc_socketmgr_create(mctx, &socketmgr) == ISC_R_SUCCESS);
 
-	RUNTIME_CHECK(isc_log_create(mctx, &lctx, &logconfig) == ISC_R_SUCCESS);
+	RUNTIME_CHECK(isc_log_create(mctx, &lctx,
+				     &logconfig) == ISC_R_SUCCESS);
 
 	s = NULL;
 	RUNTIME_CHECK(isc_socket_create(socketmgr, PF_INET,
@@ -276,8 +277,9 @@ main(int argc, char *argv[]) {
 
 	isc_log_destroy(&lctx);
 
-	if (verbose)
+	if (verbose) {
 		isc_mem_stats(mctx, stdout);
+	}
 	isc_mem_destroy(&mctx);
 
 	isc_mutex_destroy(&lock);

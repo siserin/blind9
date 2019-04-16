@@ -69,16 +69,18 @@ make_dispatchset(unsigned int ndisps) {
 	dns_dispatch_t *disp = NULL;
 
 	result = dns_dispatchmgr_create(mctx, &dispatchmgr);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	isc_sockaddr_any(&any);
 	attrs = DNS_DISPATCHATTR_IPV4 | DNS_DISPATCHATTR_UDP;
 	result = dns_dispatch_getudp(dispatchmgr, socketmgr, taskmgr,
 				     &any, 512, 6, 1024, 17, 19, attrs,
 				     attrs, &disp);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	result = dns_dispatchset_create(mctx, socketmgr, taskmgr, disp,
 					&dset, ndisps);
@@ -177,11 +179,11 @@ nameserver(isc_task_t *task, isc_event_t *event) {
 
 	memmove(buf1, ev->region.base, 12);
 	memset(buf1 + 12, 0, 4);
-	buf1[2] |= 0x80;	/* qr=1 */
+	buf1[2] |= 0x80;        /* qr=1 */
 
 	memmove(buf2, ev->region.base, 12);
 	memset(buf2 + 12, 1, 4);
-	buf2[2] |= 0x80;	/* qr=1 */
+	buf2[2] |= 0x80;        /* qr=1 */
 
 	/*
 	 * send message to be discarded.
@@ -192,8 +194,9 @@ nameserver(isc_task_t *task, isc_event_t *event) {
 	isc_socket_attach(sock, &dummy);
 	result = isc_socket_sendto(sock, &region, task, senddone, sock,
 				   &ev->address, NULL);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		isc_socket_detach(&dummy);
+	}
 
 	/*
 	 * send nextitem message.
@@ -204,8 +207,9 @@ nameserver(isc_task_t *task, isc_event_t *event) {
 	isc_socket_attach(sock, &dummy);
 	result = isc_socket_sendto(sock, &region, task, senddone, sock,
 				   &ev->address, NULL);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		isc_socket_detach(&dummy);
+	}
 	isc_event_free(&event);
 }
 
@@ -359,4 +363,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

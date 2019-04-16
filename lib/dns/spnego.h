@@ -27,19 +27,19 @@
  * everything inside the SPNEGO wrapper.
  */
 OM_uint32
-gss_init_sec_context_spnego(OM_uint32 *,
-			    const gss_cred_id_t,
-			    gss_ctx_id_t *,
-			    const gss_name_t,
-			    const gss_OID,
-			    OM_uint32,
-			    OM_uint32,
-			    const gss_channel_bindings_t,
-			    const gss_buffer_t,
-			    gss_OID *,
-			    gss_buffer_t,
-			    OM_uint32 *,
-			    OM_uint32 *);
+	gss_init_sec_context_spnego(OM_uint32 *,
+				    const gss_cred_id_t,
+				    gss_ctx_id_t *,
+				    const gss_name_t,
+				    const gss_OID,
+				    OM_uint32,
+				    OM_uint32,
+				    const gss_channel_bindings_t,
+				    const gss_buffer_t,
+				    gss_OID *,
+				    gss_buffer_t,
+				    OM_uint32 *,
+				    OM_uint32 *);
 
 /*%
  * Wrapper for GSSAPI gss_accept_sec_context(), using portable SPNEGO
@@ -62,4 +62,4 @@ OM_uint32 gss_accept_sec_context_spnego(OM_uint32 *,
 					gss_cred_id_t *);
 
 
-#endif
+#endif /* ifndef _SPNEGO_H_ */

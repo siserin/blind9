@@ -27,12 +27,12 @@
 #include <math.h>
 #ifndef WIN32
 #include <netinet/in.h>
-#else
+#else  /* ifndef WIN32 */
 #ifndef _WINSOCKAPI_
 #define _WINSOCKAPI_   /* Prevent inclusion of winsock.h in windows.h */
-#endif
+#endif /* ifndef _WINSOCKAPI_ */
 #include <winsock2.h>
-#endif	/* WIN32 */
+#endif  /* WIN32 */
 #include <dns/log.h>
 
 #ifdef HAVE_GEOIP
@@ -64,16 +64,16 @@
  * family and addr6 fields are to be used IPv6 is added.
  */
 typedef struct geoip_state {
-	uint16_t subtype;
-	unsigned int family;
-	uint32_t ipnum;
-	geoipv6_t ipnum6;
-	GeoIPRecord *record;
-	GeoIPRegion *region;
-	const char *text;
-	char *name;
-	int id;
-	isc_mem_t *mctx;
+	uint16_t	    subtype;
+	unsigned int	    family;
+	uint32_t	    ipnum;
+	geoipv6_t	    ipnum6;
+	GeoIPRecord *	    record;
+	GeoIPRegion *	    region;
+	const char *	    text;
+	char *		    name;
+	int		    id;
+	isc_mem_t *	    mctx;
 } geoip_state_t;
 
 static isc_mutex_t key_mutex;
@@ -90,11 +90,13 @@ key_mutex_init(void) {
 static void
 free_state(void *arg) {
 	geoip_state_t *state = arg;
-	if (state != NULL && state->record != NULL)
+	if (state != NULL && state->record != NULL) {
 		GeoIPRecord_delete(state->record);
-	if (state != NULL)
+	}
+	if (state != NULL) {
 		isc_mem_putanddetach(&state->mctx,
 				     state, sizeof(geoip_state_t));
+	}
 	isc_thread_key_setspecific(state_key, NULL);
 }
 
@@ -103,26 +105,30 @@ state_key_init(void) {
 	isc_result_t result;
 
 	result = isc_once_do(&mutex_once, key_mutex_init);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	if (!state_key_initialized) {
 		LOCK(&key_mutex);
 		if (!state_key_initialized) {
 			int ret;
 
-			if (state_mctx == NULL)
+			if (state_mctx == NULL) {
 				result = isc_mem_create(0, 0, &state_mctx);
-			if (result != ISC_R_SUCCESS)
+			}
+			if (result != ISC_R_SUCCESS) {
 				goto unlock;
+			}
 			isc_mem_setname(state_mctx, "geoip_state", NULL);
 			isc_mem_setdestroycheck(state_mctx, false);
 
 			ret = isc_thread_key_create(&state_key, free_state);
-			if (ret == 0)
+			if (ret == 0) {
 				state_key_initialized = true;
-			else
+			} else {
 				result = ISC_R_FAILURE;
+			}
 		}
  unlock:
 		UNLOCK(&key_mutex);
@@ -133,8 +139,9 @@ state_key_init(void) {
 
 static void
 clean_state(geoip_state_t *state) {
-	if (state == NULL)
+	if (state == NULL) {
 		return;
+	}
 
 	if (state->record != NULL) {
 		GeoIPRecord_delete(state->record);
@@ -154,23 +161,31 @@ clean_state(geoip_state_t *state) {
 }
 
 static isc_result_t
-set_state(unsigned int family, uint32_t ipnum, const geoipv6_t *ipnum6,
-	  dns_geoip_subtype_t subtype, GeoIPRecord *record,
-	  GeoIPRegion *region, char *name, const char *text, int id)
+set_state(unsigned int family,
+	  uint32_t ipnum,
+	  const geoipv6_t *ipnum6,
+	  dns_geoip_subtype_t subtype,
+	  GeoIPRecord *record,
+	  GeoIPRegion *region,
+	  char *name,
+	  const char *text,
+	  int id)
 {
 	geoip_state_t *state = NULL;
 	isc_result_t result;
 
 	result = state_key_init();
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	state = (geoip_state_t *) isc_thread_key_getspecific(state_key);
 	if (state == NULL) {
 		state = (geoip_state_t *) isc_mem_get(state_mctx,
 						      sizeof(geoip_state_t));
-		if (state == NULL)
+		if (state == NULL) {
 			return (ISC_R_NOMEMORY);
+		}
 		memset(state, 0, sizeof(*state));
 
 		result = isc_thread_key_setspecific(state_key, state);
@@ -180,8 +195,9 @@ set_state(unsigned int family, uint32_t ipnum, const geoipv6_t *ipnum6,
 		}
 
 		isc_mem_attach(state_mctx, &state->mctx);
-	} else
+	} else {
 		clean_state(state);
+	}
 
 	if (family == AF_INET) {
 		state->ipnum = ipnum;
@@ -202,26 +218,28 @@ set_state(unsigned int family, uint32_t ipnum, const geoipv6_t *ipnum6,
 }
 
 static geoip_state_t *
-get_state_for(unsigned int family, uint32_t ipnum,
-	      const geoipv6_t *ipnum6)
+get_state_for(unsigned int family, uint32_t ipnum, const geoipv6_t *ipnum6)
 {
 	geoip_state_t *state;
 
 	isc_result_t result;
 
 	result = state_key_init();
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (NULL);
+	}
 
 	state = (geoip_state_t *) isc_thread_key_getspecific(state_key);
-	if (state == NULL)
+	if (state == NULL) {
 		return (NULL);
+	}
 
 	if (state->family == family &&
 	    ((state->family == AF_INET && state->ipnum == ipnum) ||
 	     (state->family == AF_INET6 && ipnum6 != NULL &&
-	      memcmp(state->ipnum6.s6_addr, ipnum6->s6_addr, 16) == 0)))
+	      memcmp(state->ipnum6.s6_addr, ipnum6->s6_addr, 16) == 0))) {
 		return (state);
+	}
 
 	return (NULL);
 }
@@ -232,9 +250,11 @@ get_state_for(unsigned int family, uint32_t ipnum,
  * different subtype.
  */
 static const char *
-country_lookup(GeoIP *db, dns_geoip_subtype_t subtype,
+country_lookup(GeoIP *db,
+	       dns_geoip_subtype_t subtype,
 	       unsigned int family,
-	       uint32_t ipnum, const geoipv6_t *ipnum6)
+	       uint32_t ipnum,
+	       const geoipv6_t *ipnum6)
 {
 	geoip_state_t *prev_state = NULL;
 	const char *text = NULL;
@@ -243,9 +263,10 @@ country_lookup(GeoIP *db, dns_geoip_subtype_t subtype,
 
 #ifndef HAVE_GEOIP_V6
 	/* no IPv6 support? give up now */
-	if (family == AF_INET6)
+	if (family == AF_INET6) {
 		return (NULL);
-#endif
+	}
+#endif /* ifndef HAVE_GEOIP_V6 */
 
 	prev_state = get_state_for(family, ipnum, ipnum6);
 	if (prev_state != NULL && prev_state->subtype == subtype) {
@@ -255,39 +276,46 @@ country_lookup(GeoIP *db, dns_geoip_subtype_t subtype,
 	if (text == NULL) {
 		switch (subtype) {
 		case dns_geoip_country_code:
-			if (family == AF_INET)
+			if (family == AF_INET) {
 				text = GeoIP_country_code_by_ipnum(db, ipnum);
+			}
 #ifdef HAVE_GEOIP_V6
-			else
+			else {
 				text = GeoIP_country_code_by_ipnum_v6(db,
 								      *ipnum6);
-#endif
+			}
+#endif /* ifdef HAVE_GEOIP_V6 */
 			break;
 		case dns_geoip_country_code3:
-			if (family == AF_INET)
+			if (family == AF_INET) {
 				text = GeoIP_country_code3_by_ipnum(db, ipnum);
+			}
 #ifdef HAVE_GEOIP_V6
-			else
+			else {
 				text = GeoIP_country_code3_by_ipnum_v6(db,
 								       *ipnum6);
-#endif
+			}
+#endif /* ifdef HAVE_GEOIP_V6 */
 			break;
 		case dns_geoip_country_name:
-			if (family == AF_INET)
+			if (family == AF_INET) {
 				text = GeoIP_country_name_by_ipnum(db, ipnum);
+			}
 #ifdef HAVE_GEOIP_V6
-			else
+			else {
 				text = GeoIP_country_name_by_ipnum_v6(db,
 								      *ipnum6);
-#endif
+			}
+#endif /* ifdef HAVE_GEOIP_V6 */
 			break;
 		default:
 			INSIST(0);
 			ISC_UNREACHABLE();
 		}
 
-		if (text == NULL)
+		if (text == NULL) {
 			return (NULL);
+		}
 
 		set_state(family, ipnum, ipnum6, subtype,
 			  NULL, NULL, NULL, text, 0);
@@ -378,8 +406,10 @@ is_city(dns_geoip_subtype_t subtype) {
  * outside the City database.
  */
 static GeoIPRecord *
-city_lookup(GeoIP *db, dns_geoip_subtype_t subtype,
-	    unsigned int family, uint32_t ipnum,
+city_lookup(GeoIP *db,
+	    dns_geoip_subtype_t subtype,
+	    unsigned int family,
+	    uint32_t ipnum,
 	    const geoipv6_t *ipnum6)
 {
 	GeoIPRecord *record = NULL;
@@ -389,9 +419,10 @@ city_lookup(GeoIP *db, dns_geoip_subtype_t subtype,
 
 #ifndef HAVE_GEOIP_V6
 	/* no IPv6 support? give up now */
-	if (family == AF_INET6)
+	if (family == AF_INET6) {
 		return (NULL);
-#endif
+	}
+#endif /* ifndef HAVE_GEOIP_V6 */
 
 	prev_state = get_state_for(family, ipnum, ipnum6);
 	if (prev_state != NULL && is_city(prev_state->subtype)) {
@@ -399,14 +430,17 @@ city_lookup(GeoIP *db, dns_geoip_subtype_t subtype,
 	}
 
 	if (record == NULL) {
-		if (family == AF_INET)
+		if (family == AF_INET) {
 			record = GeoIP_record_by_ipnum(db, ipnum);
+		}
 #ifdef HAVE_GEOIP_V6
-		else
+		else {
 			record = GeoIP_record_by_ipnum_v6(db, *ipnum6);
-#endif
-		if (record == NULL)
+		}
+#endif /* ifdef HAVE_GEOIP_V6 */
+		if (record == NULL) {
 			return (NULL);
+		}
 
 		set_state(family, ipnum, ipnum6, subtype, record,
 			  NULL, NULL, NULL, 0);
@@ -415,7 +449,8 @@ city_lookup(GeoIP *db, dns_geoip_subtype_t subtype,
 	return (record);
 }
 
-static char * region_string(GeoIPRegion *region, dns_geoip_subtype_t subtype, int *maxlen) {
+static char *
+region_string(GeoIPRegion *region, dns_geoip_subtype_t subtype, int *maxlen) {
 	const char *s;
 	char *deconst;
 
@@ -471,8 +506,9 @@ region_lookup(GeoIP *db, dns_geoip_subtype_t subtype, uint32_t ipnum) {
 
 	if (region == NULL) {
 		region = GeoIP_region_by_ipnum(db, ipnum);
-		if (region == NULL)
+		if (region == NULL) {
 			return (NULL);
+		}
 
 		set_state(AF_INET, ipnum, NULL, subtype, NULL,
 			  region, NULL, NULL, 0);
@@ -500,8 +536,9 @@ name_lookup(GeoIP *db, dns_geoip_subtype_t subtype, uint32_t ipnum) {
 
 	if (name == NULL) {
 		name = GeoIP_name_by_ipnum(db, ipnum);
-		if (name == NULL)
+		if (name == NULL) {
 			return (NULL);
+		}
 
 		set_state(AF_INET, ipnum, NULL, subtype, NULL, NULL,
 			  name, NULL, 0);
@@ -531,8 +568,9 @@ netspeed_lookup(GeoIP *db, dns_geoip_subtype_t subtype, uint32_t ipnum) {
 
 	if (!found) {
 		id = GeoIP_id_by_ipnum(db, ipnum);
-		if (id == 0)
+		if (id == 0) {
 			return (0);
+		}
 
 		set_state(AF_INET, ipnum, NULL, subtype, NULL,
 			  NULL, NULL, NULL, id);
@@ -543,50 +581,63 @@ netspeed_lookup(GeoIP *db, dns_geoip_subtype_t subtype, uint32_t ipnum) {
 #endif /* HAVE_GEOIP */
 
 #define DB46(addr, geoip, name) \
-	((addr->family == AF_INET) ? (geoip->name##_v4) : (geoip->name##_v6))
+	((addr->family == \
+	  AF_INET) ? (geoip->name ## _v4) : (geoip->name ## _v6))
 
 #ifdef HAVE_GEOIP
 /*
  * Find the best database to answer a generic subtype
  */
 static dns_geoip_subtype_t
-fix_subtype(const isc_netaddr_t *reqaddr, const dns_geoip_databases_t *geoip,
+fix_subtype(const isc_netaddr_t *reqaddr,
+	    const dns_geoip_databases_t *geoip,
 	    dns_geoip_subtype_t subtype)
 {
 	dns_geoip_subtype_t ret = subtype;
 
 	switch (subtype) {
 	case dns_geoip_countrycode:
-		if (DB46(reqaddr, geoip, city) != NULL)
+		if (DB46(reqaddr, geoip, city) != NULL) {
 			ret = dns_geoip_city_countrycode;
-		else if (reqaddr->family == AF_INET && geoip->region != NULL)
+		} else if (reqaddr->family == AF_INET &&
+			   geoip->region != NULL)
+		{
 			ret = dns_geoip_region_countrycode;
-		else if (DB46(reqaddr, geoip, country) != NULL)
+		} else if (DB46(reqaddr, geoip, country) != NULL) {
 			ret = dns_geoip_country_code;
+		}
 		break;
 	case dns_geoip_countrycode3:
-		if (DB46(reqaddr, geoip, city) != NULL)
+		if (DB46(reqaddr, geoip, city) != NULL) {
 			ret = dns_geoip_city_countrycode3;
-		else if (DB46(reqaddr, geoip, country) != NULL)
+		} else if (DB46(reqaddr, geoip, country) != NULL) {
 			ret = dns_geoip_country_code3;
+		}
 		break;
 	case dns_geoip_countryname:
-		if (DB46(reqaddr, geoip, city) != NULL)
+		if (DB46(reqaddr, geoip, city) != NULL) {
 			ret = dns_geoip_city_countryname;
-		else if (DB46(reqaddr, geoip, country) != NULL)
+		} else if (DB46(reqaddr, geoip, country) != NULL) {
 			ret = dns_geoip_country_name;
+		}
 		break;
 	case dns_geoip_region:
-		if (DB46(reqaddr, geoip, city) != NULL)
+		if (DB46(reqaddr, geoip, city) != NULL) {
 			ret = dns_geoip_city_region;
-		else if (reqaddr->family == AF_INET && geoip->region != NULL)
+		} else if (reqaddr->family == AF_INET &&
+			   geoip->region != NULL)
+		{
 			ret = dns_geoip_region_code;
+		}
 		break;
 	case dns_geoip_regionname:
-		if (DB46(reqaddr, geoip, city) != NULL)
+		if (DB46(reqaddr, geoip, city) != NULL) {
 			ret = dns_geoip_city_regionname;
-		else if (reqaddr->family == AF_INET && geoip->region != NULL)
+		} else if (reqaddr->family == AF_INET &&
+			   geoip->region != NULL)
+		{
 			ret = dns_geoip_region_name;
+		}
 		break;
 	default:
 		break;
@@ -607,7 +658,7 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 	UNUSED(elt);
 
 	return (false);
-#else
+#else  /* ifndef HAVE_GEOIP */
 	GeoIP *db;
 	GeoIPRecord *record;
 	GeoIPRegion *region;
@@ -618,9 +669,9 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 	char *s;
 #ifdef HAVE_GEOIP_V6
 	const geoipv6_t *ipnum6 = NULL;
-#else
+#else  /* ifdef HAVE_GEOIP_V6 */
 	const void *ipnum6 = NULL;
-#endif
+#endif /* ifdef HAVE_GEOIP_V6 */
 
 	INSIST(geoip != NULL);
 
@@ -633,9 +684,9 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 #ifdef HAVE_GEOIP_V6
 		ipnum6 = &reqaddr->type.in6;
 		break;
-#else
+#else  /* ifdef HAVE_GEOIP_V6 */
 		return (false);
-#endif
+#endif /* ifdef HAVE_GEOIP_V6 */
 	default:
 		return (false);
 	}
@@ -655,14 +706,17 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 		maxlen = 255;
  getcountry:
 		db = DB46(reqaddr, geoip, country);
-		if (db == NULL)
+		if (db == NULL) {
 			return (false);
+		}
 
 		INSIST(elt->as_string != NULL);
 
 		cs = country_lookup(db, subtype, family, ipnum, ipnum6);
-		if (cs != NULL && strncasecmp(elt->as_string, cs, maxlen) == 0)
+		if (cs != NULL &&
+		    strncasecmp(elt->as_string, cs, maxlen) == 0) {
 			return (true);
+		}
 		break;
 
 	case dns_geoip_city_countrycode:
@@ -677,69 +731,82 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 		INSIST(elt->as_string != NULL);
 
 		db = DB46(reqaddr, geoip, city);
-		if (db == NULL)
+		if (db == NULL) {
 			return (false);
+		}
 
 		record = city_lookup(db, subtype, family,
 				     ipnum, ipnum6);
-		if (record == NULL)
+		if (record == NULL) {
 			break;
+		}
 
 		s = city_string(record, subtype, &maxlen);
 		INSIST(maxlen != 0);
-		if (s != NULL && strncasecmp(elt->as_string, s, maxlen) == 0)
+		if (s != NULL && strncasecmp(elt->as_string, s, maxlen) == 0) {
 			return (true);
+		}
 		break;
 
 	case dns_geoip_city_metrocode:
 		db = DB46(reqaddr, geoip, city);
-		if (db == NULL)
+		if (db == NULL) {
 			return (false);
+		}
 
 		record = city_lookup(db, subtype, family,
 				     ipnum, ipnum6);
-		if (record == NULL)
+		if (record == NULL) {
 			break;
+		}
 
-		if (elt->as_int == record->metro_code)
+		if (elt->as_int == record->metro_code) {
 			return (true);
+		}
 		break;
 
 	case dns_geoip_city_areacode:
 		db = DB46(reqaddr, geoip, city);
-		if (db == NULL)
+		if (db == NULL) {
 			return (false);
+		}
 
 		record = city_lookup(db, subtype, family,
 				     ipnum, ipnum6);
-		if (record == NULL)
+		if (record == NULL) {
 			break;
+		}
 
-		if (elt->as_int == record->area_code)
+		if (elt->as_int == record->area_code) {
 			return (true);
+		}
 		break;
 
 	case dns_geoip_region_countrycode:
 	case dns_geoip_region_code:
 	case dns_geoip_region_name:
 	case dns_geoip_region:
-		if (geoip->region == NULL)
+		if (geoip->region == NULL) {
 			return (false);
+		}
 
 		INSIST(elt->as_string != NULL);
 
 		/* Region DB is not supported for IPv6 */
-		if (family == AF_INET6)
+		if (family == AF_INET6) {
 			return (false);
+		}
 
 		region = region_lookup(geoip->region, subtype, ipnum);
-		if (region == NULL)
+		if (region == NULL) {
 			break;
+		}
 
 		s = region_string(region, subtype, &maxlen);
 		INSIST(maxlen != 0);
-		if (s != NULL && strncasecmp(elt->as_string, s, maxlen) == 0)
+		if (s != NULL && strncasecmp(elt->as_string, s, maxlen) == 0) {
 			return (true);
+		}
 		break;
 
 	case dns_geoip_isp_name:
@@ -758,29 +825,34 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 		db = geoip->domain;
 
  getname:
-		if (db == NULL)
+		if (db == NULL) {
 			return (false);
+		}
 
 		INSIST(elt->as_string != NULL);
 		/* ISP, Org, AS, and Domain are not supported for IPv6 */
-		if (family == AF_INET6)
+		if (family == AF_INET6) {
 			return (false);
+		}
 
 		s = name_lookup(db, subtype, ipnum);
 		if (s != NULL) {
 			size_t l;
-			if (strcasecmp(elt->as_string, s) == 0)
+			if (strcasecmp(elt->as_string, s) == 0) {
 				return (true);
-			if (subtype != dns_geoip_as_asnum)
+			}
+			if (subtype != dns_geoip_as_asnum) {
 				break;
+			}
 			/*
 			 * Just check if the ASNNNN value matches.
 			 */
 			l = strlen(elt->as_string);
 			if (l > 0U && strchr(elt->as_string, ' ') == NULL &&
 			    strncasecmp(elt->as_string, s, l) == 0 &&
-			    s[l] == ' ')
+			    s[l] == ' ') {
 				return (true);
+			}
 		}
 		break;
 
@@ -788,12 +860,14 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 		INSIST(geoip->netspeed != NULL);
 
 		/* Netspeed DB is not supported for IPv6 */
-		if (family == AF_INET6)
+		if (family == AF_INET6) {
 			return (false);
+		}
 
 		id = netspeed_lookup(geoip->netspeed, subtype, ipnum);
-		if (id == elt->as_int)
+		if (id == elt->as_int) {
 			return (true);
+		}
 		break;
 
 	case dns_geoip_countrycode:
@@ -812,16 +886,17 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 	}
 
 	return (false);
-#endif
+#endif /* ifndef HAVE_GEOIP */
 }
 
 void
 dns_geoip_shutdown(void) {
 #ifdef HAVE_GEOIP
 	GeoIP_cleanup();
-	if (state_mctx != NULL)
+	if (state_mctx != NULL) {
 		isc_mem_detach(&state_mctx);
-#else
+	}
+#else  /* ifdef HAVE_GEOIP */
 	return;
-#endif
+#endif /* ifdef HAVE_GEOIP */
 }

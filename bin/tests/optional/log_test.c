@@ -29,7 +29,7 @@ char usage[] = "Usage: %s [-m] [-s syslog_logfile] [-r file_versions]\n";
 
 #define CHECK(expr) result = expr; \
 	if (result != ISC_R_SUCCESS) { \
-		fprintf(stderr, "%s: " #expr "%s: exiting\n", \
+		fprintf(stderr, "%s: " # expr "%s: exiting\n", \
 			progname, isc_result_totext(result)); \
 	}
 
@@ -47,10 +47,11 @@ main(int argc, char **argv) {
 	const isc_logmodule_t *module;
 
 	progname = strrchr(*argv, '/');
-	if (progname != NULL)
+	if (progname != NULL) {
 		progname++;
-	else
+	} else {
 		progname = *argv;
+	}
 
 	syslog_file = SYSLOG_FILE;
 	file_versions = FILE_VERSIONS;
@@ -119,17 +120,19 @@ main(int argc, char **argv) {
 	 * Test isc_log_categorybyname and isc_log_modulebyname.
 	 */
 	category = isc_log_categorybyname(lctx, "notify");
-	if (category != NULL)
+	if (category != NULL) {
 		fprintf(stderr, "%s category found. (expected)\n",
 			category->name);
-	else
+	} else {
 		fprintf(stderr, "notify category not found!\n");
+	}
 
 	module = isc_log_modulebyname(lctx, "xyzzy");
-	if (module != NULL)
+	if (module != NULL) {
 		fprintf(stderr, "%s module found!\n", module->name);
-	else
+	} else {
 		fprintf(stderr, "xyzzy module not found. (expected)\n");
+	}
 
 	/*
 	 * Create a file channel to test file opening, size limiting and
@@ -142,10 +145,10 @@ main(int argc, char **argv) {
 
 	CHECK(isc_log_createchannel(lcfg, "file_test", ISC_LOG_TOFILE,
 				    ISC_LOG_INFO, &destination,
-				    ISC_LOG_PRINTTIME|
-				    ISC_LOG_PRINTTAG|
-				    ISC_LOG_PRINTLEVEL|
-				    ISC_LOG_PRINTCATEGORY|
+				    ISC_LOG_PRINTTIME |
+				    ISC_LOG_PRINTTAG |
+				    ISC_LOG_PRINTLEVEL |
+				    ISC_LOG_PRINTCATEGORY |
 				    ISC_LOG_PRINTMODULE));
 
 	/*
@@ -155,8 +158,8 @@ main(int argc, char **argv) {
 
 	CHECK(isc_log_createchannel(lcfg, "debug_test", ISC_LOG_TOFILEDESC,
 				    ISC_LOG_DYNAMIC, &destination,
-				    ISC_LOG_PRINTTIME|
-				    ISC_LOG_PRINTLEVEL|
+				    ISC_LOG_PRINTTIME |
+				    ISC_LOG_PRINTLEVEL |
 				    ISC_LOG_DEBUGONLY));
 
 	/*
@@ -232,20 +235,19 @@ main(int argc, char **argv) {
 	 * Write to the file channel.
 	 */
 	if (file_versions >= 0 || file_versions == ISC_LOG_ROLLINFINITE) {
-
 		/*
 		 * If file_versions is 0 or ISC_LOG_ROLLINFINITE, write
 		 * the "should not appear" and "should be in file" messages
 		 * to ensure they get rolled.
 		 */
-		if (file_versions <= 0)
+		if (file_versions <= 0) {
 			file_versions = FILE_VERSIONS;
-
-		else
+		} else {
 			isc_log_write(lctx, DNS_LOGCATEGORY_GENERAL,
 				      DNS_LOGMODULE_DB, ISC_LOG_NOTICE,
 				      "This should be rolled over "
 				      "and not appear!");
+		}
 
 		for (i = file_versions - 1; i >= 0; i--)
 			isc_log_write(lctx, DNS_LOGCATEGORY_GENERAL,
@@ -336,8 +338,9 @@ main(int argc, char **argv) {
  cleanup:
 	isc_log_destroy(&lctx);
 
-	if (show_final_mem)
+	if (show_final_mem) {
 		isc_mem_stats(mctx, stderr);
+	}
 
 	return (0);
 }

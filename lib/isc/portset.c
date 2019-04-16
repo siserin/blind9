@@ -29,8 +29,8 @@
  * the second most significant bit of buf[0] corresponds to port 1.
  */
 struct isc_portset {
-	unsigned int nports;	/*%< number of ports in the set */
-	uint32_t buf[ISC_PORTSET_BUFSIZE];
+	unsigned int	    nports; /*%< number of ports in the set */
+	uint32_t	    buf[ISC_PORTSET_BUFSIZE];
 };
 
 static inline bool
@@ -61,8 +61,9 @@ isc_portset_create(isc_mem_t *mctx, isc_portset_t **portsetp) {
 	REQUIRE(portsetp != NULL && *portsetp == NULL);
 
 	portset = isc_mem_get(mctx, sizeof(*portset));
-	if (portset == NULL)
+	if (portset == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	/* Make the set 'empty' by default */
 	memset(portset, 0, sizeof(*portset));
@@ -108,7 +109,8 @@ isc_portset_remove(isc_portset_t *portset, in_port_t port) {
 }
 
 void
-isc_portset_addrange(isc_portset_t *portset, in_port_t port_lo,
+isc_portset_addrange(isc_portset_t *portset,
+		     in_port_t port_lo,
 		     in_port_t port_hi)
 {
 	in_port_t p;
@@ -123,7 +125,8 @@ isc_portset_addrange(isc_portset_t *portset, in_port_t port_lo,
 }
 
 void
-isc_portset_removerange(isc_portset_t *portset, in_port_t port_lo,
+isc_portset_removerange(isc_portset_t *portset,
+			in_port_t port_lo,
 			in_port_t port_hi)
 {
 	in_port_t p;

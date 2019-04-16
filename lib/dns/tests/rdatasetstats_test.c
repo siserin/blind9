@@ -91,7 +91,7 @@ checkit1(dns_rdatastatstype_t which, uint64_t value, void *arg) {
 	unsigned int attributes;
 #if debug
 	unsigned int type;
-#endif
+#endif /* if debug */
 
 	UNUSED(which);
 	UNUSED(arg);
@@ -106,7 +106,7 @@ checkit1(dns_rdatastatstype_t which, uint64_t value, void *arg) {
 		ATTRIBUTE_SET(DNS_RDATASTATSTYPE_ATTR_STALE) ? "#" : " ",
 		ATTRIBUTE_SET(DNS_RDATASTATSTYPE_ATTR_NXDOMAIN) ? "X" : " ",
 		type, (unsigned)value);
-#endif
+#endif /* if debug */
 	if ((attributes & DNS_RDATASTATSTYPE_ATTR_STALE) == 0) {
 		assert_int_equal(value, 1);
 	} else {
@@ -119,7 +119,7 @@ checkit2(dns_rdatastatstype_t which, uint64_t value, void *arg) {
 	unsigned int attributes;
 #if debug
 	unsigned int type;
-#endif
+#endif /* if debug */
 
 	UNUSED(which);
 	UNUSED(arg);
@@ -134,7 +134,7 @@ checkit2(dns_rdatastatstype_t which, uint64_t value, void *arg) {
 		ATTRIBUTE_SET(DNS_RDATASTATSTYPE_ATTR_STALE) ? "#" : " ",
 		ATTRIBUTE_SET(DNS_RDATASTATSTYPE_ATTR_NXDOMAIN) ? "X" : " ",
 		type, (unsigned)value);
-#endif
+#endif /* if debug */
 	if ((attributes & DNS_RDATASTATSTYPE_ATTR_STALE) == 0) {
 		assert_int_equal(value, 0);
 	} else {
@@ -206,4 +206,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

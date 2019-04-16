@@ -14,8 +14,8 @@
 #define ISC_SYMTAB_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file isc/symtab.h
  * \brief Provides a simple memory-based symbol table.
@@ -88,28 +88,32 @@
  ***/
 /*% Symbol table value. */
 typedef union isc_symvalue {
-	void *				as_pointer;
-	const void *			as_cpointer;
-	int				as_integer;
-	unsigned int			as_uinteger;
+	void *		    as_pointer;
+	const void *	    as_cpointer;
+	int		    as_integer;
+	unsigned int	    as_uinteger;
 } isc_symvalue_t;
 
 typedef void (*isc_symtabaction_t)(char *key, unsigned int type,
 				   isc_symvalue_t value, void *userarg);
 /*% Symbol table exists. */
 typedef enum {
-	isc_symexists_reject = 0,	/*%< Disallow the define */
-	isc_symexists_replace = 1,	/*%< Replace the old value with the new */
-	isc_symexists_add = 2		/*%< Add the new tuple */
+	isc_symexists_reject = 0,       /*%< Disallow the define */
+	isc_symexists_replace = 1,      /*%< Replace the old value with the new
+	                                 * */
+	isc_symexists_add = 2           /*%< Add the new tuple */
 } isc_symexists_t;
 
 ISC_LANG_BEGINDECLS
 
 /*% Create a symbol table. */
 isc_result_t
-isc_symtab_create(isc_mem_t *mctx, unsigned int size,
-		  isc_symtabaction_t undefine_action, void *undefine_arg,
-		  bool case_sensitive, isc_symtab_t **symtabp);
+isc_symtab_create(isc_mem_t *mctx,
+		  unsigned int size,
+		  isc_symtabaction_t undefine_action,
+		  void *undefine_arg,
+		  bool case_sensitive,
+		  isc_symtab_t **symtabp);
 
 /*% Destroy a symbol table. */
 void
@@ -117,13 +121,18 @@ isc_symtab_destroy(isc_symtab_t **symtabp);
 
 /*% Lookup a symbol table. */
 isc_result_t
-isc_symtab_lookup(isc_symtab_t *symtab, const char *key, unsigned int type,
+isc_symtab_lookup(isc_symtab_t *symtab,
+		  const char *key,
+		  unsigned int type,
 		  isc_symvalue_t *value);
 
 /*% Define a symbol table. */
 isc_result_t
-isc_symtab_define(isc_symtab_t *symtab, const char *key, unsigned int type,
-		  isc_symvalue_t value, isc_symexists_t exists_policy);
+isc_symtab_define(isc_symtab_t *symtab,
+		  const char *key,
+		  unsigned int type,
+		  isc_symvalue_t value,
+		  isc_symexists_t exists_policy);
 
 /*% Undefine a symbol table. */
 isc_result_t

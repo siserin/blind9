@@ -30,10 +30,10 @@
 #include <dns/ttl.h>
 
 #define RETERR(x) do { \
-	isc_result_t _r = (x); \
-	if (_r != ISC_R_SUCCESS) \
-		return (_r); \
-	} while (0)
+		isc_result_t _r = (x); \
+		if (_r != ISC_R_SUCCESS) { \
+			return (_r);} \
+} while (0)
 
 
 static isc_result_t bind_ttl(isc_textregion_t *source, uint32_t *ttl);
@@ -42,25 +42,30 @@ static isc_result_t bind_ttl(isc_textregion_t *source, uint32_t *ttl);
  * Helper for dns_ttl_totext().
  */
 static isc_result_t
-ttlfmt(unsigned int t, const char *s, bool verbose,
-       bool space, isc_buffer_t *target)
+ttlfmt(unsigned int t,
+       const char *s,
+       bool verbose,
+       bool space,
+       isc_buffer_t *target)
 {
 	char tmp[60];
 	unsigned int len;
 	isc_region_t region;
 
-	if (verbose)
+	if (verbose) {
 		len = snprintf(tmp, sizeof(tmp), "%s%u %s%s",
 			       space ? " " : "",
 			       t, s,
 			       t == 1 ? "" : "s");
-	else
+	} else {
 		len = snprintf(tmp, sizeof(tmp), "%u%c", t, s[0]);
+	}
 
 	INSIST(len + 1 <= sizeof(tmp));
 	isc_buffer_availableregion(target, &region);
-	if (len > region.length)
+	if (len > region.length) {
 		return (ISC_R_NOSPACE);
+	}
 	memmove(region.base, tmp, len);
 	isc_buffer_add(target, len);
 
@@ -71,8 +76,7 @@ ttlfmt(unsigned int t, const char *s, bool verbose,
  * Derived from bind8 ns_format_ttl().
  */
 isc_result_t
-dns_ttl_totext(uint32_t src, bool verbose,
-	       bool upcase, isc_buffer_t *target)
+dns_ttl_totext(uint32_t src, bool verbose, bool upcase, isc_buffer_t *target)
 {
 	unsigned secs, mins, hours, days, weeks, x;
 
@@ -137,8 +141,9 @@ dns_ttl_fromtext(isc_textregion_t *source, uint32_t *ttl) {
 	isc_result_t result;
 
 	result = bind_ttl(source, ttl);
-	if (result != ISC_R_SUCCESS && result != ISC_R_RANGE)
+	if (result != ISC_R_SUCCESS && result != ISC_R_RANGE) {
 		result = DNS_R_BADTTL;
+	}
 	return (result);
 }
 
@@ -154,8 +159,9 @@ bind_ttl(isc_textregion_t *source, uint32_t *ttl) {
 	 * Copy the buffer as it may not be NULL terminated.
 	 * No legal counter / ttl is longer that 63 characters.
 	 */
-	if (source->length > sizeof(buf) - 1)
+	if (source->length > sizeof(buf) - 1) {
 		return (DNS_R_SYNTAX);
+	}
 	/* Copy source->length bytes and NUL terminate. */
 	snprintf(buf, sizeof(buf), "%.*s", (int)source->length, source->base);
 	s = buf;
@@ -164,13 +170,15 @@ bind_ttl(isc_textregion_t *source, uint32_t *ttl) {
 		isc_result_t result;
 
 		char *np = nbuf;
-		while (*s != '\0' && isdigit((unsigned char)*s))
+		while (*s != '\0' && isdigit((unsigned char)*s)) {
 			*np++ = *s++;
+		}
 		*np++ = '\0';
 		INSIST(np - nbuf <= (int)sizeof(nbuf));
 		result = isc_parse_uint32(&n, nbuf, 10);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (DNS_R_SYNTAX);
+		}
 		switch (*s) {
 		case 'w':
 		case 'W':
@@ -199,8 +207,9 @@ bind_ttl(isc_textregion_t *source, uint32_t *ttl) {
 			break;
 		case '\0':
 			/* Plain number? */
-			if (tmp != 0ULL)
+			if (tmp != 0ULL) {
 				return (DNS_R_SYNTAX);
+			}
 			tmp = n;
 			break;
 		default:
@@ -208,8 +217,9 @@ bind_ttl(isc_textregion_t *source, uint32_t *ttl) {
 		}
 	} while (*s != '\0');
 
-	if (tmp > 0xffffffffULL)
+	if (tmp > 0xffffffffULL) {
 		return (ISC_R_RANGE);
+	}
 
 	*ttl = (uint32_t)(tmp & 0xffffffffUL);
 	return (ISC_R_SUCCESS);

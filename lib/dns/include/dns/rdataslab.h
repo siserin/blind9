@@ -52,11 +52,11 @@ ISC_LANG_BEGINDECLS
 #define DNS_RDATASLAB_FORCE 0x1
 #define DNS_RDATASLAB_EXACT 0x2
 
-#define DNS_RDATASLAB_OFFLINE 0x01 	/* RRSIG is for offline DNSKEY */
-#define DNS_RDATASLAB_WARNMASK 0x0E	/*%< RRSIG(DNSKEY) expired
-					 * warnings number mask. */
-#define DNS_RDATASLAB_WARNSHIFT 1	/*%< How many bits to shift to find
-					 * remaining expired warning number. */
+#define DNS_RDATASLAB_OFFLINE 0x01      /* RRSIG is for offline DNSKEY */
+#define DNS_RDATASLAB_WARNMASK 0x0E     /*%< RRSIG(DNSKEY) expired
+	                                * warnings number mask. */
+#define DNS_RDATASLAB_WARNSHIFT 1       /*%< How many bits to shift to find
+	                                 * remaining expired warning number. */
 
 
 /***
@@ -64,8 +64,10 @@ ISC_LANG_BEGINDECLS
  ***/
 
 isc_result_t
-dns_rdataslab_fromrdataset(dns_rdataset_t *rdataset, isc_mem_t *mctx,
-			   isc_region_t *region, unsigned int reservelen);
+dns_rdataslab_fromrdataset(dns_rdataset_t *rdataset,
+			   isc_mem_t *mctx,
+			   isc_region_t *region,
+			   unsigned int reservelen);
 /*%<
  * Slabify a rdataset.  The slab area will be allocated and returned
  * in 'region'.
@@ -109,19 +111,27 @@ dns_rdataslab_count(unsigned char *slab, unsigned int reservelen);
  */
 
 isc_result_t
-dns_rdataslab_merge(unsigned char *oslab, unsigned char *nslab,
-		    unsigned int reservelen, isc_mem_t *mctx,
-		    dns_rdataclass_t rdclass, dns_rdatatype_t type,
-		    unsigned int flags, unsigned char **tslabp);
+dns_rdataslab_merge(unsigned char *oslab,
+		    unsigned char *nslab,
+		    unsigned int reservelen,
+		    isc_mem_t *mctx,
+		    dns_rdataclass_t rdclass,
+		    dns_rdatatype_t type,
+		    unsigned int flags,
+		    unsigned char **tslabp);
 /*%<
  * Merge 'oslab' and 'nslab'.
  */
 
 isc_result_t
-dns_rdataslab_subtract(unsigned char *mslab, unsigned char *sslab,
-		       unsigned int reservelen, isc_mem_t *mctx,
-		       dns_rdataclass_t rdclass, dns_rdatatype_t type,
-		       unsigned int flags, unsigned char **tslabp);
+dns_rdataslab_subtract(unsigned char *mslab,
+		       unsigned char *sslab,
+		       unsigned int reservelen,
+		       isc_mem_t *mctx,
+		       dns_rdataclass_t rdclass,
+		       dns_rdatatype_t type,
+		       unsigned int flags,
+		       unsigned char **tslabp);
 /*%<
  * Subtract 'sslab' from 'mslab'.  If 'exact' is true then all elements
  * of 'sslab' must exist in 'mslab'.
@@ -131,7 +141,8 @@ dns_rdataslab_subtract(unsigned char *mslab, unsigned char *sslab,
  */
 
 bool
-dns_rdataslab_equal(unsigned char *slab1, unsigned char *slab2,
+dns_rdataslab_equal(unsigned char *slab1,
+		    unsigned char *slab2,
 		    unsigned int reservelen);
 /*%<
  * Compare two rdataslabs for equality.  This does _not_ do a full
@@ -144,8 +155,10 @@ dns_rdataslab_equal(unsigned char *slab1, unsigned char *slab2,
  *\li	true if the slabs are equal, false otherwise.
  */
 bool
-dns_rdataslab_equalx(unsigned char *slab1, unsigned char *slab2,
-		     unsigned int reservelen, dns_rdataclass_t rdclass,
+dns_rdataslab_equalx(unsigned char *slab1,
+		     unsigned char *slab2,
+		     unsigned int reservelen,
+		     dns_rdataclass_t rdclass,
 		     dns_rdatatype_t type);
 /*%<
  * Compare two rdataslabs for DNSSEC equality.

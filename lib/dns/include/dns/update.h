@@ -29,7 +29,7 @@
 typedef struct {
 	void (*func)(void *arg, dns_zone_t *zone, int level,
 		     const char *message);
-	void *arg;
+	void *      arg;
 } dns_update_log_t;
 
 ISC_LANG_BEGINDECLS
@@ -51,14 +51,22 @@ dns_update_soaserial(uint32_t serial, dns_updatemethod_t method);
  */
 
 isc_result_t
-dns_update_signatures(dns_update_log_t *log, dns_zone_t *zone, dns_db_t *db,
-		      dns_dbversion_t *oldver, dns_dbversion_t *newver,
-		      dns_diff_t *diff, uint32_t sigvalidityinterval);
+dns_update_signatures(dns_update_log_t *log,
+		      dns_zone_t *zone,
+		      dns_db_t *db,
+		      dns_dbversion_t *oldver,
+		      dns_dbversion_t *newver,
+		      dns_diff_t *diff,
+		      uint32_t sigvalidityinterval);
 
 isc_result_t
-dns_update_signaturesinc(dns_update_log_t *log, dns_zone_t *zone, dns_db_t *db,
-			 dns_dbversion_t *oldver, dns_dbversion_t *newver,
-			 dns_diff_t *diff, uint32_t sigvalidityinterval,
+dns_update_signaturesinc(dns_update_log_t *log,
+			 dns_zone_t *zone,
+			 dns_db_t *db,
+			 dns_dbversion_t *oldver,
+			 dns_dbversion_t *newver,
+			 dns_diff_t *diff,
+			 uint32_t sigvalidityinterval,
 			 dns_update_state_t **state);
 
 ISC_LANG_ENDDECLS

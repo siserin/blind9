@@ -66,7 +66,8 @@ isc_file_getmodtime(const char *file, isc_time_t *time);
 isc_result_t
 isc_file_mktemplate(const char *path, char *buf, size_t buflen);
 /*!<
- * \brief Generate a template string suitable for use with isc_file_openunique().
+ * \brief Generate a template string suitable for use with
+ * isc_file_openunique().
  *
  * Notes:
  *\li	This function is intended to make creating temporary files
@@ -90,7 +91,7 @@ isc_file_mktemplate(const char *path, char *buf, size_t buflen);
  *		buf is unchanged.
  *
  * Returns:
- *\li	#ISC_R_SUCCESS 	Success.
+ *\li	#ISC_R_SUCCESS  Success.
  *\li	#ISC_R_NOSPACE	buflen indicates buf is too small for the catenation
  *				of the path with the internal template string.
  */
@@ -179,7 +180,8 @@ isc_file_rename(const char *oldname, const char *newname);
 bool
 isc_file_exists(const char *pathname);
 /*!<
- * \brief Return #true if the calling process can tell that the given file exists.
+ * \brief Return #true if the calling process can tell that the given file
+ * exists.
  * Will not return true if the calling process has insufficient privileges
  * to search the entire path.
  */
@@ -263,11 +265,13 @@ isc_file_progname(const char *filename, char *buf, size_t buflen);
  *
  * Returns:
  *\li	#ISC_R_SUCCESS
- *\li	#ISC_R_NOSPACE 	The name did not fit in 'buf'.
+ *\li	#ISC_R_NOSPACE  The name did not fit in 'buf'.
  */
 
 isc_result_t
-isc_file_template(const char *path, const char *templet, char *buf,
+isc_file_template(const char *path,
+		  const char *templet,
+		  char *buf,
 		  size_t buflen);
 /*%<
  * Create an OS specific template using 'path' to define the directory
@@ -308,8 +312,10 @@ isc_file_safecreate(const char *filename, FILE **fp);
  */
 
 isc_result_t
-isc_file_splitpath(isc_mem_t *mctx, const char *path,
-		   char **dirname, char const **basename);
+isc_file_splitpath(isc_mem_t *mctx,
+		   const char *path,
+		   char **dirname,
+		   char const **basename);
 /*%<
  * Split a path into dirname and basename.  If 'path' contains no slash
  * (or, on windows, backslash), then '*dirname' is set to ".".
@@ -343,8 +349,8 @@ isc_file_getsizefd(int fd, off_t *size);
  */
 
 void *
-isc_file_mmap(void *addr, size_t len, int prot,
-	      int flags, int fd, off_t offset);
+isc_file_mmap(void *addr, size_t len, int prot, int flags, int fd,
+	      off_t offset);
 /*%<
  * Portable front-end to mmap().  If mmap() is not defined on this
  * platform, then we simulate it by calling malloc() and read().
@@ -359,8 +365,11 @@ isc_file_munmap(void *addr, size_t len);
  */
 
 isc_result_t
-isc_file_sanitize(const char *dir, const char *base, const char *ext,
-		  char *path, size_t length);
+isc_file_sanitize(const char *dir,
+		  const char *base,
+		  const char *ext,
+		  char *path,
+		  size_t length);
 /*%<
  * Generate a sanitized filename, such as for MKEYS or NZF files.
  *

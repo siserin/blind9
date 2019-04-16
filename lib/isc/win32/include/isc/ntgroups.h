@@ -20,8 +20,10 @@ ISC_LANG_BEGINDECLS
 
 
 isc_result_t
-isc_ntsecurity_getaccountgroups(char *name, char **Groups, unsigned int maxgroups,
-	     unsigned int *total);
+isc_ntsecurity_getaccountgroups(char*name,
+				char**Groups,
+				unsigned int maxgroups,
+				unsigned int*total);
 
 ISC_LANG_ENDDECLS
 

@@ -28,11 +28,11 @@ typedef enum {
 	dns_ssumatchtype_name = 0,
 	dns_ssumatchtype_subdomain = 1,
 	dns_ssumatchtype_wildcard = 2,
-	dns_ssumatchtype_self	 = 3,
+	dns_ssumatchtype_self    = 3,
 	dns_ssumatchtype_selfsub = 4,
 	dns_ssumatchtype_selfwild = 5,
 	dns_ssumatchtype_selfkrb5 = 6,
-	dns_ssumatchtype_selfms	 = 7,
+	dns_ssumatchtype_selfms  = 7,
 	dns_ssumatchtype_subdomainms = 8,
 	dns_ssumatchtype_subdomainkrb5 = 9,
 	dns_ssumatchtype_tcpself = 10,
@@ -41,9 +41,9 @@ typedef enum {
 	dns_ssumatchtype_local = 13,
 	dns_ssumatchtype_selfsubms = 14,
 	dns_ssumatchtype_selfsubkrb5 = 15,
-	dns_ssumatchtype_max = 15,	/* max value */
+	dns_ssumatchtype_max = 15,      /* max value */
 
-	dns_ssumatchtype_dlz = 16	/* intentionally higher than _max */
+	dns_ssumatchtype_dlz = 16       /* intentionally higher than _max */
 } dns_ssumatchtype_t;
 
 isc_result_t
@@ -62,7 +62,8 @@ dns_ssutable_create(isc_mem_t *mctx, dns_ssutable_t **table);
  */
 
 isc_result_t
-dns_ssutable_createdlz(isc_mem_t *mctx, dns_ssutable_t **tablep,
+dns_ssutable_createdlz(isc_mem_t *mctx,
+		       dns_ssutable_t **tablep,
 		       dns_dlzdb_t *dlzdatabase);
 /*%<
  * Create an SSU table that contains a dlzdatabase pointer, and a
@@ -99,9 +100,12 @@ dns_ssutable_detach(dns_ssutable_t **tablep);
  */
 
 isc_result_t
-dns_ssutable_addrule(dns_ssutable_t *table, bool grant,
-		     const dns_name_t *identity, dns_ssumatchtype_t matchtype,
-		     const dns_name_t *name, unsigned int ntypes,
+dns_ssutable_addrule(dns_ssutable_t *table,
+		     bool grant,
+		     const dns_name_t *identity,
+		     dns_ssumatchtype_t matchtype,
+		     const dns_name_t *name,
+		     unsigned int ntypes,
 		     dns_rdatatype_t *types);
 /*%<
  *	Adds a new rule to a simple-secure-update rule table.  The rule
@@ -132,10 +136,14 @@ dns_ssutable_addrule(dns_ssutable_t *table, bool grant,
  */
 
 bool
-dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
-			const dns_name_t *name, const isc_netaddr_t *addr,
-			bool tcp, const dns_aclenv_t *env,
-			dns_rdatatype_t type, const dst_key_t *key);
+dns_ssutable_checkrules(dns_ssutable_t *table,
+			const dns_name_t *signer,
+			const dns_name_t *name,
+			const isc_netaddr_t *addr,
+			bool tcp,
+			const dns_aclenv_t *env,
+			dns_rdatatype_t type,
+			const dst_key_t *key);
 /*%<
  *	Checks that the attempted update of (name, type) is allowed according
  *	to the rules specified in the simple-secure-update rule table.  If
@@ -178,18 +186,18 @@ dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
 
 
 /*% Accessor functions to extract rule components */
-bool	dns_ssurule_isgrant(const dns_ssurule_t *rule);
+bool    dns_ssurule_isgrant(const dns_ssurule_t *rule);
 /*% Accessor functions to extract rule components */
-dns_name_t *	dns_ssurule_identity(const dns_ssurule_t *rule);
+dns_name_t *dns_ssurule_identity(const dns_ssurule_t *rule);
 /*% Accessor functions to extract rule components */
-unsigned int	dns_ssurule_matchtype(const dns_ssurule_t *rule);
+unsigned int    dns_ssurule_matchtype(const dns_ssurule_t *rule);
 /*% Accessor functions to extract rule components */
-dns_name_t *	dns_ssurule_name(const dns_ssurule_t *rule);
+dns_name_t *dns_ssurule_name(const dns_ssurule_t *rule);
 /*% Accessor functions to extract rule components */
-unsigned int	dns_ssurule_types(const dns_ssurule_t *rule,
+unsigned int    dns_ssurule_types(const dns_ssurule_t *rule,
 				  dns_rdatatype_t **types);
 
-isc_result_t	dns_ssutable_firstrule(const dns_ssutable_t *table,
+isc_result_t    dns_ssutable_firstrule(const dns_ssutable_t *table,
 				       dns_ssurule_t **rule);
 /*%<
  * Initiates a rule iterator.  There is no need to maintain any state.
@@ -199,7 +207,7 @@ isc_result_t	dns_ssutable_firstrule(const dns_ssutable_t *table,
  *\li	#ISC_R_NOMORE
  */
 
-isc_result_t	dns_ssutable_nextrule(dns_ssurule_t *rule,
+isc_result_t    dns_ssutable_nextrule(dns_ssurule_t *rule,
 				      dns_ssurule_t **nextrule);
 /*%<
  * Returns the next rule in the table.
@@ -210,9 +218,12 @@ isc_result_t	dns_ssutable_nextrule(dns_ssurule_t *rule,
  */
 
 bool
-dns_ssu_external_match(const dns_name_t *identity, const dns_name_t *signer,
-		       const dns_name_t *name, const isc_netaddr_t *tcpaddr,
-		       dns_rdatatype_t type, const dst_key_t *key,
+dns_ssu_external_match(const dns_name_t *identity,
+		       const dns_name_t *signer,
+		       const dns_name_t *name,
+		       const isc_netaddr_t *tcpaddr,
+		       dns_rdatatype_t type,
+		       const dst_key_t *key,
 		       isc_mem_t *mctx);
 /*%<
  * Check a policy rule via an external application

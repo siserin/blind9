@@ -31,8 +31,10 @@ ISC_LANG_BEGINDECLS
  ***/
 
 isc_result_t
-dns_timer_setidle(isc_timer_t *timer, unsigned int maxtime,
-		  unsigned int idletime, bool purge);
+dns_timer_setidle(isc_timer_t *timer,
+		  unsigned int maxtime,
+		  unsigned int idletime,
+		  bool purge);
 /*%<
  * Convenience function for setting up simple, one-second-granularity
  * idle timers as used by zone transfers.

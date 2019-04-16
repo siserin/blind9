@@ -31,9 +31,9 @@
 
 #include "dnstest.h"
 
-#define	BUFLEN		255
-#define	BIGBUFLEN	(64 * 1024)
-#define TEST_ORIGIN	"test"
+#define BUFLEN          255
+#define BIGBUFLEN       (64 * 1024)
+#define TEST_ORIGIN     "test"
 
 static int
 _setup(void **state) {
@@ -57,8 +57,10 @@ _teardown(void **state) {
 }
 
 static void
-test_create(const char *oldfile, dns_db_t **old,
-	    const char *newfile, dns_db_t **newdb)
+test_create(const char *oldfile,
+	    dns_db_t **old,
+	    const char *newfile,
+	    dns_db_t **newdb)
 {
 	isc_result_t result;
 
@@ -114,7 +116,8 @@ diffx_add(void **state) {
 
 	assert_false(ISC_LIST_EMPTY(diff.tuples));
 	for (tuple = ISC_LIST_HEAD(diff.tuples); tuple != NULL;
-	     tuple = ISC_LIST_NEXT(tuple, link)) {
+	     tuple = ISC_LIST_NEXT(tuple, link))
+	{
 		assert_int_equal(tuple->op, DNS_DIFFOP_ADD);
 		count++;
 	}
@@ -146,7 +149,8 @@ diffx_remove(void **state) {
 
 	assert_false(ISC_LIST_EMPTY(diff.tuples));
 	for (tuple = ISC_LIST_HEAD(diff.tuples); tuple != NULL;
-	     tuple = ISC_LIST_NEXT(tuple, link)) {
+	     tuple = ISC_LIST_NEXT(tuple, link))
+	{
 		assert_int_equal(tuple->op, DNS_DIFFOP_DEL);
 		count++;
 	}
@@ -179,4 +183,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

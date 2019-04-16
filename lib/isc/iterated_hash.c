@@ -17,9 +17,12 @@
 
 int
 isc_iterated_hash(unsigned char *out,
-		  const unsigned int hashalg, const int iterations,
-		  const unsigned char *salt, const int saltlength,
-		  const unsigned char *in, const int inlength)
+		  const unsigned int hashalg,
+		  const int iterations,
+		  const unsigned char *salt,
+		  const int saltlength,
+		  const unsigned char *in,
+		  const int inlength)
 {
 	isc_md_t *md;
 	isc_result_t result;
@@ -68,7 +71,7 @@ isc_iterated_hash(unsigned char *out,
 	isc_md_free(md);
 
 	return (outlength);
-md_fail:
+ md_fail:
 	isc_md_free(md);
 	return (0);
 }

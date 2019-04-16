@@ -30,19 +30,19 @@
 #include "isctest.h"
 
 static int
-_setup(void **state) {
+_setup(void**state) {
 	isc_result_t result;
 
 	UNUSED(state);
 
-	result = isc_test_begin(NULL, true, 0);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = isc_test_begin(NULL,true,0);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	return (0);
 }
 
 static int
-_teardown(void **state) {
+_teardown(void**state) {
 	UNUSED(state);
 
 	isc_test_end();
@@ -52,15 +52,15 @@ _teardown(void **state) {
 
 /* Create a taskpool */
 static void
-create_pool(void **state) {
+create_pool(void**state) {
 	isc_result_t result;
-	isc_taskpool_t *pool = NULL;
+	isc_taskpool_t*pool = NULL;
 
 	UNUSED(state);
 
-	result = isc_taskpool_create(taskmgr, mctx, 8, 2, &pool);
-	assert_int_equal(result, ISC_R_SUCCESS);
-	assert_int_equal(isc_taskpool_size(pool), 8);
+	result = isc_taskpool_create(taskmgr,mctx,8,2,&pool);
+	assert_int_equal(result,ISC_R_SUCCESS);
+	assert_int_equal(isc_taskpool_size(pool),8);
 
 	isc_taskpool_destroy(&pool);
 	assert_null(pool);
@@ -68,42 +68,42 @@ create_pool(void **state) {
 
 /* Resize a taskpool */
 static void
-expand_pool(void **state) {
+expand_pool(void**state) {
 	isc_result_t result;
-	isc_taskpool_t *pool1 = NULL, *pool2 = NULL, *hold = NULL;
+	isc_taskpool_t*pool1 = NULL,*pool2 = NULL,*hold = NULL;
 
 	UNUSED(state);
 
-	result = isc_taskpool_create(taskmgr, mctx, 10, 2, &pool1);
-	assert_int_equal(result, ISC_R_SUCCESS);
-	assert_int_equal(isc_taskpool_size(pool1), 10);
+	result = isc_taskpool_create(taskmgr,mctx,10,2,&pool1);
+	assert_int_equal(result,ISC_R_SUCCESS);
+	assert_int_equal(isc_taskpool_size(pool1),10);
 
 	/* resizing to a smaller size should have no effect */
 	hold = pool1;
-	result = isc_taskpool_expand(&pool1, 5, &pool2);
-	assert_int_equal(result, ISC_R_SUCCESS);
-	assert_int_equal(isc_taskpool_size(pool2), 10);
-	assert_ptr_equal(pool2, hold);
+	result = isc_taskpool_expand(&pool1,5,&pool2);
+	assert_int_equal(result,ISC_R_SUCCESS);
+	assert_int_equal(isc_taskpool_size(pool2),10);
+	assert_ptr_equal(pool2,hold);
 	assert_null(pool1);
 	pool1 = pool2;
 	pool2 = NULL;
 
 	/* resizing to the same size should have no effect */
 	hold = pool1;
-	result = isc_taskpool_expand(&pool1, 10, &pool2);
-	assert_int_equal(result, ISC_R_SUCCESS);
-	assert_int_equal(isc_taskpool_size(pool2), 10);
-	assert_ptr_equal(pool2, hold);
+	result = isc_taskpool_expand(&pool1,10,&pool2);
+	assert_int_equal(result,ISC_R_SUCCESS);
+	assert_int_equal(isc_taskpool_size(pool2),10);
+	assert_ptr_equal(pool2,hold);
 	assert_null(pool1);
 	pool1 = pool2;
 	pool2 = NULL;
 
 	/* resizing to larger size should make a new pool */
 	hold = pool1;
-	result = isc_taskpool_expand(&pool1, 20, &pool2);
-	assert_int_equal(result, ISC_R_SUCCESS);
-	assert_int_equal(isc_taskpool_size(pool2), 20);
-	assert_ptr_not_equal(pool2, hold);
+	result = isc_taskpool_expand(&pool1,20,&pool2);
+	assert_int_equal(result,ISC_R_SUCCESS);
+	assert_int_equal(isc_taskpool_size(pool2),20);
+	assert_ptr_not_equal(pool2,hold);
 	assert_null(pool1);
 
 	isc_taskpool_destroy(&pool2);
@@ -112,25 +112,25 @@ expand_pool(void **state) {
 
 /* Get tasks */
 static void
-get_tasks(void **state) {
+get_tasks(void**state) {
 	isc_result_t result;
-	isc_taskpool_t *pool = NULL;
-	isc_task_t *task1 = NULL, *task2 = NULL, *task3 = NULL;
+	isc_taskpool_t*pool = NULL;
+	isc_task_t*task1 = NULL,*task2 = NULL,*task3 = NULL;
 
 	UNUSED(state);
 
-	result = isc_taskpool_create(taskmgr, mctx, 2, 2, &pool);
-	assert_int_equal(result, ISC_R_SUCCESS);
-	assert_int_equal(isc_taskpool_size(pool), 2);
+	result = isc_taskpool_create(taskmgr,mctx,2,2,&pool);
+	assert_int_equal(result,ISC_R_SUCCESS);
+	assert_int_equal(isc_taskpool_size(pool),2);
 
 	/* two tasks in pool; make sure we can access them more than twice */
-	isc_taskpool_gettask(pool, &task1);
+	isc_taskpool_gettask(pool,&task1);
 	assert_true(ISCAPI_TASK_VALID(task1));
 
-	isc_taskpool_gettask(pool, &task2);
+	isc_taskpool_gettask(pool,&task2);
 	assert_true(ISCAPI_TASK_VALID(task2));
 
-	isc_taskpool_gettask(pool, &task3);
+	isc_taskpool_gettask(pool,&task3);
 	assert_true(ISCAPI_TASK_VALID(task3));
 
 	isc_task_destroy(&task1);
@@ -143,22 +143,22 @@ get_tasks(void **state) {
 
 /* Set privileges */
 static void
-set_privilege(void **state) {
+set_privilege(void**state) {
 	isc_result_t result;
-	isc_taskpool_t *pool = NULL;
-	isc_task_t *task1 = NULL, *task2 = NULL, *task3 = NULL;
+	isc_taskpool_t*pool = NULL;
+	isc_task_t*task1 = NULL,*task2 = NULL,*task3 = NULL;
 
 	UNUSED(state);
 
-	result = isc_taskpool_create(taskmgr, mctx, 2, 2, &pool);
-	assert_int_equal(result, ISC_R_SUCCESS);
-	assert_int_equal(isc_taskpool_size(pool), 2);
+	result = isc_taskpool_create(taskmgr,mctx,2,2,&pool);
+	assert_int_equal(result,ISC_R_SUCCESS);
+	assert_int_equal(isc_taskpool_size(pool),2);
 
-	isc_taskpool_setprivilege(pool, true);
+	isc_taskpool_setprivilege(pool,true);
 
-	isc_taskpool_gettask(pool, &task1);
-	isc_taskpool_gettask(pool, &task2);
-	isc_taskpool_gettask(pool, &task3);
+	isc_taskpool_gettask(pool,&task1);
+	isc_taskpool_gettask(pool,&task2);
+	isc_taskpool_gettask(pool,&task3);
 
 	assert_true(ISCAPI_TASK_VALID(task1));
 	assert_true(ISCAPI_TASK_VALID(task2));
@@ -168,7 +168,7 @@ set_privilege(void **state) {
 	assert_true(isc_task_privilege(task2));
 	assert_true(isc_task_privilege(task3));
 
-	isc_taskpool_setprivilege(pool, false);
+	isc_taskpool_setprivilege(pool,false);
 
 	assert_false(isc_task_privilege(task1));
 	assert_false(isc_task_privilege(task2));
@@ -186,16 +186,16 @@ int
 main(void) {
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test_setup_teardown(create_pool,
-						_setup, _teardown),
+						_setup,_teardown),
 		cmocka_unit_test_setup_teardown(expand_pool,
-						_setup, _teardown),
+						_setup,_teardown),
 		cmocka_unit_test_setup_teardown(get_tasks,
-						_setup, _teardown),
+						_setup,_teardown),
 		cmocka_unit_test_setup_teardown(set_privilege,
-						_setup, _teardown),
+						_setup,_teardown),
 	};
 
-	return (cmocka_run_group_tests(tests, NULL, NULL));
+	return (cmocka_run_group_tests(tests,NULL,NULL));
 }
 
 #else /* HAVE_CMOCKA */
@@ -208,4 +208,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

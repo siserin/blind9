@@ -17,7 +17,7 @@
 #include <stddef.h>
 #include <inttypes.h>
 
-#include "isc/hash.h" // IWYU pragma: keep
+#include "isc/hash.h" /* IWYU pragma: keep */
 #include "isc/likely.h"
 #include "isc/once.h"
 #include "isc/random.h"
@@ -80,9 +80,10 @@ fnv_initialize(void) {
 
 const void *
 isc_hash_get_initializer(void) {
-	if (ISC_UNLIKELY(!fnv_initialized))
+	if (ISC_UNLIKELY(!fnv_initialized)) {
 		RUNTIME_CHECK(isc_once_do(&fnv_once, fnv_initialize) ==
 			      ISC_R_SUCCESS);
+	}
 
 	return (&fnv_offset_basis);
 }
@@ -95,9 +96,10 @@ isc_hash_set_initializer(const void *initializer) {
 	 * Ensure that fnv_initialize() is not called after
 	 * isc_hash_set_initializer() is called.
 	 */
-	if (ISC_UNLIKELY(!fnv_initialized))
+	if (ISC_UNLIKELY(!fnv_initialized)) {
 		RUNTIME_CHECK(isc_once_do(&fnv_once, fnv_initialize) ==
 			      ISC_R_SUCCESS);
+	}
 
 	fnv_offset_basis = *((const unsigned int *)initializer);
 }
@@ -105,7 +107,9 @@ isc_hash_set_initializer(const void *initializer) {
 #define FNV_32_PRIME ((uint32_t)0x01000193)
 
 uint32_t
-isc_hash_function(const void *data, size_t length, bool case_sensitive,
+isc_hash_function(const void *data,
+		  size_t length,
+		  bool case_sensitive,
 		  const uint32_t *previous_hashp)
 {
 	uint32_t hval;
@@ -120,7 +124,7 @@ isc_hash_function(const void *data, size_t length, bool case_sensitive,
 	}
 
 	hval = ISC_UNLIKELY(previous_hashp != NULL) ? *previous_hashp
-						    : fnv_offset_basis;
+	       : fnv_offset_basis;
 
 	if (length == 0) {
 		return (hval);
@@ -154,7 +158,9 @@ isc_hash_function(const void *data, size_t length, bool case_sensitive,
 }
 
 uint32_t
-isc_hash_function_reverse(const void *data, size_t length, bool case_sensitive,
+isc_hash_function_reverse(const void *data,
+			  size_t length,
+			  bool case_sensitive,
 			  const uint32_t *previous_hashp)
 {
 	uint32_t hval;
@@ -169,7 +175,7 @@ isc_hash_function_reverse(const void *data, size_t length, bool case_sensitive,
 	}
 
 	hval = ISC_UNLIKELY(previous_hashp != NULL) ? *previous_hashp
-						    : fnv_offset_basis;
+	       : fnv_offset_basis;
 
 	if (length == 0) {
 		return (hval);

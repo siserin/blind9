@@ -36,19 +36,19 @@
 #include "nstest.h"
 
 static int
-_setup(void **state) {
+_setup(void**state) {
 	isc_result_t result;
 
 	UNUSED(state);
 
-	result = ns_test_begin(NULL, true);
-	assert_int_equal(result, ISC_R_SUCCESS);
+	result = ns_test_begin(NULL,true);
+	assert_int_equal(result,ISC_R_SUCCESS);
 
 	return (0);
 }
 
 static int
-_teardown(void **state) {
+_teardown(void**state) {
 	UNUSED(state);
 
 	ns_test_end();
@@ -57,31 +57,37 @@ _teardown(void **state) {
 }
 
 /*****
- ***** ns__query_sfcache() tests
- *****/
+***** ns__query_sfcache() tests
+*****/
 
 /*%
  * Structure containing parameters for ns__query_sfcache_test().
  */
 typedef struct {
-	const ns_test_id_t id;		   /* libns test identifier */
-	unsigned int qflags;		   /* query flags */
-	bool cache_entry_present; 	   /* whether a SERVFAIL cache entry
-					      matching the query should be
-					      present */
-	uint32_t cache_entry_flags;	   /* NS_FAILCACHE_* flags to set for
-					      the SERVFAIL cache entry */
-	bool servfail_expected;   	   /* whether a cached SERVFAIL is
-					      expected to be returned */
+	const ns_test_id_t	  id;      /* libns test identifier */
+	unsigned int		  qflags;  /* query flags */
+	bool			  cache_entry_present; /* whether a SERVFAIL
+	                                                * cache entry
+	                                                * matching the query
+	                                                * should be
+	                                                * present */
+	uint32_t        cache_entry_flags;           /* NS_FAILCACHE_* flags to
+	                                              * set for
+	                                              * the SERVFAIL cache entry
+	                                              * */
+	bool        servfail_expected;               /* whether a cached
+	                                              * SERVFAIL is
+	                                              * expected to be returned
+	                                              * */
 } ns__query_sfcache_test_params_t;
 
 /*%
  * Perform a single ns__query_sfcache() check using given parameters.
  */
 static void
-run_sfcache_test(const ns__query_sfcache_test_params_t *test) {
-	ns_hooktable_t *query_hooks = NULL;
-	query_ctx_t *qctx = NULL;
+run_sfcache_test(const ns__query_sfcache_test_params_t*test) {
+	ns_hooktable_t*query_hooks = NULL;
+	query_ctx_t*qctx = NULL;
 	isc_result_t result;
 	const ns_hook_t hook = {
 		.action = ns_test_hook_catch_call,
@@ -96,8 +102,8 @@ run_sfcache_test(const ns__query_sfcache_test_params_t *test) {
 	 * Interrupt execution if ns_query_done() is called.
 	 */
 
-	ns_hooktable_create(mctx, &query_hooks);
-	ns_hook_add(query_hooks, mctx, NS_QUERY_DONE_BEGIN, &hook);
+	ns_hooktable_create(mctx,&query_hooks);
+	ns_hook_add(query_hooks,mctx,NS_QUERY_DONE_BEGIN,&hook);
 	ns__hook_table = query_hooks;
 
 	/*
@@ -111,8 +117,8 @@ run_sfcache_test(const ns__query_sfcache_test_params_t *test) {
 			.with_cache = true,
 		};
 
-		result = ns_test_qctx_create(&qctx_params, &qctx);
-		assert_int_equal(result, ISC_R_SUCCESS);
+		result = ns_test_qctx_create(&qctx_params,&qctx);
+		assert_int_equal(result,ISC_R_SUCCESS);
 	}
 
 	/*
@@ -123,13 +129,13 @@ run_sfcache_test(const ns__query_sfcache_test_params_t *test) {
 		isc_interval_t hour;
 		isc_time_t expire;
 
-		isc_interval_set(&hour, 3600, 0);
-		result = isc_time_nowplusinterval(&expire, &hour);
-		assert_int_equal(result, ISC_R_SUCCESS);
+		isc_interval_set(&hour,3600,0);
+		result = isc_time_nowplusinterval(&expire,&hour);
+		assert_int_equal(result,ISC_R_SUCCESS);
 
-		dns_badcache_add(qctx->client->view->failcache, dns_rootname,
-				 dns_rdatatype_ns, true,
-				 test->cache_entry_flags, &expire);
+		dns_badcache_add(qctx->client->view->failcache,dns_rootname,
+				 dns_rdatatype_ns,true,
+				 test->cache_entry_flags,&expire);
 	}
 
 	/*
@@ -141,14 +147,14 @@ run_sfcache_test(const ns__query_sfcache_test_params_t *test) {
 		if (qctx->result != DNS_R_SERVFAIL) {
 			fail_msg("# test \"%s\" on line %d: "
 				 "expected SERVFAIL, got %s",
-				 test->id.description, test->id.lineno,
+				 test->id.description,test->id.lineno,
 				 isc_result_totext(qctx->result));
 		}
 	} else {
 		if (qctx->result != ISC_R_SUCCESS) {
 			fail_msg("# test \"%s\" on line %d: "
 				 "expected success, got %s",
-				 test->id.description, test->id.lineno,
+				 test->id.description,test->id.lineno,
 				 isc_result_totext(qctx->result));
 		}
 	}
@@ -157,12 +163,12 @@ run_sfcache_test(const ns__query_sfcache_test_params_t *test) {
 	 * Clean up.
 	 */
 	ns_test_qctx_destroy(&qctx);
-	ns_hooktable_free(mctx, (void **)&query_hooks);
+	ns_hooktable_free(mctx,(void**)&query_hooks);
 }
 
 /* test ns__query_sfcache() */
 static void
-ns__query_sfcache_test(void **state) {
+ns__query_sfcache_test(void**state) {
 	size_t i;
 
 	const ns__query_sfcache_test_params_t tests[] = {
@@ -243,35 +249,42 @@ ns__query_sfcache_test(void **state) {
 }
 
 /*****
- ***** ns__query_start() tests
- *****/
+***** ns__query_start() tests
+*****/
 
 /*%
  * Structure containing parameters for ns__query_start_test().
  */
 typedef struct {
-	const ns_test_id_t id;		   /* libns test identifier */
-	const char *qname;		   /* QNAME */
-	dns_rdatatype_t qtype;		   /* QTYPE */
-	unsigned int qflags;		   /* query flags */
-	bool disable_name_checks; /* if set to true, owner name
-					      checks will be disabled for the
-					      view created */
-	bool recursive_service;   /* if set to true, the view
-					      created will have a cache
-					      database attached */
-	const char *auth_zone_origin;	   /* origin name of the zone the
-					      created view will be
-					      authoritative for */
-	const char *auth_zone_path;	   /* path to load the authoritative
-					      zone from */
-	enum {				   /* expected result: */
+	const ns_test_id_t	  id;      /* libns test identifier */
+	const char*		  qname;   /* QNAME */
+	dns_rdatatype_t		  qtype;   /* QTYPE */
+	unsigned int		  qflags;  /* query flags */
+	bool			  disable_name_checks; /* if set to true, owner
+	                                                * name
+	                                                *          checks will
+	                                                * be disabled for the
+	                                                *          view created
+	                                                * */
+	bool        recursive_service;               /* if set to true, the view
+	                                              *          created will
+	                                              * have a cache
+	                                              *          database
+	                                              * attached */
+	const char*       auth_zone_origin;         /* origin name of the zone
+	                                             * the
+	                                             * created view will be
+	                                             * authoritative for */
+	const char*       auth_zone_path;         /* path to load the
+	                                           * authoritative
+	                                           * zone from */
+	enum {                             /* expected result: */
 		NS__QUERY_START_R_INVALID,
 		NS__QUERY_START_R_REFUSE,  /* query should be REFUSED */
 		NS__QUERY_START_R_CACHE,   /* query should be answered from
-					      cache */
-		NS__QUERY_START_R_AUTH,	   /* query should be answered using
-					      authoritative data */
+		                            * cache */
+		NS__QUERY_START_R_AUTH,    /* query should be answered using
+		                            * authoritative data */
 	} expected_result;
 } ns__query_start_test_params_t;
 
@@ -279,9 +292,9 @@ typedef struct {
  * Perform a single ns__query_start() check using given parameters.
  */
 static void
-run_start_test(const ns__query_start_test_params_t *test) {
-	ns_hooktable_t *query_hooks = NULL;
-	query_ctx_t *qctx = NULL;
+run_start_test(const ns__query_start_test_params_t*test) {
+	ns_hooktable_t*query_hooks = NULL;
+	query_ctx_t*qctx = NULL;
 	isc_result_t result;
 	const ns_hook_t hook = {
 		.action = ns_test_hook_catch_call,
@@ -297,9 +310,9 @@ run_start_test(const ns__query_start_test_params_t *test) {
 	/*
 	 * Interrupt execution if query_lookup() or ns_query_done() is called.
 	 */
-	ns_hooktable_create(mctx, &query_hooks);
-	ns_hook_add(query_hooks, mctx, NS_QUERY_LOOKUP_BEGIN, &hook);
-	ns_hook_add(query_hooks, mctx, NS_QUERY_DONE_BEGIN, &hook);
+	ns_hooktable_create(mctx,&query_hooks);
+	ns_hook_add(query_hooks,mctx,NS_QUERY_LOOKUP_BEGIN,&hook);
+	ns_hook_add(query_hooks,mctx,NS_QUERY_DONE_BEGIN,&hook);
 	ns__hook_table = query_hooks;
 
 	/*
@@ -312,8 +325,8 @@ run_start_test(const ns__query_start_test_params_t *test) {
 			.qflags = test->qflags,
 			.with_cache = test->recursive_service,
 		};
-		result = ns_test_qctx_create(&qctx_params, &qctx);
-		assert_int_equal(result, ISC_R_SUCCESS);
+		result = ns_test_qctx_create(&qctx_params,&qctx);
+		assert_int_equal(result,ISC_R_SUCCESS);
 	}
 
 	/*
@@ -329,7 +342,7 @@ run_start_test(const ns__query_start_test_params_t *test) {
 		result = ns_test_serve_zone(test->auth_zone_origin,
 					    test->auth_zone_path,
 					    qctx->client->view);
-		assert_int_equal(result, ISC_R_SUCCESS);
+		assert_int_equal(result,ISC_R_SUCCESS);
 	}
 
 	/*
@@ -342,34 +355,34 @@ run_start_test(const ns__query_start_test_params_t *test) {
 		if (qctx->result != DNS_R_REFUSED) {
 			fail_msg("# test \"%s\" on line %d: "
 				 "expected REFUSED, got %s",
-				 test->id.description, test->id.lineno,
+				 test->id.description,test->id.lineno,
 				 isc_result_totext(qctx->result));
 		}
 		if (qctx->zone != NULL) {
 			fail_msg("# test \"%s\" on line %d: "
 				 "no zone was expected to be attached to "
 				 "query context, but some was",
-				 test->id.description, test->id.lineno);
+				 test->id.description,test->id.lineno);
 		}
 		if (qctx->db != NULL) {
 			fail_msg("# test \"%s\" on line %d: "
 				 "no database was expected to be attached to "
 				 "query context, but some was",
-				 test->id.description, test->id.lineno);
+				 test->id.description,test->id.lineno);
 		}
 		break;
 	case NS__QUERY_START_R_CACHE:
 		if (qctx->result != ISC_R_SUCCESS) {
 			fail_msg("# test \"%s\" on line %d: "
 				 "expected success, got %s",
-				 test->id.description, test->id.lineno,
+				 test->id.description,test->id.lineno,
 				 isc_result_totext(qctx->result));
 		}
 		if (qctx->zone != NULL) {
 			fail_msg("# test \"%s\" on line %d: "
 				 "no zone was expected to be attached to "
 				 "query context, but some was",
-				 test->id.description, test->id.lineno);
+				 test->id.description,test->id.lineno);
 		}
 		if (qctx->db == NULL ||
 		    qctx->db != qctx->client->view->cachedb)
@@ -377,32 +390,32 @@ run_start_test(const ns__query_start_test_params_t *test) {
 			fail_msg("# test \"%s\" on line %d: "
 				 "cache database was expected to be "
 				 "attached to query context, but it was not",
-				 test->id.description, test->id.lineno);
+				 test->id.description,test->id.lineno);
 		}
 		break;
 	case NS__QUERY_START_R_AUTH:
 		if (qctx->result != ISC_R_SUCCESS) {
 			fail_msg("# test \"%s\" on line %d: "
 				 "expected success, got %s",
-				 test->id.description, test->id.lineno,
+				 test->id.description,test->id.lineno,
 				 isc_result_totext(qctx->result));
 		}
 		if (qctx->zone == NULL) {
 			fail_msg("# test \"%s\" on line %d: "
 				 "a zone was expected to be attached to query "
 				 "context, but it was not",
-				 test->id.description, test->id.lineno);
+				 test->id.description,test->id.lineno);
 		}
 		if (qctx->db == qctx->client->view->cachedb) {
 			fail_msg("# test \"%s\" on line %d: "
 				 "cache database was not expected to be "
 				 "attached to query context, but it is",
-				 test->id.description, test->id.lineno);
+				 test->id.description,test->id.lineno);
 		}
 		break;
 	case NS__QUERY_START_R_INVALID:
 		fail_msg("# test \"%s\" on line %d has no expected result set",
-			 test->id.description, test->id.lineno);
+			 test->id.description,test->id.lineno);
 		break;
 	default:
 		INSIST(0);
@@ -416,12 +429,12 @@ run_start_test(const ns__query_start_test_params_t *test) {
 		ns_test_cleanup_zone();
 	}
 	ns_test_qctx_destroy(&qctx);
-	ns_hooktable_free(mctx, (void **)&query_hooks);
+	ns_hooktable_free(mctx,(void**)&query_hooks);
 }
 
 /* test ns__query_start() */
 static void
-ns__query_start_test(void **state) {
+ns__query_start_test(void**state) {
 	size_t i;
 
 	const ns__query_start_test_params_t tests[] = {
@@ -593,12 +606,12 @@ int
 main(void) {
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test_setup_teardown(ns__query_sfcache_test,
-						_setup, _teardown),
+						_setup,_teardown),
 		cmocka_unit_test_setup_teardown(ns__query_start_test,
-						_setup, _teardown),
+						_setup,_teardown),
 	};
 
-	return (cmocka_run_group_tests(tests, NULL, NULL));
+	return (cmocka_run_group_tests(tests,NULL,NULL));
 }
 #else /* HAVE_CMOCKA */
 

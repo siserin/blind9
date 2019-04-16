@@ -33,9 +33,9 @@ typedef enum {
 
 struct isc_rwlock {
 	/* Unlocked. */
-	unsigned int		magic;
-	isc_mutex_t		lock;
-	int32_t		spins;
+	unsigned int	    magic;
+	isc_mutex_t	    lock;
+	int32_t		    spins;
 
 	/*
 	 * When some atomic instructions with hardware assistance are
@@ -51,25 +51,25 @@ struct isc_rwlock {
 	 */
 
 	/* Read or modified atomically. */
-	atomic_int_fast32_t	write_requests;
-	atomic_int_fast32_t	write_completions;
-	atomic_int_fast32_t	cnt_and_flag;
+	atomic_int_fast32_t	   write_requests;
+	atomic_int_fast32_t	   write_completions;
+	atomic_int_fast32_t	   cnt_and_flag;
 
 	/* Locked by lock. */
-	isc_condition_t		readable;
-	isc_condition_t		writeable;
-	unsigned int		readers_waiting;
+	isc_condition_t		   readable;
+	isc_condition_t		   writeable;
+	unsigned int		   readers_waiting;
 
 	/* Locked by rwlock itself. */
-	unsigned int		write_granted;
+	unsigned int		   write_granted;
 
 	/* Unlocked. */
-	unsigned int		write_quota;
-
+	unsigned int		   write_quota;
 };
 
 isc_result_t
-isc_rwlock_init(isc_rwlock_t *rwl, unsigned int read_quota,
+isc_rwlock_init(isc_rwlock_t *rwl,
+		unsigned int read_quota,
 		unsigned int write_quota);
 
 isc_result_t

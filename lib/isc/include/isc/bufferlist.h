@@ -14,18 +14,19 @@
 #define ISC_BUFFERLIST_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file isc/bufferlist.h
  *
  *
- *\brief	Buffer lists have no synchronization.  Clients must ensure exclusive
+ *\brief	Buffer lists have no synchronization.  Clients must ensure
+ * exclusive
  *	access.
  *
  * \li Reliability:
  *	No anticipated impact.
-
+ *
  * \li Security:
  *	No anticipated impact.
  *
@@ -63,7 +64,8 @@ isc_bufferlist_usedcount(isc_bufferlist_t *bl);
 unsigned int
 isc_bufferlist_availablecount(isc_bufferlist_t *bl);
 /*!<
- * \brief Return the length of the sum of all available regions of all buffers in
+ * \brief Return the length of the sum of all available regions of all buffers
+ * in
  * the buffer list 'bl'
  *
  * Requires:

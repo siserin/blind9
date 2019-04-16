@@ -13,8 +13,8 @@
 #define _DNSTAP_H
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file
  * \brief
@@ -29,7 +29,7 @@
 #ifdef HAVE_DNSTAP
 #include <fstrm.h>
 #include <protobuf-c/protobuf-c.h>
-#else
+#else /* ifdef HAVE_DNSTAP */
 struct fstrm_iothr_options;
 #endif /* HAVE_DNSTAP */
 
@@ -76,15 +76,15 @@ struct fstrm_iothr_options;
 #define DNS_DTTYPE_UR 0x2000
 
 #define DNS_DTTYPE_QUERY \
-	(DNS_DTTYPE_SQ|DNS_DTTYPE_CQ|DNS_DTTYPE_AQ|\
-	 DNS_DTTYPE_RQ|DNS_DTTYPE_FQ|DNS_DTTYPE_TQ|\
+	(DNS_DTTYPE_SQ | DNS_DTTYPE_CQ | DNS_DTTYPE_AQ | \
+	 DNS_DTTYPE_RQ | DNS_DTTYPE_FQ | DNS_DTTYPE_TQ | \
 	 DNS_DTTYPE_UQ)
 #define DNS_DTTYPE_RESPONSE \
-	(DNS_DTTYPE_SR|DNS_DTTYPE_CR|DNS_DTTYPE_AR|\
-	 DNS_DTTYPE_RR|DNS_DTTYPE_FR|DNS_DTTYPE_TR|\
+	(DNS_DTTYPE_SR | DNS_DTTYPE_CR | DNS_DTTYPE_AR | \
+	 DNS_DTTYPE_RR | DNS_DTTYPE_FR | DNS_DTTYPE_TR | \
 	 DNS_DTTYPE_UR)
 #define DNS_DTTYPE_ALL \
-	(DNS_DTTYPE_QUERY|DNS_DTTYPE_RESPONSE)
+	(DNS_DTTYPE_QUERY | DNS_DTTYPE_RESPONSE)
 
 typedef enum {
 	dns_dtmode_none = 0,
@@ -96,35 +96,38 @@ typedef struct dns_dthandle dns_dthandle_t;
 
 #ifdef HAVE_DNSTAP
 struct dns_dtdata {
-	isc_mem_t *mctx;
+	isc_mem_t *	       mctx;
 
-	void *frame;
+	void *		       frame;
 
-	bool query;
-	bool tcp;
-	dns_dtmsgtype_t type;
+	bool		       query;
+	bool		       tcp;
+	dns_dtmsgtype_t	       type;
 
-	isc_time_t qtime;
-	isc_time_t rtime;
+	isc_time_t	       qtime;
+	isc_time_t	       rtime;
 
-	isc_region_t qaddr;
-	isc_region_t raddr;
+	isc_region_t	       qaddr;
+	isc_region_t	       raddr;
 
-	uint32_t qport;
-	uint32_t rport;
+	uint32_t	       qport;
+	uint32_t	       rport;
 
-	isc_region_t msgdata;
-	dns_message_t *msg;
+	isc_region_t	       msgdata;
+	dns_message_t *	       msg;
 
-	char namebuf[DNS_NAME_FORMATSIZE];
-	char typebuf[DNS_RDATATYPE_FORMATSIZE];
-	char classbuf[DNS_RDATACLASS_FORMATSIZE];
+	char		       namebuf[DNS_NAME_FORMATSIZE];
+	char		       typebuf[DNS_RDATATYPE_FORMATSIZE];
+	char		       classbuf[DNS_RDATACLASS_FORMATSIZE];
 };
 #endif /* HAVE_DNSTAP */
 
 isc_result_t
-dns_dt_create(isc_mem_t *mctx, dns_dtmode_t mode, const char *path,
-	      struct fstrm_iothr_options **foptp, isc_task_t *reopen_task,
+dns_dt_create(isc_mem_t *mctx,
+	      dns_dtmode_t mode,
+	      const char *path,
+	      struct fstrm_iothr_options **foptp,
+	      isc_task_t *reopen_task,
 	      dns_dtenv_t **envp);
 /*%<
  * Create and initialize the dnstap environment.
@@ -169,7 +172,9 @@ dns_dt_create(isc_mem_t *mctx, dns_dtmode_t mode, const char *path,
  */
 
 isc_result_t
-dns_dt_setupfile(dns_dtenv_t *env, uint64_t max_size, int rolls,
+dns_dt_setupfile(dns_dtenv_t *env,
+		 uint64_t max_size,
+		 int rolls,
 		 isc_log_rollsuffix_t suffix);
 /*%<
  * Sets up the dnstap logfile limits.
@@ -275,10 +280,15 @@ dns_dt_shutdown(void);
  */
 
 void
-dns_dt_send(dns_view_t *view, dns_dtmsgtype_t msgtype,
-	    isc_sockaddr_t *qaddr, isc_sockaddr_t *dstaddr,
-	    bool tcp, isc_region_t *zone, isc_time_t *qtime,
-	    isc_time_t *rtime, isc_buffer_t *buf);
+dns_dt_send(dns_view_t *view,
+	    dns_dtmsgtype_t msgtype,
+	    isc_sockaddr_t *qaddr,
+	    isc_sockaddr_t *dstaddr,
+	    bool tcp,
+	    isc_region_t *zone,
+	    isc_time_t *qtime,
+	    isc_time_t *rtime,
+	    isc_buffer_t *buf);
 /*%<
  * Sends a dnstap message to the log, if 'msgtype' is one of the message
  * types represented in 'view->dttypes'.
@@ -345,8 +355,10 @@ dns_dtdata_free(dns_dtdata_t **dp);
  */
 
 isc_result_t
-dns_dt_open(const char *filename, dns_dtmode_t mode,
-	    isc_mem_t *mctx, dns_dthandle_t **handlep);
+dns_dt_open(const char *filename,
+	    dns_dtmode_t mode,
+	    isc_mem_t *mctx,
+	    dns_dthandle_t **handlep);
 /*%<
  * Opens a dnstap framestream at 'filename' and stores a pointer to the
  * reader object in a dns_dthandle_t structure.

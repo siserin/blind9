@@ -18,7 +18,7 @@
 /*! \file isc/magic.h */
 
 typedef struct {
-	unsigned int magic;
+	unsigned int        magic;
 } isc__magic_t;
 
 
@@ -28,9 +28,10 @@ typedef struct {
  * The intent of this is to allow magic numbers to be checked even though
  * the object is otherwise opaque.
  */
-#define ISC_MAGIC_VALID(a,b)	(ISC_LIKELY((a) != NULL) && \
-				 ISC_LIKELY(((const isc__magic_t *)(a))->magic == (b)))
+#define ISC_MAGIC_VALID(a, b)    (ISC_LIKELY((a) != NULL) && \
+				  ISC_LIKELY(((const isc__magic_t *)(a))->magic \
+					     == (b)))
 
-#define ISC_MAGIC(a, b, c, d)	((a) << 24 | (b) << 16 | (c) << 8 | (d))
+#define ISC_MAGIC(a, b, c, d)   ((a) << 24 | (b) << 16 | (c) << 8 | (d))
 
 #endif /* ISC_MAGIC_H */

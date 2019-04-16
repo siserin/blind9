@@ -47,8 +47,10 @@ typedef void (*isc_heapaction_t)(void *, void *);
 typedef struct isc_heap isc_heap_t;
 
 isc_result_t
-isc_heap_create(isc_mem_t *mctx, isc_heapcompare_t compare,
-		isc_heapindex_t index, unsigned int size_increment,
+isc_heap_create(isc_mem_t *mctx,
+		isc_heapcompare_t compare,
+		isc_heapindex_t index,
+		unsigned int size_increment,
 		isc_heap_t **heapp);
 /*!<
  * \brief Create a new heap.  The heap is implemented using a space-efficient

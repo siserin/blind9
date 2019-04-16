@@ -13,8 +13,8 @@
 #define ISCCFG_CFG_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file isccfg/cfg.h
  * \brief
@@ -70,7 +70,7 @@ typedef struct cfg_listelt cfg_listelt_t;
  * "directory".
  */
 typedef isc_result_t
-(*cfg_parsecallback_t)(const char *clausename, const cfg_obj_t *obj, void *arg);
+(*cfg_parsecallback_t)(const char*clausename,const cfg_obj_t*obj,void*arg);
 
 /***
  *** Functions
@@ -79,13 +79,13 @@ typedef isc_result_t
 ISC_LANG_BEGINDECLS
 
 void
-cfg_parser_attach(cfg_parser_t *src, cfg_parser_t **dest);
+cfg_parser_attach(cfg_parser_t*src,cfg_parser_t**dest);
 /*%<
  * Reference a parser object.
  */
 
 isc_result_t
-cfg_parser_create(isc_mem_t *mctx, isc_log_t *lctx, cfg_parser_t **ret);
+cfg_parser_create(isc_mem_t*mctx,isc_log_t*lctx,cfg_parser_t**ret);
 /*%<
  * Create a configuration file parser.  Any warning and error
  * messages will be logged to 'lctx'.
@@ -96,9 +96,8 @@ cfg_parser_create(isc_mem_t *mctx, isc_log_t *lctx, cfg_parser_t **ret);
  */
 
 void
-cfg_parser_setcallback(cfg_parser_t *pctx,
-		       cfg_parsecallback_t callback,
-		       void *arg);
+cfg_parser_setcallback(cfg_parser_t*pctx,cfg_parsecallback_t callback,
+		       void*arg);
 /*%<
  * Make the parser call 'callback' whenever it encounters
  * a configuration clause with the callback attribute,
@@ -110,14 +109,19 @@ cfg_parser_setcallback(cfg_parser_t *pctx,
  */
 
 isc_result_t
-cfg_parse_file(cfg_parser_t *pctx, const char *file,
-	       const cfg_type_t *type, cfg_obj_t **ret);
+cfg_parse_file(cfg_parser_t*pctx,
+	       const char*file,
+	       const cfg_type_t*type,
+	       cfg_obj_t**ret);
 
 isc_result_t
-cfg_parse_buffer(cfg_parser_t *pctx, isc_buffer_t *buffer,
-		  const char *file, unsigned int line,
-		  const cfg_type_t *type, unsigned int flags,
-		  cfg_obj_t **ret);
+cfg_parse_buffer(cfg_parser_t*pctx,
+		 isc_buffer_t*buffer,
+		 const char*file,
+		 unsigned int line,
+		 const cfg_type_t*type,
+		 unsigned int flags,
+		 cfg_obj_t**ret);
 /*%<
  * Read a configuration containing data of type 'type'
  * and make '*ret' point to its parse tree.
@@ -136,10 +140,10 @@ cfg_parse_buffer(cfg_parser_t *pctx, isc_buffer_t *buffer,
  * Returns an error if the file or buffer does not parse correctly.
  *
  * Requires:
- *\li 	"filename" is valid.
- *\li 	"mem" is valid.
+ *\li   "filename" is valid.
+ *\li   "mem" is valid.
  *\li	"type" is valid.
- *\li 	"cfg" is non-NULL and "*cfg" is NULL.
+ *\li   "cfg" is non-NULL and "*cfg" is NULL.
  *\li   "flags" be one or more of CFG_PCTX_NODEPRECATED or zero.
  *
  * Returns:
@@ -150,8 +154,10 @@ cfg_parse_buffer(cfg_parser_t *pctx, isc_buffer_t *buffer,
  */
 
 isc_result_t
-cfg_parser_mapadd(cfg_parser_t *pctx, cfg_obj_t *mapobj,
-		  cfg_obj_t *obj, const char *clause);
+cfg_parser_mapadd(cfg_parser_t*pctx,
+		  cfg_obj_t*mapobj,
+		  cfg_obj_t*obj,
+		  const char*clause);
 /*%<
  * Add the object 'obj' to the specified clause in mapbody 'mapobj'.
  * Used for adding new zones.
@@ -163,46 +169,46 @@ cfg_parser_mapadd(cfg_parser_t *pctx, cfg_obj_t *mapobj,
  */
 
 void
-cfg_parser_reset(cfg_parser_t *pctx);
+cfg_parser_reset(cfg_parser_t*pctx);
 /*%<
  * Reset an existing parser so it can be re-used for a new file or
  * buffer.
  */
 
 void
-cfg_parser_destroy(cfg_parser_t **pctxp);
+cfg_parser_destroy(cfg_parser_t**pctxp);
 /*%<
  * Remove a reference to a configuration parser; destroy it if there are no
  * more references.
  */
 
 bool
-cfg_obj_isvoid(const cfg_obj_t *obj);
+cfg_obj_isvoid(const cfg_obj_t*obj);
 /*%<
  * Return true iff 'obj' is of void type (e.g., an optional
  * value not specified).
  */
 
 bool
-cfg_obj_ismap(const cfg_obj_t *obj);
+cfg_obj_ismap(const cfg_obj_t*obj);
 /*%<
  * Return true iff 'obj' is of a map type.
  */
 
 bool
-cfg_obj_isfixedpoint(const cfg_obj_t *obj);
+cfg_obj_isfixedpoint(const cfg_obj_t*obj);
 /*%<
  * Return true iff 'obj' is of a fixedpoint type.
  */
 
 bool
-cfg_obj_ispercentage(const cfg_obj_t *obj);
+cfg_obj_ispercentage(const cfg_obj_t*obj);
 /*%<
  * Return true iff 'obj' is of a percentage type.
  */
 
 isc_result_t
-cfg_map_get(const cfg_obj_t *mapobj, const char* name, const cfg_obj_t **obj);
+cfg_map_get(const cfg_obj_t*mapobj,const char*name,const cfg_obj_t**obj);
 /*%<
  * Extract an element from a configuration object, which
  * must be of a map type.
@@ -217,8 +223,8 @@ cfg_map_get(const cfg_obj_t *mapobj, const char* name, const cfg_obj_t **obj);
  * \li     #ISC_R_NOTFOUND                 - name not found in map
  */
 
-const cfg_obj_t *
-cfg_map_getname(const cfg_obj_t *mapobj);
+const cfg_obj_t*
+cfg_map_getname(const cfg_obj_t*mapobj);
 /*%<
  * Get the name of a named map object, like a server "key" clause.
  *
@@ -231,7 +237,7 @@ cfg_map_getname(const cfg_obj_t *mapobj);
  */
 
 unsigned int
-cfg_map_count(const cfg_obj_t *mapobj);
+cfg_map_count(const cfg_obj_t*mapobj);
 /*%<
  * Get the number of elements defined in the symbol table of a map object.
  *
@@ -243,13 +249,13 @@ cfg_map_count(const cfg_obj_t *mapobj);
  */
 
 bool
-cfg_obj_istuple(const cfg_obj_t *obj);
+cfg_obj_istuple(const cfg_obj_t*obj);
 /*%<
  * Return true iff 'obj' is of a map type.
  */
 
-const cfg_obj_t *
-cfg_tuple_get(const cfg_obj_t *tupleobj, const char *name);
+const cfg_obj_t*
+cfg_tuple_get(const cfg_obj_t*tupleobj,const char*name);
 /*%<
  * Extract an element from a configuration object, which
  * must be of a tuple type.
@@ -261,13 +267,13 @@ cfg_tuple_get(const cfg_obj_t *tupleobj, const char *name);
  */
 
 bool
-cfg_obj_isuint32(const cfg_obj_t *obj);
+cfg_obj_isuint32(const cfg_obj_t*obj);
 /*%<
  * Return true iff 'obj' is of integer type.
  */
 
 uint32_t
-cfg_obj_asuint32(const cfg_obj_t *obj);
+cfg_obj_asuint32(const cfg_obj_t*obj);
 /*%<
  * Returns the value of a configuration object of 32-bit integer type.
  *
@@ -279,13 +285,13 @@ cfg_obj_asuint32(const cfg_obj_t *obj);
  */
 
 bool
-cfg_obj_isuint64(const cfg_obj_t *obj);
+cfg_obj_isuint64(const cfg_obj_t*obj);
 /*%<
  * Return true iff 'obj' is of integer type.
  */
 
 uint64_t
-cfg_obj_asuint64(const cfg_obj_t *obj);
+cfg_obj_asuint64(const cfg_obj_t*obj);
 /*%<
  * Returns the value of a configuration object of 64-bit integer type.
  *
@@ -297,7 +303,7 @@ cfg_obj_asuint64(const cfg_obj_t *obj);
  */
 
 uint32_t
-cfg_obj_asfixedpoint(const cfg_obj_t *obj);
+cfg_obj_asfixedpoint(const cfg_obj_t*obj);
 /*%<
  * Returns the value of a configuration object of fixed point number.
  *
@@ -309,7 +315,7 @@ cfg_obj_asfixedpoint(const cfg_obj_t *obj);
  */
 
 uint32_t
-cfg_obj_aspercentage(const cfg_obj_t *obj);
+cfg_obj_aspercentage(const cfg_obj_t*obj);
 /*%<
  * Returns the value of a configuration object of percentage
  *
@@ -321,13 +327,13 @@ cfg_obj_aspercentage(const cfg_obj_t *obj);
  */
 
 bool
-cfg_obj_isstring(const cfg_obj_t *obj);
+cfg_obj_isstring(const cfg_obj_t*obj);
 /*%<
  * Return true iff 'obj' is of string type.
  */
 
-const char *
-cfg_obj_asstring(const cfg_obj_t *obj);
+const char*
+cfg_obj_asstring(const cfg_obj_t*obj);
 /*%<
  * Returns the value of a configuration object of a string type
  * as a null-terminated string.
@@ -340,13 +346,13 @@ cfg_obj_asstring(const cfg_obj_t *obj);
  */
 
 bool
-cfg_obj_isboolean(const cfg_obj_t *obj);
+cfg_obj_isboolean(const cfg_obj_t*obj);
 /*%<
  * Return true iff 'obj' is of a boolean type.
  */
 
 bool
-cfg_obj_asboolean(const cfg_obj_t *obj);
+cfg_obj_asboolean(const cfg_obj_t*obj);
 /*%<
  * Returns the value of a configuration object of a boolean type.
  *
@@ -358,18 +364,19 @@ cfg_obj_asboolean(const cfg_obj_t *obj);
  */
 
 bool
-cfg_obj_issockaddr(const cfg_obj_t *obj);
+cfg_obj_issockaddr(const cfg_obj_t*obj);
 /*%<
  * Return true iff 'obj' is a socket address.
  */
 
-const isc_sockaddr_t *
-cfg_obj_assockaddr(const cfg_obj_t *obj);
+const isc_sockaddr_t*
+cfg_obj_assockaddr(const cfg_obj_t*obj);
 /*%<
  * Returns the value of a configuration object representing a socket address.
  *
  * Requires:
- * \li     'obj' points to a valid configuration object of a socket address type.
+ * \li     'obj' points to a valid configuration object of a socket address
+ * type.
  *
  * Returns:
  * \li     A pointer to a sockaddr.  The sockaddr must be copied by the caller
@@ -377,7 +384,7 @@ cfg_obj_assockaddr(const cfg_obj_t *obj);
  */
 
 isc_dscp_t
-cfg_obj_getdscp(const cfg_obj_t *obj);
+cfg_obj_getdscp(const cfg_obj_t*obj);
 /*%<
  * Returns the DSCP value of a configuration object representing a
  * socket address.
@@ -391,14 +398,15 @@ cfg_obj_getdscp(const cfg_obj_t *obj);
  */
 
 bool
-cfg_obj_isnetprefix(const cfg_obj_t *obj);
+cfg_obj_isnetprefix(const cfg_obj_t*obj);
 /*%<
  * Return true iff 'obj' is a network prefix.
  */
 
 void
-cfg_obj_asnetprefix(const cfg_obj_t *obj, isc_netaddr_t *netaddr,
-		    unsigned int *prefixlen);
+cfg_obj_asnetprefix(const cfg_obj_t*obj,
+		    isc_netaddr_t*netaddr,
+		    unsigned int*prefixlen);
 /*%<
  * Gets the value of a configuration object representing a network
  * prefix.  The network address is returned through 'netaddr' and the
@@ -410,13 +418,13 @@ cfg_obj_asnetprefix(const cfg_obj_t *obj, isc_netaddr_t *netaddr,
  */
 
 bool
-cfg_obj_islist(const cfg_obj_t *obj);
+cfg_obj_islist(const cfg_obj_t*obj);
 /*%<
  * Return true iff 'obj' is of list type.
  */
 
-const cfg_listelt_t *
-cfg_list_first(const cfg_obj_t *obj);
+const cfg_listelt_t*
+cfg_list_first(const cfg_obj_t*obj);
 /*%<
  * Returns the first list element in a configuration object of a list type.
  *
@@ -425,11 +433,11 @@ cfg_list_first(const cfg_obj_t *obj);
  *
  * Returns:
  *   \li   A pointer to a cfg_listelt_t representing the first list element,
- * 	or NULL if the list is empty or nonexistent.
+ *      or NULL if the list is empty or nonexistent.
  */
 
-const cfg_listelt_t *
-cfg_list_next(const cfg_listelt_t *elt);
+const cfg_listelt_t*
+cfg_list_next(const cfg_listelt_t*elt);
 /*%<
  * Returns the next element of a list of configuration objects.
  *
@@ -439,19 +447,19 @@ cfg_list_next(const cfg_listelt_t *elt);
  *
  * Returns:
  * \li     A pointer to a cfg_listelt_t representing the next element,
- * 	or NULL if there are no more elements.
+ *      or NULL if there are no more elements.
  */
 
 unsigned int
-cfg_list_length(const cfg_obj_t *obj, bool recurse);
+cfg_list_length(const cfg_obj_t*obj,bool recurse);
 /*%<
  * Returns the length of a list of configure objects.  If obj is
  * not a list, returns 0.  If recurse is true, add in the length of
  * all contained lists.
  */
 
-cfg_obj_t *
-cfg_listelt_value(const cfg_listelt_t *elt);
+cfg_obj_t*
+cfg_listelt_value(const cfg_listelt_t*elt);
 /*%<
  * Returns the configuration object associated with cfg_listelt_t.
  *
@@ -464,13 +472,16 @@ cfg_listelt_value(const cfg_listelt_t *elt);
  */
 
 void
-cfg_print(const cfg_obj_t *obj,
-	  void (*f)(void *closure, const char *text, int textlen),
-	  void *closure);
+cfg_print(const cfg_obj_t*obj,void (*f)(void*closure,
+					const char*text,
+					int textlen),void*closure);
 void
-cfg_printx(const cfg_obj_t *obj, unsigned int flags,
-	   void (*f)(void *closure, const char *text, int textlen),
-	   void *closure);
+cfg_printx(const cfg_obj_t*obj,
+	   unsigned int flags,
+	   void (*f)(void*closure,
+		     const char*text,
+		     int textlen),
+	   void*closure);
 
 #define CFG_PRINTER_XKEY        0x1     /* '?' out shared keys. */
 #define CFG_PRINTER_ONELINE     0x2     /* print config as a single line */
@@ -485,27 +496,27 @@ cfg_printx(const cfg_obj_t *obj, unsigned int flags,
  */
 
 void
-cfg_print_grammar(const cfg_type_t *type,
-	  void (*f)(void *closure, const char *text, int textlen),
-	  void *closure);
+cfg_print_grammar(const cfg_type_t*type,void (*f)(void*closure,
+						  const char*text,
+						  int textlen),void*closure);
 /*%<
  * Print a summary of the grammar of the configuration type 'type'.
  */
 
 bool
-cfg_obj_istype(const cfg_obj_t *obj, const cfg_type_t *type);
+cfg_obj_istype(const cfg_obj_t*obj,const cfg_type_t*type);
 /*%<
  * Return true iff 'obj' is of type 'type'.
  */
 
 void
-cfg_obj_attach(cfg_obj_t *src, cfg_obj_t **dest);
+cfg_obj_attach(cfg_obj_t*src,cfg_obj_t**dest);
 /*%<
  * Reference a configuration object.
  */
 
 void
-cfg_obj_destroy(cfg_parser_t *pctx, cfg_obj_t **obj);
+cfg_obj_destroy(cfg_parser_t*pctx,cfg_obj_t**obj);
 /*%<
  * Delete a reference to a configuration object; destroy the object if
  * there are no more references.
@@ -516,38 +527,35 @@ cfg_obj_destroy(cfg_parser_t *pctx, cfg_obj_t **obj);
  */
 
 void
-cfg_obj_log(const cfg_obj_t *obj, isc_log_t *lctx, int level,
-	    const char *fmt, ...)
-	ISC_FORMAT_PRINTF(4, 5);
+cfg_obj_log(const cfg_obj_t*obj,isc_log_t*lctx,int level,const char*fmt,...)
+ISC_FORMAT_PRINTF(4,5);
 /*%<
  * Log a message concerning configuration object 'obj' to the logging
  * channel of 'pctx', at log level 'level'.  The message will be prefixed
  * with the file name(s) and line number where 'obj' was defined.
  */
 
-const char *
-cfg_obj_file(const cfg_obj_t *obj);
+const char*
+cfg_obj_file(const cfg_obj_t*obj);
 /*%<
  * Return the file that defined this object.
  */
 
 unsigned int
-cfg_obj_line(const cfg_obj_t *obj);
+cfg_obj_line(const cfg_obj_t*obj);
 /*%<
  * Return the line in file where this object was defined.
  */
 
-const char *
-cfg_map_firstclause(const cfg_type_t *map, const void **clauses,
-		    unsigned int *idx);
-const char *
-cfg_map_nextclause(const cfg_type_t *map, const void **clauses,
-		   unsigned int *idx);
+const char*
+cfg_map_firstclause(const cfg_type_t*map,const void**clauses,unsigned int*idx);
+const char*
+cfg_map_nextclause(const cfg_type_t*map,const void**clauses,unsigned int*idx);
 
 typedef isc_result_t
-(pluginlist_cb_t)(const cfg_obj_t *config, const cfg_obj_t *obj,
-		  const char *plugin_path, const char *parameters,
-		  void *callback_data);
+(pluginlist_cb_t)(const cfg_obj_t*config,const cfg_obj_t*obj,
+		  const char*plugin_path,const char*parameters,
+		  void*callback_data);
 /*%<
  * Function prototype for the callback used with cfg_pluginlist_foreach().
  * Called once for each element of the list passed to cfg_pluginlist_foreach().
@@ -562,9 +570,11 @@ typedef isc_result_t
  */
 
 isc_result_t
-cfg_pluginlist_foreach(const cfg_obj_t *config, const cfg_obj_t *list,
-		       isc_log_t *lctx, pluginlist_cb_t callback,
-		       void *callback_data);
+cfg_pluginlist_foreach(const cfg_obj_t*config,
+		       const cfg_obj_t*list,
+		       isc_log_t*lctx,
+		       pluginlist_cb_t callback,
+		       void*callback_data);
 /*%<
  * For every "plugin" stanza present in 'list' (which in turn is a part of
  * 'config'), invoke the given 'callback', passing 'callback_data' to it along

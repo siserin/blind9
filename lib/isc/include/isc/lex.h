@@ -14,8 +14,8 @@
 #define ISC_LEX_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file isc/lex.h
  * \brief The "lex" module provides a lightweight tokenizer.  It can operate
@@ -37,7 +37,7 @@
  *	No anticipated impact.
  *
  * \li Standards:
- * 	None.
+ *      None.
  */
 
 /***
@@ -62,11 +62,11 @@ ISC_LANG_BEGINDECLS
  * Various options for isc_lex_gettoken().
  */
 
-#define ISC_LEXOPT_EOL			0x01	/*%< Want end-of-line token. */
-#define ISC_LEXOPT_EOF			0x02	/*%< Want end-of-file token. */
-#define ISC_LEXOPT_INITIALWS		0x04	/*%< Want initial whitespace. */
-#define ISC_LEXOPT_NUMBER		0x08	/*%< Recognize numbers. */
-#define ISC_LEXOPT_QSTRING		0x10	/*%< Recognize qstrings. */
+#define ISC_LEXOPT_EOL                  0x01    /*%< Want end-of-line token. */
+#define ISC_LEXOPT_EOF                  0x02    /*%< Want end-of-file token. */
+#define ISC_LEXOPT_INITIALWS            0x04    /*%< Want initial whitespace. */
+#define ISC_LEXOPT_NUMBER               0x08    /*%< Recognize numbers. */
+#define ISC_LEXOPT_QSTRING              0x10    /*%< Recognize qstrings. */
 /*@}*/
 
 /*@{*/
@@ -77,14 +77,15 @@ ISC_LANG_BEGINDECLS
  * the paren count is > 0.  To use this option, '(' and ')' must be special
  * characters.
  */
-#define ISC_LEXOPT_DNSMULTILINE		0x20	/*%< Handle '(' and ')'. */
-#define ISC_LEXOPT_NOMORE		0x40	/*%< Want "no more" token. */
+#define ISC_LEXOPT_DNSMULTILINE         0x20    /*%< Handle '(' and ')'. */
+#define ISC_LEXOPT_NOMORE               0x40    /*%< Want "no more" token. */
 
-#define ISC_LEXOPT_CNUMBER		0x80    /*%< Recognize octal and hex. */
-#define ISC_LEXOPT_ESCAPE		0x100	/*%< Recognize escapes. */
-#define ISC_LEXOPT_QSTRINGMULTILINE	0x200	/*%< Allow multiline "" strings */
-#define ISC_LEXOPT_OCTAL		0x400	/*%< Expect a octal number. */
-#define ISC_LEXOPT_BTEXT		0x800	/*%< Bracketed text. */
+#define ISC_LEXOPT_CNUMBER              0x80    /*%< Recognize octal and hex. */
+#define ISC_LEXOPT_ESCAPE               0x100   /*%< Recognize escapes. */
+#define ISC_LEXOPT_QSTRINGMULTILINE     0x200   /*%< Allow multiline "" strings
+	                                         * */
+#define ISC_LEXOPT_OCTAL                0x400   /*%< Expect a octal number. */
+#define ISC_LEXOPT_BTEXT                0x800   /*%< Bracketed text. */
 /*@}*/
 /*@{*/
 /*!
@@ -92,10 +93,10 @@ ISC_LANG_BEGINDECLS
  * isc_lex_setcomments().
  */
 
-#define ISC_LEXCOMMENT_C		0x01
-#define ISC_LEXCOMMENT_CPLUSPLUS	0x02
-#define ISC_LEXCOMMENT_SHELL		0x04
-#define ISC_LEXCOMMENT_DNSMASTERFILE	0x08
+#define ISC_LEXCOMMENT_C                0x01
+#define ISC_LEXCOMMENT_CPLUSPLUS        0x02
+#define ISC_LEXCOMMENT_SHELL            0x04
+#define ISC_LEXCOMMENT_DNSMASTERFILE    0x08
 /*@}*/
 
 /***
@@ -122,16 +123,16 @@ typedef enum {
 } isc_tokentype_t;
 
 typedef union {
-	char				as_char;
-	unsigned long			as_ulong;
-	isc_region_t			as_region;
-	isc_textregion_t		as_textregion;
-	void *				as_pointer;
+	char			as_char;
+	unsigned long		as_ulong;
+	isc_region_t		as_region;
+	isc_textregion_t	as_textregion;
+	void *			as_pointer;
 } isc_tokenvalue_t;
 
 typedef struct isc_token {
-	isc_tokentype_t			type;
-	isc_tokenvalue_t		value;
+	isc_tokentype_t		type;
+	isc_tokenvalue_t	value;
 } isc_token_t;
 
 /***
@@ -300,8 +301,10 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp);
  */
 
 isc_result_t
-isc_lex_getmastertoken(isc_lex_t *lex, isc_token_t *token,
-		       isc_tokentype_t expect, bool eol);
+isc_lex_getmastertoken(isc_lex_t *lex,
+		       isc_token_t *token,
+		       isc_tokentype_t expect,
+		       bool eol);
 /*%<
  * Get the next token from a DNS master file type stream.  This is a
  * convenience function that sets appropriate options and handles quoted
@@ -390,7 +393,7 @@ isc_lex_getsourceline(isc_lex_t *lex);
  *\li	'lex' is a valid lexer.
  *
  * Returns:
- *\li 	Current line number or 0 if no current source.
+ *\li   Current line number or 0 if no current source.
  */
 
 isc_result_t

@@ -22,37 +22,41 @@
 #include <ns/sortlist.h>
 
 ns_sortlisttype_t
-ns_sortlist_setup(dns_acl_t *acl, dns_aclenv_t *env,
-		  isc_netaddr_t *clientaddr, const void **argp)
+ns_sortlist_setup(dns_acl_t*acl,
+		  dns_aclenv_t*env,
+		  isc_netaddr_t*clientaddr,
+		  const void**argp)
 {
 	unsigned int i;
 
-	if (acl == NULL)
+	if (acl == NULL) {
 		goto dont_sort;
+	}
 
 	for (i = 0; i < acl->length; i++) {
 		/*
 		 * 'e' refers to the current 'top level statement'
 		 * in the sortlist (see ARM).
 		 */
-		dns_aclelement_t *e = &acl->elements[i];
-		dns_aclelement_t *try_elt;
-		dns_aclelement_t *order_elt = NULL;
-		const dns_aclelement_t *matched_elt = NULL;
+		dns_aclelement_t*e = &acl->elements[i];
+		dns_aclelement_t*try_elt;
+		dns_aclelement_t*order_elt = NULL;
+		const dns_aclelement_t*matched_elt = NULL;
 
 		if (e->type == dns_aclelementtype_nestedacl) {
-			dns_acl_t *inner = e->nestedacl;
+			dns_acl_t*inner = e->nestedacl;
 
-			if (inner->length == 0)
+			if (inner->length == 0) {
 				try_elt = e;
-			else if (inner->length > 2)
+			} else if (inner->length > 2) {
 				goto dont_sort;
-			else if (inner->elements[0].negative)
+			} else if (inner->elements[0].negative) {
 				goto dont_sort;
-			else {
+			} else {
 				try_elt = &inner->elements[0];
-				if (inner->length == 2)
+				if (inner->length == 2) {
 					order_elt = &inner->elements[1];
+				}
 			}
 		} else {
 			/*
@@ -62,8 +66,8 @@ ns_sortlist_setup(dns_acl_t *acl, dns_aclenv_t *env,
 			try_elt = e;
 		}
 
-		if (dns_aclelement_match(clientaddr, NULL, try_elt,
-					 env, &matched_elt))
+		if (dns_aclelement_match(clientaddr,NULL,try_elt,
+					 env,&matched_elt))
 		{
 			if (order_elt != NULL) {
 				if (order_elt->type ==
@@ -107,13 +111,13 @@ ns_sortlist_setup(dns_acl_t *acl, dns_aclenv_t *env,
 }
 
 int
-ns_sortlist_addrorder2(const isc_netaddr_t *addr, const void *arg) {
-	const dns_sortlist_arg_t *sla = (const dns_sortlist_arg_t *) arg;
-	const dns_aclenv_t *env = sla->env;
-	const dns_acl_t *sortacl = sla->acl;
+ns_sortlist_addrorder2(const isc_netaddr_t*addr,const void*arg) {
+	const dns_sortlist_arg_t*sla = (const dns_sortlist_arg_t*) arg;
+	const dns_aclenv_t*env = sla->env;
+	const dns_acl_t*sortacl = sla->acl;
 	int match;
 
-	(void)dns_acl_match(addr, NULL, sortacl, env, &match, NULL);
+	(void)dns_acl_match(addr,NULL,sortacl,env,&match,NULL);
 	if (match > 0) {
 		return (match);
 	} else if (match < 0) {
@@ -124,12 +128,12 @@ ns_sortlist_addrorder2(const isc_netaddr_t *addr, const void *arg) {
 }
 
 int
-ns_sortlist_addrorder1(const isc_netaddr_t *addr, const void *arg) {
-	const dns_sortlist_arg_t *sla = (const dns_sortlist_arg_t *) arg;
-	const dns_aclenv_t *env = sla->env;
-	const dns_aclelement_t *element = sla->element;
+ns_sortlist_addrorder1(const isc_netaddr_t*addr,const void*arg) {
+	const dns_sortlist_arg_t*sla = (const dns_sortlist_arg_t*) arg;
+	const dns_aclenv_t*env = sla->env;
+	const dns_aclelement_t*element = sla->element;
 
-	if (dns_aclelement_match(addr, NULL, element, env, NULL)) {
+	if (dns_aclelement_match(addr,NULL,element,env,NULL)) {
 		return (0);
 	}
 
@@ -137,13 +141,15 @@ ns_sortlist_addrorder1(const isc_netaddr_t *addr, const void *arg) {
 }
 
 void
-ns_sortlist_byaddrsetup(dns_acl_t *sortlist_acl, dns_aclenv_t *env,
-			isc_netaddr_t *client_addr,
-			dns_addressorderfunc_t *orderp, const void **argp)
+ns_sortlist_byaddrsetup(dns_acl_t*sortlist_acl,
+			dns_aclenv_t*env,
+			isc_netaddr_t*client_addr,
+			dns_addressorderfunc_t*orderp,
+			const void**argp)
 {
 	ns_sortlisttype_t sortlisttype;
 
-	sortlisttype = ns_sortlist_setup(sortlist_acl, env, client_addr, argp);
+	sortlisttype = ns_sortlist_setup(sortlist_acl,env,client_addr,argp);
 
 	switch (sortlisttype) {
 	case NS_SORTLISTTYPE_1ELEMENT:
@@ -156,9 +162,9 @@ ns_sortlist_byaddrsetup(dns_acl_t *sortlist_acl, dns_aclenv_t *env,
 		*orderp = NULL;
 		break;
 	default:
-		UNEXPECTED_ERROR(__FILE__, __LINE__,
+		UNEXPECTED_ERROR(__FILE__,__LINE__,
 				 "unexpected return from ns_sortlist_setup(): "
-				 "%d", sortlisttype);
+				 "%d",sortlisttype);
 		break;
 	}
 }

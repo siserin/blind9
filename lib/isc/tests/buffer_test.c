@@ -146,34 +146,34 @@ isc_buffer_dynamic_test(void **state) {
 	for (i = 0; i < 1000; i++) {
 		isc_buffer_putstr(b, "thisisa24charslongstring");
 	}
-	assert_true(b->length-last_length >= 1000*24);
-	last_length+=1000*24;
+	assert_true(b->length - last_length >= 1000 * 24);
+	last_length += 1000 * 24;
 
 	for (i = 0; i < 10000; i++) {
 		isc_buffer_putuint8(b, 1);
 	}
 
-	assert_true(b->length-last_length >= 10000*1);
-	last_length += 10000*1;
+	assert_true(b->length - last_length >= 10000 * 1);
+	last_length += 10000 * 1;
 
 	for (i = 0; i < 10000; i++) {
 		isc_buffer_putuint16(b, 1);
 	}
 
-	assert_true(b->length-last_length >= 10000*2);
+	assert_true(b->length - last_length >= 10000 * 2);
 
-	last_length += 10000*2;
+	last_length += 10000 * 2;
 	for (i = 0; i < 10000; i++) {
 		isc_buffer_putuint24(b, 1);
 	}
-	assert_true(b->length-last_length >= 10000*3);
+	assert_true(b->length - last_length >= 10000 * 3);
 
-	last_length+=10000*3;
+	last_length += 10000 * 3;
 
 	for (i = 0; i < 10000; i++) {
 		isc_buffer_putuint32(b, 1);
 	}
-	assert_true(b->length-last_length >= 10000*4);
+	assert_true(b->length - last_length >= 10000 * 4);
 
 
 	isc_buffer_free(&b);
@@ -352,4 +352,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

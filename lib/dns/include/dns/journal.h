@@ -14,8 +14,8 @@
 #define DNS_JOURNAL_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/journal.h
  * \brief
@@ -40,14 +40,14 @@
 /***
  *** Defines.
  ***/
-#define DNS_JOURNALOPT_RESIGN	0x00000001
+#define DNS_JOURNALOPT_RESIGN   0x00000001
 
-#define DNS_JOURNAL_READ	0x00000000	/* false */
-#define DNS_JOURNAL_CREATE	0x00000001	/* true */
-#define DNS_JOURNAL_WRITE	0x00000002
+#define DNS_JOURNAL_READ        0x00000000      /* false */
+#define DNS_JOURNAL_CREATE      0x00000001      /* true */
+#define DNS_JOURNAL_WRITE       0x00000002
 
-#define DNS_JOURNAL_SIZE_MAX	INT32_MAX
-#define DNS_JOURNAL_SIZE_MIN	4096
+#define DNS_JOURNAL_SIZE_MAX    INT32_MAX
+#define DNS_JOURNAL_SIZE_MIN    4096
 
 /***
  *** Types
@@ -74,8 +74,11 @@ ISC_LANG_BEGINDECLS
 /**************************************************************************/
 
 isc_result_t
-dns_db_createsoatuple(dns_db_t *db, dns_dbversion_t *ver, isc_mem_t *mctx,
-		      dns_diffop_t op, dns_difftuple_t **tp);
+dns_db_createsoatuple(dns_db_t *db,
+		      dns_dbversion_t *ver,
+		      isc_mem_t *mctx,
+		      dns_diffop_t op,
+		      dns_difftuple_t **tp);
 /*!< brief
  * Create a diff tuple for the current database SOA.
  * XXX this probably belongs somewhere else.
@@ -98,7 +101,9 @@ dns_db_createsoatuple(dns_db_t *db, dns_dbversion_t *ver, isc_mem_t *mctx,
  */
 
 isc_result_t
-dns_journal_open(isc_mem_t *mctx, const char *filename, unsigned int mode,
+dns_journal_open(isc_mem_t *mctx,
+		 const char *filename,
+		 unsigned int mode,
 		 dns_journal_t **journalp);
 /*%<
  * Open the journal file 'filename' and create a dns_journal_t object for it.
@@ -136,9 +141,9 @@ dns_journal_writediff(dns_journal_t *j, dns_diff_t *diff);
  *
  * Requires:
  * \li     'j' is open for writing and dns_journal_begin_transaction()
- * 	has been called.
+ *      has been called.
  *
- *\li 	'diff' is a full or partial, correctly ordered IXFR
+ *\li   'diff' is a full or partial, correctly ordered IXFR
  *      difference sequence.
  */
 
@@ -149,10 +154,10 @@ dns_journal_commit(dns_journal_t *j);
  *
  * Requires:
  * \li     'j' is open for writing and dns_journal_begin_transaction()
- * 	has been called.
+ *      has been called.
  *
  *   \li   dns_journal_writediff() has been called one or more times
- * 	to form a complete, correctly ordered IXFR difference
+ *      to form a complete, correctly ordered IXFR difference
  *      sequence.
  */
 
@@ -193,7 +198,8 @@ dns_journal_last_serial(dns_journal_t *j);
 
 isc_result_t
 dns_journal_iter_init(dns_journal_t *j,
-		      uint32_t begin_serial, uint32_t end_serial);
+		      uint32_t begin_serial,
+		      uint32_t end_serial);
 /*%<
  * Prepare to iterate over the transactions that will bring the database
  * from SOA serial number 'begin_serial' to 'end_serial'.
@@ -222,7 +228,9 @@ dns_journal_next_rr(dns_journal_t *j);
 /*@}*/
 
 void
-dns_journal_current_rr(dns_journal_t *j, dns_name_t **name, uint32_t *ttl,
+dns_journal_current_rr(dns_journal_t *j,
+		       dns_name_t **name,
+		       uint32_t *ttl,
 		       dns_rdata_t **rdata);
 /*%<
  * Get the name, ttl, and rdata of the current journal RR.
@@ -238,7 +246,9 @@ dns_journal_current_rr(dns_journal_t *j, dns_name_t **name, uint32_t *ttl,
  */
 
 isc_result_t
-dns_journal_rollforward(isc_mem_t *mctx, dns_db_t *db, unsigned int options,
+dns_journal_rollforward(isc_mem_t *mctx,
+			dns_db_t *db,
+			unsigned int options,
 			const char *filename);
 /*%<
  * Roll forward (play back) the journal file "filename" into the
@@ -265,13 +275,18 @@ dns_journal_print(isc_mem_t *mctx, const char *filename, FILE *file);
 
 isc_result_t
 dns_db_diff(isc_mem_t *mctx,
-	    dns_db_t *dba, dns_dbversion_t *dbvera,
-	    dns_db_t *dbb, dns_dbversion_t *dbverb,
+	    dns_db_t *dba,
+	    dns_dbversion_t *dbvera,
+	    dns_db_t *dbb,
+	    dns_dbversion_t *dbverb,
 	    const char *journal_filename);
 
 isc_result_t
-dns_db_diffx(dns_diff_t *diff, dns_db_t *dba, dns_dbversion_t *dbvera,
-	     dns_db_t *dbb, dns_dbversion_t *dbverb,
+dns_db_diffx(dns_diff_t *diff,
+	     dns_db_t *dba,
+	     dns_dbversion_t *dbvera,
+	     dns_db_t *dbb,
+	     dns_dbversion_t *dbverb,
 	     const char *journal_filename);
 /*%<
  * Compare the databases 'dba' and 'dbb' and generate a diff/journal
@@ -283,7 +298,9 @@ dns_db_diffx(dns_diff_t *diff, dns_db_t *dba, dns_dbversion_t *dbvera,
  */
 
 isc_result_t
-dns_journal_compact(isc_mem_t *mctx, char *filename, uint32_t serial,
+dns_journal_compact(isc_mem_t *mctx,
+		    char *filename,
+		    uint32_t serial,
 		    uint32_t target_size);
 /*%<
  * Attempt to compact the journal if it is greater that 'target_size'.

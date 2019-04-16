@@ -47,66 +47,70 @@ isc_ntpaths_init(void) {
 	HKEY hKey;
 	BOOL keyFound = TRUE;
 
-	memset(namedBase, 0, sizeof(namedBase));
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, BIND_SUBKEY, 0, KEY_READ, &hKey)
-		!= ERROR_SUCCESS)
+	memset(namedBase,0,sizeof(namedBase));
+	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,BIND_SUBKEY,0,KEY_READ,&hKey)
+	    != ERROR_SUCCESS) {
 		keyFound = FALSE;
+	}
 
 	if (keyFound == TRUE) {
 		/* Get the named directory */
-		if (RegQueryValueEx(hKey, "InstallDir", NULL, NULL,
-			(LPBYTE)namedBase, &baseLen) != ERROR_SUCCESS)
+		if (RegQueryValueEx(hKey,"InstallDir",NULL,NULL,
+				    (LPBYTE)namedBase,
+				    &baseLen) != ERROR_SUCCESS) {
 			keyFound = FALSE;
+		}
 		RegCloseKey(hKey);
 	}
 
-	GetSystemDirectory(systemDir, MAX_PATH);
+	GetSystemDirectory(systemDir,MAX_PATH);
 
 	if (keyFound == FALSE) {
 		/* Use the System Directory as a default */
-		strlcpy(namedBase, systemDir, sizeof(namedBase));
+		strlcpy(namedBase,systemDir,sizeof(namedBase));
 	}
 
-	strlcpy(ns_confFile, namedBase, sizeof(ns_confFile));
-	strlcat(ns_confFile, "\\etc\\named.conf", sizeof(ns_confFile));
+	strlcpy(ns_confFile,namedBase,sizeof(ns_confFile));
+	strlcat(ns_confFile,"\\etc\\named.conf",sizeof(ns_confFile));
 
-	strlcpy(rndc_keyFile, namedBase, sizeof(rndc_keyFile));
-	strlcat(rndc_keyFile, "\\etc\\rndc.key", sizeof(rndc_keyFile));
+	strlcpy(rndc_keyFile,namedBase,sizeof(rndc_keyFile));
+	strlcat(rndc_keyFile,"\\etc\\rndc.key",sizeof(rndc_keyFile));
 
-	strlcpy(session_keyFile, namedBase, sizeof(session_keyFile));
-	strlcat(session_keyFile, "\\etc\\session.key", sizeof(session_keyFile));
+	strlcpy(session_keyFile,namedBase,sizeof(session_keyFile));
+	strlcat(session_keyFile,"\\etc\\session.key",sizeof(session_keyFile));
 
-	strlcpy(rndc_confFile, namedBase, sizeof(rndc_confFile));
-	strlcat(rndc_confFile, "\\etc\\rndc.conf", sizeof(rndc_confFile));
+	strlcpy(rndc_confFile,namedBase,sizeof(rndc_confFile));
+	strlcat(rndc_confFile,"\\etc\\rndc.conf",sizeof(rndc_confFile));
 
-	strlcpy(ns_defaultpidfile, namedBase, sizeof(ns_defaultpidfile));
-	strlcat(ns_defaultpidfile, "\\etc\\named.pid",
+	strlcpy(ns_defaultpidfile,namedBase,sizeof(ns_defaultpidfile));
+	strlcat(ns_defaultpidfile,"\\etc\\named.pid",
 		sizeof(ns_defaultpidfile));
 
-	strlcpy(ns_lockfile, namedBase, sizeof(ns_lockfile));
-	strlcat(ns_lockfile, "\\etc\\named.lock", sizeof(ns_lockfile));
+	strlcpy(ns_lockfile,namedBase,sizeof(ns_lockfile));
+	strlcat(ns_lockfile,"\\etc\\named.lock",sizeof(ns_lockfile));
 
-	strlcpy(local_state_dir, namedBase, sizeof(local_state_dir));
-	strlcat(local_state_dir, "\\bin", sizeof(local_state_dir));
+	strlcpy(local_state_dir,namedBase,sizeof(local_state_dir));
+	strlcat(local_state_dir,"\\bin",sizeof(local_state_dir));
 
-	strlcpy(sys_conf_dir, namedBase, sizeof(sys_conf_dir));
-	strlcat(sys_conf_dir, "\\etc", sizeof(sys_conf_dir));
+	strlcpy(sys_conf_dir,namedBase,sizeof(sys_conf_dir));
+	strlcat(sys_conf_dir,"\\etc",sizeof(sys_conf_dir));
 
 	/* Added to avoid an assert on NULL value */
-	strlcpy(resolv_confFile, namedBase, sizeof(resolv_confFile));
-	strlcat(resolv_confFile, "\\etc\\resolv.conf",
+	strlcpy(resolv_confFile,namedBase,sizeof(resolv_confFile));
+	strlcat(resolv_confFile,"\\etc\\resolv.conf",
 		sizeof(resolv_confFile));
 
-	strlcpy(bind_keysFile, namedBase, sizeof(bind_keysFile));
-	strlcat(bind_keysFile, "\\etc\\bind.keys", sizeof(bind_keysFile));
+	strlcpy(bind_keysFile,namedBase,sizeof(bind_keysFile));
+	strlcat(bind_keysFile,"\\etc\\bind.keys",sizeof(bind_keysFile));
 
 	Initialized = TRUE;
 }
 
-char *
+char*
 isc_ntpaths_get(int ind) {
-	if (!Initialized)
+	if (!Initialized) {
 		isc_ntpaths_init();
+	}
 
 	switch (ind) {
 	case NAMED_CONF_PATH:

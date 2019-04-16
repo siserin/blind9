@@ -29,8 +29,11 @@ ISC_LANG_BEGINDECLS
 
 int
 isc_iterated_hash(unsigned char *out,
-		  const unsigned int hashalg, const int iterations,
-		  const unsigned char *salt, const int saltlength,
-		  const unsigned char *in, const int inlength);
+		  const unsigned int hashalg,
+		  const int iterations,
+		  const unsigned char *salt,
+		  const int saltlength,
+		  const unsigned char *in,
+		  const int inlength);
 
 ISC_LANG_ENDDECLS

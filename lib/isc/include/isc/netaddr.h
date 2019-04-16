@@ -25,20 +25,21 @@
 #ifdef ISC_PLATFORM_HAVESYSUNH
 #include <sys/types.h>
 #include <sys/un.h>
-#endif
+#endif /* ifdef ISC_PLATFORM_HAVESYSUNH */
 
 ISC_LANG_BEGINDECLS
 
 struct isc_netaddr {
-	unsigned int family;
+	unsigned int        family;
 	union {
 		struct in_addr in;
-		struct in6_addr in6;
+		struct in6_addr	       in6;
 #ifdef ISC_PLATFORM_HAVESYSUNH
-		char un[sizeof(((struct sockaddr_un *)0)->sun_path)];
-#endif
+		char		       un[sizeof(((struct sockaddr_un *)0)->
+						 sun_path)];
+#endif /* ifdef ISC_PLATFORM_HAVESYSUNH */
 	} type;
-	uint32_t zone;
+	uint32_t        zone;
 };
 
 bool
@@ -50,7 +51,8 @@ isc_netaddr_equal(const isc_netaddr_t *a, const isc_netaddr_t *b);
  */
 
 bool
-isc_netaddr_eqprefix(const isc_netaddr_t *a, const isc_netaddr_t *b,
+isc_netaddr_eqprefix(const isc_netaddr_t *a,
+		     const isc_netaddr_t *b,
 		     unsigned int prefixlen);
 /*%<
  * Compare the 'prefixlen' most significant bits of the network

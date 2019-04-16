@@ -24,27 +24,32 @@ ISC_LANG_BEGINDECLS
 /*
  * dns_dns64_create() flags.
  */
-#define DNS_DNS64_RECURSIVE_ONLY	0x01	/* If set then this record
-						 * only applies to recursive
-						 * queries.
-						 */
-#define DNS_DNS64_BREAK_DNSSEC		0x02	/* If set then still perform
-						 * DNSSEC synthesis even
-						 * though the result would
-						 * fail validation.
-						 */
+#define DNS_DNS64_RECURSIVE_ONLY        0x01    /* If set then this record
+	                                         * only applies to recursive
+	                                         * queries.
+	                                         */
+#define DNS_DNS64_BREAK_DNSSEC          0x02    /* If set then still perform
+	                                         * DNSSEC synthesis even
+	                                         * though the result would
+	                                         * fail validation.
+	                                         */
 
 /*
  * dns_dns64_aaaaok() and dns_dns64_aaaafroma() flags.
  */
-#define DNS_DNS64_RECURSIVE		0x01	/* Recursive query. */
-#define DNS_DNS64_DNSSEC		0x02	/* DNSSEC sensitive query. */
+#define DNS_DNS64_RECURSIVE             0x01    /* Recursive query. */
+#define DNS_DNS64_DNSSEC                0x02    /* DNSSEC sensitive query. */
 
 isc_result_t
-dns_dns64_create(isc_mem_t *mctx, const isc_netaddr_t *prefix,
-		 unsigned int prefixlen, const isc_netaddr_t *suffix,
-		 dns_acl_t *client, dns_acl_t *mapped, dns_acl_t *excluded,
-		 unsigned int flags, dns_dns64_t **dns64);
+dns_dns64_create(isc_mem_t *mctx,
+		 const isc_netaddr_t *prefix,
+		 unsigned int prefixlen,
+		 const isc_netaddr_t *suffix,
+		 dns_acl_t *client,
+		 dns_acl_t *mapped,
+		 dns_acl_t *excluded,
+		 unsigned int flags,
+		 dns_dns64_t **dns64);
 /*
  * Create a dns64 record which is used to identify the set of clients
  * it applies to and how to perform the DNS64 synthesis.
@@ -96,9 +101,13 @@ dns_dns64_destroy(dns_dns64_t **dns64p);
  */
 
 isc_result_t
-dns_dns64_aaaafroma(const dns_dns64_t *dns64, const isc_netaddr_t *reqaddr,
-		    const dns_name_t *reqsigner, const dns_aclenv_t *env,
-		    unsigned int flags, unsigned char *a, unsigned char *aaaa);
+dns_dns64_aaaafroma(const dns_dns64_t *dns64,
+		    const isc_netaddr_t *reqaddr,
+		    const dns_name_t *reqsigner,
+		    const dns_aclenv_t *env,
+		    unsigned int flags,
+		    unsigned char *a,
+		    unsigned char *aaaa);
 /*
  * dns_dns64_aaaafroma() determines whether to perform a DNS64 address
  * synthesis from 'a' based on 'dns64', 'reqaddr', 'reqsigner', 'env',
@@ -144,10 +153,14 @@ dns_dns64_unlink(dns_dns64list_t *list, dns_dns64_t *dns64);
  */
 
 bool
-dns_dns64_aaaaok(const dns_dns64_t *dns64, const isc_netaddr_t *reqaddr,
-		 const dns_name_t *reqsigner, const dns_aclenv_t *env,
-		 unsigned int flags, dns_rdataset_t *rdataset,
-		 bool *aaaaok, size_t aaaaoklen);
+dns_dns64_aaaaok(const dns_dns64_t *dns64,
+		 const isc_netaddr_t *reqaddr,
+		 const dns_name_t *reqsigner,
+		 const dns_aclenv_t *env,
+		 unsigned int flags,
+		 dns_rdataset_t *rdataset,
+		 bool *aaaaok,
+		 size_t aaaaoklen);
 /*
  * Determine if there are any non-excluded AAAA records in from the
  * matching dns64 records in the list starting at 'dns64'.  If there
@@ -161,7 +174,7 @@ dns_dns64_aaaaok(const dns_dns64_t *dns64, const isc_netaddr_t *reqaddr,
  * to true.
  *
  * Requires
- * 	'rdataset'	to be valid and to be for type AAAA and class IN.
+ *      'rdataset'	to be valid and to be for type AAAA and class IN.
  *	'aaaaoklen'	must match the number of records in 'rdataset'
  *			if 'aaaaok' in non NULL.
  */

@@ -32,19 +32,26 @@ isc_result_t
 setup_logging(isc_mem_t *mctx, FILE *errout, isc_log_t **logp);
 
 isc_result_t
-load_zone(isc_mem_t *mctx, const char *zonename, const char *filename,
-	  dns_masterformat_t fileformat, const char *classname,
-	  dns_ttl_t maxttl, dns_zone_t **zonep);
+load_zone(isc_mem_t *mctx,
+	  const char *zonename,
+	  const char *filename,
+	  dns_masterformat_t fileformat,
+	  const char *classname,
+	  dns_ttl_t maxttl,
+	  dns_zone_t **zonep);
 
 isc_result_t
-dump_zone(const char *zonename, dns_zone_t *zone, const char *filename,
-	  dns_masterformat_t fileformat, const dns_master_style_t *style,
+dump_zone(const char *zonename,
+	  dns_zone_t *zone,
+	  const char *filename,
+	  dns_masterformat_t fileformat,
+	  const dns_master_style_t *style,
 	  const uint32_t rawversion);
 
 #ifdef _WIN32
 void InitSockets(void);
 void DestroySockets(void);
-#endif
+#endif /* ifdef _WIN32 */
 
 extern int debug;
 extern const char *journal;
@@ -56,4 +63,4 @@ extern dns_zoneopt_t zone_options;
 
 ISC_LANG_ENDDECLS
 
-#endif
+#endif /* ifndef CHECK_TOOL_H */

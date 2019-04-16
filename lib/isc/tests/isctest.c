@@ -42,15 +42,15 @@ static bool test_running = false;
  * Logging categories: this needs to match the list in bin/named/log.c.
  */
 static isc_logcategory_t categories[] = {
-		{ "",                0 },
-		{ "client",          0 },
-		{ "network",         0 },
-		{ "update",          0 },
-		{ "queries",         0 },
-		{ "unmatched",       0 },
-		{ "update-security", 0 },
-		{ "query-errors",    0 },
-		{ NULL,              0 }
+	{ "",                0 },
+	{ "client",          0 },
+	{ "network",         0 },
+	{ "update",          0 },
+	{ "queries",         0 },
+	{ "unmatched",       0 },
+	{ "update-security", 0 },
+	{ "query-errors",    0 },
+	{ NULL,              0 }
 };
 
 static void
@@ -98,8 +98,7 @@ create_managers(unsigned int workers) {
 }
 
 isc_result_t
-isc_test_begin(FILE *logfile, bool start_managers,
-	       unsigned int workers)
+isc_test_begin(FILE *logfile, bool start_managers, unsigned int workers)
 {
 	isc_result_t result;
 
@@ -140,7 +139,7 @@ isc_test_begin(FILE *logfile, bool start_managers,
 
 	return (ISC_R_SUCCESS);
 
-  cleanup:
+ cleanup:
 	isc_test_end();
 	return (result);
 }
@@ -179,11 +178,11 @@ isc_test_nap(uint32_t usec) {
 	nanosleep(&ts, NULL);
 #elif HAVE_USLEEP
 	usleep(usec);
-#else
+#else  /* ifdef HAVE_NANOSLEEP */
 	/*
 	 * No fractional-second sleep function is available, so we
 	 * round up to the nearest second and sleep instead
 	 */
 	sleep((usec / 1000000) + 1);
-#endif
+#endif /* ifdef HAVE_NANOSLEEP */
 }

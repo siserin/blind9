@@ -25,7 +25,8 @@
 
 isc_result_t
 dns_keydata_todnskey(dns_rdata_keydata_t *keydata,
-		     dns_rdata_dnskey_t *dnskey, isc_mem_t *mctx)
+		     dns_rdata_dnskey_t *dnskey,
+		     isc_mem_t *mctx)
 {
 	REQUIRE(keydata != NULL && dnskey != NULL);
 
@@ -38,12 +39,13 @@ dns_keydata_todnskey(dns_rdata_keydata_t *keydata,
 
 	dnskey->datalen = keydata->datalen;
 
-	if (mctx == NULL)
+	if (mctx == NULL) {
 		dnskey->data = keydata->data;
-	else {
+	} else {
 		dnskey->data = isc_mem_allocate(mctx, dnskey->datalen);
-		if (dnskey->data == NULL)
+		if (dnskey->data == NULL) {
 			return (ISC_R_NOMEMORY);
+		}
 		memmove(dnskey->data, keydata->data, dnskey->datalen);
 	}
 
@@ -53,8 +55,10 @@ dns_keydata_todnskey(dns_rdata_keydata_t *keydata,
 isc_result_t
 dns_keydata_fromdnskey(dns_rdata_keydata_t *keydata,
 		       dns_rdata_dnskey_t *dnskey,
-		       uint32_t refresh, uint32_t addhd,
-		       uint32_t removehd, isc_mem_t *mctx)
+		       uint32_t refresh,
+		       uint32_t addhd,
+		       uint32_t removehd,
+		       isc_mem_t *mctx)
 {
 	REQUIRE(keydata != NULL && dnskey != NULL);
 
@@ -69,12 +73,13 @@ dns_keydata_fromdnskey(dns_rdata_keydata_t *keydata,
 	keydata->algorithm = dnskey->algorithm;
 
 	keydata->datalen = dnskey->datalen;
-	if (mctx == NULL)
+	if (mctx == NULL) {
 		keydata->data = dnskey->data;
-	else {
+	} else {
 		keydata->data = isc_mem_allocate(mctx, keydata->datalen);
-		if (keydata->data == NULL)
+		if (keydata->data == NULL) {
 			return (ISC_R_NOMEMORY);
+		}
 		memmove(keydata->data, dnskey->data, keydata->datalen);
 	}
 

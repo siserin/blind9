@@ -30,8 +30,9 @@ static void
 check_result(isc_result_t result, const char *format, ...) {
 	va_list args;
 
-	if (result == ISC_R_SUCCESS)
+	if (result == ISC_R_SUCCESS) {
 		return;
+	}
 
 	va_start(args, format);
 	vfprintf(stderr, format, args);
@@ -94,8 +95,9 @@ main(int argc, char **argv) {
 	 */
 	isc_log_setdebuglevel(lctx, 2);
 
-	if (argc < 3)
+	if (argc < 3) {
 		usage();
+	}
 
 	while (argc > 1) {
 		if (strcmp(argv[1], "--grammar") == 0) {
@@ -147,22 +149,27 @@ main(int argc, char **argv) {
 	}
 
 	if (grammar) {
-		if (type == NULL)
+		if (type == NULL) {
 			usage();
+		}
 		cfg_print_grammar(type, output, NULL);
 	} else if (zonetype != 0) {
 		cfg_print_zonegrammar(zonetype, output, NULL);
 	} else {
-		if (type == NULL || filename == NULL)
+		if (type == NULL || filename == NULL) {
 			usage();
-		RUNTIME_CHECK(cfg_parser_create(mctx, lctx, &pctx) == ISC_R_SUCCESS);
+		}
+		RUNTIME_CHECK(cfg_parser_create(mctx, lctx,
+						&pctx) == ISC_R_SUCCESS);
 
 		result = cfg_parse_file(pctx, filename, type, &cfg);
 
-		fprintf(stderr, "read config: %s\n", isc_result_totext(result));
+		fprintf(stderr, "read config: %s\n",
+			isc_result_totext(result));
 
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			exit(1);
+		}
 
 		cfg_print(cfg, output, NULL);
 
@@ -172,14 +179,16 @@ main(int argc, char **argv) {
 	}
 
 	isc_log_destroy(&lctx);
-	if (memstats)
+	if (memstats) {
 		isc_mem_stats(mctx, stderr);
+	}
 	isc_mem_destroy(&mctx);
 
 	fflush(stdout);
 	if (ferror(stdout)) {
 		fprintf(stderr, "write error\n");
 		return (1);
-	} else
+	} else {
 		return (0);
+	}
 }

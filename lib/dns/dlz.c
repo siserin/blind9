@@ -95,8 +95,9 @@ dlz_impfind(const char *name) {
 	for (imp = ISC_LIST_HEAD(dlz_implementations);
 	     imp != NULL;
 	     imp = ISC_LIST_NEXT(imp, link))
-		if (strcasecmp(name, imp->name) == 0)
+		if (strcasecmp(name, imp->name) == 0) {
 			return (imp);
+		}
 	return (NULL);
 }
 
@@ -105,8 +106,10 @@ dlz_impfind(const char *name) {
  ***/
 
 isc_result_t
-dns_dlzallowzonexfr(dns_view_t *view, const dns_name_t *name,
-		    const isc_sockaddr_t *clientaddr, dns_db_t **dbp)
+dns_dlzallowzonexfr(dns_view_t *view,
+		    const dns_name_t *name,
+		    const isc_sockaddr_t *clientaddr,
+		    dns_db_t **dbp)
 {
 	isc_result_t result = ISC_R_NOTFOUND;
 	dns_dlzallowzonexfr_t allowzonexfr;
@@ -146,15 +149,20 @@ dns_dlzallowzonexfr(dns_view_t *view, const dns_name_t *name,
 		}
 	}
 
-	if (result == ISC_R_NOTIMPLEMENTED)
+	if (result == ISC_R_NOTIMPLEMENTED) {
 		result = ISC_R_NOTFOUND;
+	}
 
 	return (result);
 }
 
 isc_result_t
-dns_dlzcreate(isc_mem_t *mctx, const char *dlzname, const char *drivername,
-	      unsigned int argc, char *argv[], dns_dlzdb_t **dbp)
+dns_dlzcreate(isc_mem_t *mctx,
+	      const char *dlzname,
+	      const char *drivername,
+	      unsigned int argc,
+	      char *argv[],
+	      dns_dlzdb_t **dbp)
 {
 	dns_dlzimplementation_t *impinfo;
 	isc_result_t result;
@@ -208,8 +216,9 @@ dns_dlzcreate(isc_mem_t *mctx, const char *dlzname, const char *drivername,
 
 	ISC_LINK_INIT(db, link);
 	db->implementation = impinfo;
-	if (dlzname != NULL)
+	if (dlzname != NULL) {
 		db->dlzname = isc_mem_strdup(mctx, dlzname);
+	}
 
 	/* Create a new database using implementation 'drivername'. */
 	result = ((impinfo->methods->create)(mctx, dlzname, argc, argv,
@@ -256,12 +265,14 @@ dns_dlzdestroy(dns_dlzdb_t **dbp) {
 	db = *dbp;
 	*dbp = NULL;
 
-	if (db->ssutable != NULL)
+	if (db->ssutable != NULL) {
 		dns_ssutable_detach(&db->ssutable);
+	}
 
 	/* call the drivers destroy method */
-	if (db->dlzname != NULL)
+	if (db->dlzname != NULL) {
 		isc_mem_free(db->mctx, db->dlzname);
+	}
 	destroy = db->implementation->methods->destroy;
 	(*destroy)(db->implementation->driverarg, db->dbdata);
 	/* return memory and detach */
@@ -273,11 +284,12 @@ dns_dlzdestroy(dns_dlzdb_t **dbp) {
  * driver to the list of available drivers in the dlz_implementations list.
  */
 isc_result_t
-dns_dlzregister(const char *drivername, const dns_dlzmethods_t *methods,
-		void *driverarg, isc_mem_t *mctx,
+dns_dlzregister(const char *drivername,
+		const dns_dlzmethods_t *methods,
+		void *driverarg,
+		isc_mem_t *mctx,
 		dns_dlzimplementation_t **dlzimp)
 {
-
 	dns_dlzimplementation_t *dlz_imp;
 
 	/* Write debugging message to log */
@@ -365,8 +377,7 @@ dns_dlzregister(const char *drivername, const dns_dlzmethods_t *methods,
  * is modified in-place.
  */
 isc_result_t
-dns_dlzstrtoargv(isc_mem_t *mctx, char *s,
-		 unsigned int *argcp, char ***argvp)
+dns_dlzstrtoargv(isc_mem_t *mctx, char *s, unsigned int *argcp, char ***argvp)
 {
 	return(isc_commandline_strtoargv(mctx, s, argcp, argvp, 0));
 }
@@ -426,7 +437,8 @@ dns_dlzunregister(dns_dlzimplementation_t **dlzimp) {
  * specific functionality on the zone
  */
 isc_result_t
-dns_dlz_writeablezone(dns_view_t *view, dns_dlzdb_t *dlzdb,
+dns_dlz_writeablezone(dns_view_t *view,
+		      dns_dlzdb_t *dlzdb,
 		      const char *zone_name)
 {
 	dns_zone_t *zone = NULL;
@@ -445,8 +457,9 @@ dns_dlz_writeablezone(dns_view_t *view, dns_dlzdb_t *dlzdb,
 	dns_fixedname_init(&fixorigin);
 	result = dns_name_fromtext(dns_fixedname_name(&fixorigin),
 				   &buffer, dns_rootname, 0, NULL);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 	origin = dns_fixedname_name(&fixorigin);
 
 	if (!dlzdb->search) {
@@ -470,11 +483,13 @@ dns_dlz_writeablezone(dns_view_t *view, dns_dlzdb_t *dlzdb,
 
 	/* Create it */
 	result = dns_zone_create(&zone, view->mctx);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 	result = dns_zone_setorigin(zone, origin);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 	dns_zone_setview(zone, view);
 
 	dns_zone_setadded(zone, true);
@@ -482,21 +497,24 @@ dns_dlz_writeablezone(dns_view_t *view, dns_dlzdb_t *dlzdb,
 	if (dlzdb->ssutable == NULL) {
 		result = dns_ssutable_createdlz(dlzdb->mctx,
 						&dlzdb->ssutable, dlzdb);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto cleanup;
+		}
 	}
 	dns_zone_setssutable(zone, dlzdb->ssutable);
 
 	result = dlzdb->configure_callback(view, dlzdb, zone);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	result = dns_view_addzone(view, zone);
 
 
  cleanup:
-	if (zone != NULL)
+	if (zone != NULL) {
 		dns_zone_detach(&zone);
+	}
 
 	return (result);
 }
@@ -506,7 +524,8 @@ dns_dlz_writeablezone(dns_view_t *view, dns_dlzdb_t *dlzdb,
  * the backend an opportunity to configure parameters related to DLZ.
  */
 isc_result_t
-dns_dlzconfigure(dns_view_t *view, dns_dlzdb_t *dlzdb,
+dns_dlzconfigure(dns_view_t *view,
+		 dns_dlzdb_t *dlzdb,
 		 dlzconfigure_callback_t callback)
 {
 	dns_dlzimplementation_t *impl;
@@ -517,8 +536,9 @@ dns_dlzconfigure(dns_view_t *view, dns_dlzdb_t *dlzdb,
 
 	impl = dlzdb->implementation;
 
-	if (impl->methods->configure == NULL)
+	if (impl->methods->configure == NULL) {
 		return (ISC_R_SUCCESS);
+	}
 
 	dlzdb->configure_callback = callback;
 
@@ -528,9 +548,12 @@ dns_dlzconfigure(dns_view_t *view, dns_dlzdb_t *dlzdb,
 }
 
 bool
-dns_dlz_ssumatch(dns_dlzdb_t *dlzdatabase, const dns_name_t *signer,
-		 const dns_name_t *name, const isc_netaddr_t *tcpaddr,
-		 dns_rdatatype_t type, const dst_key_t *key)
+dns_dlz_ssumatch(dns_dlzdb_t *dlzdatabase,
+		 const dns_name_t *signer,
+		 const dns_name_t *name,
+		 const isc_netaddr_t *tcpaddr,
+		 dns_rdatatype_t type,
+		 const dst_key_t *key)
 {
 	dns_dlzimplementation_t *impl;
 	bool r;

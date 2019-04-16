@@ -23,24 +23,24 @@
 #include <isc/util.h>
 
 typedef struct {
-	isc_mem_t *	mctx;
-	isc_task_t *	task;
-	isc_timer_t *	timer;
-	unsigned int	ticks;
-	char	        name[16];
-	bool	exiting;
-	isc_task_t *	peer;
+	isc_mem_t *	    mctx;
+	isc_task_t *	    task;
+	isc_timer_t *	    timer;
+	unsigned int	    ticks;
+	char		    name[16];
+	bool		    exiting;
+	isc_task_t *	    peer;
 } t_info;
 
-#define MAX_TASKS	3
-#define T2_SHUTDOWNOK	(ISC_EVENTCLASS(1024) + 0)
-#define T2_SHUTDOWNDONE	(ISC_EVENTCLASS(1024) + 1)
-#define FOO_EVENT	(ISC_EVENTCLASS(1024) + 2)
+#define MAX_TASKS       3
+#define T2_SHUTDOWNOK   (ISC_EVENTCLASS(1024) + 0)
+#define T2_SHUTDOWNDONE (ISC_EVENTCLASS(1024) + 1)
+#define FOO_EVENT       (ISC_EVENTCLASS(1024) + 2)
 
-static t_info			tasks[MAX_TASKS];
-static unsigned int		task_count;
-static isc_taskmgr_t *		task_manager;
-static isc_timermgr_t *		timer_manager;
+static t_info tasks[MAX_TASKS];
+static unsigned int task_count;
+static isc_taskmgr_t *task_manager;
+static isc_timermgr_t *timer_manager;
 
 static void
 t1_shutdown(isc_task_t *task, isc_event_t *event) {
@@ -169,12 +169,15 @@ main(int argc, char *argv[]) {
 
 	if (argc > 1) {
 		workers = atoi(argv[1]);
-		if (workers < 1)
+		if (workers < 1) {
 			workers = 1;
-		if (workers > 8192)
+		}
+		if (workers > 8192) {
 			workers = 8192;
-	} else
+		}
+	} else {
 		workers = 2;
+	}
 	printf("%u workers\n", workers);
 
 	mctx = NULL;

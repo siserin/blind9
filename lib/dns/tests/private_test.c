@@ -59,25 +59,27 @@ _teardown(void **state) {
 }
 
 typedef struct {
-	unsigned char alg;
-	dns_keytag_t keyid;
-	bool remove;
-	bool complete;
+	unsigned char	     alg;
+	dns_keytag_t	     keyid;
+	bool		     remove;
+	bool		     complete;
 } signing_testcase_t;
 
 typedef struct {
-	unsigned char hash;
-	unsigned char flags;
-	unsigned int iterations;
-	unsigned long salt;
-	bool remove;
-	bool pending;
-	bool nonsec;
+	unsigned char	     hash;
+	unsigned char	     flags;
+	unsigned int	     iterations;
+	unsigned long	     salt;
+	bool		     remove;
+	bool		     pending;
+	bool		     nonsec;
 } nsec3_testcase_t;
 
 static void
-make_signing(signing_testcase_t *testcase, dns_rdata_t *private,
-	     unsigned char *buf, size_t len)
+make_signing(signing_testcase_t *testcase,
+	     dns_rdata_t *private,
+	     unsigned char *buf,
+	     size_t len)
 {
 	dns_rdata_init(private);
 
@@ -93,7 +95,8 @@ make_signing(signing_testcase_t *testcase, dns_rdata_t *private,
 }
 
 static void
-make_nsec3(nsec3_testcase_t *testcase, dns_rdata_t *private,
+make_nsec3(nsec3_testcase_t *testcase,
+	   dns_rdata_t *private,
 	   unsigned char *pbuf)
 {
 	dns_rdata_nsec3param_t params;
@@ -175,7 +178,6 @@ private_signing_totext_test(void **state) {
 		dns_private_totext(&private, &buf);
 		assert_string_equal(output, results[i]);
 	}
-
 }
 
 /* convert private chain records to text */
@@ -237,4 +239,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

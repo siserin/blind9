@@ -76,8 +76,7 @@ dns_rdatatype_tounknowntext(dns_rdatatype_t type, isc_buffer_t *target);
  */
 
 void
-dns_rdatatype_format(dns_rdatatype_t rdtype,
-		     char *array, unsigned int size);
+dns_rdatatype_format(dns_rdatatype_t rdtype, char *array, unsigned int size);
 /*%<
  * Format a human-readable representation of the type 'rdtype'
  * into the character array 'array', which is of size 'size'.

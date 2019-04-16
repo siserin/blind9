@@ -34,8 +34,9 @@
  */
 
 /*
- * Copyright (C) 1999-2001, 2013, 2016  Internet Systems Consortium, Inc. ("ISC")
- * 
+ * Copyright (C) 1999-2001, 2013, 2016  Internet Systems Consortium, Inc.
+ *("ISC")
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -66,20 +67,22 @@ destroy_querylist(query_list_t **querylist) {
 	query_segment_t *nseg = NULL;
 
 	/* if query list is null, nothing to do */
-	if (*querylist == NULL)
+	if (*querylist == NULL) {
 		return;
+	}
 
 	/* start at the top of the list */
 	nseg = DLZ_LIST_HEAD(**querylist);
-	while (nseg != NULL) {	/* loop, until end of list */
+	while (nseg != NULL) {  /* loop, until end of list */
 		tseg = nseg;
 		/*
 		 * free the query segment's text string but only if it
 		 * was really a query segment, and not a pointer to
 		 * %zone%, or %record%, or %client%
-		*/
-		if (tseg->cmd != NULL && tseg->direct == true)
+		 */
+		if (tseg->cmd != NULL && tseg->direct == true) {
 			free(tseg->cmd);
+		}
 		/* get the next query segment, before we destroy this one. */
 		nseg = DLZ_LIST_NEXT(nseg, link);
 		/* deallocate this query segment. */
@@ -91,8 +94,12 @@ destroy_querylist(query_list_t **querylist) {
 
 /*% constructs a query list by parsing a string into query segments */
 isc_result_t
-build_querylist(const char *query_str, char **zone, char **record,
-		char **client, query_list_t **querylist, unsigned int flags, 
+build_querylist(const char *query_str,
+		char **zone,
+		char **record,
+		char **client,
+		query_list_t **querylist,
+		unsigned int flags,
 		log_t log)
 {
 	isc_result_t result;
@@ -107,19 +114,21 @@ build_querylist(const char *query_str, char **zone, char **record,
 
 	/* if query string is null, or zero length */
 	if (query_str == NULL || strlen(query_str) < 1) {
-		if ((flags & REQUIRE_QUERY) == 0)
+		if ((flags & REQUIRE_QUERY) == 0) {
 			/* we don't need it were ok. */
 			return (ISC_R_SUCCESS);
-		else
+		} else {
 			/* we did need it, PROBLEM!!! */
 			return (ISC_R_FAILURE);
+		}
 	}
 
 	/* allocate memory for query list */
 	tql = calloc(1, sizeof(query_list_t));
 	/* couldn't allocate memory.  Problem!! */
-	if (tql == NULL)
+	if (tql == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	/* initialize the query segment list */
 	DLZ_LIST_INIT(*tql);
@@ -139,7 +148,7 @@ build_querylist(const char *query_str, char **zone, char **record,
 	{
 		/* allocate memory for tseg */
 		tseg = calloc(1, sizeof(query_segment_t));
-		if (tseg  == NULL) {	/* no memory, clean everything up. */
+		if (tseg  == NULL) {    /* no memory, clean everything up. */
 			result = ISC_R_NOMEMORY;
 			goto cleanup;
 		}
@@ -216,9 +225,10 @@ build_querylist(const char *query_str, char **zone, char **record,
 	/* if this query requires %client%, make sure we found it */
 	if (((flags & REQUIRE_CLIENT) != 0) && (!foundclient) ) {
 		/* Write error message to log */
-		if (log != NULL)
+		if (log != NULL) {
 			log(ISC_LOG_ERROR,
 			    "Required token $client$ not found.");
+		}
 		result = ISC_R_FAILURE;
 		goto flag_fail;
 	}
@@ -226,9 +236,10 @@ build_querylist(const char *query_str, char **zone, char **record,
 	/* if this query requires %record%, make sure we found it */
 	if (((flags & REQUIRE_RECORD) != 0) && (!foundrecord) ) {
 		/* Write error message to log */
-		if (log != NULL)
+		if (log != NULL) {
 			log(ISC_LOG_ERROR,
 			    "Required token $record$ not found.");
+		}
 		result = ISC_R_FAILURE;
 		goto flag_fail;
 	}
@@ -236,8 +247,9 @@ build_querylist(const char *query_str, char **zone, char **record,
 	/* if this query requires %zone%, make sure we found it */
 	if (((flags & REQUIRE_ZONE) != 0) && (!foundzone) ) {
 		/* Write error message to log */
-		if (log != NULL)
+		if (log != NULL) {
 			log(ISC_LOG_ERROR, "Required token $zone$ not found.");
+		}
 		result = ISC_R_FAILURE;
 		goto flag_fail;
 	}
@@ -256,8 +268,9 @@ build_querylist(const char *query_str, char **zone, char **record,
 
  flag_fail:
 	/* get rid of what was build of the query list */
-	if (tql != NULL)
+	if (tql != NULL) {
 		destroy_querylist(&tql);
+	}
 	return (result);
 }
 
@@ -279,28 +292,31 @@ build_querystring(query_list_t *querylist) {
 		 * if this is a query segment, use the
 		 * precalculated string length
 		 */
-		if (tseg->direct == true)
+		if (tseg->direct == true) {
 			length += tseg->strlen;
-		else	/* calculate string length for dynamic segments. */
-			length += strlen(* (char**) tseg->cmd);
+		} else { /* calculate string length for dynamic segments. */
+			length += strlen(*(char**) tseg->cmd);
+		}
 		/* get the next segment */
 		tseg = DLZ_LIST_NEXT(tseg, link);
 	}
 
 	qs = malloc(length + 1);
-	if (qs == NULL)
+	if (qs == NULL) {
 		return (NULL);
+	}
 
 	*qs = '\0';
 	/* start at the top of the list again */
 	tseg = DLZ_LIST_HEAD(*querylist);
 	while (tseg != NULL) {
-		if (tseg->direct == true)
+		if (tseg->direct == true) {
 			/* query segments */
 			strcat(qs, tseg->cmd);
-		else
+		} else {
 			/* dynamic segments */
-			strcat(qs, * (char**) tseg->cmd);
+			strcat(qs, *(char**) tseg->cmd);
+		}
 		/* get the next segment */
 		tseg = DLZ_LIST_NEXT(tseg, link);
 	}
@@ -310,12 +326,15 @@ build_querystring(query_list_t *querylist) {
 
 /*% constructs a dbinstance (DBI) */
 isc_result_t
-build_dbinstance(const char *allnodes_str, const char *allowxfr_str,
-		 const char *authority_str, const char *findzone_str,
-		 const char *lookup_str, const char *countzone_str,
-		 dbinstance_t **dbi, log_t log)
+build_dbinstance(const char *allnodes_str,
+		 const char *allowxfr_str,
+		 const char *authority_str,
+		 const char *findzone_str,
+		 const char *lookup_str,
+		 const char *countzone_str,
+		 dbinstance_t **dbi,
+		 log_t log)
 {
-
 	isc_result_t result;
 	dbinstance_t *db = NULL;
 	int err;
@@ -323,10 +342,11 @@ build_dbinstance(const char *allnodes_str, const char *allowxfr_str,
 	/* allocate and zero memory for driver structure */
 	db = calloc(1, sizeof(dbinstance_t));
 	if (db == NULL) {
-		if (log != NULL)
+		if (log != NULL) {
 			log(ISC_LOG_ERROR,
 			    "Could not allocate memory for "
 			    "database instance object.");
+		}
 		return (ISC_R_NOMEMORY);
 	}
 	memset(db, 0, sizeof(dbinstance_t));
@@ -358,9 +378,10 @@ build_dbinstance(const char *allnodes_str, const char *allowxfr_str,
 				 REQUIRE_ZONE, log);
 	/* if unsuccessful, log err msg and cleanup */
 	if (result != ISC_R_SUCCESS) {
-		if (log != NULL)
+		if (log != NULL) {
 			log(ISC_LOG_ERROR,
 			    "Could not build all nodes query list");
+		}
 		goto cleanup;
 	}
 
@@ -371,9 +392,10 @@ build_dbinstance(const char *allnodes_str, const char *allowxfr_str,
 				 log);
 	/* if unsuccessful, log err msg and cleanup */
 	if (result != ISC_R_SUCCESS) {
-		if (log != NULL)
+		if (log != NULL) {
 			log(ISC_LOG_ERROR,
 			    "Could not build allow xfr query list");
+		}
 		goto cleanup;
 	}
 
@@ -383,9 +405,10 @@ build_dbinstance(const char *allnodes_str, const char *allowxfr_str,
 				 REQUIRE_ZONE, log);
 	/* if unsuccessful, log err msg and cleanup */
 	if (result != ISC_R_SUCCESS) {
-		if (log != NULL)
+		if (log != NULL) {
 			log(ISC_LOG_ERROR,
 			    "Could not build authority query list");
+		}
 		goto cleanup;
 	}
 
@@ -395,9 +418,10 @@ build_dbinstance(const char *allnodes_str, const char *allowxfr_str,
 				 REQUIRE_ZONE, log);
 	/* if unsuccessful, log err msg and cleanup */
 	if (result != ISC_R_SUCCESS) {
-		if (log != NULL)
+		if (log != NULL) {
 			log(ISC_LOG_ERROR,
 			    "Could not build find zone query list");
+		}
 		goto cleanup;
 	}
 
@@ -407,9 +431,10 @@ build_dbinstance(const char *allnodes_str, const char *allowxfr_str,
 				 REQUIRE_ZONE, log);
 	/* if unsuccessful, log err msg and cleanup */
 	if (result != ISC_R_SUCCESS) {
-		if (log != NULL)
+		if (log != NULL) {
 			log(ISC_LOG_ERROR,
 			    "Could not build count zone query list");
+		}
 		goto cleanup;
 	}
 
@@ -419,9 +444,10 @@ build_dbinstance(const char *allnodes_str, const char *allowxfr_str,
 				 REQUIRE_RECORD, log);
 	/* if unsuccessful, log err msg and cleanup */
 	if (result != ISC_R_SUCCESS) {
-		if (log != NULL)
+		if (log != NULL) {
 			log(ISC_LOG_ERROR,
 			    "Could not build lookup query list");
+		}
 		goto cleanup;
 	}
 
@@ -456,24 +482,27 @@ destroy_dbinstance(dbinstance_t *dbi) {
 }
 
 char *
-get_parameter_value(const char *input, const char* key) {
+get_parameter_value(const char *input, const char*key) {
 	int keylen;
 	char *keystart;
 	char value[255];
 	int i;
 
-	if (key == NULL || input == NULL || *input == '\0')
+	if (key == NULL || input == NULL || *input == '\0') {
 		return (NULL);
+	}
 
 	keylen = strlen(key);
 
-	if (keylen < 1)
+	if (keylen < 1) {
 		return (NULL);
+	}
 
 	keystart = strstr(input, key);
 
-	if (keystart == NULL)
+	if (keystart == NULL) {
 		return (NULL);
+	}
 
 	for (i = 0; i < 255; i++) {
 		value[i] = keystart[keylen + i];

@@ -32,14 +32,14 @@
 
 #if USE_PKCS11
 #include <pk11/result.h>
-#endif
+#endif /* if USE_PKCS11 */
 
 #include "dnssectool.h"
 
 const char *program = "dnssec-revoke";
 int verbose;
 
-static isc_mem_t	*mctx = NULL;
+static isc_mem_t *mctx = NULL;
 
 ISC_PLATFORM_NORETURN_PRE static void
 usage(void) ISC_PLATFORM_NORETURN_POST;
@@ -47,24 +47,24 @@ usage(void) ISC_PLATFORM_NORETURN_POST;
 static void
 usage(void) {
 	fprintf(stderr, "Usage:\n");
-	fprintf(stderr,	"    %s [options] keyfile\n\n", program);
+	fprintf(stderr, "    %s [options] keyfile\n\n", program);
 	fprintf(stderr, "Version: %s\n", VERSION);
 #if USE_PKCS11
 	fprintf(stderr, "    -E engine:    specify PKCS#11 provider "
-					"(default: %s)\n", PK11_LIB_LOCATION);
-#else
+		"(default: %s)\n", PK11_LIB_LOCATION);
+#else  /* if USE_PKCS11 */
 	fprintf(stderr, "    -E engine:    specify OpenSSL engine\n");
-#endif
+#endif /* if USE_PKCS11 */
 	fprintf(stderr, "    -f:           force overwrite\n");
 	fprintf(stderr, "    -h:           help\n");
 	fprintf(stderr, "    -K directory: use directory for key files\n");
 	fprintf(stderr, "    -r:           remove old keyfiles after "
-					   "creating revoked version\n");
+		"creating revoked version\n");
 	fprintf(stderr, "    -v level:     set level of verbosity\n");
 	fprintf(stderr, "    -V:           print version information\n");
 	fprintf(stderr, "Output:\n");
 	fprintf(stderr, "     K<name>+<alg>+<new id>.key, "
-			     "K<name>+<alg>+<new id>.private\n");
+		"K<name>+<alg>+<new id>.private\n");
 
 	exit (-1);
 }
@@ -86,29 +86,31 @@ main(int argc, char **argv) {
 	bool removefile = false;
 	bool id = false;
 
-	if (argc == 1)
+	if (argc == 1) {
 		usage();
+	}
 
 	result = isc_mem_create(0, 0, &mctx);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("Out of memory");
+	}
 
 #if HAVE_PKCS11
 	pk11_result_register();
-#endif
+#endif /* if HAVE_PKCS11 */
 	dns_result_register();
 
 	isc_commandline_errprint = false;
 
 	while ((ch = isc_commandline_parse(argc, argv, "E:fK:rRhv:V")) != -1) {
 		switch (ch) {
-		    case 'E':
+		case 'E':
 			engine = isc_commandline_argument;
 			break;
-		    case 'f':
+		case 'f':
 			force = true;
 			break;
-		    case 'K':
+		case 'K':
 			/*
 			 * We don't have to copy it here, but do it to
 			 * simplify cleanup later
@@ -119,31 +121,33 @@ main(int argc, char **argv) {
 				      "directory");
 			}
 			break;
-		    case 'r':
+		case 'r':
 			removefile = true;
 			break;
-		    case 'R':
+		case 'R':
 			id = true;
 			break;
-		    case 'v':
+		case 'v':
 			verbose = strtol(isc_commandline_argument, &endp, 0);
-			if (*endp != '\0')
+			if (*endp != '\0') {
 				fatal("-v must be followed by a number");
+			}
 			break;
-		    case '?':
-			if (isc_commandline_option != '?')
+		case '?':
+			if (isc_commandline_option != '?') {
 				fprintf(stderr, "%s: invalid argument -%c\n",
 					program, isc_commandline_option);
-			/* FALLTHROUGH */
-		    case 'h':
+			}
+		/* FALLTHROUGH */
+		case 'h':
 			/* Does not return. */
 			usage();
 
-		    case 'V':
+		case 'V':
 			/* Does not return. */
 			version(program);
 
-		    default:
+		default:
 			fprintf(stderr, "%s: unhandled option -%c\n",
 				program, isc_commandline_option);
 			exit(1);
@@ -151,20 +155,23 @@ main(int argc, char **argv) {
 	}
 
 	if (argc < isc_commandline_index + 1 ||
-	    argv[isc_commandline_index] == NULL)
+	    argv[isc_commandline_index] == NULL) {
 		fatal("The key file name was not specified");
-	if (argc > isc_commandline_index + 1)
+	}
+	if (argc > isc_commandline_index + 1) {
 		fatal("Extraneous arguments");
+	}
 
 	if (dir != NULL) {
 		filename = argv[isc_commandline_index];
 	} else {
 		result = isc_file_splitpath(mctx, argv[isc_commandline_index],
 					    &dir, &filename);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			fatal("cannot process filename %s: %s",
 			      argv[isc_commandline_index],
 			      isc_result_totext(result));
+		}
 		if (strcmp(dir, ".") == 0) {
 			isc_mem_free(mctx, dir);
 			dir = NULL;
@@ -172,16 +179,18 @@ main(int argc, char **argv) {
 	}
 
 	result = dst_lib_init(mctx, engine);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("Could not initialize dst: %s",
 		      isc_result_totext(result));
+	}
 
 	result = dst_key_fromnamedfile(filename, dir,
-				       DST_TYPE_PUBLIC|DST_TYPE_PRIVATE,
+				       DST_TYPE_PUBLIC | DST_TYPE_PRIVATE,
 				       mctx, &key);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("Invalid keyfile name %s: %s",
 		      filename, isc_result_totext(result));
+	}
 
 	if (id) {
 		fprintf(stdout, "%u\n", dst_key_rid(key));
@@ -189,24 +198,27 @@ main(int argc, char **argv) {
 	}
 	dst_key_format(key, keystr, sizeof(keystr));
 
-	if (verbose > 2)
+	if (verbose > 2) {
 		fprintf(stderr, "%s: %s\n", program, keystr);
+	}
 
-	if (force)
+	if (force) {
 		set_keyversion(key);
-	else
+	} else {
 		check_keyversion(key, keystr);
+	}
 
 
 	flags = dst_key_flags(key);
 	if ((flags & DNS_KEYFLAG_REVOKE) == 0) {
 		isc_stdtime_t now;
 
-		if ((flags & DNS_KEYFLAG_KSK) == 0)
+		if ((flags & DNS_KEYFLAG_KSK) == 0) {
 			fprintf(stderr, "%s: warning: Key is not flagged "
-					"as a KSK. Revoking a ZSK is "
-					"legal, but undefined.\n",
-					program);
+				"as a KSK. Revoking a ZSK is "
+				"legal, but undefined.\n",
+				program);
+		}
 
 		isc_stdtime_get(&now);
 		dst_key_settime(key, DST_TIME_REVOKE, now);
@@ -221,7 +233,8 @@ main(int argc, char **argv) {
 			      "use -f to force overwrite", newname);
 		}
 
-		result = dst_key_tofile(key, DST_TYPE_PUBLIC|DST_TYPE_PRIVATE,
+		result = dst_key_tofile(key,
+					DST_TYPE_PUBLIC | DST_TYPE_PRIVATE,
 					dir);
 		if (result != ISC_R_SUCCESS) {
 			dst_key_format(key, keystr, sizeof(keystr));
@@ -240,9 +253,11 @@ main(int argc, char **argv) {
 		if (removefile) {
 			isc_buffer_init(&buf, oldname, sizeof(oldname));
 			dst_key_setflags(key, flags & ~DNS_KEYFLAG_REVOKE);
-			dst_key_buildfilename(key, DST_TYPE_PRIVATE, dir, &buf);
-			if (strcmp(oldname, newname) == 0)
+			dst_key_buildfilename(key, DST_TYPE_PRIVATE, dir,
+					      &buf);
+			if (strcmp(oldname, newname) == 0) {
 				goto cleanup;
+			}
 			(void)unlink(oldname);
 			isc_buffer_clear(&buf);
 			dst_key_buildfilename(key, DST_TYPE_PUBLIC, dir, &buf);
@@ -253,13 +268,15 @@ main(int argc, char **argv) {
 		fatal("Key %s is already revoked", keystr);
 	}
 
-cleanup:
+ cleanup:
 	dst_key_free(&key);
 	dst_lib_destroy();
-	if (verbose > 10)
+	if (verbose > 10) {
 		isc_mem_stats(mctx, stdout);
-	if (dir != NULL)
+	}
+	if (dir != NULL) {
 		isc_mem_free(mctx, dir);
+	}
 	isc_mem_destroy(&mctx);
 
 	return (0);

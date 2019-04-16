@@ -41,7 +41,7 @@ ntservice_init(void) {
 	if (!foreground) {
 		/* Register handler with the SCM */
 		hServiceStatus = RegisterServiceCtrlHandler(BIND_SERVICE_NAME,
-					(LPHANDLER_FUNCTION)ServiceControl);
+							    (LPHANDLER_FUNCTION)ServiceControl);
 		if (!hServiceStatus) {
 			named_main_earlyfatal(
 				"could not register service control handler");
@@ -72,7 +72,7 @@ ntservice_isservice(void) {
 void
 ServiceControl(DWORD dwCtrlCode) {
 	/* Handle the requested control code */
-	switch(dwCtrlCode) {
+	switch (dwCtrlCode) {
 	case SERVICE_CONTROL_INTERROGATE:
 		UpdateSCM(0);
 		break;
@@ -91,13 +91,15 @@ ServiceControl(DWORD dwCtrlCode) {
 /*
  * Tell the Service Control Manager the state of the service.
  */
-void UpdateSCM(DWORD state) {
+void
+UpdateSCM(DWORD state) {
 	SERVICE_STATUS ss;
 	static DWORD dwState = SERVICE_STOPPED;
 
 	if (hServiceStatus) {
-		if (state)
+		if (state) {
 			dwState = state;
+		}
 
 		memset(&ss, 0, sizeof(SERVICE_STATUS));
 		ss.dwServiceType |= SERVICE_WIN32_OWN_PROCESS;
@@ -125,7 +127,8 @@ void UpdateSCM(DWORD state) {
  * We can now call bindmain() explicitly or via StartServiceCtrlDispatcher()
  * as we need to.
  */
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
 	int rc, ch;
 

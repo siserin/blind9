@@ -15,7 +15,7 @@
 #include <inttypes.h>
 
 #include <isc/buffer.h>
-#include <isc/string.h>		/* Required for HP/UX (and others?) */
+#include <isc/string.h>         /* Required for HP/UX (and others?) */
 #include <isc/mem.h>
 
 #include <isccfg/cfg.h>
@@ -30,21 +30,22 @@
 #include <named/tkeyconf.h>
 
 #define RETERR(x) do { \
-	result = (x); \
-	if (result != ISC_R_SUCCESS) \
-		goto failure; \
-	} while (0)
+		result = (x); \
+		if (result != ISC_R_SUCCESS) { \
+			goto failure;} \
+} while (0)
 
-#include<named/log.h>
+#include <named/log.h>
 #define LOG(msg) \
 	isc_log_write(named_g_lctx, \
-	NAMED_LOGCATEGORY_GENERAL, \
-	NAMED_LOGMODULE_SERVER, \
-	ISC_LOG_ERROR, \
-	"%s", msg)
+		      NAMED_LOGCATEGORY_GENERAL, \
+		      NAMED_LOGMODULE_SERVER, \
+		      ISC_LOG_ERROR, \
+		      "%s", msg)
 
 isc_result_t
-named_tkeyctx_fromconfig(const cfg_obj_t *options, isc_mem_t *mctx,
+named_tkeyctx_fromconfig(const cfg_obj_t *options,
+			 isc_mem_t *mctx,
 			 dns_tkeyctx_t **tctxp)
 {
 	isc_result_t result;
@@ -58,8 +59,9 @@ named_tkeyctx_fromconfig(const cfg_obj_t *options, isc_mem_t *mctx,
 	int type;
 
 	result = dns_tkeyctx_create(mctx, &tctx);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	obj = NULL;
 	result = cfg_map_get(options, "tkey-dhkey", &obj);
@@ -70,7 +72,7 @@ named_tkeyctx_fromconfig(const cfg_obj_t *options, isc_mem_t *mctx,
 		isc_buffer_add(&b, strlen(s));
 		name = dns_fixedname_initname(&fname);
 		RETERR(dns_name_fromtext(name, &b, dns_rootname, 0, NULL));
-		type = DST_TYPE_PUBLIC|DST_TYPE_PRIVATE|DST_TYPE_KEY;
+		type = DST_TYPE_PUBLIC | DST_TYPE_PRIVATE | DST_TYPE_KEY;
 		RETERR(dst_key_fromfile(name, (dns_keytag_t) n, DNS_KEYALG_DH,
 					type, NULL, mctx, &tctx->dhkey));
 	}

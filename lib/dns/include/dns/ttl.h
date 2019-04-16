@@ -32,8 +32,7 @@ ISC_LANG_BEGINDECLS
  ***/
 
 isc_result_t
-dns_ttl_totext(uint32_t src, bool verbose,
-	       bool upcase, isc_buffer_t *target);
+dns_ttl_totext(uint32_t src, bool verbose, bool upcase, isc_buffer_t *target);
 /*%<
  * Output a TTL or other time interval in a human-readable form.
  * The time interval is given as a count of seconds in 'src'.

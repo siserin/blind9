@@ -11,12 +11,12 @@
 
 
 
-#define RTN_OK		0
-#define RTN_NOACCOUNT	1
-#define RTN_NOMEMORY	2
-#define RTN_ERROR	10
+#define RTN_OK          0
+#define RTN_NOACCOUNT   1
+#define RTN_NOMEMORY    2
+#define RTN_ERROR       10
 
-#define SE_SERVICE_LOGON_PRIV	L"SeServiceLogonRight"
+#define SE_SERVICE_LOGON_PRIV   L"SeServiceLogonRight"
 
 /*
  * This routine retrieves the list of all Privileges associated with
@@ -24,12 +24,12 @@
  */
 int
 GetAccountPrivileges(
-	char *name,			/* Name of Account */
-	wchar_t **PrivList,		/* List of Privileges returned */
-	unsigned int *PrivCount,	/* Count of Privileges returned */
-	char **Groups,		/* List of Groups to which account belongs */
-	unsigned int *totalGroups,	/* Count of Groups returned */
-	int maxGroups		/* Maximum number of Groups to return */
+	char *name,                     /* Name of Account */
+	wchar_t **PrivList,             /* List of Privileges returned */
+	unsigned int *PrivCount,        /* Count of Privileges returned */
+	char **Groups,          /* List of Groups to which account belongs */
+	unsigned int *totalGroups,      /* Count of Groups returned */
+	int maxGroups           /* Maximum number of Groups to return */
 	);
 
 /*

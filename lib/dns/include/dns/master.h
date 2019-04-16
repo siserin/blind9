@@ -29,30 +29,38 @@
 /*
  * Flags to be passed in the 'options' argument in the functions below.
  */
-#define	DNS_MASTER_AGETTL 	0x00000001	/*%< Age the ttl based on $DATE. */
-#define DNS_MASTER_MANYERRORS 	0x00000002	/*%< Continue processing on errors. */
-#define DNS_MASTER_NOINCLUDE 	0x00000004	/*%< Disallow $INCLUDE directives. */
-#define DNS_MASTER_ZONE 	0x00000008	/*%< Loading a zone master file. */
-#define DNS_MASTER_HINT 	0x00000010	/*%< Loading a hint master file. */
-#define DNS_MASTER_SLAVE 	0x00000020	/*%< Loading a slave master file. */
-#define DNS_MASTER_CHECKNS 	0x00000040	/*%<
-						 * Check NS records to see
-						 * if they are an address
-						 */
-#define DNS_MASTER_FATALNS 	0x00000080	/*%<
-						 * Treat DNS_MASTER_CHECKNS
-						 * matches as fatal
-						 */
+#define DNS_MASTER_AGETTL       0x00000001      /*%< Age the ttl based on $DATE.
+	                                         * */
+#define DNS_MASTER_MANYERRORS   0x00000002      /*%< Continue processing on
+	                                         * errors. */
+#define DNS_MASTER_NOINCLUDE    0x00000004      /*%< Disallow $INCLUDE
+	                                         * directives. */
+#define DNS_MASTER_ZONE         0x00000008      /*%< Loading a zone master file.
+	                                         * */
+#define DNS_MASTER_HINT         0x00000010      /*%< Loading a hint master file.
+	                                         * */
+#define DNS_MASTER_SLAVE        0x00000020      /*%< Loading a slave master
+	                                         * file. */
+#define DNS_MASTER_CHECKNS      0x00000040      /*%<
+	                                         * Check NS records to see
+	                                         * if they are an address
+	                                         */
+#define DNS_MASTER_FATALNS      0x00000080      /*%<
+	                                         * Treat DNS_MASTER_CHECKNS
+	                                         * matches as fatal
+	                                         */
 #define DNS_MASTER_CHECKNAMES   0x00000100
 #define DNS_MASTER_CHECKNAMESFAIL 0x00000200
-#define DNS_MASTER_CHECKWILDCARD 0x00000400	/* Check for internal wildcards. */
-#define DNS_MASTER_CHECKMX	0x00000800
-#define DNS_MASTER_CHECKMXFAIL	0x00001000
+#define DNS_MASTER_CHECKWILDCARD 0x00000400     /* Check for internal wildcards.
+	                                         * */
+#define DNS_MASTER_CHECKMX      0x00000800
+#define DNS_MASTER_CHECKMXFAIL  0x00001000
 
-#define DNS_MASTER_RESIGN	0x00002000
-#define DNS_MASTER_KEY	 	0x00004000	/*%< Loading a key zone master file. */
-#define DNS_MASTER_NOTTL	0x00008000	/*%< Don't require ttl. */
-#define DNS_MASTER_CHECKTTL	0x00010000	/*%< Check max-zone-ttl */
+#define DNS_MASTER_RESIGN       0x00002000
+#define DNS_MASTER_KEY          0x00004000      /*%< Loading a key zone master
+	                                         * file. */
+#define DNS_MASTER_NOTTL        0x00008000      /*%< Don't require ttl. */
+#define DNS_MASTER_CHECKTTL     0x00010000      /*%< Check max-zone-ttl */
 
 ISC_LANG_BEGINDECLS
 
@@ -67,37 +75,37 @@ ISC_LANG_BEGINDECLS
 /*
  * Flags to indicate the status of the data in the raw file header
  */
-#define DNS_MASTERRAW_COMPAT 		0x01
-#define DNS_MASTERRAW_SOURCESERIALSET	0x02
-#define DNS_MASTERRAW_LASTXFRINSET	0x04
+#define DNS_MASTERRAW_COMPAT            0x01
+#define DNS_MASTERRAW_SOURCESERIALSET   0x02
+#define DNS_MASTERRAW_LASTXFRINSET      0x04
 
 /* Common header */
 struct dns_masterrawheader {
-	uint32_t		format;		/* must be
-						 * dns_masterformat_raw
-						 * or
-						 * dns_masterformat_map */
-	uint32_t		version;	/* compatibility for future
-						 * extensions */
-	uint32_t		dumptime;	/* timestamp on creation
-						 * (currently unused) */
-	uint32_t		flags;		/* Flags */
-	uint32_t		sourceserial;	/* Source serial number (used
-						 * by inline-signing zones) */
-	uint32_t		lastxfrin;	/* timestamp of last transfer
-						 * (used by slave zones) */
+	uint32_t        format;                 /* must be
+	                                         * dns_masterformat_raw
+	                                         * or
+	                                         * dns_masterformat_map */
+	uint32_t	version;                /* compatibility for future
+	                                         * extensions */
+	uint32_t	dumptime;               /* timestamp on creation
+	                                         * (currently unused) */
+	uint32_t	flags;                  /* Flags */
+	uint32_t	sourceserial;           /* Source serial number (used
+	                                        * by inline-signing zones) */
+	uint32_t	lastxfrin;              /* timestamp of last transfer
+	                                         * (used by slave zones) */
 };
 
 /* The structure for each RRset */
 typedef struct {
-	uint32_t		totallen;	/* length of the data for this
-						 * RRset, including the
-						 * "header" part */
-	dns_rdataclass_t	rdclass;	/* 16-bit class */
-	dns_rdatatype_t		type;		/* 16-bit type */
-	dns_rdatatype_t		covers;		/* same as type */
-	dns_ttl_t		ttl;		/* 32-bit TTL */
-	uint32_t		nrdata;		/* number of RRs in this set */
+	uint32_t		totallen;       /* length of the data for this
+	                                         * RRset, including the
+	                                         * "header" part */
+	dns_rdataclass_t	rdclass;        /* 16-bit class */
+	dns_rdatatype_t		type;           /* 16-bit type */
+	dns_rdatatype_t		covers;         /* same as type */
+	dns_ttl_t		ttl;            /* 32-bit TTL */
+	uint32_t		nrdata;         /* number of RRs in this set */
 	/* followed by encoded owner name, and then rdata */
 } dns_masterrawrdataset_t;
 
@@ -121,7 +129,8 @@ dns_master_loadfile(const char *master_file,
 		    uint32_t resign,
 		    dns_rdatacallbacks_t *callbacks,
 		    dns_masterincludecb_t include_cb,
-		    void *include_arg, isc_mem_t *mctx,
+		    void *include_arg,
+		    isc_mem_t *mctx,
 		    dns_masterformat_t format,
 		    dns_ttl_t maxttl);
 
@@ -161,10 +170,13 @@ dns_master_loadfileinc(const char *master_file,
 		       uint32_t resign,
 		       dns_rdatacallbacks_t *callbacks,
 		       isc_task_t *task,
-		       dns_loaddonefunc_t done, void *done_arg,
+		       dns_loaddonefunc_t done,
+		       void *done_arg,
 		       dns_loadctx_t **ctxp,
-		       dns_masterincludecb_t include_cb, void *include_arg,
-		       isc_mem_t *mctx, dns_masterformat_t format,
+		       dns_masterincludecb_t include_cb,
+		       void *include_arg,
+		       isc_mem_t *mctx,
+		       dns_masterformat_t format,
 		       uint32_t maxttl);
 
 isc_result_t
@@ -175,8 +187,10 @@ dns_master_loadstreaminc(FILE *stream,
 			 unsigned int options,
 			 dns_rdatacallbacks_t *callbacks,
 			 isc_task_t *task,
-			 dns_loaddonefunc_t done, void *done_arg,
-			 dns_loadctx_t **ctxp, isc_mem_t *mctx);
+			 dns_loaddonefunc_t done,
+			 void *done_arg,
+			 dns_loadctx_t **ctxp,
+			 isc_mem_t *mctx);
 
 isc_result_t
 dns_master_loadbufferinc(isc_buffer_t *buffer,
@@ -186,8 +200,10 @@ dns_master_loadbufferinc(isc_buffer_t *buffer,
 			 unsigned int options,
 			 dns_rdatacallbacks_t *callbacks,
 			 isc_task_t *task,
-			 dns_loaddonefunc_t done, void *done_arg,
-			 dns_loadctx_t **ctxp, isc_mem_t *mctx);
+			 dns_loaddonefunc_t done,
+			 void *done_arg,
+			 dns_loadctx_t **ctxp,
+			 isc_mem_t *mctx);
 
 isc_result_t
 dns_master_loadlexerinc(isc_lex_t *lex,
@@ -197,8 +213,10 @@ dns_master_loadlexerinc(isc_lex_t *lex,
 			unsigned int options,
 			dns_rdatacallbacks_t *callbacks,
 			isc_task_t *task,
-			dns_loaddonefunc_t done, void *done_arg,
-			dns_loadctx_t **ctxp, isc_mem_t *mctx);
+			dns_loaddonefunc_t done,
+			void *done_arg,
+			dns_loadctx_t **ctxp,
+			isc_mem_t *mctx);
 
 /*%<
  * Loads a RFC1305 master file from a file, stream, buffer, or existing

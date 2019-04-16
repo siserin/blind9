@@ -31,18 +31,21 @@ fromtext_ptr(ARGS_FROMTEXT) {
 
 	dns_name_init(&name, NULL);
 	buffer_fromregion(&buffer, &token.value.as_region);
-	if (origin == NULL)
+	if (origin == NULL) {
 		origin = dns_rootname;
+	}
 	RETTOK(dns_name_fromtext(&name, &buffer, origin, options, target));
 	if (rdclass == dns_rdataclass_in &&
 	    (options & DNS_RDATA_CHECKNAMES) != 0 &&
 	    (options & DNS_RDATA_CHECKREVERSE) != 0) {
 		bool ok;
 		ok = dns_name_ishostname(&name, false);
-		if (!ok && (options & DNS_RDATA_CHECKNAMESFAIL) != 0)
+		if (!ok && (options & DNS_RDATA_CHECKNAMESFAIL) != 0) {
 			RETTOK(DNS_R_BADNAME);
-		if (!ok && callbacks != NULL)
+		}
+		if (!ok && callbacks != NULL) {
 			warn_badname(&name, lexer, callbacks);
+		}
 	}
 	return (ISC_R_SUCCESS);
 }
@@ -173,8 +176,9 @@ freestruct_ptr(ARGS_FREESTRUCT) {
 	REQUIRE(source != NULL);
 	REQUIRE(ptr->common.rdtype == dns_rdatatype_ptr);
 
-	if (ptr->mctx == NULL)
+	if (ptr->mctx == NULL) {
 		return;
+	}
 
 	dns_name_free(&ptr->ptr, ptr->mctx);
 	ptr->mctx = NULL;
@@ -207,7 +211,6 @@ digest_ptr(ARGS_DIGEST) {
 
 static inline bool
 checkowner_ptr(ARGS_CHECKOWNER) {
-
 	REQUIRE(type == dns_rdatatype_ptr);
 
 	UNUSED(name);
@@ -240,11 +243,13 @@ checknames_ptr(ARGS_CHECKNAMES) {
 
 	REQUIRE(rdata->type == dns_rdatatype_ptr);
 
-	if (rdata->rdclass != dns_rdataclass_in)
-	    return (true);
-
-	if (dns_name_isdnssd(owner))
+	if (rdata->rdclass != dns_rdataclass_in) {
 		return (true);
+	}
+
+	if (dns_name_isdnssd(owner)) {
+		return (true);
+	}
 
 	if (dns_name_issubdomain(owner, &in_addr_arpa) ||
 	    dns_name_issubdomain(owner, &ip6_arpa) ||
@@ -253,8 +258,9 @@ checknames_ptr(ARGS_CHECKNAMES) {
 		dns_name_init(&name, NULL);
 		dns_name_fromregion(&name, &region);
 		if (!dns_name_ishostname(&name, false)) {
-			if (bad != NULL)
+			if (bad != NULL) {
 				dns_name_clone(&name, bad);
+			}
 			return (false);
 		}
 	}
@@ -265,4 +271,4 @@ static inline int
 casecompare_ptr(ARGS_COMPARE) {
 	return (compare_ptr(rdata1, rdata2));
 }
-#endif	/* RDATA_GENERIC_PTR_12_C */
+#endif  /* RDATA_GENERIC_PTR_12_C */

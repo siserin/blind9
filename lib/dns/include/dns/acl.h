@@ -13,8 +13,8 @@
 #define DNS_ACL_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/acl.h
  * \brief
@@ -34,14 +34,14 @@
 
 #ifdef HAVE_GEOIP
 #include <dns/geoip.h>
-#endif
+#endif /* ifdef HAVE_GEOIP */
 #include <dns/name.h>
 #include <dns/types.h>
 #include <dns/iptable.h>
 
 #ifdef HAVE_GEOIP
 #include <GeoIP.h>
-#endif
+#endif /* ifdef HAVE_GEOIP */
 
 /***
  *** Types
@@ -62,46 +62,46 @@ typedef enum {
 typedef struct dns_aclipprefix dns_aclipprefix_t;
 
 struct dns_aclipprefix {
-	isc_netaddr_t address; /* IP4/IP6 */
-	unsigned int prefixlen;
+	isc_netaddr_t	     address; /* IP4/IP6 */
+	unsigned int	     prefixlen;
 };
 
 struct dns_aclelement {
-	dns_aclelementtype_t	type;
-	bool		negative;
-	dns_name_t		keyname;
+	dns_aclelementtype_t	    type;
+	bool			    negative;
+	dns_name_t		    keyname;
 #ifdef HAVE_GEOIP
-	dns_geoip_elem_t	geoip_elem;
+	dns_geoip_elem_t	    geoip_elem;
 #endif /* HAVE_GEOIP */
-	dns_acl_t		*nestedacl;
-	int			node_num;
+	dns_acl_t *		    nestedacl;
+	int			    node_num;
 };
 
 struct dns_acl {
 	unsigned int		magic;
-	isc_mem_t		*mctx;
+	isc_mem_t *		mctx;
 	isc_refcount_t		refcount;
-	dns_iptable_t		*iptable;
-#define node_count		iptable->radix->num_added_node
-	dns_aclelement_t	*elements;
-	bool 		has_negatives;
-	unsigned int 		alloc;		/*%< Elements allocated */
-	unsigned int 		length;		/*%< Elements initialized */
-	char 			*name;		/*%< Temporary use only */
-	ISC_LINK(dns_acl_t) 	nextincache;	/*%< Ditto */
+	dns_iptable_t *		iptable;
+#define node_count              iptable->radix->num_added_node
+	dns_aclelement_t *	elements;
+	bool			has_negatives;
+	unsigned int		alloc;          /*%< Elements allocated */
+	unsigned int		length;         /*%< Elements initialized */
+	char *			name;           /*%< Temporary use only */
+	ISC_LINK(dns_acl_t)     nextincache;    /*%< Ditto */
 };
 
 struct dns_aclenv {
-	dns_acl_t *localhost;
-	dns_acl_t *localnets;
-	bool match_mapped;
+	dns_acl_t *		     localhost;
+	dns_acl_t *		     localnets;
+	bool			     match_mapped;
 #ifdef HAVE_GEOIP
-	dns_geoip_databases_t *geoip;
-#endif
+	dns_geoip_databases_t *	     geoip;
+#endif /* ifdef HAVE_GEOIP */
 };
 
-#define DNS_ACL_MAGIC		ISC_MAGIC('D','a','c','l')
-#define DNS_ACL_VALID(a)	ISC_MAGIC_VALID(a, DNS_ACL_MAGIC)
+#define DNS_ACL_MAGIC           ISC_MAGIC('D', 'a', 'c', 'l')
+#define DNS_ACL_VALID(a)        ISC_MAGIC_VALID(a, DNS_ACL_MAGIC)
 
 /***
  *** Functions
@@ -188,8 +188,10 @@ dns_acl_isinsecure(const dns_acl_t *a);
  */
 
 bool
-dns_acl_allowed(isc_netaddr_t *addr, dns_name_t *signer,
-		dns_acl_t *acl, dns_aclenv_t *aclenv);
+dns_acl_allowed(isc_netaddr_t *addr,
+		dns_name_t *signer,
+		dns_acl_t *acl,
+		dns_aclenv_t *aclenv);
 /*%<
  * Return #true iff the 'addr', 'signer', or ECS values are
  * permitted by 'acl' in environment 'aclenv'.

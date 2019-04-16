@@ -109,7 +109,8 @@ isc_portset_remove(isc_portset_t *portset, in_port_t port);
  */
 
 void
-isc_portset_addrange(isc_portset_t *portset, in_port_t port_lo,
+isc_portset_addrange(isc_portset_t *portset,
+		     in_port_t port_lo,
 		     in_port_t port_hi);
 /*%<
  * Add a subset of [port_lo, port_hi] (inclusive) to the portset.  Ports in the
@@ -121,7 +122,8 @@ isc_portset_addrange(isc_portset_t *portset, in_port_t port_lo,
  */
 
 void
-isc_portset_removerange(isc_portset_t *portset, in_port_t port_lo,
+isc_portset_removerange(isc_portset_t *portset,
+			in_port_t port_lo,
 			in_port_t port_hi);
 /*%<
  * Subtract a subset of [port_lo, port_hi] (inclusive) from the portset.  Ports
@@ -134,4 +136,4 @@ isc_portset_removerange(isc_portset_t *portset, in_port_t port_lo,
 
 ISC_LANG_ENDDECLS
 
-#endif	/* ISC_PORTSET_H */
+#endif  /* ISC_PORTSET_H */

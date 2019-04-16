@@ -54,7 +54,7 @@
 
 #ifndef MAP_FILE
 #define MAP_FILE 0
-#endif
+#endif /* ifndef MAP_FILE */
 
 /* Set to true (or use -v option) for verbose output */
 static bool verbose = false;
@@ -81,14 +81,14 @@ _teardown(void **state) {
 }
 
 typedef struct data_holder {
-	int len;
-	const char *data;
+	int		  len;
+	const char *	  data;
 } data_holder_t;
 
 typedef struct rbt_testdata {
-	const char *name;
-	size_t name_len;
-	data_holder_t data;
+	const char *	     name;
+	size_t		     name_len;
+	data_holder_t	     data;
 } rbt_testdata_t;
 
 #define DATA_ITEM(name) { (name), sizeof(name) - 1, { sizeof(name), (name) } }
@@ -332,8 +332,8 @@ serialize_test(void **state) {
 	 */
 	fd = open("zone.bin", O_RDWR);
 	isc_file_getsizefd(fd, &filesize);
-	base = mmap(NULL, filesize, PROT_READ|PROT_WRITE,
-		    MAP_FILE|MAP_PRIVATE, fd, 0);
+	base = mmap(NULL, filesize, PROT_READ | PROT_WRITE,
+		    MAP_FILE | MAP_PRIVATE, fd, 0);
 	assert_true(base != NULL && base != MAP_FAILED);
 	close(fd);
 
@@ -392,8 +392,8 @@ deserialize_corrupt_test(void **state) {
 
 		fd = open("zone.bin", O_RDWR);
 		isc_file_getsizefd(fd, &filesize);
-		base = mmap(NULL, filesize, PROT_READ|PROT_WRITE,
-			    MAP_FILE|MAP_PRIVATE, fd, 0);
+		base = mmap(NULL, filesize, PROT_READ | PROT_WRITE,
+			    MAP_FILE | MAP_PRIVATE, fd, 0);
 		assert_true(base != NULL && base != MAP_FAILED);
 		close(fd);
 
@@ -480,4 +480,4 @@ main(void) {
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

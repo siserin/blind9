@@ -84,7 +84,8 @@ print_addresses(dns_adbfind_t *adbfind) {
 
 	for (address = ISC_LIST_HEAD(adbfind->list);
 	     address != NULL;
-	     address = ISC_LIST_NEXT(address, publink)) {
+	     address = ISC_LIST_NEXT(address, publink))
+	{
 		isc_netaddr_t netaddr;
 		char text[ISC_NETADDR_FORMATSIZE];
 		isc_netaddr_fromsockaddr(&netaddr, &address->sockaddr);
@@ -108,8 +109,9 @@ do_find(bool want_event) {
 	unsigned int options;
 
 	options = DNS_ADBFIND_INET | DNS_ADBFIND_INET6;
-	if (want_event)
+	if (want_event) {
 		options |= DNS_ADBFIND_WANTEVENT | DNS_ADBFIND_EMPTYEVENT;
+	}
 	dns_fixedname_init(&target);
 	result = dns_adb_createfind(view->adb, task, adb_callback, NULL,
 				    dns_fixedname_name(&fixed),
@@ -152,8 +154,9 @@ do_find(bool want_event) {
 	}
 
 	if (done) {
-		if (find != NULL)
+		if (find != NULL) {
 			dns_adb_destroyfind(&find);
+		}
 		isc_app_shutdown();
 	}
 }
@@ -167,9 +170,9 @@ adb_callback(isc_task_t *etask, isc_event_t *event) {
 	isc_event_free(&event);
 	dns_adb_destroyfind(&find);
 
-	if (type == DNS_EVENT_ADBMOREADDRESSES)
+	if (type == DNS_EVENT_ADBMOREADDRESSES) {
 		do_find(false);
-	else if (type == DNS_EVENT_ADBNOMOREADDRESSES) {
+	} else if (type == DNS_EVENT_ADBNOMOREADDRESSES) {
 		printf("no more addresses\n");
 		isc_app_shutdown();
 	} else {
@@ -292,12 +295,14 @@ main(int argc, char *argv[]) {
 						      timermgr, 0,
 						      dispatchmgr,
 						      disp4, disp6) ==
-		      ISC_R_SUCCESS);
+			      ISC_R_SUCCESS);
 
-		if (disp4 != NULL)
+		if (disp4 != NULL) {
 			dns_dispatch_detach(&disp4);
-		if (disp6 != NULL)
+		}
+		if (disp6 != NULL) {
 			dns_dispatch_detach(&disp6);
+		}
 	}
 
 	{
@@ -347,8 +352,9 @@ main(int argc, char *argv[]) {
 
 	isc_log_destroy(&lctx);
 
-	if (verbose)
+	if (verbose) {
 		isc_mem_stats(mctx, stdout);
+	}
 	isc_mem_destroy(&mctx);
 
 	isc_app_finish();

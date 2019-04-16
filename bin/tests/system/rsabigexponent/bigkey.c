@@ -58,14 +58,15 @@ BIGNUM *e;
 EVP_PKEY *pkey;
 
 #define CHECK(op, msg) \
-do { result = (op); \
-	if (result != ISC_R_SUCCESS) { \
-		fprintf(stderr, \
-			"fatal error: %s returns %s at file %s line %d\n", \
-			msg, isc_result_totext(result), __FILE__, __LINE__); \
-		exit(1); \
-	} \
-} while (0)
+	do { result = (op); \
+	     if (result != ISC_R_SUCCESS) { \
+		     fprintf(stderr, \
+			     "fatal error: %s returns %s at file %s line %d\n", \
+			     msg, isc_result_totext(result), __FILE__, \
+			     __LINE__); \
+		     exit(1); \
+	     } \
+	} while (0)
 
 int
 main(int argc, char **argv) {

@@ -35,8 +35,10 @@
 ISC_LANG_BEGINDECLS
 
 isc_result_t
-bind9_check_namedconf(const cfg_obj_t *config, bool check_plugins,
-		      isc_log_t *logctx, isc_mem_t *mctx);
+bind9_check_namedconf(const cfg_obj_t *config,
+		      bool check_plugins,
+		      isc_log_t *logctx,
+		      isc_mem_t *mctx);
 /*%<
  * Check the syntactic validity of a configuration parse tree generated from
  * a named.conf file.

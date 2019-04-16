@@ -14,8 +14,8 @@
 #define DNS_DBTABLE_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/dbtable.h
  * \brief
@@ -44,12 +44,13 @@
 
 #include <dns/types.h>
 
-#define DNS_DBTABLEFIND_NOEXACT		0x01
+#define DNS_DBTABLEFIND_NOEXACT         0x01
 
 ISC_LANG_BEGINDECLS
 
 isc_result_t
-dns_dbtable_create(isc_mem_t *mctx, dns_rdataclass_t rdclass,
+dns_dbtable_create(isc_mem_t *mctx,
+		   dns_rdataclass_t rdclass,
 		   dns_dbtable_t **dbtablep);
 /*%<
  * Make a new dbtable of class 'rdclass'
@@ -139,8 +140,10 @@ dns_dbtable_removedefault(dns_dbtable_t *dbtable);
  */
 
 isc_result_t
-dns_dbtable_find(dns_dbtable_t *dbtable, const dns_name_t *name,
-		 unsigned int options, dns_db_t **dbp);
+dns_dbtable_find(dns_dbtable_t *dbtable,
+		 const dns_name_t *name,
+		 unsigned int options,
+		 dns_db_t **dbp);
 /*%<
  * Find the deepest match to 'name' in the dbtable, and return it
  *

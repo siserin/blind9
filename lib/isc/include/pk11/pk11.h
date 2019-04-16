@@ -20,20 +20,20 @@
 #include <isc/magic.h>
 #include <isc/types.h>
 
-#define PK11_FATALCHECK(func, args) \
+#define PK11_FATALCHECK(func,args) \
 	((void) (((rv = (func) args) == CKR_OK) || \
-		 ((pk11_error_fatalcheck)(__FILE__, __LINE__, #func, rv), 0)))
+		 ((pk11_error_fatalcheck)(__FILE__,__LINE__, # func,rv),0)))
 
 #include <pkcs11/cryptoki.h>
 #include <pk11/site.h>
 
 ISC_LANG_BEGINDECLS
 
-#define SES_MAGIC	ISC_MAGIC('P','K','S','S')
-#define TOK_MAGIC	ISC_MAGIC('P','K','T','K')
+#define SES_MAGIC       ISC_MAGIC('P','K','S','S')
+#define TOK_MAGIC       ISC_MAGIC('P','K','T','K')
 
-#define VALID_SES(x)	ISC_MAGIC_VALID(x, SES_MAGIC)
-#define VALID_TOK(x)	ISC_MAGIC_VALID(x, TOK_MAGIC)
+#define VALID_SES(x)    ISC_MAGIC_VALID(x,SES_MAGIC)
+#define VALID_TOK(x)    ISC_MAGIC_VALID(x,TOK_MAGIC)
 
 typedef struct pk11_context pk11_context_t;
 
@@ -43,14 +43,14 @@ struct pk11_object {
 	CK_BBOOL		ontoken;
 	CK_BBOOL		reqlogon;
 	CK_BYTE			attrcnt;
-	CK_ATTRIBUTE		*repr;
+	CK_ATTRIBUTE *		repr;
 };
 
 struct pk11_context {
-	void			*handle;
-	CK_SESSION_HANDLE	session;
-	CK_BBOOL		ontoken;
-	CK_OBJECT_HANDLE	object;
+	void *			 handle;
+	CK_SESSION_HANDLE	 session;
+	CK_BBOOL		 ontoken;
+	CK_OBJECT_HANDLE	 object;
 };
 
 typedef struct pk11_object pk11_object_t;
@@ -73,12 +73,12 @@ LIBISC_EXTERNAL_DATA extern bool pk11_verbose_init;
  * Function prototypes
  */
 
-void pk11_set_lib_name(const char *lib_name);
+void pk11_set_lib_name(const char*lib_name);
 /*%<
  * Set the PKCS#11 provider (aka library) path/name.
  */
 
-isc_result_t pk11_initialize(isc_mem_t *mctx, const char *engine);
+isc_result_t pk11_initialize(isc_mem_t*mctx,const char*engine);
 /*%<
  * Initialize PKCS#11 device
  *
@@ -94,7 +94,7 @@ isc_result_t pk11_initialize(isc_mem_t *mctx, const char *engine);
  *         PK11_R_NOAESSERVICE: can't find required AES service
  */
 
-isc_result_t pk11_get_session(pk11_context_t *ctx,
+isc_result_t pk11_get_session(pk11_context_t*ctx,
 			      pk11_optype_t optype,
 			      bool need_services,
 			      bool rw,
@@ -105,12 +105,12 @@ isc_result_t pk11_get_session(pk11_context_t *ctx,
  * Initialize PKCS#11 device and acquire a session.
  *
  * need_services:
- * 	  if true, this session requires full PKCS#11 API
- * 	  support including random and digest services, and
- * 	  the lack of these services will cause the session not
- * 	  to be initialized.  If false, the function will return
- * 	  an error code indicating the missing service, but the
- * 	  session will be usable for other purposes.
+ *        if true, this session requires full PKCS#11 API
+ *        support including random and digest services, and
+ *        the lack of these services will cause the session not
+ *        to be initialized.  If false, the function will return
+ *        an error code indicating the missing service, but the
+ *        session will be usable for other purposes.
  * rw:    if true, session will be read/write (useful for
  *        generating or destroying keys); otherwise read-only.
  * login: indicates whether to log in to the device
@@ -119,7 +119,7 @@ isc_result_t pk11_get_session(pk11_context_t *ctx,
  * slot:  device slot ID
  */
 
-void pk11_return_session(pk11_context_t *ctx);
+void pk11_return_session(pk11_context_t*ctx);
 /*%<
  * Release an active PKCS#11 session for reuse.
  */
@@ -129,12 +129,13 @@ isc_result_t pk11_finalize(void);
  * Shut down PKCS#11 device and free all sessions.
  */
 
-isc_result_t pk11_parse_uri(pk11_object_t *obj, const char *label,
-			    isc_mem_t *mctx, pk11_optype_t optype);
+isc_result_t pk11_parse_uri(pk11_object_t*obj,
+			    const char *label,
+			    isc_mem_t *mctx,
+			    pk11_optype_t optype);
 
 ISC_PLATFORM_NORETURN_PRE void
-pk11_error_fatalcheck(const char *file, int line,
-		      const char *funcname, CK_RV rv)
+pk11_error_fatalcheck(const char*file,int line,const char*funcname,CK_RV rv)
 ISC_PLATFORM_NORETURN_POST;
 
 void pk11_dump_tokens(void);
@@ -142,123 +143,154 @@ void pk11_dump_tokens(void);
 CK_RV
 pkcs_C_Initialize(CK_VOID_PTR pReserved);
 
-char *pk11_get_load_error_message(void);
+char*pk11_get_load_error_message(void);
 
 CK_RV
 pkcs_C_Finalize(CK_VOID_PTR pReserved);
 
 CK_RV
-pkcs_C_GetSlotList(CK_BBOOL tokenPresent, CK_SLOT_ID_PTR pSlotList,
+pkcs_C_GetSlotList(CK_BBOOL tokenPresent,
+		   CK_SLOT_ID_PTR pSlotList,
 		   CK_ULONG_PTR pulCount);
 
 CK_RV
-pkcs_C_GetTokenInfo(CK_SLOT_ID slotID, CK_TOKEN_INFO_PTR pInfo);
+pkcs_C_GetTokenInfo(CK_SLOT_ID slotID,CK_TOKEN_INFO_PTR pInfo);
 
 CK_RV
-pkcs_C_GetMechanismInfo(CK_SLOT_ID slotID, CK_MECHANISM_TYPE type,
+pkcs_C_GetMechanismInfo(CK_SLOT_ID slotID,
+			CK_MECHANISM_TYPE type,
 			CK_MECHANISM_INFO_PTR pInfo);
 
 CK_RV
-pkcs_C_OpenSession(CK_SLOT_ID slotID, CK_FLAGS flags,
+pkcs_C_OpenSession(CK_SLOT_ID slotID,
+		   CK_FLAGS flags,
 		   CK_VOID_PTR pApplication,
-		   CK_RV  (*Notify) (CK_SESSION_HANDLE hSession,
-				     CK_NOTIFICATION event,
-				     CK_VOID_PTR pApplication),
+		   CK_RV (*Notify)(CK_SESSION_HANDLE hSession,
+				   CK_NOTIFICATION event,
+				   CK_VOID_PTR pApplication),
 		   CK_SESSION_HANDLE_PTR phSession);
 
 CK_RV
 pkcs_C_CloseSession(CK_SESSION_HANDLE hSession);
 
 CK_RV
-pkcs_C_Login(CK_SESSION_HANDLE hSession, CK_USER_TYPE userType,
-	     CK_CHAR_PTR pPin, CK_ULONG usPinLen);
+pkcs_C_Login(CK_SESSION_HANDLE hSession,
+	     CK_USER_TYPE userType,
+	     CK_CHAR_PTR pPin,
+	     CK_ULONG usPinLen);
 
 CK_RV
 pkcs_C_Logout(CK_SESSION_HANDLE hSession);
 
 CK_RV
-pkcs_C_CreateObject(CK_SESSION_HANDLE hSession, CK_ATTRIBUTE_PTR pTemplate,
-		    CK_ULONG usCount, CK_OBJECT_HANDLE_PTR phObject);
+pkcs_C_CreateObject(CK_SESSION_HANDLE hSession,
+		    CK_ATTRIBUTE_PTR pTemplate,
+		    CK_ULONG usCount,
+		    CK_OBJECT_HANDLE_PTR phObject);
 
 CK_RV
 pkcs_C_DestroyObject(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObject);
 
 CK_RV
-pkcs_C_GetAttributeValue(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObject,
-			 CK_ATTRIBUTE_PTR pTemplate, CK_ULONG usCount);
+pkcs_C_GetAttributeValue(CK_SESSION_HANDLE hSession,
+			 CK_OBJECT_HANDLE hObject,
+			 CK_ATTRIBUTE_PTR pTemplate,
+			 CK_ULONG usCount);
 
 CK_RV
-pkcs_C_SetAttributeValue(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObject,
-			 CK_ATTRIBUTE_PTR pTemplate, CK_ULONG usCount);
+pkcs_C_SetAttributeValue(CK_SESSION_HANDLE hSession,
+			 CK_OBJECT_HANDLE hObject,
+			 CK_ATTRIBUTE_PTR pTemplate,
+			 CK_ULONG usCount);
 
 CK_RV
-pkcs_C_FindObjectsInit(CK_SESSION_HANDLE hSession, CK_ATTRIBUTE_PTR pTemplate,
+pkcs_C_FindObjectsInit(CK_SESSION_HANDLE hSession,
+		       CK_ATTRIBUTE_PTR pTemplate,
 		       CK_ULONG usCount);
 
 CK_RV
-pkcs_C_FindObjects(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE_PTR phObject,
-		   CK_ULONG usMaxObjectCount, CK_ULONG_PTR pusObjectCount);
+pkcs_C_FindObjects(CK_SESSION_HANDLE hSession,
+		   CK_OBJECT_HANDLE_PTR phObject,
+		   CK_ULONG usMaxObjectCount,
+		   CK_ULONG_PTR pusObjectCount);
 
 CK_RV
 pkcs_C_FindObjectsFinal(CK_SESSION_HANDLE hSession);
 
 CK_RV
-pkcs_C_EncryptInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism,
+pkcs_C_EncryptInit(CK_SESSION_HANDLE hSession,
+		   CK_MECHANISM_PTR pMechanism,
 		   CK_OBJECT_HANDLE hKey);
 
 CK_RV
-pkcs_C_Encrypt(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData,
-	       CK_ULONG ulDataLen, CK_BYTE_PTR pEncryptedData,
+pkcs_C_Encrypt(CK_SESSION_HANDLE hSession,
+	       CK_BYTE_PTR pData,
+	       CK_ULONG ulDataLen,
+	       CK_BYTE_PTR pEncryptedData,
 	       CK_ULONG_PTR pulEncryptedDataLen);
 
 CK_RV
 pkcs_C_DigestInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism);
 
 CK_RV
-pkcs_C_DigestUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart,
+pkcs_C_DigestUpdate(CK_SESSION_HANDLE hSession,
+		    CK_BYTE_PTR pPart,
 		    CK_ULONG ulPartLen);
 
 CK_RV
-pkcs_C_DigestFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pDigest,
+pkcs_C_DigestFinal(CK_SESSION_HANDLE hSession,
+		   CK_BYTE_PTR pDigest,
 		   CK_ULONG_PTR pulDigestLen);
 
 CK_RV
-pkcs_C_SignInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism,
+pkcs_C_SignInit(CK_SESSION_HANDLE hSession,
+		CK_MECHANISM_PTR pMechanism,
 		CK_OBJECT_HANDLE hKey);
 
 CK_RV
-pkcs_C_Sign(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData,
-	    CK_ULONG ulDataLen, CK_BYTE_PTR pSignature,
+pkcs_C_Sign(CK_SESSION_HANDLE hSession,
+	    CK_BYTE_PTR pData,
+	    CK_ULONG ulDataLen,
+	    CK_BYTE_PTR pSignature,
 	    CK_ULONG_PTR pulSignatureLen);
 
 CK_RV
-pkcs_C_SignUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart,
+pkcs_C_SignUpdate(CK_SESSION_HANDLE hSession,
+		  CK_BYTE_PTR pPart,
 		  CK_ULONG ulPartLen);
 
 CK_RV
-pkcs_C_SignFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pSignature,
+pkcs_C_SignFinal(CK_SESSION_HANDLE hSession,
+		 CK_BYTE_PTR pSignature,
 		 CK_ULONG_PTR pulSignatureLen);
 
 CK_RV
-pkcs_C_VerifyInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism,
+pkcs_C_VerifyInit(CK_SESSION_HANDLE hSession,
+		  CK_MECHANISM_PTR pMechanism,
 		  CK_OBJECT_HANDLE hKey);
 
 CK_RV
-pkcs_C_Verify(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData,
-	      CK_ULONG ulDataLen, CK_BYTE_PTR pSignature,
+pkcs_C_Verify(CK_SESSION_HANDLE hSession,
+	      CK_BYTE_PTR pData,
+	      CK_ULONG ulDataLen,
+	      CK_BYTE_PTR pSignature,
 	      CK_ULONG ulSignatureLen);
 
 CK_RV
-pkcs_C_VerifyUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart,
+pkcs_C_VerifyUpdate(CK_SESSION_HANDLE hSession,
+		    CK_BYTE_PTR pPart,
 		    CK_ULONG ulPartLen);
 
 CK_RV
-pkcs_C_VerifyFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pSignature,
+pkcs_C_VerifyFinal(CK_SESSION_HANDLE hSession,
+		   CK_BYTE_PTR pSignature,
 		   CK_ULONG ulSignatureLen);
 
 CK_RV
-pkcs_C_GenerateKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism,
-		   CK_ATTRIBUTE_PTR pTemplate, CK_ULONG ulCount,
+pkcs_C_GenerateKey(CK_SESSION_HANDLE hSession,
+		   CK_MECHANISM_PTR pMechanism,
+		   CK_ATTRIBUTE_PTR pTemplate,
+		   CK_ULONG ulCount,
 		   CK_OBJECT_HANDLE_PTR phKey);
 
 CK_RV
@@ -272,16 +304,21 @@ pkcs_C_GenerateKeyPair(CK_SESSION_HANDLE hSession,
 		       CK_OBJECT_HANDLE_PTR phPublicKey);
 
 CK_RV
-pkcs_C_DeriveKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism,
-		 CK_OBJECT_HANDLE hBaseKey, CK_ATTRIBUTE_PTR pTemplate,
-		 CK_ULONG ulAttributeCount, CK_OBJECT_HANDLE_PTR phKey);
+pkcs_C_DeriveKey(CK_SESSION_HANDLE hSession,
+		 CK_MECHANISM_PTR pMechanism,
+		 CK_OBJECT_HANDLE hBaseKey,
+		 CK_ATTRIBUTE_PTR pTemplate,
+		 CK_ULONG ulAttributeCount,
+		 CK_OBJECT_HANDLE_PTR phKey);
 
 CK_RV
-pkcs_C_SeedRandom(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pSeed,
+pkcs_C_SeedRandom(CK_SESSION_HANDLE hSession,
+		  CK_BYTE_PTR pSeed,
 		  CK_ULONG ulSeedLen);
 
 CK_RV
-pkcs_C_GenerateRandom(CK_SESSION_HANDLE hSession, CK_BYTE_PTR RandomData,
+pkcs_C_GenerateRandom(CK_SESSION_HANDLE hSession,
+		      CK_BYTE_PTR RandomData,
 		      CK_ULONG ulRandomLen);
 
 ISC_LANG_ENDDECLS
