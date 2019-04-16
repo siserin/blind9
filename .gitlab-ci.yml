@@ -179,6 +179,11 @@ misc:sid:amd64:
   <<: *precheck_job
   script: util/check-cocci
 
+uncrustify:sid:amd64:
+  <<: *precheck_job
+  script:
+    - uncrustify -c util/uncrustify.cfg --replace --no-backup $(git ls-files '*.c' '*.h')
+
 # Jobs for doc builds on Debian Sid (amd64)
 
 docs:sid:amd64:
