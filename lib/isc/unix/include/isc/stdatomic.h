@@ -114,11 +114,11 @@ typedef bool		atomic_bool;
 #define atomic_load_explicit(obj, order)		\
 	__sync_fetch_and_add(obj, 0)
 #define atomic_store_explicit(obj, desired, order)	\
-	do {						\
+	({						\
 		__sync_synchronize();			\
 		*obj = desired;				\
 		__sync_synchronize();			\
-	} while (0);
+	})
 #define atomic_fetch_add_explicit(obj, arg, order) \
 	__sync_fetch_and_add(obj, arg)
 #define atomic_fetch_sub_explicit(obj, arg, order) \
