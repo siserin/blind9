@@ -51,6 +51,7 @@ LIBISC_EXTERNAL_DATA unsigned int isc_mem_defaultflags = ISC_MEMFLAG_DEFAULT;
 
 #define ALIGNMENT_SIZE		8U		/*%< must be a power of 2 */
 #define DEBUG_TABLE_COUNT	512U
+#define PERTHREAD_TABLE_SIZE	128U
 
 /*
  * Types.
@@ -93,10 +94,18 @@ typedef struct {
 	} u;
 } size_info;
 
-struct stats {
+typedef struct {
+#if __STDC_VERSION__ >= 201112L
+	_Alignas(64)
+#endif
 	atomic_uint_fast64_t		gets;
 	atomic_uint_fast64_t		totalgets;
-};
+	atomic_int_fast64_t		total;
+	atomic_int_fast64_t		inuse;
+	atomic_int_fast64_t		maxinuse;
+	atomic_int_fast64_t		malloced;
+	atomic_int_fast64_t		maxmalloced;
+} perthread_t;
 
 #define MEM_MAGIC		ISC_MAGIC('M', 'e', 'm', 'C')
 #define VALID_CONTEXT(c)	ISC_MAGIC_VALID(c, MEM_MAGIC)
@@ -114,6 +123,18 @@ static isc_mutex_t		contextslock;
  */
 static uint64_t		totallost;
 
+#if defined(HAVE_THREAD_LOCAL)
+#include <threads.h>
+static thread_local int tid = -1;
+#elif defined(HAVE___THREAD)
+static __thread int tid = -1;
+#elif defined(HAVE___DECLSPEC_THREAD)
+static __declspec( thread ) int tid = -1;
+#else
+#error "Unknown method for defining a TLS variable!"
+#endif
+static atomic_uint_fast32_t	pt_max = 0;
+
 struct isc__mem {
 	isc_mem_t		common;
 	unsigned int		flags;
@@ -122,18 +143,14 @@ struct isc__mem {
 	isc_memfree_t		memfree;
 	void *			arg;
 	atomic_bool		checkfree;
-	struct stats		stats;
+	perthread_t		*pt;
+	int			pt_size;
 	isc_refcount_t		references;
 	char			name[16];
 	void *			tag;
 
-	atomic_size_t		total;
-	atomic_size_t		inuse;
-	atomic_size_t		maxinuse;
-	atomic_size_t		malloced;
-	atomic_size_t		maxmalloced;
-	atomic_size_t		hi_water;
-	atomic_size_t		lo_water;
+	atomic_uint_fast64_t	hi_water;
+	atomic_uint_fast64_t	lo_water;
 	atomic_bool		hi_called;
 	atomic_bool		is_overmem;
 	isc_mem_water_t		water;
@@ -236,13 +253,45 @@ static isc_memmethods_t memmethods = {
 	isc___mem_free,
 };
 
+static perthread_t *
+get_perthread(isc__mem_t *ctx) {
+	INSIST(tid < ctx->pt_size);
+	if (tid == -1) {
+		tid = atomic_fetch_add_relaxed(&pt_max, 1) % ctx->pt_size;
+		INSIST(tid < ctx->pt_size);
+	}
+	return (&ctx->pt[tid]);
+}
+
+#define _register(field)						\
+	static int64_t							\
+	get_##field(isc__mem_t *ctx) {					\
+		int64_t value = 0;					\
+		unsigned int max = atomic_load_acquire(&pt_max);	\
+		for (unsigned int i = 0; i < max; i++)			\
+		{							\
+			value += atomic_load_relaxed(&(ctx)->pt[i].field); \
+		}							\
+		return (value);					\
+	}
+
+_register(total);
+_register(inuse);
+_register(maxinuse);
+_register(malloced);
+_register(maxmalloced);
+_register(gets);
+_register(totalgets);
+
 #if ISC_MEM_TRACKLINES
 /*!
  * mctx must be locked.
  */
 static void
 add_trace_entry(isc__mem_t *mctx, const void *ptr, size_t size FLARG) {
+	int64_t malloced;
 	debuglink_t *dl;
+	perthread_t *pt = get_perthread(mctx);
 	uint32_t hash;
 	uint32_t idx;
 
@@ -259,9 +308,11 @@ add_trace_entry(isc__mem_t *mctx, const void *ptr, size_t size FLARG) {
 
 	dl = malloc(sizeof(debuglink_t));
 	INSIST(dl != NULL);
-	mctx->malloced += sizeof(debuglink_t);
-	if (mctx->malloced > mctx->maxmalloced)
-		mctx->maxmalloced = mctx->malloced;
+	malloced = atomic_fetch_add_relaxed(&pt->malloced, sizeof(debuglink_t))
+		+ sizeof(debuglink_t);
+	if (malloced > atomic_load_relaxed(&pt->maxmalloced)) {
+		atomic_store_relaxed(&pt->maxmalloced, malloced);
+	}
 
 	ISC_LINK_INIT(dl, link);
 	dl->ptr = ptr;
@@ -278,6 +329,7 @@ delete_trace_entry(isc__mem_t *mctx, const void *ptr, size_t size,
 		   const char *file, unsigned int line)
 {
 	debuglink_t *dl;
+	perthread_t *pt = get_perthread(mctx);
 	uint32_t hash;
 	uint32_t idx;
 
@@ -296,7 +348,7 @@ delete_trace_entry(isc__mem_t *mctx, const void *ptr, size_t size,
 	while (ISC_LIKELY(dl != NULL)) {
 		if (ISC_UNLIKELY(dl->ptr == ptr)) {
 			ISC_LIST_UNLINK(mctx->debuglist[idx], dl, link);
-			mctx->malloced -= sizeof(*dl);
+			atomic_fetch_sub_release(&pt->malloced, sizeof(*dl));
 			free(dl);
 			return;
 		}
@@ -312,35 +364,27 @@ delete_trace_entry(isc__mem_t *mctx, const void *ptr, size_t size,
 }
 #endif /* ISC_MEM_TRACKLINES */
 
-#define _atomic_add(obj, arg) \
-	atomic_fetch_add_explicit(obj, arg, memory_order_relaxed)
-#define _atomic_sub(obj, arg) \
-	atomic_fetch_sub_explicit(obj, arg, memory_order_release)
-#define _atomic_load(obj) \
-	atomic_load_explicit(obj, memory_order_acquire)
-#define _atomic_store(obj, desired) \
-	atomic_store_explicit(obj, desired, memory_order_release)
+
 
 static inline void *
 mem_getunlocked(isc__mem_t *ctx, size_t size) {
 	void *ret;
-	size_t malloced, maxmalloced;
+	int64_t malloced;
+	perthread_t * pt = get_perthread(ctx);
 
 	ret = (ctx->memalloc)(ctx->arg, size);
 	RUNTIME_CHECK(ret != NULL);
 	if (ISC_UNLIKELY((ctx->flags & ISC_MEMFLAG_FILL) != 0)) {
 		memset(ret, 0xbe, size); /* Mnemonic for "beef". */
 	}
+	atomic_fetch_add_relaxed(&pt->total, size);
+	atomic_fetch_add_relaxed(&pt->inuse, size);
+	atomic_fetch_add_relaxed(&pt->gets, 1);
+	atomic_fetch_add_relaxed(&pt->totalgets, 1);
 
-	_atomic_add(&ctx->total, size);
-	_atomic_add(&ctx->inuse, size);
-	_atomic_add(&ctx->stats.gets, 1);
-	_atomic_add(&ctx->stats.totalgets, 1);
-	malloced = _atomic_add(&ctx->malloced, size);
-	maxmalloced = _atomic_load(&ctx->maxmalloced);
-
-	if (malloced + size > maxmalloced) {
-		_atomic_store(&ctx->maxmalloced, malloced + size);
+	malloced = atomic_fetch_add_relaxed(&pt->malloced, size) + size;
+	if (malloced > atomic_load_relaxed(&pt->maxmalloced)) {
+		atomic_store_relaxed(&pt->maxmalloced, malloced);
 	}
 
 	return (ret);
@@ -349,14 +393,15 @@ mem_getunlocked(isc__mem_t *ctx, size_t size) {
 /* coverity[+free : arg-1] */
 static inline void
 mem_putunlocked(isc__mem_t *ctx, void *mem, size_t size) {
+	perthread_t * pt = get_perthread(ctx);
 	if (ISC_UNLIKELY((ctx->flags & ISC_MEMFLAG_FILL) != 0)) {
 		memset(mem, 0xde, size); /* Mnemonic for "dead". */
 	}
 	(ctx->memfree)(ctx->arg, mem);
 
-	INSIST(_atomic_sub(&ctx->stats.gets, 1) > 0);
-	INSIST(_atomic_sub(&ctx->inuse, size) >= size);
-	INSIST(_atomic_sub(&ctx->malloced, size) >= size);
+	atomic_fetch_sub_relaxed(&pt->gets, 1);
+	atomic_fetch_sub_relaxed(&pt->inuse, size);
+	atomic_fetch_sub_relaxed(&pt->malloced, size);
 }
 
 /*
@@ -416,7 +461,8 @@ isc_mem_createx(isc_memalloc_t memalloc, isc_memfree_t memfree, void *arg,
 		isc_mem_t **ctxp, unsigned int flags)
 {
 	isc__mem_t *ctx;
-
+	perthread_t *pt;
+	int i;
 	REQUIRE(ctxp != NULL && *ctxp == NULL);
 	REQUIRE(memalloc != NULL);
 	REQUIRE(memfree != NULL);
@@ -435,11 +481,22 @@ isc_mem_createx(isc_memalloc_t memalloc, isc_memfree_t memfree, void *arg,
 	isc_refcount_init(&ctx->references, 1);
 	memset(ctx->name, 0, sizeof(ctx->name));
 	ctx->tag = NULL;
-	ctx->total = 0;
-	ctx->inuse = 0;
-	ctx->maxinuse = 0;
-	ctx->malloced = sizeof(*ctx);
-	ctx->maxmalloced = sizeof(*ctx);
+	ctx->pt_size = PERTHREAD_TABLE_SIZE;
+	ctx->pt = malloc(ctx->pt_size * sizeof(perthread_t));
+	for (i=0; i<ctx->pt_size; i++) {
+		ctx->pt[i].gets = 0;
+		ctx->pt[i].totalgets = 0;
+		ctx->pt[i].inuse = 0;
+		ctx->pt[i].maxinuse = 0;
+		ctx->pt[i].malloced = 0;
+		ctx->pt[i].maxmalloced = 0;
+	}
+	pt = get_perthread(ctx);
+	pt->total = 0;
+	pt->inuse = 0;
+	pt->maxinuse = 0;
+	pt->malloced = sizeof(*ctx);
+	pt->maxmalloced = sizeof(*ctx);
 	ctx->hi_water = 0;
 	ctx->lo_water = 0;
 	ctx->hi_called = false;
@@ -452,8 +509,6 @@ isc_mem_createx(isc_memalloc_t memalloc, isc_memfree_t memfree, void *arg,
 	ctx->memalloc = memalloc;
 	ctx->memfree = memfree;
 	ctx->arg = arg;
-	ctx->stats.gets = 0;
-	ctx->stats.totalgets = 0;
 	ctx->checkfree = true;
 #if ISC_MEM_TRACKLINES
 	ctx->debuglist = NULL;
@@ -464,15 +519,16 @@ isc_mem_createx(isc_memalloc_t memalloc, isc_memfree_t memfree, void *arg,
 
 #if ISC_MEM_TRACKLINES
 	if (ISC_UNLIKELY((isc_mem_debugging & ISC_MEM_DEBUGRECORD) != 0)) {
-		unsigned int i;
-
+		unsigned int j;
 		ctx->debuglist = (memalloc)(arg, (DEBUG_TABLE_COUNT *
 						  sizeof(debuglist_t)));
 		RUNTIME_CHECK(ctx->debuglist != NULL);
-		for (i = 0; i < DEBUG_TABLE_COUNT; i++)
-			ISC_LIST_INIT(ctx->debuglist[i]);
-		ctx->malloced += DEBUG_TABLE_COUNT * sizeof(debuglist_t);
-		ctx->maxmalloced += DEBUG_TABLE_COUNT * sizeof(debuglist_t);
+		for (j = 0; j < DEBUG_TABLE_COUNT; j++)
+			ISC_LIST_INIT(ctx->debuglist[j]);
+		atomic_fetch_add_relaxed(&pt->malloced,
+				 DEBUG_TABLE_COUNT * sizeof(debuglist_t));
+		atomic_fetch_add_relaxed(&pt->maxmalloced,
+				 DEBUG_TABLE_COUNT * sizeof(debuglist_t));
 	}
 #endif
 
@@ -488,10 +544,11 @@ isc_mem_createx(isc_memalloc_t memalloc, isc_memfree_t memfree, void *arg,
 static void
 destroy(isc__mem_t *ctx) {
 	unsigned int i;
+	perthread_t *pt = get_perthread(ctx);
 
 	LOCK(&contextslock);
 	ISC_LIST_UNLINK(contexts, ctx, link);
-	totallost += ctx->inuse;
+	totallost = get_inuse(ctx);
 	UNLOCK(&contextslock);
 
 	ctx->common.impmagic = 0;
@@ -513,33 +570,36 @@ destroy(isc__mem_t *ctx) {
 				ISC_LIST_UNLINK(ctx->debuglist[i],
 						dl, link);
 				free(dl);
-				ctx->malloced -= sizeof(*dl);
+				pt->malloced -= sizeof(*dl);
 			}
 
 		(ctx->memfree)(ctx->arg, ctx->debuglist);
-		ctx->malloced -= DEBUG_TABLE_COUNT * sizeof(debuglist_t);
+		pt->malloced -= DEBUG_TABLE_COUNT * sizeof(debuglist_t);
 	}
 #endif
 
 	if (ctx->checkfree) {
-		if (ctx->stats.gets != 0U) {
+		int64_t gets = get_gets(ctx);
+		if (gets != 0) {
 			fprintf(stderr,
 				"Failing assertion due to probable "
 				"leaked memory in context %p (\"%s\") "
 				"(stats.gets == %" PRIu64 ").\n",
-				ctx, ctx->name, ctx->stats.gets);
+				ctx, ctx->name, gets);
 #if ISC_MEM_TRACKLINES
 			print_active(ctx, stderr);
 #endif
-			INSIST(ctx->stats.gets == 0U);
+			INSIST(gets == 0);
 		}
 	}
 
 	isc_mutex_destroy(&ctx->lock);
 
-	ctx->malloced -= sizeof(*ctx);
-	if (ctx->checkfree)
-		INSIST(ctx->malloced == 0);
+	pt->malloced -= sizeof(*ctx);
+	if (ctx->checkfree) {
+		int64_t malloced = get_malloced(ctx);
+		INSIST(malloced == 0);
+	}
 	(ctx->memfree)(ctx->arg, ctx);
 }
 
@@ -640,9 +700,10 @@ void *
 isc___mem_get(isc_mem_t *ctx0, size_t size FLARG) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
 	void *ptr;
-	size_t inuse, hi_water;
+	perthread_t *pt;
 
 	REQUIRE(VALID_CONTEXT(ctx));
+	pt = get_perthread(ctx);
 
 	if (ISC_UNLIKELY((isc_mem_debugging &
 			  (ISC_MEM_DEBUGSIZE|ISC_MEM_DEBUGCTX)) != 0))
@@ -652,23 +713,27 @@ isc___mem_get(isc_mem_t *ctx0, size_t size FLARG) {
 
 	ADD_TRACE(ctx, ptr, size, file, line);
 
-	inuse = _atomic_load(&ctx->inuse);
-	hi_water = _atomic_load(&ctx->hi_water);
+	if (ctx->water != NULL) {
+		int64_t inuse = get_inuse(ctx);
+		int64_t hi_water = atomic_load_acquire(&ctx->hi_water);
 
-	if (hi_water != 0U && inuse > hi_water) {
-		_atomic_store(&ctx->is_overmem, true);
-		if (!_atomic_load(&ctx->hi_called) && ctx->water != NULL) {
-			(ctx->water)(ctx->water_arg, ISC_MEM_HIWATER);
+		if (hi_water != 0U && inuse > hi_water) {
+			atomic_store_release(&ctx->is_overmem, true);
+			if (!atomic_load_acquire(&ctx->hi_called)) {
+				(ctx->water)(ctx->water_arg, ISC_MEM_HIWATER);
+			}
 		}
-	}
-
-	if (inuse > _atomic_load(&ctx->maxinuse)) {
-		_atomic_store(&ctx->maxinuse, inuse);
 		if (ISC_UNLIKELY((isc_mem_debugging & ISC_MEM_DEBUGUSAGE) != 0) &&
 		    hi_water != 0U && inuse > hi_water)
 		{
-			fprintf(stderr, "maxinuse = %zu\n", inuse);
+			fprintf(stderr, "maxinuse = %" PRId64 "\n", inuse);
 		}
+	}
+
+	int64_t inuse = atomic_load_relaxed(&pt->inuse);
+
+	if (inuse > atomic_load_relaxed(&pt->maxinuse)) {
+		atomic_store_relaxed(&pt->maxinuse, inuse);
 	}
 
 	return (ptr);
@@ -679,7 +744,6 @@ isc___mem_put(isc_mem_t *ctx0, void *ptr, size_t size FLARG) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
 	size_info *si;
 	size_t oldsize;
-	size_t inuse, lo_water;
 
 	REQUIRE(VALID_CONTEXT(ctx));
 	REQUIRE(ptr != NULL);
@@ -702,18 +766,20 @@ isc___mem_put(isc_mem_t *ctx0, void *ptr, size_t size FLARG) {
 
 	mem_putunlocked(ctx, ptr, size);
 
-	/*
-	 * The check against ctx->lo_water == 0 is for the condition
-	 * when the context was pushed over hi_water but then had
-	 * isc_mem_setwater() called with 0 for hi_water and lo_water.
-	 */
-	inuse = _atomic_load(&ctx->inuse);
-	lo_water = _atomic_load(&ctx->lo_water);
+	if (ctx->water != NULL) {
+		/*
+		 * The check against ctx->lo_water == 0 is for the condition
+		 * when the context was pushed over hi_water but then had
+		 * isc_mem_setwater() called with 0 for hi_water and lo_water.
+		 */
+		int64_t inuse = get_inuse(ctx);
+		int64_t lo_water = atomic_load_acquire(&ctx->lo_water);
 
-	if ((inuse < lo_water) || (lo_water == 0U)) {
-		_atomic_store(&ctx->is_overmem, false);
-		if (_atomic_load(&ctx->hi_called) && ctx->water != NULL) {
-			(ctx->water)(ctx->water_arg, ISC_MEM_LOWATER);
+		if ((inuse < lo_water) || (lo_water == 0U)) {
+			atomic_store_release(&ctx->is_overmem, false);
+			if (atomic_load_acquire(&ctx->hi_called)) {
+				(ctx->water)(ctx->water_arg, ISC_MEM_LOWATER);
+			}
 		}
 	}
 }
@@ -725,9 +791,9 @@ isc_mem_waterack(isc_mem_t *ctx0, int flag) {
 	REQUIRE(VALID_CONTEXT(ctx));
 
 	if (flag == ISC_MEM_LOWATER) {
-		_atomic_store(&ctx->hi_called, false);
+		atomic_store_release(&ctx->hi_called, false);
 	} else if (flag == ISC_MEM_HIWATER) {
-		_atomic_store(&ctx->hi_called, true);
+		atomic_store_release(&ctx->hi_called, true);
 	}
 }
 
@@ -773,12 +839,15 @@ void
 isc_mem_stats(isc_mem_t *ctx0, FILE *out) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
 	const isc__mempool_t *pool;
+	int64_t gets=0, totalgets=0;
 
 	REQUIRE(VALID_CONTEXT(ctx));
 
+	gets = get_gets(ctx);
+	totalgets = get_totalgets(ctx);
+
 	fprintf(out, "[Memory statistics]\n%11" PRIu64 " gets, %11" PRIu64 " rem\n",
-		_atomic_load(&ctx->stats.totalgets),
-		_atomic_load(&ctx->stats.gets));
+		gets, totalgets);
 
 	MCTXLOCK(ctx, &ctx->lock);
 	/*
@@ -846,38 +915,41 @@ void *
 isc___mem_allocate(isc_mem_t *ctx0, size_t size FLARG) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
 	size_info *si;
-	size_t inuse, maxinuse, hi_water;
+	perthread_t *pt;
 
 	REQUIRE(VALID_CONTEXT(ctx));
+	pt = get_perthread(ctx);
 
 	si = mem_allocateunlocked((isc_mem_t *)ctx, size);
 
 	ADD_TRACE(ctx, si, si[-1].u.size, file, line);
 
-	inuse = _atomic_load(&ctx->inuse);
-	maxinuse = _atomic_load(&ctx->maxinuse);
-	hi_water = _atomic_load(&ctx->hi_water);
+	if (ctx->water != NULL) {
+		int64_t inuse = get_inuse(ctx);
+		int64_t hi_water = atomic_load_acquire(&ctx->hi_water);
 
-	if (hi_water != 0U) {
-		bool exp_f = false;
-		if (inuse > hi_water) {
-			_atomic_store(&ctx->is_overmem, true);
+		if (hi_water != 0U) {
+			bool exp_f = false;
+			if (inuse > hi_water) {
+				atomic_store_release(&ctx->is_overmem, true);
+			}
+			if (atomic_compare_exchange_weak_acq_rel(&ctx->hi_called, &exp_f, true))
+			{
+				(ctx->water)(ctx->water_arg, ISC_MEM_HIWATER);
+			}
 		}
-		if (atomic_compare_exchange_weak(&ctx->hi_called, &exp_f, true) &&
-		    (ctx->water != NULL))
-		{
-			(ctx->water)(ctx->water_arg, ISC_MEM_HIWATER);
-		}
-	}
-
-	if (inuse > maxinuse) {
-		_atomic_store(&ctx->maxinuse, inuse);
 		if (ISC_UNLIKELY(isc_mem_debugging & ISC_MEM_DEBUGUSAGE) != 0) {
 			if (hi_water != 0U && inuse > hi_water) {
 				fprintf(stderr, "maxinuse = %lu\n",
 					(unsigned long)inuse);
 			}
 		}
+	}
+
+	int64_t inuse = atomic_load_relaxed(&pt->inuse);
+
+	if (inuse > atomic_load_relaxed(&pt->maxinuse)) {
+		atomic_store_relaxed(&pt->maxinuse, inuse);
 	}
 
 	return (si);
@@ -930,7 +1002,6 @@ isc___mem_free(isc_mem_t *ctx0, void *ptr FLARG) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
 	size_info *si;
 	size_t size;
-	size_t inuse, lo_water;
 
 	REQUIRE(VALID_CONTEXT(ctx));
 	REQUIRE(ptr != NULL);
@@ -953,16 +1024,18 @@ isc___mem_free(isc_mem_t *ctx0, void *ptr FLARG) {
 	 * when the context was pushed over hi_water but then had
 	 * isc_mem_setwater() called with 0 for hi_water and lo_water.
 	 */
-	inuse = _atomic_load(&ctx->inuse);
-	lo_water = _atomic_load(&ctx->lo_water);
+	if (ctx->water != NULL) {
+		int64_t inuse = get_inuse(ctx);
+		int64_t lo_water = atomic_load_acquire(&ctx->lo_water);
 
-	if (inuse < lo_water || lo_water == 0U) {
-		bool exp_t = true;
-		_atomic_store(&ctx->is_overmem, false);
-		if (atomic_compare_exchange_weak(&ctx->hi_called, &exp_t, false)
-		    && ctx->water != NULL)
-		{
-			(ctx->water)(ctx->water_arg, ISC_MEM_LOWATER);
+		if (inuse < lo_water || lo_water == 0U) {
+			bool exp_t = true;
+			atomic_store_release(&ctx->is_overmem, false);
+			if (atomic_compare_exchange_weak_acq_rel(&ctx->hi_called,
+								 &exp_t, false))
+			{
+				(ctx->water)(ctx->water_arg, ISC_MEM_LOWATER);
+			}
 		}
 	}
 }
@@ -997,34 +1070,31 @@ isc_mem_setdestroycheck(isc_mem_t *ctx0, bool flag) {
 
 	REQUIRE(VALID_CONTEXT(ctx));
 
-	_atomic_store(&ctx->checkfree, flag);
+	atomic_store_release(&ctx->checkfree, flag);
 }
 
 size_t
 isc_mem_inuse(isc_mem_t *ctx0) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
-
 	REQUIRE(VALID_CONTEXT(ctx));
 
-	return (_atomic_load(&ctx->inuse));
+	return (get_inuse(ctx));
 }
 
 size_t
 isc_mem_maxinuse(isc_mem_t *ctx0) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
-
 	REQUIRE(VALID_CONTEXT(ctx));
 
-	return (_atomic_load(&ctx->maxinuse));
+	return (get_maxinuse(ctx));
 }
 
 size_t
 isc_mem_total(isc_mem_t *ctx0) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
-
 	REQUIRE(VALID_CONTEXT(ctx));
 
-	return (_atomic_load(&ctx->total));
+	return (get_total(ctx));
 }
 
 void
@@ -1046,16 +1116,19 @@ isc_mem_setwater(isc_mem_t *ctx0, isc_mem_water_t water, void *water_arg,
 	oldwater = ctx->water;
 	oldwater_arg = ctx->water_arg;
 	if (water == NULL) {
-		callwater = _atomic_load(&ctx->hi_called);
+		callwater = atomic_load_acquire(&ctx->hi_called);
 		ctx->water = NULL;
 		ctx->water_arg = NULL;
 		ctx->hi_water = 0;
 		ctx->lo_water = 0;
 	} else {
-		if (_atomic_load(&ctx->hi_called) &&
+		int64_t inuse = get_inuse(ctx);
+
+		if (atomic_load_acquire(&ctx->hi_called) &&
 		    (ctx->water != water || ctx->water_arg != water_arg ||
-		     ctx->inuse < lowater || lowater == 0U))
+		     inuse < (int64_t)lowater || lowater == 0U)) {
 			callwater = true;
+		}
 		ctx->water = water;
 		ctx->water_arg = water_arg;
 		ctx->hi_water = hiwater;
@@ -1074,7 +1147,7 @@ isc_mem_isovermem(isc_mem_t *ctx0) {
 
 	REQUIRE(VALID_CONTEXT(ctx));
 
-	return (_atomic_load(&ctx->is_overmem));
+	return (atomic_load_acquire(&ctx->is_overmem));
 }
 
 void
@@ -1095,8 +1168,9 @@ isc_mem_getname(isc_mem_t *ctx0) {
 
 	REQUIRE(VALID_CONTEXT(ctx));
 
-	if (ctx->name[0] == 0)
+	if (ctx->name[0] == 0) {
 		return ("");
+	}
 
 	return (ctx->name);
 }
@@ -1569,8 +1643,15 @@ xml_renderctx(isc__mem_t *ctx, summarystat_t *summary,
 	      xmlTextWriterPtr writer)
 {
 	int xmlrc;
+	int64_t total=0, inuse=0, maxinuse=0, malloced=0, maxmalloced=0;
 
 	REQUIRE(VALID_CONTEXT(ctx));
+
+	total = get_total(ctx);
+	inuse = get_inuse(ctx);
+	maxinuse = get_maxinuse(ctx);
+	malloced = get_malloced(ctx);
+	maxmalloced = get_maxmalloced(ctx);
 
 	MCTXLOCK(ctx, &ctx->lock);
 
@@ -1599,37 +1680,36 @@ xml_renderctx(isc__mem_t *ctx, summarystat_t *summary,
 					    isc_refcount_current(&ctx->references)));
 	TRY0(xmlTextWriterEndElement(writer)); /* references */
 
-	summary->total += ctx->total;
+	summary->total += total;
 	TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "total"));
 	TRY0(xmlTextWriterWriteFormatString(writer,
 					    "%" PRIu64 "",
-					    (uint64_t)ctx->total));
+					    (uint64_t)total));
 	TRY0(xmlTextWriterEndElement(writer)); /* total */
 
-	summary->inuse += ctx->inuse;
+	summary->inuse += inuse;
 	TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "inuse"));
 	TRY0(xmlTextWriterWriteFormatString(writer,
 					    "%" PRIu64 "",
-					    (uint64_t)ctx->inuse));
+					    (uint64_t)inuse));
 	TRY0(xmlTextWriterEndElement(writer)); /* inuse */
 
 	TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "maxinuse"));
 	TRY0(xmlTextWriterWriteFormatString(writer,
 					    "%" PRIu64 "",
-					    (uint64_t)ctx->maxinuse));
+					    (uint64_t)maxinuse));
 	TRY0(xmlTextWriterEndElement(writer)); /* maxinuse */
 
-	summary->malloced += ctx->malloced;
 	TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "malloced"));
 	TRY0(xmlTextWriterWriteFormatString(writer,
 					    "%" PRIu64 "",
-					    (uint64_t)ctx->malloced));
+					    (uint64_t)malloced));
 	TRY0(xmlTextWriterEndElement(writer)); /* malloced */
 
 	TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "maxmalloced"));
 	TRY0(xmlTextWriterWriteFormatString(writer,
 					    "%" PRIu64 "",
-					    (uint64_t)ctx->maxmalloced));
+					    (uint64_t)maxmalloced));
 	TRY0(xmlTextWriterEndElement(writer)); /* maxmalloced */
 
 	TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "pools"));
@@ -1737,17 +1817,23 @@ static isc_result_t
 json_renderctx(isc__mem_t *ctx, summarystat_t *summary, json_object *array) {
 	json_object *ctxobj, *obj;
 	char buf[1024];
-
+	int64_t total=0, inuse=0, maxinuse=0, malloced=0, maxmalloced=0;
 	REQUIRE(VALID_CONTEXT(ctx));
 	REQUIRE(summary != NULL);
 	REQUIRE(array != NULL);
 
+	total = get_total(ctx);
+	inuse = get_inuse(ctx);
+	maxinuse = get_maxinuse(ctx);
+	malloced = get_malloced(ctx);
+	maxmalloced = get_maxmalloced(ctx);
+
 	MCTXLOCK(ctx, &ctx->lock);
 
 	summary->contextsize += sizeof(*ctx);
-	summary->total += ctx->total;
-	summary->inuse += ctx->inuse;
-	summary->malloced += ctx->malloced;
+	summary->total += total;
+	summary->inuse += inuse;
+	summary->malloced += malloced;
 #if ISC_MEM_TRACKLINES
 	if (ctx->debuglist != NULL) {
 		summary->contextsize +=
@@ -1774,23 +1860,23 @@ json_renderctx(isc__mem_t *ctx, summarystat_t *summary, json_object *array) {
 	CHECKMEM(obj);
 	json_object_object_add(ctxobj, "references", obj);
 
-	obj = json_object_new_int64(ctx->total);
+	obj = json_object_new_int64(total);
 	CHECKMEM(obj);
 	json_object_object_add(ctxobj, "total", obj);
 
-	obj = json_object_new_int64(ctx->inuse);
+	obj = json_object_new_int64(inuse);
 	CHECKMEM(obj);
 	json_object_object_add(ctxobj, "inuse", obj);
 
-	obj = json_object_new_int64(ctx->maxinuse);
+	obj = json_object_new_int64(maxinuse);
 	CHECKMEM(obj);
 	json_object_object_add(ctxobj, "maxinuse", obj);
 
-	obj = json_object_new_int64(ctx->malloced);
+	obj = json_object_new_int64(malloced);
 	CHECKMEM(obj);
 	json_object_object_add(ctxobj, "malloced", obj);
 
-	obj = json_object_new_int64(ctx->maxmalloced);
+	obj = json_object_new_int64(maxmalloced);
 	CHECKMEM(obj);
 	json_object_object_add(ctxobj, "maxmalloced", obj);
 

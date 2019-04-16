@@ -54,3 +54,20 @@
 	atomic_compare_exchange_weak_explicit((o), (e), (d),		\
 					      memory_order_acq_rel,	\
 					      memory_order_acquire)
+#define atomic_compare_exchange_weak_relaxed_seq_cst(o, e, d)		\
+	atomic_compare_exchange_weak_explicit((o), (e), (d),		\
+					      memory_order_relaxed,	\
+					      memory_order_seq_cst)
+
+#define atomic_compare_exchange_weak_acq_rel(o, e, d)			\
+	atomic_compare_exchange_weak_explicit((o), (e), (d),		\
+					      memory_order_acq_rel,	\
+					      memory_order_acquire)
+
+#define atomic_store_release(o, v)					\
+	atomic_store_explicit((o), (v), memory_order_release)
+#define atomic_fetch_sub_release(o, v)					\
+	atomic_fetch_sub_explicit((o), (v), memory_order_release)
+
+#define atomic_load_acquire(o)						\
+	atomic_load_explicit((o), memory_order_acquire)
