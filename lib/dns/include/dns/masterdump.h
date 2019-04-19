@@ -133,6 +133,12 @@ LIBDNS_EXTERNAL_DATA extern const dns_master_style_t dns_master_style_default;
 LIBDNS_EXTERNAL_DATA extern const dns_master_style_t dns_master_style_full;
 
 /*%
+ * Like dns_master_style_full, but with a length limit imposed on the RDATA
+ * portion.
+ */
+LIBDNS_EXTERNAL_DATA extern const dns_master_style_t dns_master_style_full_tr;
+
+/*%
  * A master file style that prints explicit TTL values on each
  * record line, never using $TTL statements.  The TTL has a tab
  * stop of its own, but the class and type share one.
@@ -145,6 +151,12 @@ LIBDNS_EXTERNAL_DATA extern const dns_master_style_t
  * values on each record line and never uses $ORIGIN or relative names.
  */
 LIBDNS_EXTERNAL_DATA extern const dns_master_style_t dns_master_style_cache;
+
+/*
+ * Like dns_master_style_cache, but with a length limit imposed on the RDATA
+ * portion.
+ */
+LIBDNS_EXTERNAL_DATA extern const dns_master_style_t dns_master_style_cache_tr;
 
 /*%
  * A master style that prints name, ttl, class, type, and value on

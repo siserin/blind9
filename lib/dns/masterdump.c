@@ -80,6 +80,8 @@ struct dns_master_style {
  */
 #define DNS_TOTEXT_LINEBREAK_MAXLEN 100
 
+#define TRUNCATED_RDATA_LENGTH_LIMIT 192
+
 /*% Does the rdataset 'r' contain a stale answer? */
 #define STALE(r) (((r)->attributes & DNS_RDATASETATTR_STALE) != 0)
 
@@ -138,6 +140,14 @@ dns_master_style_full = {
 };
 
 LIBDNS_EXTERNAL_DATA const dns_master_style_t
+dns_master_style_full_tr = {
+	DNS_STYLEFLAG_COMMENT |
+	DNS_STYLEFLAG_RESIGN |
+	DNS_STYLEFLAG_TRUNCATE_RDATA,
+	46, 46, 46, 64, 120, 8, UINT_MAX
+};
+
+LIBDNS_EXTERNAL_DATA const dns_master_style_t
 dns_master_style_explicitttl = {
 	DNS_STYLEFLAG_OMIT_OWNER |
 	DNS_STYLEFLAG_OMIT_CLASS |
@@ -157,6 +167,18 @@ dns_master_style_cache = {
 	DNS_STYLEFLAG_RRCOMMENT |
 	DNS_STYLEFLAG_TRUST |
 	DNS_STYLEFLAG_NCACHE,
+	24, 32, 32, 40, 80, 8, UINT_MAX
+};
+
+LIBDNS_EXTERNAL_DATA const dns_master_style_t
+dns_master_style_cache_tr = {
+	DNS_STYLEFLAG_OMIT_OWNER |
+	DNS_STYLEFLAG_OMIT_CLASS |
+	DNS_STYLEFLAG_MULTILINE |
+	DNS_STYLEFLAG_RRCOMMENT |
+	DNS_STYLEFLAG_TRUST |
+	DNS_STYLEFLAG_NCACHE |
+	DNS_STYLEFLAG_TRUNCATE_RDATA,
 	24, 32, 32, 40, 80, 8, UINT_MAX
 };
 
@@ -473,6 +495,18 @@ ncache_summary(dns_rdataset_t *rdataset, bool omit_final_dot,
 	return (result);
 }
 
+static void
+truncate_rdata(isc_buffer_t *buffer, unsigned int used_before) {
+	const unsigned int length_limit = TRUNCATED_RDATA_LENGTH_LIMIT;
+	const unsigned int used_after = isc_buffer_usedlength(buffer);
+	const unsigned int rdata_length = used_after - used_before;
+
+	if (rdata_length > length_limit) {
+		isc_buffer_subtract(buffer, rdata_length - length_limit);
+		isc_buffer_printf(buffer, "...");
+	}
+}
+
 /*
  * Convert 'rdataset' to master file text format according to 'ctx',
  * storing the result in 'target'.  If 'owner_name' is NULL, it
@@ -676,6 +710,9 @@ rdataset_totext(dns_rdataset_t *rdataset,
 			dns_rdata_t rdata = DNS_RDATA_INIT;
 			isc_region_t r;
 
+			const unsigned int used_before =
+				isc_buffer_usedlength(target);
+
 			dns_rdataset_current(rdataset, &rdata);
 
 			RETERR(dns_rdata_tofmttext(&rdata,
@@ -686,6 +723,11 @@ rdataset_totext(dns_rdataset_t *rdataset,
 						   ctx->style.split_width,
 						   ctx->linebreak,
 						   target));
+
+			if ((ctx->style.flags & DNS_STYLEFLAG_TRUNCATE_RDATA) != 0) {
+				truncate_rdata(target, used_before);
+			}
+
 			rdata_chunk_size+=target->used;
 			isc_buffer_availableregion(target, &r);
 			if (r.length < 1)
@@ -873,8 +915,6 @@ dump_rdataset(isc_mem_t *mctx, const dns_name_t *name,
 {
 	isc_region_t r;
 	isc_result_t result;
-	unsigned int reductR;
-	struct dns_dumpctx dctx;
 
 	REQUIRE(buffer->length > 0);
 
@@ -931,19 +971,8 @@ dump_rdataset(isc_mem_t *mctx, const dns_name_t *name,
 	/*
 	 * Write the buffer contents to the master file.
 	 */
-
-	if ((ctx->dumptruncated) && (ctx->rdata_size > 5000)) {//neither -zones -trunc 
-// 	if ((dctx.dumptruncated = true) && (ctx->rdata_size > 5000)) {	//both -z -t but test breaks
-		fprintf(f, "\n The size of this RR reached: %u KB and was truncated at 5.5 KB.\n",
-		(unsigned int) ctx->rdata_size);
-		reductR = ctx->rdata_size - 5500;
-		buffer -= reductR;
-		isc_buffer_usedregion(buffer, &r);
-		result = isc_stdio_write(r.base, 1, (size_t)r.length, f, NULL);
-	} else {
 	isc_buffer_usedregion(buffer, &r);
 	result = isc_stdio_write(r.base, 1, (size_t)r.length, f, NULL);
-	}
 
 	if (result != ISC_R_SUCCESS) {
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
