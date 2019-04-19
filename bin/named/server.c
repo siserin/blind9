@@ -10769,7 +10769,7 @@ dumpdone(void *arg, isc_result_t result) {
 				dns_cache_getname(dctx->view->view->cache));
 			result = dns_master_dumptostreaminc(dctx->mctx,
 							    dctx->cache, NULL,
-							    style, dctx->dumptruncated, dctx->fp,
+							    style, dctx->fp,
 							    dctx->task,
 							    dumpdone, dctx,
 							    &dctx->mdctx);
@@ -10824,7 +10824,7 @@ dumpdone(void *arg, isc_result_t result) {
 			result = dns_master_dumptostreaminc(dctx->mctx,
 							    dctx->db,
 							    dctx->version,
-							    style, dctx->dumptruncated, dctx->fp,
+							    style, dctx->fp,
 							    dctx->task,
 							    dumpdone, dctx,
 							    &dctx->mdctx);
@@ -10868,7 +10868,7 @@ dumpdone(void *arg, isc_result_t result) {
 			result = dns_master_dumptostreaminc(dctx->mctx,
 							    dctx->db,
 							    dctx->version,
-							    style, dctx->dumptruncated, dctx->fp,
+							    style, dctx->fp,
 							    dctx->task,
 							    dumpdone, dctx,
 							    &dctx->mdctx);

@@ -259,7 +259,7 @@ dns_dumpctx_db(dns_dumpctx_t *dctx);
 isc_result_t
 dns_master_dumptostreaminc(isc_mem_t *mctx, dns_db_t *db,
 			   dns_dbversion_t *version,
-			   const dns_master_style_t *style, bool truncated, FILE *f,
+			   const dns_master_style_t *style, FILE *f,
 			   isc_task_t *task, dns_dumpdonefunc_t done,
 			   void *done_arg, dns_dumpctx_t **dctxp);
 

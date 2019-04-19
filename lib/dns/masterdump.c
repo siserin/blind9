@@ -319,7 +319,7 @@ indent(unsigned int *current, unsigned int to, int tabwidth,
 }
 
 static isc_result_t
-totext_ctx_init(const dns_master_style_t *style, bool truncated, dns_totext_ctx_t *ctx) {
+totext_ctx_init(const dns_master_style_t *style, dns_totext_ctx_t *ctx) {
 	isc_result_t result;
 
 	REQUIRE(style->tab_width != 0);
@@ -394,7 +394,6 @@ totext_ctx_init(const dns_master_style_t *style, bool truncated, dns_totext_ctx_
 	ctx->current_ttl = 0;
 	ctx->current_ttl_valid = false;
 	ctx->serve_stale_ttl = 0;
-	ctx->dumptruncated = truncated;
 
 	return (ISC_R_SUCCESS);
 }
@@ -679,10 +678,6 @@ rdataset_totext(dns_rdataset_t *rdataset,
 
 			dns_rdataset_current(rdataset, &rdata);
 
-			if (ctx->dumptruncated) {
-				isc_buffer_printf(target, "[TRUNCATED]\t");
-			}
-
 			RETERR(dns_rdata_tofmttext(&rdata,
 						   ctx->origin,
 						   ctx->style.flags,
@@ -802,7 +797,7 @@ dns_rdataset_totext(dns_rdataset_t *rdataset,
 {
 	dns_totext_ctx_t ctx;
 	isc_result_t result;
-	result = totext_ctx_init(&dns_master_style_debug, false, &ctx);
+	result = totext_ctx_init(&dns_master_style_debug, &ctx);
 	if (result != ISC_R_SUCCESS) {
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
 				 "could not set master file style");
@@ -834,7 +829,7 @@ dns_master_rdatasettotext(const dns_name_t *owner_name,
 {
 	dns_totext_ctx_t ctx;
 	isc_result_t result;
-	result = totext_ctx_init(style, false, &ctx);
+	result = totext_ctx_init(style, &ctx);
 	if (result != ISC_R_SUCCESS) {
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
 				 "could not set master file style");
@@ -853,7 +848,7 @@ dns_master_questiontotext(const dns_name_t *owner_name,
 {
 	dns_totext_ctx_t ctx;
 	isc_result_t result;
-	result = totext_ctx_init(style, false, &ctx);
+	result = totext_ctx_init(style, &ctx);
 	if (result != ISC_R_SUCCESS) {
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
 				 "could not set master file style");
@@ -937,7 +932,7 @@ dump_rdataset(isc_mem_t *mctx, const dns_name_t *name,
 	 * Write the buffer contents to the master file.
 	 */
 
-	if (false) {//neither -zones -trunc 
+	if ((ctx->dumptruncated) && (ctx->rdata_size > 5000)) {//neither -zones -trunc 
 // 	if ((dctx.dumptruncated = true) && (ctx->rdata_size > 5000)) {	//both -z -t but test breaks
 		fprintf(f, "\n The size of this RR reached: %u KB and was truncated at 5.5 KB.\n",
 		(unsigned int) ctx->rdata_size);
@@ -1481,7 +1476,7 @@ task_send(dns_dumpctx_t *dctx) {
 
 static isc_result_t
 dumpctx_create(isc_mem_t *mctx, dns_db_t *db, dns_dbversion_t *version,
-	       const dns_master_style_t *style, bool truncated, FILE *f, dns_dumpctx_t **dctxp,
+	       const dns_master_style_t *style, FILE *f, dns_dumpctx_t **dctxp,
 	       dns_masterformat_t format, dns_masterrawheader_t *header)
 {
 	dns_dumpctx_t *dctx;
@@ -1526,7 +1521,7 @@ dumpctx_create(isc_mem_t *mctx, dns_db_t *db, dns_dbversion_t *version,
 		ISC_UNREACHABLE();
 	}
 
-	result = totext_ctx_init(style, truncated, &dctx->tctx);
+	result = totext_ctx_init(style, &dctx->tctx);
 	if (result != ISC_R_SUCCESS) {
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
 				 "could not set master file style");
@@ -1792,7 +1787,7 @@ dumptostreaminc(dns_dumpctx_t *dctx) {
 isc_result_t
 dns_master_dumptostreaminc(isc_mem_t *mctx, dns_db_t *db,
 			   dns_dbversion_t *version,
-			   const dns_master_style_t *style, bool truncated,
+			   const dns_master_style_t *style,
 			   FILE *f, isc_task_t *task,
 			   dns_dumpdonefunc_t done, void *done_arg,
 			   dns_dumpctx_t **dctxp)
@@ -1804,7 +1799,7 @@ dns_master_dumptostreaminc(isc_mem_t *mctx, dns_db_t *db,
 	REQUIRE(f != NULL);
 	REQUIRE(done != NULL);
 
-	result = dumpctx_create(mctx, db, version, style, truncated, f, &dctx,
+	result = dumpctx_create(mctx, db, version, style, f, &dctx,
 				dns_masterformat_text, NULL);
 	if (result != ISC_R_SUCCESS)
 		return (result);
@@ -1833,7 +1828,7 @@ dns_master_dumptostream(isc_mem_t *mctx, dns_db_t *db,
 	dns_dumpctx_t *dctx = NULL;
 	isc_result_t result;
 
-	result = dumpctx_create(mctx, db, version, style, false, f, &dctx,
+	result = dumpctx_create(mctx, db, version, style, f, &dctx,
 				format, header);
 	if (result != ISC_R_SUCCESS)
 		return (result);
@@ -1904,7 +1899,7 @@ dns_master_dumpinc(isc_mem_t *mctx, dns_db_t *db, dns_dbversion_t *version,
 	if (result != ISC_R_SUCCESS)
 		goto cleanup;
 
-	result = dumpctx_create(mctx, db, version, false, style, f, &dctx,
+	result = dumpctx_create(mctx, db, version, style, f, &dctx,
 				format, header);
 	if (result != ISC_R_SUCCESS) {
 		(void)isc_stdio_close(f);
@@ -1951,7 +1946,7 @@ dns_master_dump(isc_mem_t *mctx, dns_db_t *db, dns_dbversion_t *version,
 	if (result != ISC_R_SUCCESS)
 		return (result);
 
-	result = dumpctx_create(mctx, db, version, style, false, f, &dctx,
+	result = dumpctx_create(mctx, db, version, style, f, &dctx,
 				format, header);
 	if (result != ISC_R_SUCCESS)
 		goto cleanup;
@@ -1985,7 +1980,7 @@ dns_master_dumpnodetostream(isc_mem_t *mctx, dns_db_t *db,
 	dns_totext_ctx_t ctx;
 	dns_rdatasetiter_t *rdsiter = NULL;
 
-	result = totext_ctx_init(style, false, &ctx);
+	result = totext_ctx_init(style, &ctx);
 	if (result != ISC_R_SUCCESS) {
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
 				 "could not set master file style");
