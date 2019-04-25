@@ -175,26 +175,17 @@ resume() {
 		die_before_push
 	fi
 
-	git push ${TARGET_REMOTE} -u ${REPLAY_BRANCH}:${REPLAY_BRANCH}
-
-	REPLAY_COMMIT_TITLE="$(git show --format="%b" "${SOURCE_COMMIT}" 2>&1 | head -1)"
-
-	MERGE_REQUEST_BASE_URI="${GITLAB_URI}/${GITLAB_PROJECT_GROUP}/${GITLAB_PROJECT_NAME}/merge_requests/"
-
-	MERGE_REQUEST_ID=$(gitlab create_merge_request "${GITLAB_PROJECT_ID}" "(${TARGET_BRANCH}) ${REPLAY_COMMIT_TITLE}" "{source_branch: '${REPLAY_BRANCH}', target_branch: '${TARGET_BRANCH}'}" | grep opened | cut -f 15 -d \| | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-
-	if [[ -z "$MERGE_REQUEST_ID" ]]; then
-		die "Creating MR failed."
+	if [[ "$DONT_ACCEPT" = "true" ]]; then
+		AUTOMERGE=""
+	else
+		AUTO_MERGE="-o merge_request.merge_when_pipeline_succeeds"
 	fi
 
-	REPLAY_HASH=$(git show-ref --hash --heads "${REPLAY_BRANCH}")
-
-#	gitlab accept_merge_request ${GITLAB_PROJECT_ID} ${MERGE_REQUEST_ID} "{should_remove_source_branch: true, merge_when_pipeline_succeeds: true, sha: '$REPLAY_HASH'}"
-
-	echo "================================================================================"
-	echo "=== Your new MR !${MERGE_REQUEST_ID} has been created"
-	echo "=== ${MERGE_REQUEST_BASE_URI}${MERGE_REQUEST_ID} ==="
-	echo "================================================================================"
+	git push -u ${TARGET_REMOTE} \
+	    -o merge_request.create \
+	    -o "merge_request.target=${TARGET_BRANCH}" \
+	    ${AUTO_MERGE} \
+	    "${REPLAY_BRANCH}:${REPLAY_BRANCH}"
 
 	cleanup
 	exit 0
