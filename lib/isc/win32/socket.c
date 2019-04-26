@@ -307,6 +307,7 @@ struct isc_socketmgr {
 	ISC_LIST(isc_socket_t)		socklist;
 	bool			bShutdown;
 	isc_condition_t			shutdown_ok;
+	int				maxudp;
 	HANDLE				hIoCompletionPort;
 	int				maxIOCPThreads;
 	HANDLE				hIOCPThreads[MAX_IOCPTHREADS];
@@ -1130,6 +1131,16 @@ fill_recv(isc_socket_t *sock, isc_socketevent_t *dev) {
 			sock->recvbuf.remaining = 0;
 			return;
 		}
+		/*
+		 * Simulate a firewall blocking UDP responses bigger than
+		 * 'maxudp' bytes.
+		 */
+		if (sock->manager->maxudp != 0 &&
+		    sock->recvbuf.remaining > (unsigned int)sock->manager->maxudp)
+		{
+			sock->recvbuf.remaining = 0;
+			return;
+		}
 	} else if (sock->type == isc_sockettype_tcp) {
 		dev->address = sock->address;
 	}
@@ -1237,6 +1248,13 @@ startio_send(isc_socket_t *sock, isc_socketevent_t *dev, int *nbytes,
 	IoCompletionInfo *lpo;
 	int status;
 	struct msghdr *mh;
+
+	if (sock->type == isc_sockettype_udp &&
+	    sock->manager->maxudp != 0 &&
+	    dev->region.length - dev->n > (unsigned int)sock->manager->maxudp)
+	{
+		return (DOIO_SUCCESS);
+	}
 
 	lpo = (IoCompletionInfo *)HeapAlloc(hHeapHandle,
 					    HEAP_ZERO_MEMORY,
@@ -2475,7 +2493,6 @@ isc_socketmgr_create2(isc_mem_t *mctx, isc_socketmgr_t **managerp,
 		      unsigned int maxsocks, int nthreads)
 {
 	isc_socketmgr_t *manager;
-	isc_result_t result;
 
 	REQUIRE(managerp != NULL && *managerp == NULL);
 
@@ -2494,6 +2511,7 @@ isc_socketmgr_create2(isc_mem_t *mctx, isc_socketmgr_t **managerp,
 	ISC_LIST_INIT(manager->socklist);
 	isc_mutex_init(&manager->lock);
 	isc_condition_init(&manager->shutdown_ok);
+	manager->maxudp = 0;
 
 	isc_mem_attach(mctx, &manager->mctx);
 	if (nthreads == 0) {
@@ -3881,9 +3899,9 @@ isc_socketmgr_createinctx(isc_mem_t *mctx, isc_socketmgr_t **managerp)
 	return (result);
 }
 
-/* Not implemented for win32 */
 void
 isc_socketmgr_maxudp(isc_socketmgr_t *manager, int maxudp) {
-	UNUSED(manager);
-	UNUSED(maxudp);
+	REQUIRE(VALID_MANAGER(manager));
+
+	manager->maxudp = maxudp;
 }
