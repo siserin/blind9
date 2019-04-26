@@ -1,3 +1,7 @@
+5220.	[bug]		Including an NSEC3PARAM record in an unsigned zone
+			configured with "auto-dnssec maintain;" could lead to
+			invalid NSEC3 signatures being generated. [GL #953]
+
 5219.	[bug]		Fixed a race in the filter-aaaa plugin that could
 			trigger a crash when returning an instance object
 			to the memory pool. [GL #982]
