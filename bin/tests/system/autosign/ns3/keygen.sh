@@ -334,3 +334,12 @@ cp $infile $zonefile
 ksk=`$KEYGEN -q -a RSASHA1 -3 -fk $zone 2> kg.out` || dumpit kg.out
 $KEYGEN -q -a RSASHA1 -3 $zone > kg.out 2>&1 || dumpit kg.out
 $DSFROMKEY $ksk.key > dsset-${zone}$TP
+
+#
+# Check that an NSEC3PARAM record present in an unsigned zone does not cause
+# "auto-dnssec maintain;" to produce invalid NSEC3 signatures.
+#
+setup insecure-with-nsec3param.example
+cp $infile $zonefile
+$KEYGEN -q -a RSASHA1 -3 -fk $zone > kg.out 2>&1 || dumpit kg.out
+$KEYGEN -q -a RSASHA1 -3 $zone > kg.out 2>&1 || dumpit kg.out

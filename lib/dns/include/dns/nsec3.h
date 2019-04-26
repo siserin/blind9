@@ -112,7 +112,7 @@ dns_nsec3_addnsec3s(dns_db_t *db, dns_dbversion_t *version,
 isc_result_t
 dns_nsec3_addnsec3sx(dns_db_t *db, dns_dbversion_t *version,
 		     const dns_name_t *name, dns_ttl_t nsecttl,
-		     bool unsecure, dns_rdatatype_t private,
+		     bool unsecure, bool update_only, dns_rdatatype_t private,
 		     dns_diff_t *diff);
 /*%<
  * Add NSEC3 records for 'name', recording the change in 'diff'.
@@ -136,7 +136,9 @@ dns_nsec3_addnsec3sx(dns_db_t *db, dns_dbversion_t *version,
  *
  * dns_nsec3_addnsec3sx() is similar to dns_nsec3_addnsec3s() but 'private'
  * specifies the type of the private rdataset to be checked in addition to
- * the nsec3param rdataset at the zone apex.
+ * the nsec3param rdataset at the zone apex.  Additionally, if 'update_only' is
+ * true, this function will only adjust existing NSEC3 records matching 'name',
+ * i.e. it will not create any new NSEC3 records.
  *
  * Requires:
  *	'db' to be valid.

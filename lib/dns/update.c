@@ -1965,7 +1965,7 @@ dns_update_signaturesinc(dns_update_log_t *log, dns_zone_t *zone, dns_db_t *db,
 						       &sigs));
 				CHECK(dns_nsec3_addnsec3sx(db, newver, name,
 							   state->nsecttl,
-							   unsecure,
+							   unsecure, false,
 							   privatetype,
 							   &state->nsec_diff));
 			}

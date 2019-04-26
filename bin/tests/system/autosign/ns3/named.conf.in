@@ -295,4 +295,11 @@ zone "dname-at-apex-nsec3.example" {
 	auto-dnssec maintain;
 };
 
+zone "insecure-with-nsec3param.example." {
+	type master;
+	file "insecure-with-nsec3param.example.db";
+	allow-update { any; };
+	auto-dnssec maintain;
+};
+
 include "trusted.conf";

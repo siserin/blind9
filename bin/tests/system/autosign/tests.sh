@@ -1471,6 +1471,14 @@ n=`expr $n + 1`
 if [ $ret != 0 ]; then echo_i "failed"; fi
 status=`expr $status + $ret`
 
+echo_i "check that NSEC3PARAM in unsigned zone does not break NSEC3 signing ($n)"
+ret=0
+$DIG $DIGOPTS insecure-with-nsec3param.example AXFR @10.53.0.3 > verify.in.test$n || ret=1
+$VERIFY -o insecure-with-nsec3param.example verify.in.test$n > verify.out.test$n 2>&1 || ret=1
+n=`expr $n + 1`
+if [ $ret != 0 ]; then echo_i "failed"; fi
+status=`expr $status + $ret`
+
 echo_i "checking key maintenance events were logged correctly ($n)"
 ret=0
 pub=`grep "DNSKEY .* is now published" ns1/named.run | wc -l`

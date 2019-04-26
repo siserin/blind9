@@ -1171,10 +1171,41 @@ dns_nsec3param_deletechains(dns_db_t *db, dns_dbversion_t *ver,
 	return (result);
 }
 
+/*
+ * Search given 'version' of 'db' for an NSEC3 record matching 'name' in the
+ * NSEC3 chain specified by 'nsec3param'.  Return true if such a record is
+ * found; return false otherwise.
+ */
+static bool
+nsec3_exists(dns_db_t *db, dns_dbversion_t *version, const dns_name_t *name,
+	     dns_rdata_nsec3param_t *nsec3param)
+{
+	dns_fixedname_t fixed_found_name, fixed_hash_name;
+	dns_name_t *found_name, *hash_name;
+	isc_result_t result;
+
+	found_name = dns_fixedname_initname(&fixed_found_name);
+	hash_name = dns_fixedname_initname(&fixed_hash_name);
+
+	result = dns_nsec3_hashname(&fixed_hash_name, NULL, NULL, name,
+				    dns_db_origin(db), nsec3param->hash,
+				    nsec3param->iterations, nsec3param->salt,
+				    nsec3param->salt_length);
+	if (result != ISC_R_SUCCESS) {
+		return (false);
+	}
+
+	result = dns_db_find(db, hash_name, version, dns_rdatatype_nsec3,
+			     DNS_DBFIND_FORCENSEC3, 0, NULL, found_name, NULL,
+			     NULL);
+
+	return (result == ISC_R_SUCCESS);
+}
+
 isc_result_t
 dns_nsec3_addnsec3sx(dns_db_t *db, dns_dbversion_t *version,
 		     const dns_name_t *name, dns_ttl_t nsecttl,
-		     bool unsecure, dns_rdatatype_t type,
+		     bool unsecure, bool update_only, dns_rdatatype_t type,
 		     dns_diff_t *diff)
 {
 	dns_dbnode_t *node = NULL;
@@ -1217,8 +1248,15 @@ dns_nsec3_addnsec3sx(dns_db_t *db, dns_dbversion_t *version,
 		dns_rdataset_current(&rdataset, &rdata);
 		CHECK(dns_rdata_tostruct(&rdata, &nsec3param, NULL));
 
-		if (nsec3param.flags != 0)
+		if (nsec3param.flags != 0) {
 			continue;
+		}
+
+		if (update_only &&
+		    !nsec3_exists(db, version, name, &nsec3param))
+		{
+			continue;
+		}
 
 		/*
 		 * We have a active chain.  Update it.
@@ -1250,10 +1288,17 @@ dns_nsec3_addnsec3sx(dns_db_t *db, dns_dbversion_t *version,
 			continue;
 		CHECK(dns_rdata_tostruct(&rdata2, &nsec3param, NULL));
 
-		if ((nsec3param.flags & DNS_NSEC3FLAG_REMOVE) != 0)
+		if ((nsec3param.flags & DNS_NSEC3FLAG_REMOVE) != 0) {
 			continue;
-		if (better_param(&prdataset, &rdata2))
+		}
+		if (better_param(&prdataset, &rdata2)) {
 			continue;
+		}
+		if (update_only &&
+		    !nsec3_exists(db, version, name, &nsec3param))
+		{
+			continue;
+		}
 
 		/*
 		 * We have a active chain.  Update it.

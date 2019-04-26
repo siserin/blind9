@@ -505,6 +505,17 @@ grep "add nsec3param.test.	0	IN	TYPE65534 .# 6 000140000100" jp.out.ns3.$n > /de
 grep "add nsec3param.test.	0	IN	TYPE65534 .# 6 000140000400" jp.out.ns3.$n > /dev/null || ret=1
 if [ $ret != 0 ] ; then echo_i "failed"; status=`expr $ret + $status`; fi
 
+n=`expr $n + 1`
+ret=0
+echo_i "check that the NSEC3 chain is properly updated when a record is added via UPDATE ($n)"
+$NSUPDATE << EOF
+server 10.53.0.3 ${PORT}
+update add foo.nsec3param.test 7200 TXT "bar"
+send
+EOF
+$DIG $DIGOPTS @10.53.0.3 nsec3param.test. AXFR > verify.in.$n || ret=1
+$VERIFY -o nsec3param.test. verify.in.$n > verify.out.$n 2>&1 || ret=1
+if [ $ret != 0 ] ; then echo_i "failed"; status=`expr $ret + $status`; fi
 
 
 ret=0

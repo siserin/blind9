@@ -9028,7 +9028,39 @@ zone_sign(dns_zone_t *zone) {
 				dns_dbiterator_current(signing->dbiterator,
 						       &node, nextname);
 				dns_db_detachnode(db, &node);
+				/*
+				 * Do not sign the next node unless it is not
+				 * below the current node, which was determined
+				 * to be at bottom of zone.
+				 */
 				if (!dns_name_issubdomain(nextname, name)) {
+					break;
+				}
+				/*
+				 * If execution reaches this point, it likely
+				 * means the next node is below bottom of zone
+				 * and thus should not be signed.  However,
+				 * there is one special case that needs to be
+				 * handled: signing an apex-only zone with
+				 * DNAME at the apex.  Since the database
+				 * iterator transparently moves from the last
+				 * node in the regular node chain (i.e. the
+				 * zone apex in the case of an apex-only zone)
+				 * to the first node in the NSEC3 node chain
+				 * (which is also always a node created for the
+				 * zone's origin) and dns_name_issubdomain()
+				 * returns true for two identical names, care
+				 * must be taken to ensure the NSEC3 node for
+				 * the zone apex (i.e. the second node in the
+				 * NSEC3 node chain) is not treated as being
+				 * below bottom of zone, which would prevent it
+				 * from being signed.  The moment of transition
+				 * between the two node chains can be detected
+				 * by checking whether the next name is
+				 * identical to the current name - this cannot
+				 * be the case in any other scenario.
+				 */
+				if (dns_name_equal(nextname, name)) {
 					break;
 				}
 			} else {
@@ -18305,7 +18337,8 @@ add_chains(dns_zone_t *zone, dns_db_t *db, dns_dbversion_t *ver,
 				 &build_nsec3));
 	if (build_nsec3)
 		CHECK(dns_nsec3_addnsec3sx(db, ver, origin, zone->minimum,
-					   false, zone->privatetype, diff));
+					   false, true, zone->privatetype,
+					   diff));
 	CHECK(updatesecure(db, ver, origin, zone->minimum, true, diff));
 
  failure:

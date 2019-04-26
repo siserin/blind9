@@ -39,6 +39,7 @@ rm -f ns3/inacksk2.example.db
 rm -f ns3/inacksk3.example.db
 rm -f ns3/inaczsk2.example.db
 rm -f ns3/inaczsk3.example.db
+rm -f ns3/insecure-with-nsec3param.example.db
 rm -f ns3/kg.out ns3/s.out ns3/st.out
 rm -f ns3/kskonly.example.db
 rm -f ns3/nozsk.example.db ns3/inaczsk.example.db
@@ -66,3 +67,4 @@ rm -f nsupdate.out
 rm -f settime.out.*
 rm -f signing.out.*
 rm -f sync.key
+rm -f verify.*
