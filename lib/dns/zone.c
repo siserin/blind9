@@ -8910,10 +8910,10 @@ zone_sign(dns_zone_t *zone) {
 					{
 						continue;
 					}
-					/* Don't consider inactive keys, however
-					 * the key may be temporary offline, so do
-					 * consider keys which private key files are
-					 * unavailable.
+					/* Don't consider inactive keys,
+					 * however the key may be temporary
+					 * offline, so do consider keys which
+					 * private key files are unavailable.
 					 */
 					if (dst_key_inactive(zone_keys[j])) {
 						continue;
