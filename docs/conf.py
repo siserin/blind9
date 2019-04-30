@@ -56,7 +56,7 @@ html_theme_path = ["_themes", ]
 html_static_path = ['_static']
 
 man_pages = [
-	('man_arpaname', 'arpaname', '', 'Internet Systems Consortium', 1),
+	('man_arpaname', 'arpaname', 'translate IP addresses to the corresponding ARPA names', 'Internet Systems Consortium', 1),
 	('man_ddns-confgen', 'ddns-confgen', '', 'Internet Systems Consortium', 1),
 	('man_delv', 'delv', '', 'Internet Systems Consortium', 1),
 	('man_dig', 'dig', '', 'Internet Systems Consortium', 1),
