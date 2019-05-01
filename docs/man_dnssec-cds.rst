@@ -1,41 +1,15 @@
-ISC
-Internet Systems Consortium, Inc.
-Tony Finch
-dot@dotat.at
-fanf2@cam.ac.uk
-Cambridge University Information Services
-dnssec-cds
-8
-BIND9
-dnssec-cds
-change DS records for a child zone based on CDS/CDNSKEY
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-dnssec-cds
--a
-alg
--c
-class
--D
--d
-dsset-file
--f
-child-file
--i
-extension
--s
-start-time
--T
-ttl
--u
--v
-level
--V
-domain
-DESCRIPTION
-===========
+.. highlight: console
+
+dnssec-cds - change DS records for a child zone based on CDS/CDNSKEY
+====================================================================
+
+Synopsis
+--------
+
+:program:`dnssec-cds` [**-a** alg...] [**-c** class] [**-D**] {**-d** dsset-file} {**-f** child-file} [**-i** [extension]] [**-s** start-time] [**-T** ttl] [**-u**] [**-v** level] [**-V**] {domain}
+
+Description
+-----------
 
 The ``dnssec-cds`` command changes DS records at a delegation point
 based on CDS or CDNSKEY records published in the child zone. If both CDS
@@ -81,10 +55,10 @@ Alternatively, ``dnssec-cds -u`` writes an ``nsupdate`` script to the
 standard output. You can use the ``-u`` and ``-i`` options together to
 maintain a ``dsset-`` file as well as emit an ``nsupdate`` script.
 
-OPTIONS
-=======
+Options
+-------
 
--a algorithm
+**-a** algorithm
    Specify a digest algorithm to use when converting CDNSKEY records to
    DS records. This option can be repeated, so that multiple DS records
    are created for each CDNSKEY record. This option has no effect when
@@ -94,15 +68,15 @@ OPTIONS
    are case insensitive, and the hyphen may be omitted. If no algorithm
    is specified, the default is SHA-256.
 
--c class
+**-c** class
    Specifies the DNS class of the zones.
 
--D
+**-D**
    Generate DS records from CDNSKEY records if both CDS and CDNSKEY
    records are present in the child zone. By default CDS records are
    preferred.
 
--d path
+**-d** path
    Location of the parent DS records. The path can be the name of a file
    containing the DS records, or if it is a directory, ``dnssec-cds``
    looks for a ``dsset-`` file for the domain inside the directory.
@@ -111,14 +85,14 @@ OPTIONS
    were signed earlier than the modification time of the ``dsset-``
    file. This can be adjusted with the ``-s`` option.
 
--f child-file
+**-f** child-file
    File containing the child's CDS and/or CDNSKEY records, plus its
    DNSKEY records and the covering RRSIG records so that they can be
    authenticated.
 
    The EXAMPLES below describe how to generate this file.
 
--iextension
+**-iextension**
    Update the ``dsset-`` file in place, instead of writing DS records to
    the standard output.
 
@@ -132,7 +106,7 @@ OPTIONS
    child records, provided that is later than the file's current
    modification time.
 
--s start-time
+**-s** start-time
    Specify the date and time after which RRSIG records become
    acceptable. This can be either an absolute or relative time. An
    absolute start time is indicated by a number in YYYYMMDDHHMMSS
@@ -144,12 +118,12 @@ OPTIONS
    If no start-time is specified, the modification time of the
    ``dsset-`` file is used.
 
--T ttl
+**-T** ttl
    Specifies a TTL to be used for new DS records. If not specified, the
    default is the TTL of the old DS records. If they had no explicit TTL
    then the new DS records also have no explicit TTL.
 
--u
+**-u**
    Write an ``nsupdate`` script to the standard output, instead of
    printing the new DS reords. The output will be empty if no change is
    needed.
@@ -158,18 +132,18 @@ OPTIONS
    original ``dsset-`` file, or with the ``-T`` option, or using the
    ``nsupdate`` ``ttl`` command.
 
--V
+**-V**
    Print version information.
 
--v level
+**-v** level
    Sets the debugging level. Level 1 is intended to be usefully verbose
    for general users; higher levels are intended for developers.
 
 domain
    The name of the delegation point / child zone apex.
 
-EXIT STATUS
-===========
+Exit Status
+-----------
 
 The ``dnssec-cds`` command exits 0 on success, or non-zero if an error
 occurred.
@@ -177,8 +151,8 @@ occurred.
 In the success case, the DS records might or might not need to be
 changed.
 
-EXAMPLES
-========
+Examples
+--------
 
 Before running ``dnssec-signzone``, you can ensure that the delegations
 are up-to-date by running ``dnssec-cds`` on every ``dsset-`` file.
@@ -208,8 +182,8 @@ protection time.
    dnssec-cds -u -i -f /dev/stdin -d $f $d |
    nsupdate -l
 
-SEE ALSO
-========
+See Also
+--------
 
-dig1, dnssec-settime8, dnssec-signzone8, nsupdate1, BIND 9 Administrator
+:manpage:`dig1`, :manpage:`dnssec-settime8`, :manpage:`dnssec-signzone8`, :manpage:`nsupdate1`, BIND 9 Administrator
 Reference Manual, RFC 7344.

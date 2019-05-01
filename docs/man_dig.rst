@@ -1,66 +1,18 @@
-ISC
-Internet Systems Consortium, Inc.
-dig
-1
-BIND9
-dig
-DNS lookup utility
-2000
-2001
-2002
-2003
-2004
-2005
-2006
-2007
-2008
-2009
-2010
-2011
-2013
-2014
-2015
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-dig
-@server
--b
-address
--c
-class
--f
-filename
--k
-filename
--m
--p
-port#
--q
-name
--t
-type
--v
--x
-addr
--y
-hmac:
-name:key
--4
--6
-name
-type
-class
-queryopt
-dig
--h
-dig
-global-queryopt
-query
-DESCRIPTION
-===========
+.. highlight: console
+
+dig - DNS lookup utility
+==================================
+
+Synopsis
+--------
+:program:`dig` [@server] [**-b** address] [**-c** class] [**-f** filename] [**-k** filename] [**-m**] [**-p** port#] [**-q** name] [**-t** type] [**-v**] [**-x** addr] [**-y** [hmac:]name:key] [ [**-4**] | [**-6**] ] [name] [type] [class] [queryopt...]
+
+:program:`dig` [**-h**]
+
+:program:`dig` [global-queryopt...] [query...]
+
+Description
+-----------
 
 ``dig`` is a flexible tool for interrogating DNS name servers. It
 performs DNS lookups and displays the answers that are returned from the
@@ -93,8 +45,8 @@ names. Either use the ``-t`` and ``-c`` options to specify the type and
 class, use the ``-q`` the specify the domain name, or use "IN." and
 "CH." when looking up these top level domains.
 
-SIMPLE USAGE
-============
+Simple Usage
+------------
 
 A typical invocation of ``dig`` looks like:
 
@@ -127,31 +79,31 @@ where:
    ``type`` can be any valid query type. If no ``type`` argument is
    supplied, ``dig`` will perform a lookup for an A record.
 
-OPTIONS
-=======
+Options
+-------
 
--4
+**-4**
    Use IPv4 only.
 
--6
+**-6**
    Use IPv6 only.
 
--b address[#port]
+**-b** address[#port]
    Set the source IP address of the query. The ``address`` must be a
    valid address on one of the host's network interfaces, or "0.0.0.0"
    or "::". An optional port may be specified by appending "#<port>"
 
--c class
+**-c** class
    Set the query class. The default ``class`` is IN; other classes are
    HS for Hesiod records or CH for Chaosnet records.
 
--f file
+**-f** file
    Batch mode: ``dig`` reads a list of lookup requests to process from
    the given ``file``. Each line in the file should be organized in the
    same way they would be presented as queries to ``dig`` using the
    command-line interface.
 
--k keyfile
+**-k** keyfile
    Sign queries using TSIG using a key read from the given file. Key
    files can be generated using tsig-keygen8. When using TSIG
    authentication with ``dig``, the name server that is queried needs to
@@ -159,24 +111,24 @@ OPTIONS
    by providing appropriate ``key`` and ``server`` statements in
    ``named.conf``.
 
--m
+**-m**
    Enable memory usage debugging.
 
--p port
+**-p** port
    Send the query to a non-standard port on the server, instead of the
    default port 53. This option would be used to test a name server that
    has been configured to listen for queries on a non-standard port
    number.
 
--q name
+**-q** name
    The domain name to query. This is useful to distinguish the ``name``
    from other arguments.
 
--r
+**-r**
    Do not read options from ``${HOME}/.digrc``. This is useful for
    scripts that need predictable behaviour.
 
--t type
+**-t** type
    The resource record type to query. It can be any valid query type. If
    it is a resource record type supported in BIND 9, it can be given by
    the type mnemonic (such as "NS" or "AAAA"). The default query type is
@@ -191,13 +143,13 @@ OPTIONS
    the number of the type. If the resource record type is not supported
    in BIND 9, the result will be displayed as described in RFC 3597.
 
--u
+**-u**
    Print query times in microseconds instead of milliseconds.
 
--v
+**-v**
    Print the version number and exit.
 
--x addr
+**-x** addr
    Simplified reverse lookups, for mapping addresses to names. The
    ``addr`` is an IPv4 address in dotted-decimal notation, or a
    colon-delimited IPv6 address. When the ``-x`` is used, there is no
@@ -207,7 +159,7 @@ OPTIONS
    and IN respectively. IPv6 addresses are looked up using nibble format
    under the IP6.ARPA domain.
 
--y [hmac:]keyname:secret
+**-y** [hmac:]keyname:secret
    Sign queries using TSIG with the given authentication key.
    ``keyname`` is the name of the key, and ``secret`` is the base64
    encoded shared secret. ``hmac`` is the name of the key algorithm;
@@ -221,8 +173,8 @@ OPTIONS
    argument in clear text. This may be visible in the output from ps1 or
    in a history file maintained by the user's shell.
 
-QUERY OPTIONS
-=============
+Query Options
+-------------
 
 ``dig`` provides a number of query options which affect the way in which
 lookups are made and the results displayed. Some of these set or reset
@@ -582,8 +534,8 @@ abbreviation is unambiguous; for example, ``+cd`` is equivalent to
    Set [do not set] the last unassigned DNS header flag in a DNS query.
    This flag is off by default.
 
-MULTIPLE QUERIES
-================
+Multiple Queries
+----------------
 
 The BIND 9 implementation of ``dig`` supports specifying multiple
 queries on the command line (in addition to supporting the ``-f`` batch
@@ -615,8 +567,8 @@ each lookup. The final query has a local query option of ``+noqr`` which
 means that ``dig`` will not print the initial query when it looks up the
 NS records for ``isc.org``.
 
-IDN SUPPORT
-===========
+IDN Support
+-----------
 
 If ``dig`` has been built with IDN (internationalized domain name)
 support, it can accept and display non-ASCII domain names. ``dig``
@@ -626,19 +578,19 @@ like to turn off the IDN support for some reason, use parameters
 ``+noidnin`` and ``+noidnout`` or define the IDN_DISABLE environment
 variable.
 
-FILES
-=====
+Files
+-----
 
 ``/etc/resolv.conf``
 
 ``${HOME}/.digrc``
 
-SEE ALSO
-========
+See Also
+--------
 
-delv1, host1, named8, dnssec-keygen8, RFC 1035.
+:manpage:`delv1`, :manpage:`host1`, :manpage:`named8`, :manpage:`dnssec-keygen8`, RFC 1035.
 
-BUGS
-====
+Bugs
+----
 
 There are probably too many query options.

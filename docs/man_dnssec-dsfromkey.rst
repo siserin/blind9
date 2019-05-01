@@ -1,22 +1,12 @@
-ISC
-Internet Systems Consortium, Inc.
-dnssec-dsfromkey
-8
-BIND9
-dnssec-dsfromkey
-DNSSEC DS RR generation tool
-2008
-2009
-2010
-2011
-2012
-2014
-2015
-2016
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-dnssec-dsfromkey
+.. highlight: console
+
+dnssec-dsfromkey - DNSSEC DS RR generation tool
+===============================================
+
+Synopsis
+--------
+
+:program:`dnssec-dsfromkey`
 -1
 -2
 -a

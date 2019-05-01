@@ -1,37 +1,16 @@
-ISC
-Internet Systems Consortium, Inc.
-ddns-confgen
-8
-BIND9
-ddns-confgen
-ddns key generation tool
-2009
-2014
-2015
-2016
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-tsig-keygen
--a
-algorithm
--h
-name
-ddns-confgen
--a
-algorithm
--h
--k
-keyname
--q
--r
-randomfile
--s
-name
--z
-zone
-DESCRIPTION
-===========
+.. highlight: console
+
+ddns-confgen - ddns key generation tool
+=======================================
+
+Synopsis
+--------
+:program:`tsig-keygen` [**-a** algorithm] [**-h**] [**-r** randomfile] [**-s** name]
+
+:program:`ddns-confgen` [**-a** algorithm] [**-h**] [**-k** keyname] [**-q**] [**-r** randomfile] [**-s** name] [**-z** zone]
+
+Description
+-----------
 
 ``tsig-keygen`` and ``ddns-confgen`` are invocation methods for a
 utility that generates keys for use in TSIG signing. The resulting keys
@@ -54,19 +33,19 @@ Note that ``named`` itself can configure a local DDNS key for use with
 elaborate configuration is required: for instance, if ``nsupdate`` is to
 be used from a remote system.
 
-OPTIONS
-=======
+Options
+-------
 
--a algorithm
+**-a** algorithm
    Specifies the algorithm to use for the TSIG key. Available choices
    are: hmac-md5, hmac-sha1, hmac-sha224, hmac-sha256, hmac-sha384 and
    hmac-sha512. The default is hmac-sha256. Options are
    case-insensitive, and the "hmac-" prefix may be omitted.
 
--h
+**-h**
    Prints a short summary of options and arguments.
 
--k keyname
+**-k** keyname
    Specifies the key name of the DDNS authentication key. The default is
    ``ddns-key`` when neither the ``-s`` nor ``-z`` option is specified;
    otherwise, the default is ``ddns-key`` as a separate label followed
@@ -74,12 +53,12 @@ OPTIONS
    key name must have the format of a valid domain name, consisting of
    letters, digits, hyphens and periods.
 
--q
+**-q**
    (``ddns-confgen`` only.) Quiet mode: Print only the key, with no
    explanatory text or usage examples; This is essentially identical to
    ``tsig-keygen``.
 
--s name
+**-s** name
    (``ddns-confgen`` only.) Generate configuration example to allow
    dynamic updates of a single hostname. The example ``named.conf`` text
    shows how to set an update policy for the specified name using the
@@ -88,14 +67,14 @@ OPTIONS
    differ from the key name. This option cannot be used with the ``-z``
    option.
 
--z zone
+**-z** zone
    (``ddns-confgen`` only.) Generate configuration example to allow
    dynamic updates of a zone: The example ``named.conf`` text shows how
    to set an update policy for the specified zone using the "zonesub"
    nametype, allowing updates to all subdomain names within that zone.
    This option cannot be used with the ``-s`` option.
 
-SEE ALSO
-========
+See Also
+--------
 
-nsupdate1, named.conf5, named8, BIND 9 Administrator Reference Manual.
+:manpage:`nsupdate1`, :manpage:`named.conf5`, :manpage:`named8`, BIND 9 Administrator Reference Manual.

@@ -1,37 +1,15 @@
-ISC
-Internet Systems Consortium, Inc.
-dnssec-coverage
-8
-BIND9
-dnssec-coverage
-checks future DNSKEY coverage for a zone
-2013
-2014
-2015
-2016
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-dnssec-coverage
--K
-directory
--l
-length
--f
-file
--d
-DNSKEY TTL
--m
-max TTL
--r
-interval
--c
-compilezone path
--k
--z
-zone
-DESCRIPTION
-===========
+.. highlight: console
+
+dnssec-coverage - checks future DNSKEY coverage for a zone
+==========================================================
+
+Synopsis
+--------
+
+:program:`dnssec-coverage` [**-K** directory] [**-l** length] [**-f** file] [**-d** DNSKEY TTL] [**-m** max TTL] [**-r** interval] [**-c** compilezone path] [**-k**] [**-z**] [zone...]
+
+Description
+-----------
 
 ``dnssec-coverage`` verifies that the DNSSEC keys for a given zone or a
 set of zones have timing metadata set properly to ensure no future
@@ -53,20 +31,20 @@ be scanned, and all zones for which there are keys will be analyzed.
 (Note: This method of reporting is only accurate if all the zones that
 have keys in a given repository share the same TTL parameters.)
 
-OPTIONS
-=======
+Options
+-------
 
--K directory
+**-K** directory
    Sets the directory in which keys can be found. Defaults to the
    current working directory.
 
--f file
+**-f** file
    If a ``file`` is specified, then the zone is read from that file; the
    largest TTL and the DNSKEY TTL are determined directly from the zone
    data, and the ``-m`` and ``-d`` options do not need to be specified
    on the command line.
 
--l duration
+**-l** duration
    The length of time to check for DNSSEC coverage. Key events scheduled
    further into the future than ``duration`` will be ignored, and
    assumed to be correct.
@@ -75,7 +53,7 @@ OPTIONS
    of time by adding a suffix: 'mi' for minutes, 'h' for hours, 'd' for
    days, 'w' for weeks, 'mo' for months, 'y' for years.
 
--m maximum TTL
+**-m** maximum TTL
    Sets the value to be used as the maximum TTL for the zone or zones
    being analyzed when determining whether there is a possibility of
    validation failure. When a zone-signing key is deactivated, there
@@ -96,7 +74,7 @@ OPTIONS
    from a zone file, a warning is generated and a default value of 1
    week is used.
 
--d DNSKEY TTL
+**-d** DNSKEY TTL
    Sets the value to be used as the DNSKEY TTL for the zone or zones
    being analyzed when determining whether there is a possibility of
    validation failure. When a key is rolled (that is, replaced with a
@@ -119,7 +97,7 @@ OPTIONS
    the zone file or the key file, then a warning is generated and a
    default value of 1 day is used.
 
--r resign interval
+**-r** resign interval
    Sets the value to be used as the resign interval for the zone or
    zones being analyzed when determining whether there is a possibility
    of validation failure. This value defaults to 22.5 days, which is
@@ -131,18 +109,18 @@ OPTIONS
    of time by adding a suffix: 'mi' for minutes, 'h' for hours, 'd' for
    days, 'w' for weeks, 'mo' for months, 'y' for years.
 
--k
+**-k**
    Only check KSK coverage; ignore ZSK events. Cannot be used with
    ``-z``.
 
--z
+**-z**
    Only check ZSK coverage; ignore KSK events. Cannot be used with
    ``-k``.
 
--c compilezone path
+**-c** compilezone path
    Specifies a path to a ``named-compilezone`` binary. Used for testing.
 
-SEE ALSO
-========
+See Also
+--------
 
-dnssec-checkds8, dnssec-dsfromkey8, dnssec-keygen8, dnssec-signzone8
+:manpage:`dnssec-checkds8`, :manpage:`dnssec-dsfromkey8`, :manpage:`dnssec-keygen8`, :manpage:`dnssec-signzone8`.

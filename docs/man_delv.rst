@@ -1,52 +1,21 @@
-ISC
-Internet Systems Consortium, Inc.
-delv
-1
-BIND9
-delv
-DNS lookup and validation utility
-2014
-2015
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-delv
-@server
--4
--6
--a
-anchor-file
--b
-address
--c
-class
--d
-level
--i
--m
--p
-port#
--q
-name
--t
-type
--x
-addr
-name
-type
-class
-queryopt
-delv
--h
-delv
--v
-delv
-queryopt
-query
-DESCRIPTION
-===========
+.. highlight: console
+
+delv - DNS lookup and validation utility
+========================================
+
+Synopsis
+--------
+
+:program:`delv` [@server] [ [**-4**] | [**-6**] ] [**-a** anchor-file] [**-b** address] [**-c** class] [**-d** level] [**-i**] [**-m**] [**-p** port#] [**-q** name] [**-t** type] [**-x** addr] [name] [type] [class] [queryopt...]
+
+:program:`delv` [**-h**]
+
+:program:`delv` [**-v**]
+
+:program:`delv` [queryopt...] [query...]
+
+Description
+-----------
 
 ``delv`` is a tool for sending DNS queries and validating the results,
 using the same internal resolver and validator logic as ``named``.
@@ -75,8 +44,8 @@ addresses (127.0.0.1 for IPv4, ::1 for IPv6).
 When no command line arguments or options are given, ``delv`` will
 perform an NS query for "." (the root zone).
 
-SIMPLE USAGE
-============
+Simple Usage
+------------
 
 A typical invocation of ``delv`` looks like:
 
@@ -110,10 +79,10 @@ where:
    ``type`` can be any valid query type. If no ``type`` argument is
    supplied, ``delv`` will perform a lookup for an A record.
 
-OPTIONS
-=======
+Options
+-------
 
--a anchor-file
+**-a** anchor-file
    Specifies a file from which to read DNSSEC trust anchors. The default
    is ``/etc/bind.keys``, which is included with BIND 9 and contains one
    or more trust anchors for the root zone (".").
@@ -132,27 +101,27 @@ OPTIONS
    rolled over, it will be necessary to update ``/etc/bind.keys`` to use
    DNSSEC validation in ``delv``.
 
--b address
+**-b** address
    Sets the source IP address of the query to ``address``. This must be
    a valid address on one of the host's network interfaces or "0.0.0.0"
    or "::". An optional source port may be specified by appending
    "#<port>"
 
--c class
+**-c** class
    Sets the query class for the requested data. Currently, only class
    "IN" is supported in ``delv`` and any other value is ignored.
 
--d level
+**-d** level
    Set the systemwide debug level to ``level``. The allowed range is
    from 0 to 99. The default is 0 (no debugging). Debugging traces from
    ``delv`` become more verbose as the debug level increases. See the
    ``+mtrace``, ``+rtrace``, and ``+vtrace`` options below for
    additional debugging details.
 
--h
+**-h**
    Display the ``delv`` help usage output and exit.
 
--i
+**-i**
    Insecure mode. This disables internal DNSSEC validation. (Note,
    however, this does not set the CD bit on upstream queries. If the
    server being queried is performing DNSSEC validation, then it will
@@ -160,23 +129,23 @@ OPTIONS
    is necessary to examine invalid data to debug a DNSSEC problem, use
    ``dig +cd``.)
 
--m
+**-m**
    Enables memory usage debugging.
 
--p port#
+**-p** port#
    Specifies a destination port to use for queries instead of the
    standard DNS port number 53. This option would be used with a name
    server that has been configured to listen for queries on a
    non-standard port number.
 
--q name
+**-q** name
    Sets the query name to ``name``. While the query name can be
    specified without using the ``-q``, it is sometimes necessary to
    disambiguate names from types or classes (for example, when looking
    up the name "ns", which could be misinterpreted as the type NS, or
    "ch", which could be misinterpreted as class CH).
 
--t type
+**-t** type
    Sets the query type to ``type``, which can be any valid query type
    supported in BIND 9 except for zone transfer types AXFR and IXFR. As
    with ``-q``, this is useful to distinguish query name type or class
@@ -186,10 +155,10 @@ OPTIONS
    The default query type is "A", unless the ``-x`` option is supplied
    to indicate a reverse lookup, in which case it is "PTR".
 
--v
+**-v**
    Print the ``delv`` version and exit.
 
--x addr
+**-x** addr
    Performs a reverse lookup, mapping an addresses to a name. ``addr``
    is an IPv4 address in dotted-decimal notation, or a colon-delimited
    IPv6 address. When ``-x`` is used, there is no need to provide the
@@ -198,14 +167,14 @@ OPTIONS
    query type to PTR. IPv6 addresses are looked up using nibble format
    under the IP6.ARPA domain.
 
--4
+**-4**
    Forces ``delv`` to only use IPv4.
 
--6
+**-6**
    Forces ``delv`` to only use IPv6.
 
-QUERY OPTIONS
-=============
+Query Options
+-------------
 
 ``delv`` provides a number of query options which affect the way results
 are displayed, and in some cases the way lookups are performed.
@@ -337,14 +306,14 @@ assign values to options like the timeout interval. They have the form
    The default is to print RDATA for known types in the type's
    presentation format.
 
-FILES
-=====
+Files
+-----
 
 ``/etc/bind.keys``
 
 ``/etc/resolv.conf``
 
-SEE ALSO
-========
+See Also
+--------
 
-dig1, named8, RFC4034, RFC4035, RFC4431, RFC5074, RFC5155.
+:manpage:`dig1`, :manpage:`named8`, RFC4034, RFC4035, RFC4431, RFC5074, RFC5155.
