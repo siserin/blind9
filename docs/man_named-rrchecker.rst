@@ -1,28 +1,15 @@
-ISC
-Internet Systems Consortium, Inc.
-named-rrchecker
-1
-BIND9
-named-rrchecker
-syntax checker for individual DNS resource records
-2013
-2014
-2015
-2016
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-named-rrchecker
--h
--o
-origin
--p
--u
--C
--T
--P
-DESCRIPTION
-===========
+.. highlight: console
+
+named-rrchecker - syntax checker for individual DNS resource records
+====================================================================
+
+Synopsis
+--------
+
+:program:`named-rrchecker` [**-h**] [**-o** origin] [**-p**] [**-u**] [**-C**] [**-T**] [**-P**]
+
+Description
+-----------
 
 ``named-rrchecker`` read a individual DNS resource record from standard
 input and checks if it is syntactically correct.
@@ -41,7 +28,7 @@ The ``-u`` prints out the resulting record in unknown record form.
 The ``-C``, ``-T`` and ``-P`` print out the known class, standard type
 and private type mnemonics respectively.
 
-SEE ALSO
-========
+See Also
+--------
 
-RFC 1034, RFC 1035, named8
+RFC 1034, RFC 1035, :manpage:`named(8)`.

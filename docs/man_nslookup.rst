@@ -1,29 +1,15 @@
-ISC
-Internet Systems Consortium, Inc.
-nslookup
-1
-BIND9
-nslookup
-query Internet name servers interactively
-2004
-2005
-2006
-2007
-2010
-2013
-2014
-2015
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-nslookup
--option
-name \| -
-server
-DESCRIPTION
-===========
+.. highlight: console
+
+nslookup - query Internet name servers interactively
+====================================================
+
+Synopsis
+--------
+
+:program:`nslookup` [-option] [name | -] [server]
+
+Description
+-----------
 
 ``Nslookup`` is a program to query Internet domain name servers.
 ``Nslookup`` has two modes: interactive and non-interactive. Interactive
@@ -32,8 +18,8 @@ hosts and domains or to print a list of hosts in a domain.
 Non-interactive mode is used to print just the name and requested
 information for a host or domain.
 
-ARGUMENTS
-=========
+Arguments
+---------
 
 Interactive mode is entered in the following cases:
 
@@ -58,8 +44,8 @@ seconds, type:
 The ``-version`` option causes ``nslookup`` to print the version number
 and immediately exits.
 
-INTERACTIVE COMMANDS
-====================
+Interactive Commands
+--------------------
 
 ``host`` [server]
    Look up information for host using the current default server or
@@ -188,14 +174,14 @@ INTERACTIVE COMMANDS
 
       (Default = nofail)
 
-RETURN VALUES
-=============
+Return Values
+-------------
 
 ``nslookup`` returns with an exit status of 1 if any query failed, and 0
 otherwise.
 
-IDN SUPPORT
-===========
+IDN Support
+-----------
 
 If ``nslookup`` has been built with IDN (internationalized domain name)
 support, it can accept and display non-ASCII domain names. ``nslookup``
@@ -205,12 +191,12 @@ like to turn off the IDN support for some reason, define the IDN_DISABLE
 environment variable. The IDN support is disabled if the variable is set
 when ``nslookup`` runs or when the standard output is not a tty.
 
-FILES
-=====
+Files
+-----
 
 ``/etc/resolv.conf``
 
-SEE ALSO
-========
+See Also
+--------
 
-dig1, host1, named8.
+:manpage:`dig(1)`, :manpage:`host(1)`, :manpage:`named(8)`.

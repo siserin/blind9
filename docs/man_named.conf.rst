@@ -1,31 +1,15 @@
-ISC
-Internet Systems Consortium, Inc.
-named.conf
-5
-BIND9
-named.conf
-configuration file for
-named
-2004
-2005
-2006
-2007
-2008
-2009
-2010
-2011
-2012
-2013
-2014
-2015
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-named.conf
-DESCRIPTION
-===========
+.. highlight: console
+
+named.conf - configuration file for **named**
+=============================================
+
+Synopsis
+--------
+
+:program:`named.conf`
+
+Description
+-----------
 
 ``named.conf`` is the configuration file for ``named``. Statements are
 enclosed in braces and terminated with a semi-colon. Clauses in the
@@ -39,14 +23,14 @@ C++ style: // to end of line
 Unix style: # to end of line
 
 ACL
-===
+---
 
 ::
 
    acl string { address_match_element; ... };
 
-CONTROLS
-========
+Controls
+--------
 
 ::
 
@@ -63,7 +47,7 @@ CONTROLS
    };
 
 DLZ
-===
+---
 
 ::
 
@@ -72,16 +56,16 @@ DLZ
        search boolean;
    };
 
-DYNDB
-=====
+DynDB
+-----
 
 ::
 
    dyndb string quoted_string {
        unspecified-text };
 
-KEY
-===
+Key
+---
 
 ::
 
@@ -90,8 +74,8 @@ KEY
        secret string;
    };
 
-LOGGING
-=======
+Logging
+-------
 
 ::
 
@@ -111,16 +95,16 @@ LOGGING
        };
    };
 
-MANAGED-KEYS
-============
+Managed-keys
+------------
 
 ::
 
    managed-keys { string string integer
        integer integer quoted_string; ... };
 
-MASTERS
-=======
+Masters
+-------
 
 ::
 
@@ -129,8 +113,8 @@ MASTERS
        port integer ] | ipv6_address [ port
        integer ] ) [ key string ]; ... };
 
-OPTIONS
-=======
+Options
+-------
 
 ::
 
@@ -431,16 +415,16 @@ OPTIONS
        zone-statistics ( full | terse | none | boolean );
    };
 
-PLUGIN
-======
+Plugin
+------
 
 ::
 
    plugin ( query ) string [ { unspecified-text
        } ];
 
-SERVER
-======
+Server
+------
 
 ::
 
@@ -477,8 +461,8 @@ SERVER
        transfers integer;
    };
 
-STATISTICS-CHANNELS
-===================
+Statistics-channels
+-------------------
 
 ::
 
@@ -489,16 +473,16 @@ STATISTICS-CHANNELS
            } ];
    };
 
-TRUSTED-KEYS
-============
+Trusted-keys
+------------
 
 ::
 
    trusted-keys { string integer integer
        integer quoted_string; ... };
 
-VIEW
-====
+View
+----
 
 ::
 
@@ -872,8 +856,8 @@ VIEW
        zone-statistics ( full | terse | none | boolean );
    };
 
-ZONE
-====
+Zone
+----
 
 ::
 
@@ -971,13 +955,13 @@ ZONE
        zone-statistics ( full | terse | none | boolean );
    };
 
-FILES
-=====
+Files
+-----
 
 ``/etc/named.conf``
 
-SEE ALSO
-========
+See Also
+--------
 
-ddns-confgen8, named8, named-checkconf8, rndc8, rndc-confgen8, BIND 9
+:manpage:`ddns-confgen(8)`, :manpage:`named(8)`, :manpage:`named-checkconf(8)`, :manpage:`rndc(8)`, :manpage:`rndc-confgen(8), BIND 9
 Administrator Reference Manual.

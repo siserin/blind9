@@ -1,31 +1,17 @@
-ISC
-Internet Systems Consortium, Inc.
-nsec3hash
-8
-BIND9
-nsec3hash
-generate NSEC3 hash
-2009
-2014
-2015
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-nsec3hash
-salt
-algorithm
-iterations
-domain
-nsec3hash -r
-algorithm
-flags
-iterations
-salt
-domain
-DESCRIPTION
-===========
+.. highlight: console
+
+nsec3hash - generate NSEC3 hash
+===============================
+
+Synopsis
+--------
+
+:program:`nsec3hash` {salt} {algorithm} {iterations} {domain}
+
+:program:`nsec3hash` **-r** {algorithm} {flags} {iterations} {salt} {domain}
+
+Description
+-----------
 
 ``nsec3hash`` generates an NSEC3 hash based on a set of NSEC3
 parameters. This can be used to check the validity of NSEC3 records in a
@@ -37,8 +23,8 @@ domain name: algorithm, flags, iterations, salt, domain. This makes it
 convenient to copy and paste a portion of an NSEC3 or NSEC3PARAM record
 into a command line to confirm the correctness of an NSEC3 hash.
 
-ARGUMENTS
-=========
+Arguments
+---------
 
 salt
    The salt provided to the hash algorithm.
@@ -58,7 +44,7 @@ iterations
 domain
    The domain name to be hashed.
 
-SEE ALSO
-========
+See Also
+--------
 
 BIND 9 Administrator Reference Manual, RFC 5155.

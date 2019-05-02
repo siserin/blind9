@@ -1,59 +1,15 @@
-ISC
-Internet Systems Consortium, Inc.
-nsupdate
-1
-BIND9
-nsupdate
-Dynamic DNS update utility
-2000
-2001
-2002
-2003
-2004
-2005
-2006
-2007
-2008
-2009
-2010
-2011
-2012
-2014
-2015
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-nsupdate
--d
--D
--i
--L
-level
--g
--o
--l
--y
-hmac:
-keyname:secret
--k
-keyfile
--t
-timeout
--u
-udptimeout
--r
-udpretries
--v
--T
--P
--V
--4
--6
-filename
-DESCRIPTION
-===========
+.. highlight: console
+
+nsupdate - dynamic DNS update utility
+=====================================
+
+Synopsis
+--------
+
+:program:`nsupdate` [**-d**] [**-D**] [**-i**] [**-L** level] [ [**-g**] | [**-o**] | [**-l**] | [**-y** [hmac:]keyname:secret] | [**-k** keyfile] ] [**-t** timeout] [**-u** udptimeout] [**-r** udpretries] [**-v**] [**-T**] [**-P**] [**-V**] [ [**-4**] | [**-6**] ] [filename]
+
+Description
+-----------
 
 ``nsupdate`` is used to submit Dynamic DNS Update requests as defined in
 RFC 2136 to a name server. This allows resource records to be added or
@@ -91,26 +47,26 @@ GSS-TSIG uses Kerberos credentials. Standard GSS-TSIG mode is switched
 on with the ``-g`` flag. A non-standards-compliant variant of GSS-TSIG
 used by Windows 2000 can be switched on with the ``-o`` flag.
 
-OPTIONS
-=======
+Options
+-------
 
--4
+**-4**
    Use IPv4 only.
 
--6
+**-6**
    Use IPv6 only.
 
--d
+**-d**
    Debug mode. This provides tracing information about the update
    requests that are made and the replies received from the name server.
 
--D
+**-D**
    Extra debug mode.
 
--i
+**-i**
    Force interactive mode, even when standard input is not a terminal.
 
--k keyfile
+**-k** keyfile
    The file containing the TSIG authentication key. Keyfiles may be in
    two formats: a single file containing a ``named.conf``-format ``key``
    statement, which may be generated automatically by ``ddns-confgen``,
@@ -121,7 +77,7 @@ OPTIONS
    key used to authenticate Dynamic DNS update requests. In this case,
    the key specified is not an HMAC-MD5 key.
 
--l
+**-l**
    Local-host only mode. This sets the server address to localhost
    (disabling the ``server`` so that the server address cannot be
    overridden). Connections to the local server will use a TSIG key
@@ -130,26 +86,26 @@ OPTIONS
    ``update-policy`` to ``local``. The location of this key file can be
    overridden with the ``-k`` option.
 
--L level
+**-L** level
    Set the logging debug level. If zero, logging is disabled.
 
--p port
+**-p** port
    Set the port to use for connections to a name server. The default is
    53.
 
--P
+**-P**
    Print the list of private BIND-specific resource record types whose
    format is understood by ``nsupdate``. See also the ``-T`` option.
 
--r udpretries
+**-r** udpretries
    The number of UDP retries. The default is 3. If zero, only one update
    request will be made.
 
--t timeout
+**-t** timeout
    The maximum time an update request can take before it is aborted. The
    default is 300 seconds. Zero can be used to disable the timeout.
 
--T
+**-T**
    Print the list of IANA standard resource record types whose format is
    understood by ``nsupdate``. ``nsupdate`` will exit after the lists
    are printed. The ``-T`` option can be combined with the ``-P``
@@ -160,21 +116,21 @@ OPTIONS
    present, will be parsed using the UNKNOWN rdata format, (<backslash>
    <hash> <space> <length> <space> <hexstring>).
 
--u udptimeout
+**-u** udptimeout
    The UDP retry interval. The default is 3 seconds. If zero, the
    interval will be computed from the timeout interval and number of UDP
    retries.
 
--v
+**-v**
    Use TCP even for small update requests. By default, ``nsupdate`` uses
    UDP to send update requests to the name server unless they are too
    large to fit in a UDP request in which case TCP will be used. TCP may
    be preferable when a batch of update requests is made.
 
--V
+**-V**
    Print the version number and exit.
 
--y [hmac:]keyname:secret
+**-y** [hmac:]keyname:secret
    Literal TSIG authentication key. ``keyname`` is the name of the key,
    and ``secret`` is the base64 encoded shared secret. ``hmac`` is the
    name of the key algorithm; valid choices are ``hmac-md5``,
@@ -187,8 +143,8 @@ OPTIONS
    be visible in the output from ps1 or in a history file maintained by
    the user's shell.
 
-INPUT FORMAT
-============
+Input Format
+------------
 
 ``nsupdate`` reads input from ``filename`` or standard input. Each
 command is supplied on exactly one line of input. Some commands are for
@@ -321,8 +277,8 @@ The command formats and their meaning are as follows:
 
 Lines beginning with a semicolon are comments and are ignored.
 
-EXAMPLES
-========
+Examples
+--------
 
 The examples below show how ``nsupdate`` could be used to insert and
 delete resource records from the ``example.com`` zone. Notice that the
@@ -357,8 +313,8 @@ exist as any other record type if it exists as a CNAME. (The rule has
 been updated for DNSSEC in RFC 2535 to allow CNAMEs to have RRSIG,
 DNSKEY and NSEC records.)
 
-FILES
-=====
+Files
+-----
 
 ``/etc/resolv.conf``
    used to identify default name server
@@ -372,14 +328,14 @@ FILES
 ``K{name}.+157.+{random}.private``
    base-64 encoding of HMAC-MD5 key created by dnssec-keygen8.
 
-SEE ALSO
-========
+See Also
+--------
 
 RFC 2136, RFC 3007, RFC 2104, RFC 2845, RFC 1034, RFC 2535, RFC 2931,
-named8, ddns-confgen8, dnssec-keygen8.
+:manpage:`named(8)`, :manpage:`ddns-confgen(8)`, :manpage:`dnssec-keygen(8)`.
 
-BUGS
-====
+Bugs
+----
 
 The TSIG key is redundantly stored in two separate files. This is a
 consequence of nsupdate using the DST library for its cryptographic

@@ -1,22 +1,15 @@
-ISC
-Internet Systems Consortium, Inc.
-named-journalprint
-8
-BIND9
-named-journalprint
-print zone journal in human-readable form
-2009
-2014
-2015
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-named-journalprint
-journal
-DESCRIPTION
-===========
+.. highlight: console
+
+named-journalprint - print zone journal in human-readable form
+==============================================================
+
+Synopsis
+--------
+
+:program:`named-journalprint` {journal}
+
+Description
+-----------
 
 ``named-journalprint`` prints the contents of a zone journal file in a
 human-readable form.
@@ -34,7 +27,7 @@ into a human-readable text format. Each line begins with "add" or "del",
 to indicate whether the record was added or deleted, and continues with
 the resource record in master-file format.
 
-SEE ALSO
-========
+See Also
+--------
 
-named8, nsupdate1, BIND 9 Administrator Reference Manual.
+:manpage:`named(8)`, :manpage:`nsupdate(1)`, BIND 9 Administrator Reference Manual.
