@@ -30,21 +30,6 @@
 #include <isc/string.h>
 #include <isc/util.h>
 
-static void *
-default_memalloc(void *arg, size_t size) {
-	UNUSED(arg);
-	if (size == 0U) {
-		size = 1;
-	}
-	return (malloc(size));
-}
-
-static void
-default_memfree(void *arg, void *ptr) {
-	UNUSED(arg);
-	free(ptr);
-}
-
 static void
 test_ht_full(int bits, uintptr_t count) {
 	isc_ht_t *ht = NULL;
@@ -52,8 +37,7 @@ test_ht_full(int bits, uintptr_t count) {
 	isc_mem_t *mctx = NULL;
 	uintptr_t i;
 
-	result = isc_mem_createx(default_memalloc, default_memfree,
-				 NULL, &mctx, 0);
+	result = isc_mem_create(&mctx);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	result = isc_ht_init(&ht, mctx, bits);
@@ -206,8 +190,7 @@ test_ht_iterator() {
 	unsigned char key[16];
 	size_t tksize;
 
-	result = isc_mem_createx(default_memalloc, default_memfree,
-				 NULL, &mctx, 0);
+	result = isc_mem_create(&mctx);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	result = isc_ht_init(&ht, mctx, 16);

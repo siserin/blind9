@@ -43,7 +43,7 @@
 #define ISC_MEM_DEBUGGING 0
 #endif
 LIBISC_EXTERNAL_DATA unsigned int isc_mem_debugging = ISC_MEM_DEBUGGING;
-LIBISC_EXTERNAL_DATA unsigned int isc_mem_defaultflags = ISC_MEMFLAG_DEFAULT;
+LIBISC_EXTERNAL_DATA unsigned int isc_mem_flags = ISC_MEMFLAG_DEFAULT;
 
 /*
  * Constants.
@@ -383,7 +383,7 @@ mem_getunlocked(isc__mem_t *ctx, size_t size) {
 	perthread_t * pt = get_perthread(ctx);
 
 	ret = default_memalloc(size);
-	if (ISC_UNLIKELY((isc_mem_defaultflags & ISC_MEMFLAG_FILL) != 0)) {
+	if (ISC_UNLIKELY((isc_mem_flags & ISC_MEMFLAG_FILL) != 0)) {
 		memset(ret, 0xbe, size); /* Mnemonic for "beef". */
 	}
 	atomic_fetch_add_relaxed(&pt->total, size);
@@ -403,7 +403,7 @@ mem_getunlocked(isc__mem_t *ctx, size_t size) {
 static inline void
 mem_putunlocked(isc__mem_t *ctx, void *mem, size_t size) {
 	perthread_t * pt = get_perthread(ctx);
-	if (ISC_UNLIKELY((isc_mem_defaultflags & ISC_MEMFLAG_FILL) != 0)){
+	if (ISC_UNLIKELY((isc_mem_flags & ISC_MEMFLAG_FILL) != 0)){
 		memset(mem, 0xde, size); /* Mnemonic for "dead". */
 	}
 	default_memfree(mem);
@@ -425,59 +425,50 @@ initialize_action(void) {
  */
 
 isc_result_t
-isc_mem_createx(isc_memalloc_t memalloc, isc_memfree_t memfree, void *arg,
-		isc_mem_t **ctxp, unsigned int flags)
+isc_mem_create(isc_mem_t **ctxp)
 {
 	isc__mem_t *ctx;
 	perthread_t *pt;
 	int i;
 	REQUIRE(ctxp != NULL && *ctxp == NULL);
-	REQUIRE(memalloc != NULL);
-	REQUIRE(memfree != NULL);
 
 	STATIC_ASSERT((ALIGNMENT_SIZE & (ALIGNMENT_SIZE - 1)) == 0,
 		      "wrong alignment size");
 
 	RUNTIME_CHECK(isc_once_do(&once, initialize_action) == ISC_R_SUCCESS);
 
-	ctx = (memalloc)(arg, sizeof(*ctx));
-	RUNTIME_CHECK(ctx != NULL);
+	ctx = default_memalloc(sizeof(*ctx));
 
 	isc_mutex_init(&ctx->lock);
 
-	ctx->flags = flags;
 	isc_refcount_init(&ctx->references, 1);
 	memset(ctx->name, 0, sizeof(ctx->name));
 	ctx->tag = NULL;
 	ctx->pt_size = PERTHREAD_TABLE_SIZE;
 	ctx->pt = malloc(ctx->pt_size * sizeof(perthread_t));
 	for (i=0; i<ctx->pt_size; i++) {
-		ctx->pt[i].gets = 0;
-		ctx->pt[i].totalgets = 0;
-		ctx->pt[i].inuse = 0;
-		ctx->pt[i].maxinuse = 0;
-		ctx->pt[i].malloced = 0;
-		ctx->pt[i].maxmalloced = 0;
+		atomic_init(&ctx->pt[i].gets, 0);
+		atomic_init(&ctx->pt[i].totalgets, 0);
+		atomic_init(&ctx->pt[i].inuse, 0);
+		atomic_init(&ctx->pt[i].maxinuse, 0);
+		atomic_init(&ctx->pt[i].malloced, 0);
+		atomic_init(&ctx->pt[i].maxmalloced, 0);
 	}
 	pt = get_perthread(ctx);
-	pt->total = 0;
-	pt->inuse = 0;
-	pt->maxinuse = 0;
-	pt->malloced = sizeof(*ctx);
-	pt->maxmalloced = sizeof(*ctx);
-	ctx->hi_water = 0;
-	ctx->lo_water = 0;
-	ctx->hi_called = false;
-	ctx->is_overmem = false;
+	atomic_init(&pt->total, 0);
+	atomic_init(&pt->inuse, 0);
+	atomic_init(&pt->maxinuse, 0);
+	atomic_init(&pt->malloced, sizeof(*ctx));
+	atomic_init(&pt->maxmalloced, sizeof(*ctx));
+	atomic_init(&ctx->hi_water, 0);
+	atomic_init(&ctx->lo_water, 0);
+	atomic_init(&ctx->hi_called, false);
+	atomic_init(&ctx->is_overmem, false);
 	ctx->water = NULL;
 	ctx->water_arg = NULL;
 	ctx->common.impmagic = MEM_MAGIC;
 	ctx->common.magic = ISCAPI_MCTX_MAGIC;
-	ctx->common.methods = (isc_memmethods_t *)&memmethods;
-	ctx->memalloc = memalloc;
-	ctx->memfree = memfree;
-	ctx->arg = arg;
-	ctx->checkfree = true;
+	atomic_init(&ctx->checkfree, true);
 #if ISC_MEM_TRACKLINES
 	ctx->debuglist = NULL;
 	ctx->debuglistcnt = 0;
@@ -1927,12 +1918,6 @@ isc_mem_renderjson(json_object *memobj) {
 	return (result);
 }
 #endif /* HAVE_JSON */
-
-isc_result_t
-isc_mem_create(isc_mem_t **mctxp) {
-	return (isc_mem_createx(default_memalloc, default_memfree,
-				NULL, mctxp, isc_mem_defaultflags));
-}
 
 void
 isc__mem_printactive(isc_mem_t *ctx0, FILE *file) {

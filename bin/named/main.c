@@ -748,7 +748,7 @@ parse_command_line(int argc, char *argv[]) {
 			break;
 		case 'M':
 			set_flags(isc_commandline_argument, mem_context_flags,
-				  &isc_mem_defaultflags);
+				  &isc_mem_flags);
 			break;
 		case 'm':
 			set_flags(isc_commandline_argument, mem_debug_flags,
@@ -1424,7 +1424,7 @@ main(int argc, char *argv[]) {
 	 * before we parse the command line. If disabled here,
 	 * it can be turned back on with -M fill.
 	 */
-	isc_mem_defaultflags &= ~ISC_MEMFLAG_FILL;
+	isc_mem_flags &= ~ISC_MEMFLAG_FILL;
 #endif
 
 	parse_command_line(argc, argv);
