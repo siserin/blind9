@@ -1,85 +1,15 @@
-August 21, 2015
-ISC
-Internet Systems Consortium, Inc.
-dnssec-keygen
-8
-BIND9
-dnssec-keygen
-DNSSEC key generation tool
-2000
-2001
-2002
-2003
-2004
-2005
-2007
-2008
-2009
-2010
-2011
-2012
-2014
-2015
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-dnssec-keygen
--3
--A
-date/offset
--a
-algorithm
--b
-keysize
--C
--c
-class
--D
-date/offset
--D sync
-date/offset
--E
-engine
--f
-flag
--G
--g
-generator
--h
--I
-date/offset
--i
-interval
--K
-directory
--k
--L
-ttl
--n
-nametype
--P
-date/offset
--P sync
-date/offset
--p
-protocol
--q
--R
-date/offset
--S
-key
--s
-strength
--t
-type
--V
--v
-level
-name
-DESCRIPTION
-===========
+.. highlight: console
+
+dnssec-keygen - DNSSEC key generation tool
+==========================================
+
+Synopsis
+--------
+
+:program:`dnssec-keygen` [**-3**] [**-A** date/offset] [**-a** algorithm] [**-b** keysize] [**-C**] [**-c** class] [**-D** date/offset] [**-D** sync date/offset] [**-E** engine] [**-f** flag] [**-G**] [**-g** generator] [**-h**] [**-I** date/offset] [**-i** interval] [**-K** directory] [**-k**] [**-L** ttl] [**-n** nametype] [**-P** date/offset] [**-P** sync date/offset] [**-p** protocol] [**-q**] [**-R** date/offset] [**-S** key] [**-s** strength] [**-t** type] [**-V**] [**-v** level] {name}
+
+Description
+-----------
 
 ``dnssec-keygen`` generates keys for DNSSEC (Secure DNS), as defined in
 RFC 2535 and RFC 4034. It can also generate keys for use with TSIG
@@ -95,16 +25,16 @@ The ``dnssec-keymgr`` command acts as a wrapper around
 defined security policies such as key rollover scheduling. Using
 ``dnssec-keymgr`` may be preferable to direct use of ``dnssec-keygen``.
 
-OPTIONS
-=======
+Options
+-------
 
--3
+**-3**
    Use an NSEC3-capable algorithm to generate a DNSSEC key. If this
    option is used with an algorithm that has both NSEC and NSEC3
    versions, then the NSEC3 version will be used; for example,
    ``dnssec-keygen -3a RSASHA1`` specifies the NSEC3RSASHA1 algorithm.
 
--a algorithm
+**-a** algorithm
    Selects the cryptographic algorithm. For DNSSEC keys, the value of
    ``algorithm`` must be one of RSASHA1, NSEC3RSASHA1, RSASHA256,
    RSASHA512, ECDSAP256SHA256, ECDSAP384SHA384, ED25519 or ED448. For
@@ -123,7 +53,7 @@ OPTIONS
    keys, but that feature has been removed as of BIND 9.13.0. Use
    ``tsig-keygen`` to generate TSIG keys.
 
--b keysize
+**-b** keysize
    Specifies the number of bits in the key. The choice of key size
    depends on the algorithm used. RSA keys must be between 1024 and 4096
    bits. Diffie Hellman keys must be between 128 and 4096 bits. Elliptic
@@ -134,7 +64,7 @@ OPTIONS
    have a default size of 1024 bits; RSA keys for use as key signing
    keys (KSKs, generated with ``-f KSK``) default to 2048 bits.
 
--C
+**-C**
    Compatibility mode: generates an old-style key, without any timing
    metadata. By default, ``dnssec-keygen`` will include the key's
    creation date in the metadata stored with the private key, and other
@@ -142,11 +72,11 @@ OPTIONS
    etc). Keys that include this data may be incompatible with older
    versions of BIND; the ``-C`` option suppresses them.
 
--c class
+**-c** class
    Indicates that the DNS record containing the key should have the
    specified class. If not specified, class IN is used.
 
--E engine
+**-E** engine
    Specifies the cryptographic hardware to use, when applicable.
 
    When BIND is built with OpenSSL PKCS#11 support, this defaults to the
@@ -156,27 +86,27 @@ OPTIONS
    defaults to the path of the PKCS#11 provider library specified via
    "--with-pkcs11".
 
--f flag
+**-f** flag
    Set the specified flag in the flag field of the KEY/DNSKEY record.
    The only recognized flags are KSK (Key Signing Key) and REVOKE.
 
--G
+**-G**
    Generate a key, but do not publish it or sign with it. This option is
    incompatible with -P and -A.
 
--g generator
+**-g** generator
    If generating a Diffie Hellman key, use this generator. Allowed
    values are 2 and 5. If no generator is specified, a known prime from
    RFC 2539 will be used if possible; otherwise the default is 2.
 
--h
+**-h**
    Prints a short summary of the options and arguments to
    ``dnssec-keygen``.
 
--K directory
+**-K** directory
    Sets the directory in which the key files are to be written.
 
--L ttl
+**-L** ttl
    Sets the default TTL to use for this key when it is converted into a
    DNSKEY RR. If the key is imported into a zone, this is the TTL that
    will be used for it, unless there was already a DNSKEY RRset in
@@ -185,20 +115,20 @@ OPTIONS
    default to the SOA TTL. Setting the default TTL to ``0`` or ``none``
    is the same as leaving it unset.
 
--n nametype
+**-n** nametype
    Specifies the owner type of the key. The value of ``nametype`` must
    either be ZONE (for a DNSSEC zone key (KEY/DNSKEY)), HOST or ENTITY
    (for a key associated with a host (KEY)), USER (for a key associated
    with a user(KEY)) or OTHER (DNSKEY). These values are case
    insensitive. Defaults to ZONE for DNSKEY generation.
 
--p protocol
+**-p** protocol
    Sets the protocol value for the generated key, for use with
    ``-T KEY``. The protocol is a number between 0 and 255. The default
    is 3 (DNSSEC). Other possible values for this argument are listed in
    RFC 2535 and its successors.
 
--q
+**-q**
    Quiet mode: Suppresses unnecessary output, including progress
    indication. Without this option, when ``dnssec-keygen`` is run
    interactively to generate an RSA or DSA key pair, it will print a
@@ -208,7 +138,7 @@ OPTIONS
    round of the Miller-Rabin primality test; a space means that the
    number has passed all the tests and is a satisfactory key.
 
--S key
+**-S** key
    Create a new key which is an explicit successor to an existing key.
    The name, algorithm, size, and type of the key will be set to match
    the existing key. The activation date of the new key will be set to
@@ -216,30 +146,30 @@ OPTIONS
    be set to the activation date minus the prepublication interval,
    which defaults to 30 days.
 
--s strength
+**-s** strength
    Specifies the strength value of the key. The strength is a number
    between 0 and 15, and currently has no defined purpose in DNSSEC.
 
--T rrtype
+**-T** rrtype
    Specifies the resource record type to use for the key. ``rrtype``
    must be either DNSKEY or KEY. The default is DNSKEY when using a
    DNSSEC algorithm, but it can be overridden to KEY for use with
    SIG(0).
 
--t type
+**-t** type
    Indicates the use of the key, for use with ``-T
            KEY``. ``type`` must be one of AUTHCONF, NOAUTHCONF, NOAUTH,
    or NOCONF. The default is AUTHCONF. AUTH refers to the ability to
    authenticate data, and CONF the ability to encrypt data.
 
--V
+**-V**
    Prints version information.
 
--v level
+**-v** level
    Sets the debugging level.
 
-TIMING OPTIONS
-==============
+Timing Options
+--------------
 
 Dates can be expressed in the format YYYYMMDD or YYYYMMDDHHMMSS. If the
 argument begins with a '+' or '-', it is interpreted as an offset from
@@ -250,43 +180,43 @@ months (defined as 30 24-hour days), weeks, days, hours, or minutes,
 respectively. Without a suffix, the offset is computed in seconds. To
 explicitly prevent a date from being set, use 'none' or 'never'.
 
--P date/offset
+**-P** date/offset
    Sets the date on which a key is to be published to the zone. After
    that date, the key will be included in the zone but will not be used
    to sign it. If not set, and if the -G option has not been used, the
    default is "now".
 
--P sync date/offset
+**-P** sync date/offset
    Sets the date on which CDS and CDNSKEY records that match this key
    are to be published to the zone.
 
--A date/offset
+**-A** date/offset
    Sets the date on which the key is to be activated. After that date,
    the key will be included in the zone and used to sign it. If not set,
    and if the -G option has not been used, the default is "now". If set,
    if and -P is not set, then the publication date will be set to the
    activation date minus the prepublication interval.
 
--R date/offset
+**-R** date/offset
    Sets the date on which the key is to be revoked. After that date, the
    key will be flagged as revoked. It will be included in the zone and
    will be used to sign it.
 
--I date/offset
+**-I** date/offset
    Sets the date on which the key is to be retired. After that date, the
    key will still be included in the zone, but it will not be used to
    sign it.
 
--D date/offset
+**-D** date/offset
    Sets the date on which the key is to be deleted. After that date, the
    key will no longer be included in the zone. (It may remain in the key
    repository, however.)
 
--D sync date/offset
+**-D** sync date/offset
    Sets the date on which the CDS and CDNSKEY records that match this
    key are to be deleted.
 
--i interval
+**-i** interval
    Sets the prepublication interval for a key. If set, then the
    publication and activation dates must be separated by at least this
    much time. If the activation date is specified but the publication
@@ -304,8 +234,8 @@ explicitly prevent a date from being set, use 'none' or 'never'.
    measured in years, months, weeks, days, hours, or minutes,
    respectively. Without a suffix, the interval is measured in seconds.
 
-GENERATED KEYS
-==============
+Generated Keys
+--------------
 
 When ``dnssec-keygen`` completes successfully, it prints a string of the
 form ``Knnnn.+aaa+iiiii`` to the standard output. This is an
@@ -329,8 +259,8 @@ inserted into a zone file manually or with a ``$INCLUDE`` statement.
 The ``.private`` file contains algorithm-specific fields. For obvious
 security reasons, this file does not have general read permission.
 
-EXAMPLE
-=======
+Example
+-------
 
 To generate an ECDSAP256SHA256 zone-signing key for the zone
 ``example.com``, issue the command:
@@ -348,8 +278,8 @@ To generate a matching key-signing key, issue the command:
 
 ``dnssec-keygen -a ECDSAP256SHA256 -f KSK example.com``
 
-SEE ALSO
-========
+See Also
+--------
 
-dnssec-signzone8, BIND 9 Administrator Reference Manual, RFC 2539, RFC
+:manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual, RFC 2539, RFC
 2845, RFC 4034.

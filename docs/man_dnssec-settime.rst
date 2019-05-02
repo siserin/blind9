@@ -1,53 +1,15 @@
-ISC
-Internet Systems Consortium, Inc.
-dnssec-settime
-8
-BIND9
-dnssec-settime
-set the key timing metadata for a DNSSEC key
-2009
-2010
-2011
-2014
-2015
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-dnssec-settime
--f
--K
-directory
--L
-ttl
--P
-date/offset
--P sync
-date/offset
--A
-date/offset
--R
-date/offset
--I
-date/offset
--D
-date/offset
--D sync
-date/offset
--S
-key
--i
-interval
--h
--V
--v
-level
--E
-engine
-keyfile
-DESCRIPTION
-===========
+.. highlight: console
+
+dnssec-settime - set the key timing metadata for a DNSSEC key
+=============================================================
+
+Synopsis
+--------
+
+:program:`dnssec-settime` [**-f**] [**-K** directory] [**-L** ttl] [**-P** date/offset] [**-P** sync date/offset] [**-A** date/offset] [**-R** date/offset] [**-I** date/offset] [**-D** date/offset] [**-D** sync date/offset] [**-S** key] [**-i** interval] [**-h**] [**-V**] [**-v** level] [**-E** engine] {keyfile}
+
+Description
+-----------
 
 ``dnssec-settime`` reads a DNSSEC private key file and sets the key
 timing metadata as specified by the ``-P``, ``-A``, ``-R``, ``-I``, and
@@ -66,10 +28,10 @@ human-readable description of the metadata is also placed in comments in
 the key file. The private file's permissions are always set to be
 inaccessible to anyone other than the owner (mode 0600).
 
-OPTIONS
-=======
+Options
+-------
 
--f
+**-f**
    Force an update of an old-format key with no metadata fields. Without
    this option, ``dnssec-settime`` will fail when attempting to update a
    legacy key. With this option, the key will be recreated in the new
@@ -78,10 +40,10 @@ OPTIONS
    specified, then the key's publication and activation dates will also
    be set to the present time.
 
--K directory
+**-K** directory
    Sets the directory in which the key files are to reside.
 
--L ttl
+**-L** ttl
    Sets the default TTL to use for this key when it is converted into a
    DNSKEY RR. If the key is imported into a zone, this is the TTL that
    will be used for it, unless there was already a DNSKEY RRset in
@@ -90,16 +52,16 @@ OPTIONS
    default to the SOA TTL. Setting the default TTL to ``0`` or ``none``
    removes it from the key.
 
--h
+**-h**
    Emit usage message and exit.
 
--V
+**-V**
    Prints version information.
 
--v level
+**-v** level
    Sets the debugging level.
 
--E engine
+**-E** engine
    Specifies the cryptographic hardware to use, when applicable.
 
    When BIND is built with OpenSSL PKCS#11 support, this defaults to the
@@ -109,8 +71,8 @@ OPTIONS
    defaults to the path of the PKCS#11 provider library specified via
    "--with-pkcs11".
 
-TIMING OPTIONS
-==============
+Timing Options
+--------------
 
 Dates can be expressed in the format YYYYMMDD or YYYYMMDDHHMMSS. If the
 argument begins with a '+' or '-', it is interpreted as an offset from
@@ -121,39 +83,39 @@ months (defined as 30 24-hour days), weeks, days, hours, or minutes,
 respectively. Without a suffix, the offset is computed in seconds. To
 unset a date, use 'none' or 'never'.
 
--P date/offset
+**-P** date/offset
    Sets the date on which a key is to be published to the zone. After
    that date, the key will be included in the zone but will not be used
    to sign it.
 
--P sync date/offset
+**-P** sync date/offset
    Sets the date on which CDS and CDNSKEY records that match this key
    are to be published to the zone.
 
--A date/offset
+**-A** date/offset
    Sets the date on which the key is to be activated. After that date,
    the key will be included in the zone and used to sign it.
 
--R date/offset
+**-R** date/offset
    Sets the date on which the key is to be revoked. After that date, the
    key will be flagged as revoked. It will be included in the zone and
    will be used to sign it.
 
--I date/offset
+**-I** date/offset
    Sets the date on which the key is to be retired. After that date, the
    key will still be included in the zone, but it will not be used to
    sign it.
 
--D date/offset
+**-D** date/offset
    Sets the date on which the key is to be deleted. After that date, the
    key will no longer be included in the zone. (It may remain in the key
    repository, however.)
 
--D sync date/offset
+**-D** sync date/offset
    Sets the date on which the CDS and CDNSKEY records that match this
    key are to be deleted.
 
--S predecessor key
+**-S** predecessor key
    Select a key for which the key being modified will be an explicit
    successor. The name, algorithm, size, and type of the predecessor key
    must exactly match those of the key being modified. The activation
@@ -161,7 +123,7 @@ unset a date, use 'none' or 'never'.
    predecessor. The publication date will be set to the activation date
    minus the prepublication interval, which defaults to 30 days.
 
--i interval
+**-i** interval
    Sets the prepublication interval for a key. If set, then the
    publication and activation dates must be separated by at least this
    much time. If the activation date is specified but the publication
@@ -179,16 +141,16 @@ unset a date, use 'none' or 'never'.
    measured in years, months, weeks, days, hours, or minutes,
    respectively. Without a suffix, the interval is measured in seconds.
 
-PRINTING OPTIONS
-================
+Printing Options
+----------------
 
 ``dnssec-settime`` can also be used to print the timing metadata
 associated with a key.
 
--u
+**-u**
    Print times in UNIX epoch format.
 
--p C/P/Psync/A/R/I/D/Dsync/all
+**-p** C/P/Psync/A/R/I/D/Dsync/all
    Print a specific metadata value or set of metadata values. The ``-p``
    option may be followed by one or more of the following letters or
    strings to indicate which value or values to print: ``C`` for the
@@ -198,8 +160,8 @@ associated with a key.
    the deletion date, and ``Dsync`` for the CDS and CDNSKEY deletion
    date To print all of the metadata, use ``-p all``.
 
-SEE ALSO
-========
+See Also
+--------
 
-dnssec-keygen8, dnssec-signzone8, BIND 9 Administrator Reference Manual,
+:manpage:`dnssec-keygen(8)`, :manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual,
 RFC 5011.

@@ -1,93 +1,15 @@
-ISC
-Internet Systems Consortium, Inc.
-dnssec-signzone
-8
-BIND9
-dnssec-signzone
-DNSSEC zone signing tool
-2000
-2001
-2002
-2003
-2004
-2005
-2006
-2007
-2008
-2009
-2011
-2012
-2013
-2014
-2015
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-dnssec-signzone
--a
--c
-class
--d
-directory
--D
--E
-engine
--e
-end-time
--f
-output-file
--g
--h
--i
-interval
--I
-input-format
--j
-jitter
--K
-directory
--k
-key
--L
-serial
--l
-domain
--M
-maxttl
--N
-soa-serial-format
--o
-origin
--O
-output-format
--P
--Q
--R
--S
--s
-start-time
--T
-ttl
--t
--u
--v
-level
--V
--X
-extended end-time
--x
--z
--3
-salt
--H
-iterations
--A
-zonefile
-key
-DESCRIPTION
-===========
+.. highlight: console
+
+dnssec-signzone - DNSSEC zone signing tool
+==========================================
+
+Synopsis
+--------
+
+:program:`dnssec-signzone` [**-a**] [**-c** class] [**-d** directory] [**-D**] [**-E** engine] [**-e** end-time] [**-f** output-file] [**-g**] [**-h**] [**-i** interval] [**-I** input-format] [**-j** jitter] [**-K** directory] [**-k** key] [**-L** serial] [**-l** domain] [**-M** maxttl] [**-N** soa-serial-format] [**-o** origin] [**-O** output-format] [**-P**] [**-Q**] [**-R**] [**-S**] [**-s** start-time] [**-T** ttl] [**-t**] [**-u**] [**-v** level] [**-V**] [**-X** extended end-time] [**-x**] [**-z**] [**-3** salt] [**-H** iterations] [**-A**] {zonefile} [key...]
+
+Description
+-----------
 
 ``dnssec-signzone`` signs a zone. It generates NSEC and RRSIG records
 and produces a signed version of the zone. The security status of
@@ -95,24 +17,24 @@ delegations from the signed zone (that is, whether the child zones are
 secure or not) is determined by the presence or absence of a ``keyset``
 file for each child zone.
 
-OPTIONS
-=======
+Options
+-------
 
--a
+**-a**
    Verify all generated signatures.
 
--c class
+**-c** class
    Specifies the DNS class of the zone.
 
--C
+**-C**
    Compatibility mode: Generate a ``keyset-zonename`` file in addition
    to ``dsset-zonename`` when signing a zone, for use by older versions
    of ``dnssec-signzone``.
 
--d directory
+**-d** directory
    Look for ``dsset-`` or ``keyset-`` files in ``directory``.
 
--D
+**-D**
    Output only those record types automatically managed by
    ``dnssec-signzone``, i.e. RRSIG, NSEC, NSEC3 and NSEC3PARAM records.
    If smart signing (``-S``) is used, DNSKEY records are also included.
@@ -120,7 +42,7 @@ OPTIONS
    ``$INCLUDE``. This option cannot be combined with ``-O raw``,
    ``-O map``, or serial number updating.
 
--E engine
+**-E** engine
    When applicable, specifies the hardware to use for cryptographic
    operations, such as a secure key store used for signing.
 
@@ -131,23 +53,23 @@ OPTIONS
    defaults to the path of the PKCS#11 provider library specified via
    "--with-pkcs11".
 
--g
+**-g**
    Generate DS records for child zones from ``dsset-`` or ``keyset-``
    file. Existing DS records will be removed.
 
--K directory
+**-K** directory
    Key repository: Specify a directory to search for DNSSEC keys. If not
    specified, defaults to the current directory.
 
--k key
+**-k** key
    Treat specified key as a key signing key ignoring any key flags. This
    option may be specified multiple times.
 
--l domain
+**-l** domain
    Generate a DLV set in addition to the key (DNSKEY) and DS sets. The
    domain is appended to the name of the records.
 
--M maxttl
+**-M** maxttl
    Sets the maximum TTL for the signed zone. Any TTL higher than maxttl
    in the input zone will be reduced to maxttl in the output. This
    provides certainty as to the largest possible TTL in the signed zone,
@@ -158,7 +80,7 @@ OPTIONS
    ``named.conf``. (Note: This option is incompatible with ``-D``,
    because it modifies non-DNSSEC data in the output zone.)
 
--s start-time
+**-s** start-time
    Specify the date and time when the generated RRSIG records become
    valid. This can be either an absolute or relative time. An absolute
    start time is indicated by a number in YYYYMMDDHHMMSS notation;
@@ -167,7 +89,7 @@ OPTIONS
    time. If no ``start-time`` is specified, the current time minus 1
    hour (to allow for clock skew) is used.
 
--e end-time
+**-e** end-time
    Specify the date and time when the generated RRSIG records expire. As
    with ``start-time``, an absolute time is indicated in YYYYMMDDHHMMSS
    notation. A time relative to the start time is indicated with +N,
@@ -176,7 +98,7 @@ OPTIONS
    specified, 30 days from the start time is used as a default.
    ``end-time`` must be later than ``start-time``.
 
--X extended end-time
+**-X** extended end-time
    Specify the date and time when the generated RRSIG records for the
    DNSKEY RRset will expire. This is to be used in cases when the DNSKEY
    signatures need to persist longer than signatures on other records;
@@ -191,20 +113,20 @@ OPTIONS
    as the default. (``end-time``, in turn, defaults to 30 days from the
    start time.) ``extended end-time`` must be later than ``start-time``.
 
--f output-file
+**-f** output-file
    The name of the output file containing the signed zone. The default
    is to append ``.signed`` to the input filename. If ``output-file`` is
    set to ``"-"``, then the signed zone is written to the standard
    output, with a default output format of "full".
 
--h
+**-h**
    Prints a short summary of the options and arguments to
    ``dnssec-signzone``.
 
--V
+**-V**
    Prints version information.
 
--i interval
+**-i** interval
    When a previously-signed zone is passed as input, records may be
    resigned. The ``interval`` option specifies the cycle interval as an
    offset from the current time (in seconds). If a RRSIG record expires
@@ -218,7 +140,7 @@ OPTIONS
    days. Therefore, if any existing RRSIG records are due to expire in
    less than 7.5 days, they would be replaced.
 
--I input-format
+**-I** input-format
    The format of the input zone file. Possible formats are ``"text"``
    (default), ``"raw"``, and ``"map"``. This option is primarily
    intended to be used for dynamic signed zones so that the dumped zone
@@ -226,7 +148,7 @@ OPTIONS
    The use of this option does not make much sense for non-dynamic
    zones.
 
--j jitter
+**-j** jitter
    When signing a zone with a fixed signature lifetime, all RRSIG
    records issued at the time of signing expires simultaneously. If the
    zone is incrementally signed, i.e. a previously-signed zone is passed
@@ -241,16 +163,16 @@ OPTIONS
    less congestion than if all validators need to refetch at mostly the
    same time.
 
--L serial
+**-L** serial
    When writing a signed zone to "raw" or "map" format, set the "source
    serial" value in the header to the specified serial number. (This is
    expected to be used primarily for testing purposes.)
 
--n ncpus
+**-n** ncpus
    Specifies the number of threads to use. By default, one thread is
    started for each detected CPU.
 
--N soa-serial-format
+**-N** soa-serial-format
    The SOA serial number format of the signed zone. Possible formats are
    ``"keep"`` (default), ``"increment"``, ``"unixtime"``, and
    ``"date"``.
@@ -267,11 +189,11 @@ OPTIONS
    ``"date"``
       Set the SOA serial number to today's date in YYYYMMDDNN format.
 
--o origin
+**-o** origin
    The zone origin. If not specified, the name of the zone file is
    assumed to be the origin.
 
--O output-format
+**-O** output-format
    The format of the output file containing the signed zone. Possible
    formats are ``"text"`` (default), which is the standard textual
    representation of the zone; ``"full"``, which is text output in a
@@ -282,7 +204,7 @@ OPTIONS
    any version of ``named``; if N is 1, the file can be read by release
    9.9.0 or higher; the default is 1.
 
--P
+**-P**
    Disable post sign verification tests.
 
    The post sign verification test ensures that for each algorithm in
@@ -290,7 +212,7 @@ OPTIONS
    revoked KSK keys are self signed, and that all records in the zone
    are signed by the algorithm. This option skips these tests.
 
--Q
+**-Q**
    Remove signatures from keys that are no longer active.
 
    Normally, when a previously-signed zone is passed as input to the
@@ -302,7 +224,7 @@ OPTIONS
    active. This enables ZSK rollover using the procedure described in
    RFC 4641, section 4.2.1.1 ("Pre-Publish Key Rollover").
 
--R
+**-R**
    Remove signatures from keys that are no longer published.
 
    This option is similar to ``-Q``, except it forces
@@ -311,7 +233,7 @@ OPTIONS
    RFC 4641, section 4.2.1.2 ("Double Signature Zone Signing Key
    Rollover").
 
--S
+**-S**
    Smart signing: Instructs ``dnssec-signzone`` to search the key
    repository for keys that match the zone being signed, and to include
    them in the zone if appropriate.
@@ -344,7 +266,7 @@ OPTIONS
       If key's sync deletion date is set and in the past,
       synchronization records (type CDS and/or CDNSKEY) are removed.
 
--T ttl
+**-T** ttl
    Specifies a TTL to be used for new DNSKEY records imported into the
    zone from the key repository. If not specified, the default is the
    TTL value from the zone's SOA record. This option is ignored when
@@ -356,40 +278,40 @@ OPTIONS
    conflict between TTL values in imported keys, the shortest one is
    used.
 
--t
+**-t**
    Print statistics at completion.
 
--u
+**-u**
    Update NSEC/NSEC3 chain when re-signing a previously signed zone.
    With this option, a zone signed with NSEC can be switched to NSEC3,
    or a zone signed with NSEC3 can be switch to NSEC or to NSEC3 with
    different parameters. Without this option, ``dnssec-signzone`` will
    retain the existing chain when re-signing.
 
--v level
+**-v** level
    Sets the debugging level.
 
--x
+**-x**
    Only sign the DNSKEY, CDNSKEY, and CDS RRsets with key-signing keys,
    and omit signatures from zone-signing keys. (This is similar to the
    ``dnssec-dnskey-kskonly yes;`` zone option in ``named``.)
 
--z
+**-z**
    Ignore KSK flag on key when determining what to sign. This causes
    KSK-flagged keys to sign all records, not just the DNSKEY RRset.
    (This is similar to the ``update-check-ksk no;`` zone option in
    ``named``.)
 
--3 salt
+**-3** salt
    Generate an NSEC3 chain with the given hex encoded salt. A dash
    (salt) can be used to indicate that no salt is to be used when
    generating the NSEC3 chain.
 
--H iterations
+**-H** iterations
    When generating an NSEC3 chain, use this many iterations. The default
    is 10.
 
--A
+**-A**
    When generating an NSEC3 chain set the OPTOUT flag on all NSEC3
    records and do not generate NSEC3 records for insecure delegations.
 
@@ -397,17 +319,17 @@ OPTIONS
    all records. This is useful when using the ``-u`` option to modify an
    NSEC3 chain which previously had OPTOUT set.
 
-zonefile
+**zonefile**
    The file containing the zone to be signed.
 
-key
+**key**
    Specify which keys should be used to sign the zone. If no keys are
    specified, then the zone will be examined for DNSKEY records at the
    zone apex. If these are found and there are matching private keys, in
    the current directory, then these will be used for signing.
 
-EXAMPLE
-=======
+Example
+-------
 
 The following command signs the ``example.com`` zone with the
 ECDSAP256SHA256 key generated by key generated by ``dnssec-keygen``
@@ -437,8 +359,8 @@ The private keys are assumed to be in the current directory.
    db.example.com.signed
    %
 
-SEE ALSO
-========
+See Also
+--------
 
-dnssec-keygen8, BIND 9 Administrator Reference Manual, RFC 4033, RFC
+:manpage:`dnssec-keygen(8)`, BIND 9 Administrator Reference Manual, RFC 4033, RFC
 4641.

@@ -588,7 +588,7 @@ Files
 See Also
 --------
 
-:manpage:`delv1`, :manpage:`host1`, :manpage:`named8`, :manpage:`dnssec-keygen8`, RFC 1035.
+:manpage:`delv(1)`, :manpage:`host(1)`, :manpage:`named(8)`, :manpage:`dnssec-keygen(8)`, RFC 1035.
 
 Bugs
 ----

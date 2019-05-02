@@ -316,4 +316,4 @@ Files
 See Also
 --------
 
-:manpage:`dig1`, :manpage:`named8`, RFC4034, RFC4035, RFC4431, RFC5074, RFC5155.
+:manpage:`dig(1)`, :manpage:`named(8)`, RFC4034, RFC4035, RFC4431, RFC5074, RFC5155.

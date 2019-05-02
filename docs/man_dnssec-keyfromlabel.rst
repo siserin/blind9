@@ -1,72 +1,15 @@
-August 27, 2015
-ISC
-Internet Systems Consortium, Inc.
-dnssec-keyfromlabel
-8
-BIND9
-dnssec-keyfromlabel
-DNSSEC key generation tool
-2008
-2009
-2010
-2011
-2012
-2014
-2015
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-dnssec-keyfromlabel
--l
-label
--3
--a
-algorithm
--A
-date/offset
--c
-class
--D
-date/offset
--D sync
-date/offset
--E
-engine
--f
-flag
--G
--I
-date/offset
--i
-interval
--k
--K
-directory
--L
-ttl
--n
-nametype
--P
-date/offset
--P sync
-date/offset
--p
-protocol
--R
-date/offset
--S
-key
--t
-type
--v
-level
--V
--y
-name
-DESCRIPTION
-===========
+.. highlight: console
+
+dnssec-keyfromlabel - DNSSEC key generation tool
+================================================
+
+Synopsis
+--------
+
+:program:`dnssec-keyfromlabel` {**-l** label} [**-3**] [**-a** algorithm] [**-A** date/offset] [**-c** class] [**-D** date/offset] [**-D** sync date/offset] [**-E** engine] [**-f** flag] [**-G**] [**-I** date/offset] [**-i** interval] [**-k**] [**-K** directory] [**-L** ttl] [**-n** nametype] [**-P** date/offset] [**-P** sync date/offset] [**-p** protocol] [**-R** date/offset] [**-S** key] [**-t** type] [**-v** level] [**-V**] [**-y**] {name}
+
+Description
+-----------
 
 ``dnssec-keyfromlabel`` generates a key pair of files that referencing a
 key object stored in a cryptographic hardware service module (HSM). The
@@ -78,10 +21,10 @@ place there.
 The ``name`` of the key is specified on the command line. This must
 match the name of the zone for which the key is being generated.
 
-OPTIONS
-=======
+Options
+-------
 
--a algorithm
+**-a** algorithm
    Selects the cryptographic algorithm. The value of ``algorithm`` must
    be one of RSASHA1, NSEC3RSASHA1, RSASHA256, RSASHA512,
    ECDSAP256SHA256, ECDSAP384SHA384, ED25519 or ED448.
@@ -101,13 +44,13 @@ OPTIONS
    ``-S`` option (which copies the algorithm from the predecessory key).
    Previously, the default for newly generated keys was RSASHA1.
 
--3
+**-3**
    Use an NSEC3-capable algorithm to generate a DNSSEC key. If this
    option is used with an algorithm that has both NSEC and NSEC3
    versions, then the NSEC3 version will be used; for example,
    ``dnssec-keygen -3a RSASHA1`` specifies the NSEC3RSASHA1 algorithm.
 
--E engine
+**-E** engine
    Specifies the cryptographic hardware to use.
 
    When BIND is built with OpenSSL PKCS#11 support, this defaults to the
@@ -117,7 +60,7 @@ OPTIONS
    defaults to the path of the PKCS#11 provider library specified via
    "--with-pkcs11".
 
--l label
+**-l** label
    Specifies the label for a key pair in the crypto hardware.
 
    When BIND 9 is built with OpenSSL-based PKCS#11 support, the label is
@@ -140,14 +83,14 @@ OPTIONS
    security advantage of using an HSM; be sure this is what you want to
    do before making use of this feature.
 
--n nametype
+**-n** nametype
    Specifies the owner type of the key. The value of ``nametype`` must
    either be ZONE (for a DNSSEC zone key (KEY/DNSKEY)), HOST or ENTITY
    (for a key associated with a host (KEY)), USER (for a key associated
    with a user(KEY)) or OTHER (DNSKEY). These values are case
    insensitive.
 
--C
+**-C**
    Compatibility mode: generates an old-style key, without any metadata.
    By default, ``dnssec-keyfromlabel`` will include the key's creation
    date in the metadata stored with the private key, and other dates may
@@ -155,41 +98,41 @@ OPTIONS
    that include this data may be incompatible with older versions of
    BIND; the ``-C`` option suppresses them.
 
--c class
+**-c** class
    Indicates that the DNS record containing the key should have the
    specified class. If not specified, class IN is used.
 
--f flag
+**-f** flag
    Set the specified flag in the flag field of the KEY/DNSKEY record.
    The only recognized flags are KSK (Key Signing Key) and REVOKE.
 
--G
+**-G**
    Generate a key, but do not publish it or sign with it. This option is
    incompatible with -P and -A.
 
--h
+**-h**
    Prints a short summary of the options and arguments to
    ``dnssec-keyfromlabel``.
 
--K directory
+**-K** directory
    Sets the directory in which the key files are to be written.
 
--k
+**-k**
    Generate KEY records rather than DNSKEY records.
 
--L ttl
+**-L** ttl
    Sets the default TTL to use for this key when it is converted into a
    DNSKEY RR. If the key is imported into a zone, this is the TTL that
    will be used for it, unless there was already a DNSKEY RRset in
    place, in which case the existing TTL would take precedence. Setting
    the default TTL to ``0`` or ``none`` removes it.
 
--p protocol
+**-p** protocol
    Sets the protocol value for the key. The protocol is a number between
    0 and 255. The default is 3 (DNSSEC). Other possible values for this
    argument are listed in RFC 2535 and its successors.
 
--S key
+**-S** key
    Generate a key as an explicit successor to an existing key. The name,
    algorithm, size, and type of the key will be set to match the
    predecessor. The activation date of the new key will be set to the
@@ -197,27 +140,27 @@ OPTIONS
    set to the activation date minus the prepublication interval, which
    defaults to 30 days.
 
--t type
+**-t** type
    Indicates the use of the key. ``type`` must be one of AUTHCONF,
    NOAUTHCONF, NOAUTH, or NOCONF. The default is AUTHCONF. AUTH refers
    to the ability to authenticate data, and CONF the ability to encrypt
    data.
 
--v level
+**-v** level
    Sets the debugging level.
 
--V
+**-V**
    Prints version information.
 
--y
+**-y**
    Allows DNSSEC key files to be generated even if the key ID would
    collide with that of an existing key, in the event of either key
    being revoked. (This is only safe to use if you are sure you won't be
    using RFC 5011 trust anchor maintenance with either of the keys
    involved.)
 
-TIMING OPTIONS
-==============
+Timing Options
+--------------
 
 Dates can be expressed in the format YYYYMMDD or YYYYMMDDHHMMSS. If the
 argument begins with a '+' or '-', it is interpreted as an offset from
@@ -228,41 +171,41 @@ months (defined as 30 24-hour days), weeks, days, hours, or minutes,
 respectively. Without a suffix, the offset is computed in seconds. To
 explicitly prevent a date from being set, use 'none' or 'never'.
 
--P date/offset
+**-P** date/offset
    Sets the date on which a key is to be published to the zone. After
    that date, the key will be included in the zone but will not be used
    to sign it. If not set, and if the -G option has not been used, the
    default is "now".
 
--P sync date/offset
+**-P** sync date/offset
    Sets the date on which the CDS and CDNSKEY records which match this
    key are to be published to the zone.
 
--A date/offset
+**-A** date/offset
    Sets the date on which the key is to be activated. After that date,
    the key will be included in the zone and used to sign it. If not set,
    and if the -G option has not been used, the default is "now".
 
--R date/offset
+**-R** date/offset
    Sets the date on which the key is to be revoked. After that date, the
    key will be flagged as revoked. It will be included in the zone and
    will be used to sign it.
 
--I date/offset
+**-I** date/offset
    Sets the date on which the key is to be retired. After that date, the
    key will still be included in the zone, but it will not be used to
    sign it.
 
--D date/offset
+**-D** date/offset
    Sets the date on which the key is to be deleted. After that date, the
    key will no longer be included in the zone. (It may remain in the key
    repository, however.)
 
--D sync date/offset
+**-D** sync date/offset
    Sets the date on which the CDS and CDNSKEY records which match this
    key are to be deleted.
 
--i interval
+**-i** interval
    Sets the prepublication interval for a key. If set, then the
    publication and activation dates must be separated by at least this
    much time. If the activation date is specified but the publication
@@ -280,8 +223,8 @@ explicitly prevent a date from being set, use 'none' or 'never'.
    measured in years, months, weeks, days, hours, or minutes,
    respectively. Without a suffix, the interval is measured in seconds.
 
-GENERATED KEY FILES
-===================
+Generated Key Files
+-------------------
 
 When ``dnssec-keyfromlabel`` completes successfully, it prints a string
 of the form ``Knnnn.+aaa+iiiii`` to the standard output. This is an
@@ -303,8 +246,8 @@ zone file (directly or with a $INCLUDE statement).
 The ``.private`` file contains algorithm-specific fields. For obvious
 security reasons, this file does not have general read permission.
 
-SEE ALSO
-========
+See Also
+--------
 
-dnssec-keygen8, dnssec-signzone8, BIND 9 Administrator Reference Manual,
+:manpage:`dnssec-keygen(8)`, :manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual,
 RFC 4034, The PKCS#11 URI Scheme (draft-pechanec-pkcs11uri-13).

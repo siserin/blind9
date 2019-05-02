@@ -77,4 +77,4 @@ Options
 See Also
 --------
 
-:manpage:`nsupdate1`, :manpage:`named.conf5`, :manpage:`named8`, BIND 9 Administrator Reference Manual.
+:manpage:`nsupdate(1)`, :manpage:`named.conf(5)`, :manpage:`named(8)`, BIND 9 Administrator Reference Manual.

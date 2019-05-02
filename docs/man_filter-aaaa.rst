@@ -1,18 +1,15 @@
-ISC
-Internet Systems Consortium, Inc.
-filter-aaaa.so
-8
-BIND9
-filter-aaaa.so
-filter AAAA in DNS responses when A is present
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-plugin query "filter-aaaa.so"
-{ parameters }
-;
-DESCRIPTION
-===========
+.. highlight: console
+
+filter-aaaa.so - filter AAAA in DNS responses when A is present
+===============================================================
+
+Synopsis
+--------
+
+:program:`plugin query` "filter-aaaa.so" [{ parameters }];
+
+Description
+-----------
 
 ``filter-aaaa.so`` is a query plugin module for ``named``, enabling
 ``named`` to omit some IPv6 addresses when responding to clients.
@@ -43,8 +40,8 @@ IPv4 network connections queries an authoritative server using this
 mechanism via IPv4, it will be denied AAAA records even if its client is
 using IPv6.
 
-OPTIONS
-=======
+Options
+-------
 
 ``filter-aaaa``
    Specifies a list of client addresses for which AAAA filtering is to
@@ -73,7 +70,7 @@ OPTIONS
    to queries from IPv6 clients instead of IPv4 clients. To filter all
    responses, set both options to ``yes``.
 
-SEE ALSO
-========
+See Also
+--------
 
 BIND 9 Administrator Reference Manual.

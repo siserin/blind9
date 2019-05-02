@@ -123,4 +123,4 @@ Options
 See Also
 --------
 
-:manpage:`dnssec-checkds8`, :manpage:`dnssec-dsfromkey8`, :manpage:`dnssec-keygen8`, :manpage:`dnssec-signzone8`.
+:manpage:`dnssec-checkds(8)`, :manpage:`dnssec-dsfromkey(8)`, :manpage:`dnssec-keygen(8)`, :manpage:`dnssec-signzone(8)`.

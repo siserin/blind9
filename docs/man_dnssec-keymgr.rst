@@ -1,32 +1,15 @@
-ISC
-Internet Systems Consortium, Inc.
-dnssec-keymgr
-8
-BIND9
-dnssec-keymgr
-Ensures correct DNSKEY coverage for a zone based on a defined policy
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-dnssec-keymgr
--K
-directory
--c
-file
--f
--k
--q
--v
--z
--g
-path
--s
-path
-zone
-DESCRIPTION
-===========
+.. highlight: console
+
+dnssec-keymgr - ensures correct DNSKEY coverage for a zone based on a defined policy
+====================================================================================
+
+Synopsis
+--------
+
+:program:`dnssec-keymgr` [**-K** directory] [**-c** file] [**-f**] [**-k**] [**-q**] [**-v**] [**-z**] [**-g** path] [**-s** path] [zone...]
+
+Description
+-----------
 
 ``dnssec-keymgr`` is a high level Python wrapper to facilitate the key
 rollover process for zones handled by BIND. It uses the BIND commands
@@ -67,16 +50,16 @@ five minutes in the future will be delayed by five minutes.
 It is expected that this tool will be run automatically and unattended
 (for example, by ``cron``).
 
-OPTIONS
-=======
+Options
+-------
 
--c file
+**-c** file
    If ``-c`` is specified, then the DNSSEC policy is read from ``file``.
    (If not specified, then the policy is read from
    ``/etc/dnssec-policy.conf``; if that file doesn't exist, a built-in
    global default policy is used.)
 
--f
+**-f**
    Force: allow updating of key events even if they are already in the
    past. This is not recommended for use with zones in which keys have
    already been published. However, if a set of keys has been generated
@@ -85,35 +68,35 @@ OPTIONS
    can be used to clean them up and turn them into a proper series of
    keys with appropriate rollover intervals.
 
--g keygen-path
+**-g** keygen-path
    Specifies a path to a ``dnssec-keygen`` binary. Used for testing. See
    also the ``-s`` option.
 
--h
+**-h**
    Print the ``dnssec-keymgr`` help summary and exit.
 
--K directory
+**-K** directory
    Sets the directory in which keys can be found. Defaults to the
    current working directory.
 
--k
+**-k**
    Only apply policies to KSK keys. See also the ``-z`` option.
 
--q
+**-q**
    Quiet: suppress printing of ``dnssec-keygen`` and ``dnssec-settime``.
 
--s settime-path
+**-s** settime-path
    Specifies a path to a ``dnssec-settime`` binary. Used for testing.
    See also the ``-g`` option.
 
--v
+**-v**
    Print the ``dnssec-keymgr`` version and exit.
 
--z
+**-z**
    Only apply policies to ZSK keys. See also the ``-k`` option.
 
-POLICY CONFIGURATION
-====================
+Policy Configuration
+--------------------
 
 The ``dnssec-policy.conf`` file can specify three kinds of policies:
 
@@ -186,8 +169,8 @@ Options that can be specified in policies:
 ``standby`` keytype number\ ``;``
    Not yet implemented.
 
-REMAINING WORK
-==============
+Remaining Work
+--------------
 
 -  Enable scheduling of KSK rollovers using the ``-P sync`` and
    ``-D sync`` options to ``dnssec-keygen`` and ``dnssec-settime``.
@@ -197,7 +180,7 @@ REMAINING WORK
 -  Allow configuration of standby keys and use of the REVOKE bit, for
    keys that use RFC 5011 semantics.
 
-SEE ALSO
-========
+See Also
+--------
 
-dnssec-coverage8, dnssec-keygen8, dnssec-settime8, dnssec-checkds8
+:manpage:`dnssec-coverage(8)`, :manpage:`dnssec-keygen(8)`, :manpage:`dnssec-settime(8)`, :manpage:`dnssec-checkds(8)`.

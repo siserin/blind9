@@ -41,4 +41,4 @@ Options
 See Also
 --------
 
-:manpage:`dnssec-dsfromkey8`, :manpage:`dnssec-keygen8`, :manpage:`dnssec-signzone8`.
+:manpage:`dnssec-dsfromkey(8)`, :manpage:`dnssec-keygen(8)`, :manpage:`dnssec-signzone(8)`.
