@@ -51,7 +51,7 @@ typedef void (*isc_memfree_t)(void *, void *);
 #endif
 
 LIBISC_EXTERNAL_DATA extern unsigned int isc_mem_debugging;
-LIBISC_EXTERNAL_DATA extern unsigned int isc_mem_defaultflags;
+LIBISC_EXTERNAL_DATA extern unsigned int isc_mem_flags;
 
 /*@{*/
 #define ISC_MEM_DEBUGTRACE		0x00000001U
