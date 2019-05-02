@@ -138,19 +138,6 @@ LIBISC_EXTERNAL_DATA extern unsigned int isc_mem_defaultflags;
  * \endcode
  */
 
-/*% memory and memory pool methods */
-typedef struct isc_memmethods {
-	void *(*memget)(isc_mem_t *mctx, size_t size _ISC_MEM_FLARG);
-	void (*memput)(isc_mem_t *mctx, void *ptr, size_t size _ISC_MEM_FLARG);
-	void (*memputanddetach)(isc_mem_t **mctxp, void *ptr,
-				size_t size _ISC_MEM_FLARG);
-	void *(*memallocate)(isc_mem_t *mctx, size_t size _ISC_MEM_FLARG);
-	void *(*memreallocate)(isc_mem_t *mctx, void *ptr,
-			       size_t size _ISC_MEM_FLARG);
-	char *(*memstrdup)(isc_mem_t *mctx, const char *s _ISC_MEM_FLARG);
-	void (*memfree)(isc_mem_t *mctx, void *ptr _ISC_MEM_FLARG);
-} isc_memmethods_t;
-
 /*%
  * This structure is actually just the common prefix of a memory context
  * implementation's version of an isc_mem_t.
@@ -163,7 +150,6 @@ typedef struct isc_memmethods {
 struct isc_mem {
 	unsigned int		impmagic;
 	unsigned int		magic;
-	isc_memmethods_t	*methods;
 };
 
 #define ISCAPI_MCTX_MAGIC	ISC_MAGIC('A','m','c','x')
@@ -229,18 +215,11 @@ struct isc_mempool {
 isc_result_t
 isc_mem_create(isc_mem_t **mctxp);
 
-isc_result_t
-isc_mem_createx(isc_memalloc_t memalloc, isc_memfree_t memfree,
-		void *arg, isc_mem_t **mctxp, unsigned int flags);
-
 /*!<
  * \brief Create a memory context.
  *
- * A memory context created using isc_mem_createx() will obtain
- * memory from the system by calling 'memalloc' and 'memfree',
- * passing them the argument 'arg'.  A memory context created
- * using isc_mem_create() will use the standard library malloc()
- * and free().
+ * A memory context created using isc_mem_create() will use the
+ * standard library malloc() and free().
  *
  * Requires:
  * mctxp != NULL && *mctxp == NULL */
@@ -336,7 +315,7 @@ isc_mem_setwater(isc_mem_t *mctx, isc_mem_water_t water, void *water_arg,
  *
  *		LOCK(&foo->marklock);
  *		if (foo->mark != mark) {
- * 			foo->mark = mark;
+ *			foo->mark = mark;
  *			....
  *			isc_mem_waterack(foo->mctx, mark);
  *		}
@@ -398,8 +377,8 @@ isc_mem_getname(isc_mem_t *ctx);
  *
  * Returns:
  *\li	A non-NULL pointer to a null-terminated string.
- * 	If the ctx has not been named, the string is
- * 	empty.
+ *	If the ctx has not been named, the string is
+ *	empty.
  */
 
 void *

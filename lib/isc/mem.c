@@ -137,11 +137,7 @@ static atomic_uint_fast32_t	pt_max = 0;
 
 struct isc__mem {
 	isc_mem_t		common;
-	unsigned int		flags;
 	isc_mutex_t		lock;
-	isc_memalloc_t		memalloc;
-	isc_memfree_t		memfree;
-	void *			arg;
 	atomic_bool		checkfree;
 	perthread_t		*pt;
 	int			pt_size;
@@ -153,13 +149,13 @@ struct isc__mem {
 	atomic_uint_fast64_t	lo_water;
 	atomic_bool		hi_called;
 	atomic_bool		is_overmem;
-	isc_mem_water_t		water;
+	isc_mem_water_t	water;
 	void *			water_arg;
 	ISC_LIST(isc__mempool_t) pools;
 	unsigned int		poolcnt;
 
 #if ISC_MEM_TRACKLINES
-	debuglist_t *	 	debuglist;
+	debuglist_t *		debuglist;
 	size_t			debuglistcnt;
 #endif
 
@@ -171,13 +167,13 @@ struct isc__mem {
 
 struct isc__mempool {
 	/* always unlocked */
-	isc_mempool_t	common;		/*%< common header of mempool's */
+	isc_mempool_t	common;	/*%< common header of mempool's */
 	isc_mutex_t    *lock;		/*%< optional lock */
 	isc__mem_t      *mctx;		/*%< our memory context */
 	/*%< locked via the memory context's lock */
 	ISC_LINK(isc__mempool_t)	link;	/*%< next pool in this mem context */
 	/*%< optionally locked from here down */
-	element	       *items;		/*%< low water item list */
+	element	       *items;	/*%< low water item list */
 	size_t		size;		/*%< size of each item on this pool */
 	unsigned int	maxalloc;	/*%< max number of items allowed */
 	unsigned int	allocated;	/*%< # of items currently given out */
@@ -228,30 +224,6 @@ print_active(isc__mem_t *ctx, FILE *out);
 
 #endif /* ISC_MEM_TRACKLINES */
 
-static void *
-isc___mem_get(isc_mem_t *ctx, size_t size FLARG);
-static void
-isc___mem_put(isc_mem_t *ctx, void *ptr, size_t size FLARG);
-static void
-isc___mem_putanddetach(isc_mem_t **ctxp, void *ptr, size_t size FLARG);
-static void *
-isc___mem_allocate(isc_mem_t *ctx, size_t size FLARG);
-static void *
-isc___mem_reallocate(isc_mem_t *ctx, void *ptr, size_t size FLARG);
-static char *
-isc___mem_strdup(isc_mem_t *mctx, const char *s FLARG);
-static void
-isc___mem_free(isc_mem_t *ctx, void *ptr FLARG);
-
-static isc_memmethods_t memmethods = {
-	isc___mem_get,
-	isc___mem_put,
-	isc___mem_putanddetach,
-	isc___mem_allocate,
-	isc___mem_reallocate,
-	isc___mem_strdup,
-	isc___mem_free,
-};
 
 static perthread_t *
 get_perthread(isc__mem_t *ctx) {
@@ -283,6 +255,45 @@ _register(maxmalloced);
 _register(gets);
 _register(totalgets);
 
+/*
+ * Private.
+ */
+
+static void *
+default_memalloc(size_t size) {
+	void *ptr;
+
+	ptr = malloc(size);
+
+	/*
+	 * If the space cannot be allocated, a null pointer is returned. If the
+	 * size of the space requested is zero, the behavior is
+	 * implementation-defined: either a null pointer is returned, or the
+	 * behavior is as if the size were some nonzero value, except that the
+	 * returned pointer shall not be used to access an object.
+	 * [ISO9899 § 7.22.3]
+	 *
+	 * [ISO9899]
+	 *   ISO/IEC WG 9899:2011: Programming languages - C.
+	 *   International Organization for Standardization, Geneva, Switzerland.
+	 *   http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1570.pdf
+	 */
+
+	if (ptr == NULL && size != 0) {
+		char strbuf[ISC_STRERRORSIZE];
+		strerror_r(errno, strbuf, sizeof(strbuf));
+		isc_error_fatal(__FILE__, __LINE__, "malloc failed: %s",
+				strbuf);
+	}
+
+	return (ptr);
+}
+
+static void
+default_memfree(void *ptr) {
+	free(ptr);
+}
+
 #if ISC_MEM_TRACKLINES
 /*!
  * mctx must be locked.
@@ -306,7 +317,7 @@ add_trace_entry(isc__mem_t *mctx, const void *ptr, size_t size FLARG) {
 	hash = isc_hash_function(&ptr, sizeof(ptr), true, NULL);
 	idx = hash % DEBUG_TABLE_COUNT;
 
-	dl = malloc(sizeof(debuglink_t));
+	dl = default_memalloc(sizeof(debuglink_t));
 	INSIST(dl != NULL);
 	malloced = atomic_fetch_add_relaxed(&pt->malloced, sizeof(debuglink_t))
 		+ sizeof(debuglink_t);
@@ -364,17 +375,15 @@ delete_trace_entry(isc__mem_t *mctx, const void *ptr, size_t size,
 }
 #endif /* ISC_MEM_TRACKLINES */
 
-
-
 static inline void *
 mem_getunlocked(isc__mem_t *ctx, size_t size) {
 	void *ret;
+
 	int64_t malloced;
 	perthread_t * pt = get_perthread(ctx);
 
-	ret = (ctx->memalloc)(ctx->arg, size);
-	RUNTIME_CHECK(ret != NULL);
-	if (ISC_UNLIKELY((ctx->flags & ISC_MEMFLAG_FILL) != 0)) {
+	ret = default_memalloc(size);
+	if (ISC_UNLIKELY((isc_mem_defaultflags & ISC_MEMFLAG_FILL) != 0)) {
 		memset(ret, 0xbe, size); /* Mnemonic for "beef". */
 	}
 	atomic_fetch_add_relaxed(&pt->total, size);
@@ -394,55 +403,14 @@ mem_getunlocked(isc__mem_t *ctx, size_t size) {
 static inline void
 mem_putunlocked(isc__mem_t *ctx, void *mem, size_t size) {
 	perthread_t * pt = get_perthread(ctx);
-	if (ISC_UNLIKELY((ctx->flags & ISC_MEMFLAG_FILL) != 0)) {
+	if (ISC_UNLIKELY((isc_mem_defaultflags & ISC_MEMFLAG_FILL) != 0)){
 		memset(mem, 0xde, size); /* Mnemonic for "dead". */
 	}
-	(ctx->memfree)(ctx->arg, mem);
+	default_memfree(mem);
 
 	atomic_fetch_sub_relaxed(&pt->gets, 1);
 	atomic_fetch_sub_relaxed(&pt->inuse, size);
 	atomic_fetch_sub_relaxed(&pt->malloced, size);
-}
-
-/*
- * Private.
- */
-
-static void *
-default_memalloc(void *arg, size_t size) {
-	void *ptr;
-	UNUSED(arg);
-
-	ptr = malloc(size);
-
-	/*
-	 * If the space cannot be allocated, a null pointer is returned. If the
-	 * size of the space requested is zero, the behavior is
-	 * implementation-defined: either a null pointer is returned, or the
-	 * behavior is as if the size were some nonzero value, except that the
-	 * returned pointer shall not be used to access an object.
-	 * [ISO9899 § 7.22.3]
-	 *
-	 * [ISO9899]
-	 *   ISO/IEC WG 9899:2011: Programming languages - C.
-	 *   International Organization for Standardization, Geneva, Switzerland.
-	 *   http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1570.pdf
-	 */
-
-	if (ptr == NULL && size != 0) {
-		char strbuf[ISC_STRERRORSIZE];
-		strerror_r(errno, strbuf, sizeof(strbuf));
-		isc_error_fatal(__FILE__, __LINE__, "malloc failed: %s",
-				strbuf);
-	}
-
-	return (ptr);
-}
-
-static void
-default_memfree(void *arg, void *ptr) {
-	UNUSED(arg);
-	free(ptr);
 }
 
 static void
@@ -520,8 +488,8 @@ isc_mem_createx(isc_memalloc_t memalloc, isc_memfree_t memfree, void *arg,
 #if ISC_MEM_TRACKLINES
 	if (ISC_UNLIKELY((isc_mem_debugging & ISC_MEM_DEBUGRECORD) != 0)) {
 		unsigned int j;
-		ctx->debuglist = (memalloc)(arg, (DEBUG_TABLE_COUNT *
-						  sizeof(debuglist_t)));
+		ctx->debuglist = default_memalloc((DEBUG_TABLE_COUNT *
+						   sizeof(debuglist_t)));
 		RUNTIME_CHECK(ctx->debuglist != NULL);
 		for (j = 0; j < DEBUG_TABLE_COUNT; j++)
 			ISC_LIST_INIT(ctx->debuglist[j]);
@@ -573,7 +541,7 @@ destroy(isc__mem_t *ctx) {
 				pt->malloced -= sizeof(*dl);
 			}
 
-		(ctx->memfree)(ctx->arg, ctx->debuglist);
+		default_memfree(ctx->debuglist);
 		pt->malloced -= DEBUG_TABLE_COUNT * sizeof(debuglist_t);
 	}
 #endif
@@ -600,7 +568,7 @@ destroy(isc__mem_t *ctx) {
 		int64_t malloced = get_malloced(ctx);
 		INSIST(malloced == 0);
 	}
-	(ctx->memfree)(ctx->arg, ctx);
+	default_memfree(ctx);
 }
 
 void
@@ -638,7 +606,7 @@ isc_mem_detach(isc_mem_t **ctxp) {
  */
 
 void
-isc___mem_putanddetach(isc_mem_t **ctxp, void *ptr, size_t size FLARG) {
+isc__mem_putanddetach(isc_mem_t **ctxp, void *ptr, size_t size FLARG) {
 	REQUIRE(ctxp != NULL && VALID_CONTEXT(*ctxp));
 	REQUIRE(ptr != NULL);
 	isc__mem_t *ctx = (isc__mem_t *)*ctxp;
@@ -697,7 +665,7 @@ isc_mem_destroy(isc_mem_t **ctxp) {
 }
 
 void *
-isc___mem_get(isc_mem_t *ctx0, size_t size FLARG) {
+isc__mem_get(isc_mem_t *ctx0, size_t size FLARG) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
 	void *ptr;
 	perthread_t *pt;
@@ -740,7 +708,7 @@ isc___mem_get(isc_mem_t *ctx0, size_t size FLARG) {
 }
 
 void
-isc___mem_put(isc_mem_t *ctx0, void *ptr, size_t size FLARG) {
+isc__mem_put(isc_mem_t *ctx0, void *ptr, size_t size FLARG) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
 	size_info *si;
 	size_t oldsize;
@@ -912,7 +880,7 @@ mem_allocateunlocked(isc_mem_t *ctx0, size_t size) {
 }
 
 void *
-isc___mem_allocate(isc_mem_t *ctx0, size_t size FLARG) {
+isc__mem_allocate(isc_mem_t *ctx0, size_t size FLARG) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
 	size_info *si;
 	perthread_t *pt;
@@ -956,7 +924,7 @@ isc___mem_allocate(isc_mem_t *ctx0, size_t size FLARG) {
 }
 
 void *
-isc___mem_reallocate(isc_mem_t *ctx0, void *ptr, size_t size FLARG) {
+isc__mem_reallocate(isc_mem_t *ctx0, void *ptr, size_t size FLARG) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
 	void *new_ptr = NULL;
 	size_t oldsize, copysize;
@@ -998,7 +966,7 @@ isc___mem_reallocate(isc_mem_t *ctx0, void *ptr, size_t size FLARG) {
 }
 
 void
-isc___mem_free(isc_mem_t *ctx0, void *ptr FLARG) {
+isc__mem_free(isc_mem_t *ctx0, void *ptr FLARG) {
 	isc__mem_t *ctx = (isc__mem_t *)ctx0;
 	size_info *si;
 	size_t size;
@@ -1046,7 +1014,7 @@ isc___mem_free(isc_mem_t *ctx0, void *ptr FLARG) {
  */
 
 char *
-isc___mem_strdup(isc_mem_t *mctx0, const char *s FLARG) {
+isc__mem_strdup(isc_mem_t *mctx0, const char *s FLARG) {
 	isc__mem_t *mctx = (isc__mem_t *)mctx0;
 	size_t len;
 	char *ns;
@@ -1964,56 +1932,6 @@ isc_result_t
 isc_mem_create(isc_mem_t **mctxp) {
 	return (isc_mem_createx(default_memalloc, default_memfree,
 				NULL, mctxp, isc_mem_defaultflags));
-}
-
-void *
-isc__mem_get(isc_mem_t *mctx, size_t size FLARG) {
-	REQUIRE(ISCAPI_MCTX_VALID(mctx));
-
-	return (mctx->methods->memget(mctx, size FLARG_PASS));
-
-}
-
-void
-isc__mem_put(isc_mem_t *mctx, void *ptr, size_t size FLARG) {
-	REQUIRE(ISCAPI_MCTX_VALID(mctx));
-
-	mctx->methods->memput(mctx, ptr, size FLARG_PASS);
-}
-
-void
-isc__mem_putanddetach(isc_mem_t **mctxp, void *ptr, size_t size FLARG) {
-	REQUIRE(mctxp != NULL && ISCAPI_MCTX_VALID(*mctxp));
-
-	(*mctxp)->methods->memputanddetach(mctxp, ptr, size FLARG_PASS);
-}
-
-void *
-isc__mem_allocate(isc_mem_t *mctx, size_t size FLARG) {
-	REQUIRE(ISCAPI_MCTX_VALID(mctx));
-
-	return (mctx->methods->memallocate(mctx, size FLARG_PASS));
-}
-
-void *
-isc__mem_reallocate(isc_mem_t *mctx, void *ptr, size_t size FLARG) {
-	REQUIRE(ISCAPI_MCTX_VALID(mctx));
-
-	return (mctx->methods->memreallocate(mctx, ptr, size FLARG_PASS));
-}
-
-char *
-isc__mem_strdup(isc_mem_t *mctx, const char *s FLARG) {
-	REQUIRE(ISCAPI_MCTX_VALID(mctx));
-
-	return (mctx->methods->memstrdup(mctx, s FLARG_PASS));
-}
-
-void
-isc__mem_free(isc_mem_t *mctx, void *ptr FLARG) {
-	REQUIRE(ISCAPI_MCTX_VALID(mctx));
-
-	mctx->methods->memfree(mctx, ptr FLARG_PASS);
 }
 
 void
