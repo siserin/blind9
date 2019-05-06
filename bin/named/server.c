@@ -10798,7 +10798,7 @@ dumpdone(void *arg, isc_result_t result) {
 		dns_db_detach(&dctx->cache);
 	}
 	if (dctx->dumpzones) {
-		if (dctx->dumptruncated) {
+		if (dctx->dumptruncated) {				//how does this work? rndc dumpdb -zones -truncated
 			style = &dns_master_style_full_tr;
 		} else {
 			style = &dns_master_style_full;
