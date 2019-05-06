@@ -1387,7 +1387,6 @@ setup_libs(void) {
 	 * 6 and 2 set as reasonable parameters for 3 or 4 nameserver
 	 * systems.
 	 */
-	isc_mempool_setfreemax(commctx, 6);
 	isc_mempool_setfillcount(commctx, 2);
 
 	isc_mutex_init(&lookup_lock);

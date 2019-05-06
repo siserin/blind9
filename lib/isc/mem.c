@@ -35,6 +35,21 @@
 #include <isc/xml.h>
 
 #include "mem_p.h"
+#include "mpmc_queue.c"
+
+/* Address Sanitizer Manual Poisoning */
+
+#if defined(__SANITIZE_ADDRESS__)
+#define ASAN_POISON_MEMORY_REGION(addr, size) \
+	__asan_poison_memory_region((addr), (size))
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
+	__asan_unpoison_memory_region((addr), (size))
+#else
+#define ASAN_POISON_MEMORY_REGION(addr, size) \
+	((void)(addr), (void)(size))
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
+	((void)(addr), (void)(size))
+#endif
 
 #define MCTXLOCK(m, l) LOCK(l)
 #define MCTXUNLOCK(m, l) UNLOCK(l)
@@ -75,11 +90,6 @@ typedef ISC_LIST(debuglink_t)	debuglist_t;
 #define FLARG_PASS
 #define FLARG
 #endif
-
-typedef struct element element;
-struct element {
-	element *		next;
-};
 
 typedef struct {
 	/*!
@@ -163,6 +173,7 @@ struct isc_mem {
 #define MEMPOOL_MAGIC		ISC_MAGIC('M', 'E', 'M', 'p')
 #define VALID_MEMPOOL(c)	ISC_MAGIC_VALID(c, MEMPOOL_MAGIC)
 
+#define MPMC_QUEUE_SIZE 32768 /* Number of free items in the queue */
 struct isc_mempool {
 	/* always unlocked */
 	unsigned int	magic;
@@ -170,16 +181,14 @@ struct isc_mempool {
 	isc_mem_t      *mctx;		/*%< our memory context */
 	/*%< locked via the memory context's lock */
 	ISC_LINK(isc_mempool_t)	link;	/*%< next pool in this mem context */
-	/*%< optionally locked from here down */
-	element        *items;		/*%< low water item list */
+	/*%< protected by atomics */
+	mpmc_queue_t	items;	/*%< low water item list */
 	size_t		size;		/*%< size of each item on this pool */
-	unsigned int	maxalloc;	/*%< max number of items allowed */
-	unsigned int	allocated;	/*%< # of items currently given out */
-	unsigned int	freecount;	/*%< # of items on reserved list */
-	unsigned int	freemax;	/*%< # of items allowed on free list */
-	unsigned int	fillcount;	/*%< # of items to fetch on each fill */
+	atomic_uint_fast64_t	maxalloc;	/*%< max number of items allowed */
+	atomic_uint_fast64_t	allocated;	/*%< # of items currently given out */
+	atomic_uint_fast64_t	fillcount;	/*%< # of items to fetch on each fill */
 	/*%< Stats only. */
-	unsigned int	gets;		/*%< # of requests to this pool */
+	atomic_uint_fast64_t	gets;		/*%< # of requests to this pool */
 	/*%< Debugging only. */
 #if ISC_MEMPOOL_NAMES
 	char		name[16];	/*%< printed name in stats reports */
@@ -821,21 +830,28 @@ isc_mem_stats(isc_mem_t *ctx, FILE *out) {
 	pool = ISC_LIST_HEAD(ctx->pools);
 	if (pool != NULL) {
 		fputs("[Pool statistics]\n", out);
-		fprintf(out, "%15s %10s %10s %10s %10s %10s %10s %10s %1s\n",
-			"name", "size", "maxalloc", "allocated", "freecount",
-			"freemax", "fillcount", "gets", "L");
+		fprintf(out, "%15s %10s %10s %10s %10s %10s\n",
+			"name", "size", "maxalloc", "allocated",
+			"fillcount", "gets");
 	}
 	while (pool != NULL) {
-		fprintf(out, "%15s %10lu %10u %10u %10u %10u %10u %10u %s\n",
+		fprintf(out, "%15s %10lu"
+			" %10" PRId64
+			" %10" PRId64
+			" %10" PRId64
+			" %10" PRId64
+			"\n",
 #if ISC_MEMPOOL_NAMES
 			pool->name,
 #else
 			"(not tracked)",
 #endif
-			(unsigned long) pool->size, pool->maxalloc,
-			pool->allocated, pool->freecount, pool->freemax,
-			pool->fillcount, pool->gets,
-			(pool->lock == NULL ? "N" : "Y"));
+			(unsigned long) pool->size,
+			atomic_load_relaxed(&pool->maxalloc),
+			atomic_load_relaxed(&pool->allocated),
+			atomic_load_relaxed(&pool->fillcount),
+			atomic_load_relaxed(&pool->gets)
+			);
 		pool = ISC_LIST_NEXT(pool, link);
 	}
 
@@ -1147,25 +1163,19 @@ isc_mempool_create(isc_mem_t *mctx, size_t size,
 	mpctx = isc_mem_get((isc_mem_t *)mctx, sizeof(isc_mempool_t));
 	RUNTIME_CHECK(mpctx != NULL);
 
-	mpctx->lock = NULL;
 	mpctx->mctx = mctx;
-	/*
-	 * Mempools are stored as a linked list of element.
-	 */
-	if (size < sizeof(element)) {
-		size = sizeof(element);
-	}
+
 	mpctx->size = size;
-	mpctx->maxalloc = UINT_MAX;
-	mpctx->allocated = 0;
-	mpctx->freecount = 0;
-	mpctx->freemax = 1;
-	mpctx->fillcount = 1;
-	mpctx->gets = 0;
+	atomic_init(&mpctx->maxalloc, UINT_MAX);
+	atomic_init(&mpctx->allocated, 0);
+	atomic_init(&mpctx->fillcount, 32);
+	atomic_init(&mpctx->gets, 0);
 #if ISC_MEMPOOL_NAMES
 	mpctx->name[0] = 0;
 #endif
-	mpctx->items = NULL;
+	memset(&mpctx->items, 0, sizeof(mpctx->items));
+	REQUIRE(mpmc_queue_init(&mpctx->items, MPMC_QUEUE_SIZE,
+			      (isc_mem_t *)mpctx->mctx) == ISC_R_SUCCESS);
 
 	mpctx->magic = MEMPOOL_MAGIC;
 
@@ -1185,13 +1195,8 @@ isc_mempool_setname(isc_mempool_t *mpctx, const char *name) {
 	REQUIRE(VALID_MEMPOOL(mpctx));
 
 #if ISC_MEMPOOL_NAMES
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
+	/* TODO */
 	strlcpy(mpctx->name, name, sizeof(mpctx->name));
-
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
 #else
 	UNUSED(mpctx);
 	UNUSED(name);
@@ -1202,8 +1207,7 @@ void
 isc_mempool_destroy(isc_mempool_t **mpctxp) {
 	isc_mempool_t *mpctx;
 	isc_mem_t *mctx;
-	isc_mutex_t *lock;
-	element *item;
+	void *item = NULL;
 
 	REQUIRE(mpctxp != NULL);
 	REQUIRE(VALID_MEMPOOL(*mpctxp));
@@ -1219,25 +1223,15 @@ isc_mempool_destroy(isc_mempool_t **mpctxp) {
 	REQUIRE(mpctx->allocated == 0);
 
 	mctx = mpctx->mctx;
-
-	lock = mpctx->lock;
-
-	if (lock != NULL)
-		LOCK(lock);
+	*mpctxp = NULL;
 
 	/*
 	 * Return any items on the free list
 	 */
-	MCTXLOCK(mctx, &mctx->lock);
-	while (mpctx->items != NULL) {
-		INSIST(mpctx->freecount > 0);
-		mpctx->freecount--;
-		item = mpctx->items;
-		mpctx->items = item->next;
-
+	while (mpmc_queue_get(&mpctx->items, &item) == ISC_R_SUCCESS) {
 		mem_putunlocked(mctx, item, mpctx->size);
 	}
-	MCTXUNLOCK(mctx, &mctx->lock);
+	mpmc_queue_destroy(&mpctx->items);
 
 	/*
 	 * Remove our linked list entry from the memory context.
@@ -1250,83 +1244,67 @@ isc_mempool_destroy(isc_mempool_t **mpctxp) {
 	mpctx->magic = 0;
 
 	isc_mem_put((isc_mem_t *)mpctx->mctx, mpctx, sizeof(isc_mempool_t));
-
-	if (lock != NULL) {
-		UNLOCK(lock);
-	}
-
-	*mpctxp = NULL;
 }
 
 void
-isc_mempool_associatelock(isc_mempool_t *mpctx, isc_mutex_t *lock) {
-	REQUIRE(VALID_MEMPOOL(mpctx));
-	REQUIRE(mpctx->lock == NULL);
-	REQUIRE(lock != NULL);
-
-	mpctx->lock = lock;
+isc_mempool_associatelock(isc_mempool_t *mpctx0, isc_mutex_t *lock) {
+	UNUSED(mpctx0);
+	UNUSED(lock);
 }
 
 void *
 isc__mempool_get(isc_mempool_t *mpctx FLARG) {
-	element *item;
+	void *item = NULL;
 	isc_mem_t *mctx;
 	unsigned int i;
+	int ret;
 
 	REQUIRE(VALID_MEMPOOL(mpctx));
 
 	mctx = mpctx->mctx;
 
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
 	/*
 	 * Don't let the caller go over quota
 	 */
-	if (ISC_UNLIKELY(mpctx->allocated >= mpctx->maxalloc)) {
+	if (ISC_UNLIKELY(atomic_load_relaxed(&mpctx->allocated) >=
+			 atomic_load_relaxed(&mpctx->maxalloc))) {
 		item = NULL;
 		goto out;
 	}
 
-	if (ISC_UNLIKELY(mpctx->items == NULL)) {
-		/*
-		 * We need to dip into the well.  Lock the memory context
-		 * here and fill up our free list.
-		 */
-		MCTXLOCK(mctx, &mctx->lock);
-		for (i = 0; i < mpctx->fillcount; i++) {
+	ret = mpmc_queue_get(&mpctx->items, &item);
+
+	if (ISC_UNLIKELY(ret != ISC_R_SUCCESS)) {
+		int64_t fillcount = atomic_load_relaxed(&mpctx->fillcount);
+		for (i = 0; i < fillcount; i++) {
 			item = mem_getunlocked(mctx, mpctx->size);
-			if (ISC_UNLIKELY(item == NULL))
+			ret = mpmc_queue_put(&mpctx->items, item);
+			if (ret != ISC_R_SUCCESS) {
+				/* No more space in the queue */
+				mem_putunlocked(mctx, item, mpctx->size);
 				break;
-			item->next = mpctx->items;
-			mpctx->items = item;
-			mpctx->freecount++;
+			}
 		}
-		MCTXUNLOCK(mctx, &mctx->lock);
+
+		/* There must be an item in the free pool now */
+		ret = mpmc_queue_get(&mpctx->items, &item);
+		if (ret != ISC_R_SUCCESS) {
+			item = NULL;
+			goto out;
+		}
 	}
 
-	/*
-	 * If we didn't get any items, return NULL.
-	 */
-	item = mpctx->items;
-	if (ISC_UNLIKELY(item == NULL))
-		goto out;
-
-	mpctx->items = item->next;
-	INSIST(mpctx->freecount > 0);
-	mpctx->freecount--;
-	mpctx->gets++;
-	mpctx->allocated++;
+	atomic_fetch_add_relaxed(&mpctx->gets, 1);
+	atomic_fetch_add_relaxed(&mpctx->allocated, 1);
 
  out:
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
 
-#if ISC_MEM_TRACKLINES
 	if (ISC_LIKELY(item != NULL)) {
+		ASAN_UNPOISON_MEMORY_REGION(item, mpctx->size);
+#if ISC_MEM_TRACKLINES
 		ADD_TRACE(mctx, item, mpctx->size, file, line);
-	}
 #endif /* ISC_MEM_TRACKLINES */
+	}
 
 	return (item);
 }
@@ -1335,96 +1313,40 @@ isc__mempool_get(isc_mempool_t *mpctx FLARG) {
 void
 isc__mempool_put(isc_mempool_t *mpctx, void *mem FLARG) {
 	isc_mem_t *mctx;
-	element *item;
+	isc_result_t r;
 
 	REQUIRE(VALID_MEMPOOL(mpctx));
 	REQUIRE(mem != NULL);
 
 	mctx = mpctx->mctx;
 
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
-	INSIST(mpctx->allocated > 0);
-	mpctx->allocated--;
-
 #if ISC_MEM_TRACKLINES
 	DELETE_TRACE(mctx, mem, mpctx->size, file, line);
 #endif /* ISC_MEM_TRACKLINES */
 
+	ASAN_POISON_MEMORY_REGION(mem, mpctx->size);
+
+	int64_t allocated = atomic_fetch_sub_release(&mpctx->allocated, 1);
+	INSIST(allocated > 0);
+
+	r = mpmc_queue_put(&mpctx->items, mem);
 	/*
 	 * If our free list is full, return this to the mctx directly.
 	 */
-	if (mpctx->freecount >= mpctx->freemax) {
-		MCTXLOCK(mctx, &mctx->lock);
+	if (r != ISC_R_SUCCESS) {
 		mem_putunlocked(mctx, mem, mpctx->size);
-		MCTXUNLOCK(mctx, &mctx->lock);
-		if (mpctx->lock != NULL)
-			UNLOCK(mpctx->lock);
-		return;
 	}
-
-	/*
-	 * Otherwise, attach it to our free list and bump the counter.
-	 */
-	mpctx->freecount++;
-	item = (element *)mem;
-	item->next = mpctx->items;
-	mpctx->items = item;
-
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
 }
 
 /*
  * Quotas
  */
 
-void
-isc_mempool_setfreemax(isc_mempool_t *mpctx, unsigned int limit) {
-	REQUIRE(VALID_MEMPOOL(mpctx));
-
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
-	mpctx->freemax = limit;
-
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
-}
-
-unsigned int
-isc_mempool_getfreemax(isc_mempool_t *mpctx) {
-	unsigned int freemax;
-
-	REQUIRE(VALID_MEMPOOL(mpctx));
-
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
-	freemax = mpctx->freemax;
-
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
-
-	return (freemax);
-}
-
 unsigned int
 isc_mempool_getfreecount(isc_mempool_t *mpctx) {
-	unsigned int freecount;
-
 	REQUIRE(VALID_MEMPOOL(mpctx));
 
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
-	freecount = mpctx->freecount;
-
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
-
-	return (freecount);
+	return (mpmc_queue_size(&mpctx->items));
 }
 
 void
@@ -1432,47 +1354,21 @@ isc_mempool_setmaxalloc(isc_mempool_t *mpctx, const size_t limit) {
 	REQUIRE(VALID_MEMPOOL(mpctx));
 	REQUIRE(limit > 0);
 
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
-	mpctx->maxalloc = limit;
-
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
+	atomic_store_relaxed(&mpctx->maxalloc, limit);
 }
 
 unsigned int
 isc_mempool_getmaxalloc(isc_mempool_t *mpctx) {
-	unsigned int maxalloc;
-
 	REQUIRE(VALID_MEMPOOL(mpctx));
 
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
-	maxalloc = mpctx->maxalloc;
-
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
-
-	return (maxalloc);
+	return (atomic_load_relaxed(&mpctx->maxalloc));
 }
 
 unsigned int
 isc_mempool_getallocated(isc_mempool_t *mpctx) {
-	unsigned int allocated;
-
 	REQUIRE(VALID_MEMPOOL(mpctx));
 
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
-	allocated = mpctx->allocated;
-
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
-
-	return (allocated);
+	return (atomic_load_relaxed(&mpctx->allocated));
 }
 
 void
@@ -1480,30 +1376,14 @@ isc_mempool_setfillcount(isc_mempool_t *mpctx, const size_t limit) {
 	REQUIRE(VALID_MEMPOOL(mpctx));
 	REQUIRE(limit > 0);
 
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
-	mpctx->fillcount = limit;
-
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
+	atomic_store_relaxed(&mpctx->fillcount, limit);
 }
 
 unsigned int
 isc_mempool_getfillcount(isc_mempool_t *mpctx) {
-	unsigned int fillcount;
-
 	REQUIRE(VALID_MEMPOOL(mpctx));
 
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
-	fillcount = mpctx->fillcount;
-
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
-
-	return (fillcount);
+	return (atomic_load_relaxed(&mpctx->fillcount));
 }
 
 /*

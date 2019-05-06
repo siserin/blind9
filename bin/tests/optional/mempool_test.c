@@ -44,7 +44,6 @@ main(int argc, char *argv[]) {
 
 	isc_mem_stats(mctx, stderr);
 
-	isc_mempool_setfreemax(mp1, 10);
 	isc_mempool_setfillcount(mp1, 10);
 	isc_mempool_setmaxalloc(mp1, 30);
 
@@ -81,7 +80,6 @@ main(int argc, char *argv[]) {
 	 * Now, beat up on mp2 for a while.  Allocate 50 items, then free
 	 * them, then allocate 50 more, etc.
 	 */
-	isc_mempool_setfreemax(mp2, 25);
 	isc_mempool_setfillcount(mp2, 25);
 	for (j = 0; j < 5000; j++) {
 		for (i = 0; i < 50; i++) {

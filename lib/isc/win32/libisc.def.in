@@ -382,10 +382,8 @@ isc_mempool_destroy
 isc_mempool_getallocated
 isc_mempool_getfillcount
 isc_mempool_getfreecount
-isc_mempool_getfreemax
 isc_mempool_getmaxalloc
 isc_mempool_setfillcount
-isc_mempool_setfreemax
 isc_mempool_setmaxalloc
 isc_mempool_setname
 isc_mutexblock_destroy

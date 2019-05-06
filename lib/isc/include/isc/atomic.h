@@ -33,11 +33,6 @@
 	atomic_compare_exchange_weak_explicit((o), (e), (d),		\
 					      memory_order_relaxed,	\
 					      memory_order_relaxed)
-#define atomic_compare_exchange_weak_relaxed_seq_cst(o, e, d)		\
-	atomic_compare_exchange_weak_explicit((o), (e), (d),		\
-					      memory_order_relaxed,	\
-					      memory_order_seq_cst)
-
 #define atomic_compare_exchange_weak_acq_rel(o, e, d)			\
 	atomic_compare_exchange_weak_explicit((o), (e), (d),		\
 					      memory_order_acq_rel,	\

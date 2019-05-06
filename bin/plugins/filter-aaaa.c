@@ -390,7 +390,6 @@ plugin_register(const char *parameters,
 	 * freed until the pool is destroyed on shutdown.
 	 */
 	isc_mempool_setfillcount(inst->datapool, 1024);
-	isc_mempool_setfreemax(inst->datapool, UINT_MAX);
 	isc_mutex_init(&inst->plock);
 	isc_mempool_associatelock(inst->datapool, &inst->plock);
 

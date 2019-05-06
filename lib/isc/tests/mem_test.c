@@ -88,7 +88,6 @@ isc_mem_test(void **state) {
 	result = isc_mempool_create(localmctx, 31, &mp2);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
-	isc_mempool_setfreemax(mp1, MP1_FREEMAX);
 	isc_mempool_setfillcount(mp1, MP1_FILLCNT);
 	isc_mempool_setmaxalloc(mp1, MP1_MAXALLOC);
 
@@ -115,9 +114,6 @@ isc_mem_test(void **state) {
 		items1[i] = NULL;
 	}
 
-	rval = isc_mempool_getfreecount(mp1);
-	assert_int_equal(rval, 10);
-
 	rval = isc_mempool_getallocated(mp1);
 	assert_int_equal(rval, 19);
 
@@ -126,7 +122,6 @@ isc_mem_test(void **state) {
 	 * them, then allocate 50 more, etc.
 	 */
 
-	isc_mempool_setfreemax(mp2, 25);
 	isc_mempool_setfillcount(mp2, 25);
 
 	for (j = 0; j < 500000; j++) {
@@ -472,8 +467,13 @@ mempool_thread(void *arg) {
 	for (int i = 0; i < ITERS; i++) {
 		for (int j = 0; j < NUM_ITEMS; j++) {
 			items[j] = isc_mempool_get(mp);
+			REQUIRE(items[j] != NULL);
+			/* printf("G: %p\n", items[j]); */
+			/* fflush(stdout); */
 		}
 		for (int j = 0; j < NUM_ITEMS; j++) {
+			/* printf("P: %p\n", items[j]); */
+			/* fflush(stdout); */
 			isc_mempool_put(mp, items[j]);
 		}
 	}
@@ -490,17 +490,11 @@ isc_mempool_benchmark(void **state) {
 	isc_result_t result;
 	size_t size = ITEM_SIZE;
 	isc_mempool_t *mp = NULL;
-	isc_mutex_t mplock;
 	char *cmocka_message_output = getenv("CMOCKA_MESSAGE_OUTPUT");
-
-	isc_mutex_init(&mplock);
 
 	result = isc_mempool_create(mctx, ITEM_SIZE, &mp);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
-	isc_mempool_associatelock(mp, &mplock);
-
-	isc_mempool_setfreemax(mp, 32768);
 	isc_mempool_setfillcount(mp, ISC_MAX(NUM_ITEMS / nthreads, 1));
 
 	UNUSED(state);
@@ -532,7 +526,6 @@ isc_mempool_benchmark(void **state) {
 	}
 
 	isc_mempool_destroy(&mp);
-	isc_mutex_destroy(&mplock);
 }
 
 /*

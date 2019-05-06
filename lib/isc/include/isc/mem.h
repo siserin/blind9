@@ -416,11 +416,10 @@ isc_mempool_create(isc_mem_t *mctx, size_t size,
  *
  * Defaults:
  *\li	maxalloc = UINT_MAX
- *\li	freemax = 1
- *\li	fillcount = 1
+ *\li	fillcount = 32
  *
  * Returns:
- *\li	#ISC_R_NOMEMORY		-- not enough memory to create pool
+ *\li	#ISC_R_NOMEMORY	-- not enough memory to create pool
  *\li	#ISC_R_SUCCESS		-- all is well.
  */
 
@@ -483,18 +482,6 @@ isc_mempool_associatelock(isc_mempool_t *mpctx, isc_mutex_t *lock);
  *
  * All functions require (in addition to other requirements):
  *	mpctx is a valid memory pool
- */
-
-unsigned int
-isc_mempool_getfreemax(isc_mempool_t *mpctx);
-/*%<
- * Returns the maximum allowed size of the free list.
- */
-
-void
-isc_mempool_setfreemax(isc_mempool_t *mpctx, unsigned int limit);
-/*%<
- * Sets the maximum allowed size of the free list.
  */
 
 unsigned int

@@ -745,11 +745,11 @@ dns_message_create(isc_mem_t *mctx, unsigned int intent, dns_message_t **msgp)
 	 * Ok, it is safe to allocate (and then "goto cleanup" if failure)
 	 */
 
-	result = isc_mempool_create(m->mctx, sizeof(dns_name_t), &m->namepool);
+	result = isc_mempool_create(m->mctx, sizeof(dns_name_t),
+				    &m->namepool);
 	if (result != ISC_R_SUCCESS)
 		goto cleanup;
 	isc_mempool_setfillcount(m->namepool, NAME_COUNT);
-	isc_mempool_setfreemax(m->namepool, NAME_COUNT);
 	isc_mempool_setname(m->namepool, "msg:names");
 
 	result = isc_mempool_create(m->mctx, sizeof(dns_rdataset_t),
@@ -757,7 +757,6 @@ dns_message_create(isc_mem_t *mctx, unsigned int intent, dns_message_t **msgp)
 	if (result != ISC_R_SUCCESS)
 		goto cleanup;
 	isc_mempool_setfillcount(m->rdspool, RDATASET_COUNT);
-	isc_mempool_setfreemax(m->rdspool, RDATASET_COUNT);
 	isc_mempool_setname(m->rdspool, "msg:rdataset");
 
 	dynbuf = NULL;
