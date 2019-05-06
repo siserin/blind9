@@ -375,17 +375,13 @@ delete_trace_entry(isc__mem_t *mctx, const void *ptr, size_t size,
 }
 #endif /* ISC_MEM_TRACKLINES */
 
-static inline void *
-mem_getunlocked(isc__mem_t *ctx, size_t size) {
-	void *ret;
+/* Memory accounting helper functions */
 
+static inline void
+mem_accounting_add(isc__mem_t *ctx, size_t size) {
+	perthread_t *pt = get_perthread(ctx);
 	int64_t malloced;
-	perthread_t * pt = get_perthread(ctx);
 
-	ret = default_memalloc(size);
-	if (ISC_UNLIKELY((isc_mem_flags & ISC_MEMFLAG_FILL) != 0)) {
-		memset(ret, 0xbe, size); /* Mnemonic for "beef". */
-	}
 	atomic_fetch_add_relaxed(&pt->total, size);
 	atomic_fetch_add_relaxed(&pt->inuse, size);
 	atomic_fetch_add_relaxed(&pt->gets, 1);
@@ -395,6 +391,26 @@ mem_getunlocked(isc__mem_t *ctx, size_t size) {
 	if (malloced > atomic_load_relaxed(&pt->maxmalloced)) {
 		atomic_store_relaxed(&pt->maxmalloced, malloced);
 	}
+}
+
+static inline void
+mem_accounting_del(isc__mem_t *ctx, size_t size) {
+	perthread_t * pt = get_perthread(ctx);
+
+	atomic_fetch_sub_relaxed(&pt->gets, 1);
+	atomic_fetch_sub_relaxed(&pt->inuse, size);
+	atomic_fetch_sub_relaxed(&pt->malloced, size);
+}
+
+static inline void *
+mem_getunlocked(isc__mem_t *ctx, size_t size) {
+	void *ret;
+
+	ret = default_memalloc(size);
+	if (ISC_UNLIKELY((isc_mem_flags & ISC_MEMFLAG_FILL) != 0)) {
+		memset(ret, 0xbe, size); /* Mnemonic for "beef". */
+	}
+	mem_accounting_add(ctx, size);
 
 	return (ret);
 }
@@ -402,15 +418,11 @@ mem_getunlocked(isc__mem_t *ctx, size_t size) {
 /* coverity[+free : arg-1] */
 static inline void
 mem_putunlocked(isc__mem_t *ctx, void *mem, size_t size) {
-	perthread_t * pt = get_perthread(ctx);
 	if (ISC_UNLIKELY((isc_mem_flags & ISC_MEMFLAG_FILL) != 0)){
 		memset(mem, 0xde, size); /* Mnemonic for "dead". */
 	}
 	default_memfree(mem);
-
-	atomic_fetch_sub_relaxed(&pt->gets, 1);
-	atomic_fetch_sub_relaxed(&pt->inuse, size);
-	atomic_fetch_sub_relaxed(&pt->malloced, size);
+	mem_accounting_del(ctx, size);
 }
 
 static void
