@@ -2522,6 +2522,7 @@ client_setup(ns_clientmgr_t *manager, isc_mem_t *mctx, ns_client_t *client) {
 	ns_server_attach(manager->sctx, &client->sctx);
 
 	client->task = NULL;
+	isc_task_attach(manager->taskpool[isc_random_uniform(CLIENT_NTASKS)], &client->task);
 
 	client->delaytimer = NULL;
 
@@ -2680,6 +2681,12 @@ clientmgr_destroy(ns_clientmgr_t *manager) {
 	if (manager->excl != NULL)
 		isc_task_detach(&manager->excl);
 
+	for (i = 0; i < CLIENT_NTASKS; i++) {
+		if (manager->taskpool[i] != NULL) {
+			isc_task_detach(&manager->taskpool[i]);
+		}
+	}
+	isc_mem_put(manager->mctx, manager->taskpool, CLIENT_NTASKS * sizeof(isc_task_t*));
 	ns_server_detach(&manager->sctx);
 
 	manager->magic = 0;
@@ -2716,7 +2723,11 @@ ns_clientmgr_create(isc_mem_t *mctx, ns_server_t *sctx, isc_taskmgr_t *taskmgr,
 	manager->timermgr = timermgr;
 	manager->interface = interface;
 	manager->exiting = false;
-
+	manager->taskpool = isc_mem_get(mctx, CLIENT_NTASKS*sizeof(isc_task_t*));
+	for (i=0; i < CLIENT_NTASKS; i++) {
+		manager->taskpool[i] = NULL;
+		isc_task_create(manager->taskmgr, 20, &manager->taskpool[i]);
+	}
 	manager->sctx = NULL;
 	ns_server_attach(sctx, &manager->sctx);
 
