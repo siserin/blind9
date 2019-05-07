@@ -102,6 +102,10 @@ typedef struct ns_tcpconn {
  * server.
  */
 
+#define CLIENT_NTASKS				100
+/*%<
+ * Number of tasks to be used by clients - those are used only when recursing
+ */
 
 typedef ISC_QUEUE(ns_client_t) client_queue_t;
 typedef ISC_LIST(ns_client_t) client_list_t;
@@ -119,6 +123,10 @@ struct ns_clientmgr {
 	isc_taskmgr_t *			taskmgr;
 	isc_timermgr_t *		timermgr;
 	isc_task_t *			excl;
+
+	/* Attached by clients, needed for e.g. recursion */
+	isc_task_t **			taskpool;
+
 	ns_interface_t			*interface;
 
 	/* Lock covers manager state. */
