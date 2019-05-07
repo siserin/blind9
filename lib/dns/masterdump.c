@@ -99,10 +99,8 @@ typedef struct dns_totext_ctx {
 	uint32_t 		current_ttl;
 	bool 		current_ttl_valid;
 	dns_ttl_t		serve_stale_ttl;
-	unsigned int	rdata_size;
 	bool			dumptruncated;
-	unsigned int	rdata_line;
-	unsigned int	rdata_set;
+	unsigned int	bytes_truncated;
 } dns_totext_ctx_t;
 
 LIBDNS_EXTERNAL_DATA const dns_master_style_t
@@ -497,8 +495,8 @@ ncache_summary(dns_rdataset_t *rdataset, bool omit_final_dot,
 	return (result);
 }
 
-static int
-truncate_rdata(isc_buffer_t *buffer, unsigned int used_before, dns_totext_ctx_t ctx) {
+static void
+truncate_rdata(isc_buffer_t *buffer, unsigned int used_before, dns_totext_ctx_t *ctx) {
 	const unsigned int length_limit = TRUNCATED_RDATA_LENGTH_LIMIT;
 	const unsigned int used_after = isc_buffer_usedlength(buffer);
 	const unsigned int rdata_length = used_after - used_before;
@@ -507,9 +505,8 @@ truncate_rdata(isc_buffer_t *buffer, unsigned int used_before, dns_totext_ctx_t 
 		isc_buffer_subtract(buffer, rdata_length - length_limit);
 		isc_buffer_printf(buffer, "...");
 		unsigned int omitted_bytes = rdata_length - length_limit;
-		ctx.rdata_line+= omitted_bytes;
+		ctx->bytes_truncated+= omitted_bytes;
 	}
-	return ctx.rdata_line;
 }
 
 /*
@@ -730,7 +727,7 @@ rdataset_totext(dns_rdataset_t *rdataset,
 						   target));
 
 			if ((ctx->style.flags & DNS_STYLEFLAG_TRUNCATE_RDATA) != 0) {
-				ctx->rdata_set+=truncate_rdata(target, used_before, *ctx);
+				truncate_rdata(target, used_before, ctx);
 			}
 
 			rdata_chunk_size+=target->used;
@@ -743,7 +740,6 @@ rdataset_totext(dns_rdataset_t *rdataset,
 
 		first = false;
 		result = dns_rdataset_next(rdataset);
-		ctx->rdata_size+=rdata_chunk_size;
 	}
 
 	if (result != ISC_R_NOMORE)
@@ -1691,9 +1687,7 @@ dumptostreaminc(dns_dumpctx_t *dctx) {
 	dns_fixedname_t fixname;
 	unsigned int nodes;
 	isc_time_t start;
-	dctx->tctx.rdata_size=0;
-	dctx->tctx.rdata_line=0;
-	dctx->tctx.rdata_set=0;
+	dctx->tctx.bytes_truncated=0;
 
 	bufmem = isc_mem_get(dctx->mctx, initial_buffer_length);
 	if (bufmem == NULL)
@@ -1762,10 +1756,9 @@ dumptostreaminc(dns_dumpctx_t *dctx) {
 		dns_db_detachnode(dctx->db, &node);
 		result = dns_dbiterator_next(dctx->dbiter);
 	}
-	fprintf(dctx->f, "\n The size of this rdata set is: %u bytes\n", (unsigned int) dctx->tctx.rdata_size);
 
-	if ((dctx->tctx.style.flags & DNS_STYLEFLAG_TRUNCATE_RDATA) != 0 && (dctx->tctx.rdata_set > 0)) {
-		fprintf(dctx->f, "\n The size of the truncated bytes in this rdata set is: %u bytes\n", (unsigned int) dctx->tctx.rdata_set);
+	if ((dctx->tctx.style.flags & DNS_STYLEFLAG_TRUNCATE_RDATA) != 0 && (dctx->tctx.bytes_truncated > 0)) {
+		fprintf(dctx->f, "\n The size of the truncated bytes in this node set is: %u bytes\n", (unsigned int) dctx->tctx.bytes_truncated);
 	}
 
 	/*
