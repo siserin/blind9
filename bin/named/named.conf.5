@@ -1,5 +1,5 @@
 .\" Copyright (C) 2004-2019 Internet Systems Consortium, Inc. ("ISC")
-.\" 
+.\"
 .\" This Source Code Form is subject to the terms of the Mozilla Public
 .\" License, v. 2.0. If a copy of the MPL was not distributed with this
 .\" file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,7 +8,7 @@
 .ad l
 '\" t
 .\"     Title: named.conf
-.\"    Author: 
+.\"    Author:
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2018-12-07
 .\"    Manual: BIND9
@@ -872,6 +872,7 @@ view \fIstring\fR [ \fIclass\fR ] {
 		dnssec\-loadkeys\-interval \fIinteger\fR;
 		dnssec\-secure\-to\-insecure \fIboolean\fR;
 		dnssec\-update\-mode ( maintain | no\-resign );
+		dnssec\-policy \fIstring\fR;
 		file \fIquoted_string\fR;
 		forward ( first | only );
 		forwarders [ port \fIinteger\fR ] [ dscp \fIinteger\fR ] { (
@@ -980,6 +981,7 @@ zone \fIstring\fR [ \fIclass\fR ] {
 	dnssec\-loadkeys\-interval \fIinteger\fR;
 	dnssec\-secure\-to\-insecure \fIboolean\fR;
 	dnssec\-update\-mode ( maintain | no\-resign );
+	dnssec\-policy \fIstring\fR;
 	file \fIquoted_string\fR;
 	forward ( first | only );
 	forwarders [ port \fIinteger\fR ] [ dscp \fIinteger\fR ] { ( \fIipv4_address\fR
@@ -1039,6 +1041,33 @@ zone \fIstring\fR [ \fIclass\fR ] {
 	use\-alt\-transfer\-source \fIboolean\fR;
 	zero\-no\-soa\-ttl \fIboolean\fR;
 	zone\-statistics ( full | terse | none | \fIboolean\fR );
+};
+.fi
+.if n \{\
+.RE
+.\}
+.SH "DNSSEC-POLICY"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+dnssec\-policy \fIstring\fR {
+	auto\-dnssec ( allow | maintain | off );
+	dnskey\-sig\-validity \fIinteger\fR;
+	dnssec\-dnskey\-kskonly \fIboolean\fR;
+	dnssec\-loadkeys\-interval \fIinteger\fR;
+	dnssec\-secure\-to\-insecure \fIboolean\fR;
+	dnssec\-update\-mode ( maintain | no\-resign );
+	inline\-signing \fIboolean\fR;
+	key\-directory \fIquoted_string\fR;
+	max\-zone\-ttl ( unlimited | \fIttlval\fR );
+	serial\-update\-method ( date | increment | unixtime );
+	sig\-signing\-nodes \fIinteger\fR;
+	sig\-signing\-signatures \fIinteger\fR;
+	sig\-signing\-type \fIinteger\fR;
+	sig\-validity\-interval \fIinteger\fR [ \fIinteger\fR ];
+	update\-check\-ksk \fIboolean\fR;
 };
 .fi
 .if n \{\
