@@ -261,7 +261,7 @@ struct isc_nmsocket {
 	/* 'spare' handles that can be reused to avoid allocations */
 	ck_stack_t inactivehandles	  CK_CC_CACHELINE;
 	/* extra data allocated at the end of each isc_nmhandle_t */
-	size_t				  extrasize;
+	size_t				  extrahandlesize;
 
 	uv_os_sock_t			  fd;
 	union {
@@ -651,7 +651,7 @@ alloc_handle(isc_nmsocket_t *socket) {
 	isc_nmhandle_t *handle;
 	handle = isc_mem_get(socket->mgr->mctx,
 			     sizeof(isc_nmhandle_t) +
-			     socket->extrasize);
+			     socket->extrahandlesize);
 	handle->socket = NULL;
 	handle->opaque = NULL;
 	handle->doreset = NULL;
@@ -693,7 +693,7 @@ isc_nmhandle_attach(isc_nmhandle_t *handle, isc_nmhandle_t **handlep) {
 static void
 nmhandle_free(isc_nmhandle_t *handle) {
 	isc_nm_t *mgr = NULL;
-	size_t extra = handle->socket->extrasize;
+	size_t extra = handle->socket->extrahandlesize;
 	if (handle->dofree) {
 		handle->dofree(handle->opaque);
 	}
@@ -705,7 +705,6 @@ nmhandle_free(isc_nmhandle_t *handle) {
 		    handle,
 		    sizeof(isc_nmhandle_t) + extra);
 	isc_nm_detach(&mgr);
-
 }
 
 void
@@ -833,7 +832,7 @@ isc_nmsocket_t *
 isc_nm_udp_listen(isc_nm_t *mgr,
 		  isc_nmiface_t *iface,
 		  isc_nm_recv_cb_t cb,
-		  size_t extrasize,
+		  size_t extrahandlesize,
 		  void *arg) {
 	isc_nmsocket_t *nsocket;
 	int i, res;
@@ -859,7 +858,7 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 	nsocket->cbarg = arg;
 	nsocket->parent = NULL;
 	nsocket->fd = -1;
-	nsocket->extrasize = extrasize;
+	nsocket->extrahandlesize = extrahandlesize;
 	ck_stack_init(&nsocket->inactivehandles);
 	nsocket->magic = NMSOCK_MAGIC;
 	isc_refcount_init(&nsocket->refs, 1);
@@ -875,7 +874,7 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 		csocket->tid = i;
 		csocket->fd = socket(AF_INET, SOCK_DGRAM, 0);
 		INSIST(csocket->fd >= 0);
-		csocket->extrasize = extrasize;
+		csocket->extrahandlesize = extrahandlesize;
 		ck_stack_init(&csocket->inactivehandles);
 		csocket->cb.recv = cb;
 		csocket->cbarg = arg;
@@ -962,7 +961,9 @@ handle_udpstoplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	}
 	uv_udp_recv_stop(&socket->uv_handle.udp);
 	uv_close((uv_handle_t*) &socket->uv_handle.udp, udp_close_cb);
-	while ((sentry = ck_stack_pop_mpmc(&socket->inactivehandles)) != NULL) {
+	while ((sentry = ck_stack_pop_mpmc(&socket->inactivehandles)) !=
+	       NULL)
+	{
 		isc_nmhandle_t *handle = nm_handle_is_get(sentry);
 		nmhandle_free(handle);
 	}
