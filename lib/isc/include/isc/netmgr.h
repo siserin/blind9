@@ -153,5 +153,9 @@ isc_nm_dnsread(isc_nmsocket_t *socket, isc_buffer_t*buf);
 isc_result_t
 isc_nm_send(isc_nmhandle_t *handle, isc_region_t *region, isc_nm_send_cb_t cb, void *cbarg);
 
-isc_nmsocket_t* 
-isc_nm_tcp_listen(isc_nm_t *mgr, isc_nmiface_t *iface, isc_nm_accept_cb_t cb, void *cbarg);
+isc_nmsocket_t *
+isc_nm_tcp_listen(isc_nm_t *mgr,
+		  isc_nmiface_t *iface,
+		  size_t extrahandlesize,
+		  isc_nm_accept_cb_t cb,
+		  void *cbarg);
