@@ -154,6 +154,7 @@ typedef struct isc__nm_uvreq {
 	isc__nm_cb_t	      cb;    /* callback */
 	void *		      cbarg;
 	isc_nmhandle_t *      handle;
+	ck_stack_entry_t      ilink;
 	union {
 		uv_req_t		req;
 		uv_getaddrinfo_t	getaddrinfo;
@@ -166,6 +167,8 @@ typedef struct isc__nm_uvreq {
 		uv_work_t		work;
 	} uv_req;
 } isc__nm_uvreq_t;
+
+CK_STACK_CONTAINER(struct isc__nm_uvreq, ilink, uvreq_is_get);
 
 /*
  * Make the worker listen for UDP requests on a specified socket.
@@ -260,12 +263,14 @@ struct isc_nmsocket {
 	isc_nmiface_t *			  iface;
 	/* 'spare' handles that can be reused to avoid allocations */
 	ck_stack_t inactivehandles	  CK_CC_CACHELINE;
+	ck_stack_t inactivereqs		  CK_CC_CACHELINE;
 	/* extra data allocated at the end of each isc_nmhandle_t */
 	size_t				  extrahandlesize;
 
 	uv_os_sock_t			  fd;
 	union {
-		uv_handle_t	   h;
+		uv_handle_t	   handle;
+		uv_stream_t	   stream;
 		uv_udp_t	   udp;
 		uv_tcp_t	   tcp;
 	} uv_handle;
@@ -291,9 +296,9 @@ alloc_handle(isc_nmsocket_t *socket);
 static isc_nmhandle_t *
 get_handle(isc_nmsocket_t *socket, isc_sockaddr_t *peer);
 static isc__nm_uvreq_t *
-isc__nm_uvreq_get(isc_nm_t *mgr);
+isc__nm_uvreq_get(isc_nm_t *mgr, isc_nmsocket_t *socket);
 static void
-isc__nm_uvreq_put(isc__nm_uvreq_t **req);
+isc__nm_uvreq_put(isc__nm_uvreq_t **req, isc_nmsocket_t *socket);
 
 static isc_result_t
 isc__nm_udp_send_direct(isc_nmsocket_t *socket,
@@ -332,7 +337,7 @@ tcp_connect_cb(uv_connect_t *uvreq, int status);
 static void
 handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0);
 static void
-tcp_listen_cb(uv_connect_t *uvreq, int status);
+tcp_connection_cb(uv_stream_t *server, int status);
 
 
 /*
@@ -610,6 +615,27 @@ isc_nmsocket_detach(isc_nmsocket_t **socketp) {
 	*socketp = NULL;
 }
 
+static void
+nmsocket_init(isc_nmsocket_t *socket, isc_nm_t *mgr, isc_nmsocket_type type) {
+	socket->iface = NULL;
+	socket->mgr = NULL;
+	isc_nm_attach(mgr, &socket->mgr);
+	socket->type = type;
+	socket->nchildren = 0;
+	socket->rchildren = 0;
+	socket->children = NULL;
+	socket->cb.accept = NULL; /* First of the union */
+	socket->cbarg = NULL;
+	socket->parent = NULL;
+	socket->fd = -1;
+	socket->extrahandlesize = 0;
+	uv_handle_set_data(&socket->uv_handle.handle, socket);
+
+	ck_stack_init(&socket->inactivehandles);
+	ck_stack_init(&socket->inactivereqs);
+	socket->magic = NMSOCK_MAGIC;
+	isc_refcount_init(&socket->refs, 1);
+}
 /*
  * alloc_cb for recv operations. XXXWPK TODO use a pool
  */
@@ -761,8 +787,19 @@ isc_nmhandle_peeraddr(isc_nmhandle_t *handle) {
  */
 
 static isc__nm_uvreq_t *
-isc__nm_uvreq_get(isc_nm_t *mgr) {
-	isc__nm_uvreq_t *req = isc_mem_get(mgr->mctx, sizeof(isc__nm_uvreq_t));
+isc__nm_uvreq_get(isc_nm_t *mgr, isc_nmsocket_t *socket) {
+	isc__nm_uvreq_t *req = NULL;
+	if (socket != NULL) {
+		/* Try to reuse one */
+		ck_stack_entry_t *sentry =
+			ck_stack_pop_mpmc(&socket->inactivereqs);
+		if (sentry != NULL) {
+			req = uvreq_is_get(sentry);
+		}
+	}
+	if (req == NULL) {
+		req = isc_mem_get(mgr->mctx, sizeof(isc__nm_uvreq_t));
+	}
 	uv_req_set_data(&req->uv_req.req, req);
 	req->mgr = NULL;
 	isc_nm_attach(mgr, &req->mgr);
@@ -775,13 +812,14 @@ isc__nm_uvreq_get(isc_nm_t *mgr) {
  * isc__nm_uvreq_put frees uv_req_t of specified type
  */
 static void
-isc__nm_uvreq_put(isc__nm_uvreq_t **req0) {
+isc__nm_uvreq_put(isc__nm_uvreq_t **req0, isc_nmsocket_t *socket) {
 	isc__nm_uvreq_t *req;
 	isc_nm_t *mgr;
 
 	INSIST(req0 != NULL);
 	req = *req0;
 	INSIST(VALID_UVREQ(req));
+	req0 = NULL;
 	req->magic = 0;
 	if (req->handle != NULL) {
 		isc_nmhandle_detach(&req->handle);
@@ -792,9 +830,10 @@ isc__nm_uvreq_put(isc__nm_uvreq_t **req0) {
 	 */
 	mgr = req->mgr;
 	req->mgr = NULL;
-	isc_mem_put(mgr->mctx, req, sizeof(isc__nm_uvreq_t));
+	if (! (socket != NULL && ck_stack_trypush_mpmc(&socket->inactivereqs, &req->ilink))) {
+		isc_mem_put(mgr->mctx, req, sizeof(isc__nm_uvreq_t));
+	}
 	isc_nm_detach(&mgr);
-	req0 = NULL;
 }
 
 /*
@@ -846,9 +885,8 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 	nsocket = malloc(sizeof(*nsocket)); /* TODO for debugging
 	                                     * isc_mem_get(mgr->mctx,
 	                                     * sizeof(*nsocket)); */
+	nmsocket_init(nsocket, mgr, isc_nm_udplistener);
 	nsocket->iface = iface;
-	nsocket->mgr = mgr;
-	nsocket->type = isc_nm_udplistener;
 	nsocket->nchildren = mgr->nworkers;
 	nsocket->rchildren = mgr->nworkers;
 	nsocket->children = malloc(mgr->nworkers * sizeof(*nsocket));
@@ -856,36 +894,26 @@ isc_nm_udp_listen(isc_nm_t *mgr,
  * sizeof(*nsocket)); */
 	nsocket->cb.recv = cb;
 	nsocket->cbarg = arg;
-	nsocket->parent = NULL;
-	nsocket->fd = -1;
 	nsocket->extrahandlesize = extrahandlesize;
-	ck_stack_init(&nsocket->inactivehandles);
-	nsocket->magic = NMSOCK_MAGIC;
-	isc_refcount_init(&nsocket->refs, 1);
+
 	for (i = 0; i < mgr->nworkers; i++) {
 		isc__netievent_udplisten_t *ievent;
 		isc_nmsocket_t *csocket = &nsocket->children[i];
+		nmsocket_init(csocket, mgr, isc_nm_udpsocket);
 		csocket->parent = nsocket;
-		csocket->mgr = mgr;
 		csocket->iface = iface;
-		csocket->type = isc_nm_udpsocket;
-		csocket->children = NULL;
-		csocket->nchildren = 0;
 		csocket->tid = i;
-		csocket->fd = socket(AF_INET, SOCK_DGRAM, 0);
-		INSIST(csocket->fd >= 0);
 		csocket->extrahandlesize = extrahandlesize;
-		ck_stack_init(&csocket->inactivehandles);
 		csocket->cb.recv = cb;
 		csocket->cbarg = arg;
-		isc_refcount_init(&csocket->refs, 1);
+		csocket->fd = socket(AF_INET, SOCK_DGRAM, 0);
+		INSIST(csocket->fd >= 0);
 		res = setsockopt(csocket->fd,
 				 SOL_SOCKET,
 				 SO_REUSEPORT,
 				 &one,
 				 sizeof(one));
 		INSIST(res == 0);
-		csocket->magic = NMSOCK_MAGIC;
 		ievent = get_ievent(mgr, netievent_udplisten);
 		ievent->socket = csocket;
 		enqueue_ievent(&mgr->workers[i], (isc__netievent_t*) ievent);
@@ -966,6 +994,10 @@ handle_udpstoplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	{
 		isc_nmhandle_t *handle = nm_handle_is_get(sentry);
 		nmhandle_free(handle);
+	}
+	while ((sentry = ck_stack_pop_mpmc(&socket->inactivereqs)) != NULL) {
+		isc__nm_uvreq_t *uvreq = uvreq_is_get(sentry);
+		isc_mem_put(socket->mgr->mctx, uvreq, sizeof(*uvreq));
 	}
 }
 
@@ -1048,7 +1080,7 @@ isc__nm_udp_send(isc_nmhandle_t *handle,
 
 	rsocket = &psocket->children[ntid];
 
-	uvreq = isc__nm_uvreq_get(socket->mgr);
+	uvreq = isc__nm_uvreq_get(socket->mgr, socket);
 	uvreq->uvbuf.base = (char *) region->base;
 	uvreq->uvbuf.len = region->length;
 	isc_nmhandle_attach(handle, &uvreq->handle);
@@ -1105,7 +1137,7 @@ udp_send_cb(uv_udp_send_t *req, int status) {
 	}
 	INSIST(VALID_NMHANDLE(uvreq->handle));
 	uvreq->cb.send(uvreq->handle, result, uvreq->cbarg);
-	isc__nm_uvreq_put(&uvreq);
+	isc__nm_uvreq_put(&uvreq, uvreq->handle->socket);
 }
 
 /*
@@ -1184,7 +1216,7 @@ isc_nm_tcp_connect(isc_nm_t*mgr,
 
 	sock->uv_handle.tcp.data = sock;
 
-	req = isc__nm_uvreq_get(sock->mgr);
+	req = isc__nm_uvreq_get(sock->mgr, sock);
 	memcpy(&req->peer, peer, peer->length);
 	if (iface != NULL) {
 		memcpy(&req->local, iface, iface->addr.length);
@@ -1196,7 +1228,7 @@ isc_nm_tcp_connect(isc_nm_t*mgr,
 
 	result = isc__nm_tcp_connect_direct(sock, req);
 	if (result != ISC_R_SUCCESS) {
-		isc__nm_uvreq_put(&req);
+		isc__nm_uvreq_put(&req, NULL);
 		isc_mem_put(mgr->mctx, sock, sizeof(isc_nmsocket_t));
 	}
 	return (result);
@@ -1266,12 +1298,13 @@ tcp_connect_cb(uv_connect_t *uvreq, int status) {
 		/* TODO handle it properly, free socket, translate code */
 		req->cb.connect(NULL, ISC_R_FAILURE, req->cbarg);
 	}
-	isc__nm_uvreq_put(&req);
+	isc__nm_uvreq_put(&req, socket);
 }
 
 isc_nmsocket_t *
 isc_nm_tcp_listen(isc_nm_t *mgr,
 		  isc_nmiface_t *iface,
+		  size_t extrahandlesize,
 		  isc_nm_accept_cb_t cb,
 		  void *cbarg)
 {
@@ -1288,51 +1321,17 @@ isc_nm_tcp_listen(isc_nm_t *mgr,
 	nsocket->cb.accept = cb;
 	nsocket->cbarg = cbarg;
 	nsocket->parent = NULL;
+	nsocket->extrahandlesize = extrahandlesize;
 	/*
 	 * Listening to TCP is rare enough not to care about the
 	 * added overhead from passing this to another thread.
 	 */
 	ievent = get_ievent(mgr, netievent_tcplisten);
 	ievent->socket = nsocket;
-/*	ievent->req =  */
 	enqueue_ievent(&mgr->workers[isc_random_uniform(
 					     mgr->nworkers)],
 		       (isc__netievent_t*) ievent);
-	isc_refcount_init(&nsocket->refs, 1);
 	return (nsocket);
-}
-
-int
-isc__nm_tcp_listen_direct(isc_nmsocket_t *socket, isc__nm_uvreq_t *req);
-
-int
-isc__nm_tcp_listen_direct(isc_nmsocket_t *socket, isc__nm_uvreq_t *req)
-{
-	isc__networker_t *worker;
-	int r;
-
-	REQUIRE(isc_netmgr_tid >= 0);
-
-	worker = &req->mgr->workers[isc_netmgr_tid];
-
-	r = uv_tcp_init(&worker->loop, &socket->uv_handle.tcp);
-	if (r != 0) {
-		return (r);
-	}
-	if (req->local.length != 0) {
-		r = uv_tcp_bind(&socket->uv_handle.tcp,
-				&req->local.type.sa,
-				0);
-		if (r != 0) {
-			/* TODO uv_close() */
-			return (r);
-		}
-	}
-	r = uv_tcp_connect(&req->uv_req.connect,
-			   &socket->uv_handle.tcp,
-			   &req->peer.type.sa,
-			   tcp_connect_cb);
-	return (r);
 }
 
 static void
@@ -1341,37 +1340,48 @@ handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	isc__netievent_tcpconnect_t *ievent =
 		(isc__netievent_tcpconnect_t *) ievent0;
 	isc_nmsocket_t *socket = ievent->socket;
-	isc__nm_uvreq_t *req = ievent->req;
 
-	REQUIRE(socket->type == isc_nm_tcpsocket);
+	REQUIRE(isc_netmgr_tid >= 0);
+	REQUIRE(socket->type == isc_nm_tcplistener);
 	REQUIRE(worker->id == ievent->req->mgr->workers[isc_netmgr_tid].id);
 
-	r = isc__nm_tcp_connect_direct(socket, req);
+	r = uv_tcp_init(&worker->loop, &socket->uv_handle.tcp);
 	if (r != 0) {
-		/* We need to issue callbacks ourselves */
-		tcp_listen_cb(&req->uv_req.connect, r);
+		return;
 	}
+
+/*	uv_tcp_bind(&socket->uv_handle.tcp, ) */
+	/* XXXWPK TODO bind address */
+	r = uv_listen((uv_stream_t*) &socket->uv_handle.tcp,
+		      10,
+		      tcp_connection_cb);
+	return;
+	/* issue callback? */
 }
 
 static void
-tcp_listen_cb(uv_connect_t *uvreq, int status) {
-	isc__nm_uvreq_t *req = (isc__nm_uvreq_t*) uvreq->data;
-	isc_nmsocket_t *socket = uvreq->handle->data;
-	INSIST(VALID_UVREQ(req));
+tcp_connection_cb(uv_stream_t *server, int status) {
+	(void) status; /* TODO */
+	isc_nmsocket_t *csocket, *ssocket;
+	isc__networker_t *worker;
 
-	if (status == 0) {
-		isc_nmhandle_t *handle = isc_mem_get(socket->mgr->mctx,
-						     sizeof(isc_nmhandle_t));
-		handle->socket = socket;
-		/* handle->peer = NULL; */
-		req->cb.connect(handle, ISC_R_SUCCESS, req->cbarg);
-	} else {
-		/* TODO handle it properly, free socket, translate code */
-		req->cb.connect(NULL, ISC_R_FAILURE, req->cbarg);
+	ssocket = uv_handle_get_data((uv_handle_t*) server);
+	REQUIRE(VALID_NMSOCK(socket));
+	REQUIRE(ssocket->tid == isc_netmgr_tid);
+
+	worker = &ssocket->mgr->workers[isc_netmgr_tid];
+
+	csocket = isc_mem_get(ssocket->mgr->mctx, sizeof(isc_nmsocket_t));
+	nmsocket_init(csocket, ssocket->mgr, isc_nm_tcpsocket);
+	csocket->extrahandlesize = ssocket->extrahandlesize;
+	uv_tcp_init(&worker->loop, &csocket->uv_handle.tcp);
+	int r = uv_accept(server, &csocket->uv_handle.stream);
+	if (r != 0) {
+		return; /* XXXWPK TODO LOG */
 	}
-	isc__nm_uvreq_put(&req);
+	isc_nmhandle_t *handle = alloc_handle(csocket);
+	ssocket->cb.accept(handle, ISC_R_SUCCESS, ssocket->cbarg);
 }
-
 
 /*
  *
