@@ -433,6 +433,7 @@ isc_mem_benchmark(void **state) {
 	double t;
 	isc_result_t result;
 	size_t size = ITEM_SIZE;
+	char *cmocka_message_output = getenv("CMOCKA_MESSAGE_OUTPUT");
 
 	UNUSED(state);
 
@@ -454,10 +455,13 @@ isc_mem_benchmark(void **state) {
 
 	t = isc_time_microdiff(&ts2, &ts1);
 
-	printf("[ TIME     ] isc_mem_benchmark: "
-	       "%d isc_mem_{get,put} calls, %f seconds, %f calls/second\n",
-	       nthreads * ITERS * NUM_ITEMS, t / 1000000.0,
-	       (nthreads * ITERS * NUM_ITEMS) / (t / 1000000.0));
+	if (cmocka_message_output == NULL ||
+	    !strcmp(cmocka_message_output, "STDOUT")) {
+		printf("[ TIME     ] isc_mem_benchmark: "
+		       "%d isc_mem_{get,put} calls, %f seconds, %f calls/second\n",
+		       nthreads * ITERS * NUM_ITEMS, t / 1000000.0,
+		       (nthreads * ITERS * NUM_ITEMS) / (t / 1000000.0));
+	}
 }
 
 static void *
@@ -487,6 +491,7 @@ isc_mempool_benchmark(void **state) {
 	size_t size = ITEM_SIZE;
 	isc_mempool_t *mp = NULL;
 	isc_mutex_t mplock;
+	char *cmocka_message_output = getenv("CMOCKA_MESSAGE_OUTPUT");
 
 	isc_mutex_init(&mplock);
 
@@ -518,10 +523,13 @@ isc_mempool_benchmark(void **state) {
 
 	t = isc_time_microdiff(&ts2, &ts1);
 
-	printf("[ TIME     ] isc_mempool_benchmark: "
-	       "%d isc_mempool_{get,put} calls, %f seconds, %f calls/second\n",
-	       nthreads * ITERS * NUM_ITEMS, t / 1000000.0,
-	       (nthreads * ITERS * NUM_ITEMS) / (t / 1000000.0));
+	if (cmocka_message_output == NULL ||
+	    !strcmp(cmocka_message_output, "STDOUT")) {
+		printf("[ TIME     ] isc_mempool_benchmark: "
+		       "%d isc_mempool_{get,put} calls, %f seconds, %f calls/second\n",
+		       nthreads * ITERS * NUM_ITEMS, t / 1000000.0,
+		       (nthreads * ITERS * NUM_ITEMS) / (t / 1000000.0));
+	}
 
 	isc_mempool_destroy(&mp);
 	isc_mutex_destroy(&mplock);
