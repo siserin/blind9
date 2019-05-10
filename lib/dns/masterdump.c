@@ -258,7 +258,7 @@ struct dns_dumpctx {
 	dns_totext_ctx_t	tctx;
 	isc_task_t		*task;
 	dns_dumpdonefunc_t	done;
-	bool			dumptruncated;
+	unsigned int	total_bytes;
 	void			*done_arg;
 	unsigned int		nodes;
 	/* dns_master_dumpinc() */
@@ -500,6 +500,7 @@ truncate_rdata(isc_buffer_t *buffer, unsigned int used_before, dns_totext_ctx_t 
 	const unsigned int length_limit = TRUNCATED_RDATA_LENGTH_LIMIT;
 	const unsigned int used_after = isc_buffer_usedlength(buffer);
 	const unsigned int rdata_length = used_after - used_before;
+// 	dns_dumpctx_t *dctx;
 
 	if (rdata_length > length_limit) {
 		isc_buffer_subtract(buffer, rdata_length - length_limit);
@@ -507,6 +508,7 @@ truncate_rdata(isc_buffer_t *buffer, unsigned int used_before, dns_totext_ctx_t 
 		unsigned int omitted_bytes = rdata_length - length_limit;
 		ctx->bytes_truncated+= omitted_bytes;
 	}
+// 	dctx->total_bytes+=dctx->tctx.bytes_truncated;
 }
 
 /*
@@ -1474,6 +1476,7 @@ dump_quantum(isc_task_t *task, isc_event_t *event) {
 		result = ISC_R_CANCELED;
 	else
 		result = dumptostreaminc(dctx);
+// 		dctx->total_bytes+=dctx->tctx.bytes_truncated;	//or here?
 	if (result == DNS_R_CONTINUE) {
 		event->ev_arg = dctx;
 		isc_task_send(task, &event);
@@ -1813,7 +1816,7 @@ dumptostreaminc(dns_dumpctx_t *dctx) {
 isc_result_t
 dns_master_dumptostreaminc(isc_mem_t *mctx, dns_db_t *db,
 			   dns_dbversion_t *version,
-			   const dns_master_style_t *style,
+			   const dns_master_style_t *style, unsigned int total_truncated_bytes,
 			   FILE *f, isc_task_t *task,
 			   dns_dumpdonefunc_t done, void *done_arg,
 			   dns_dumpctx_t **dctxp)
@@ -1827,6 +1830,8 @@ dns_master_dumptostreaminc(isc_mem_t *mctx, dns_db_t *db,
 
 	result = dumpctx_create(mctx, db, version, style, f, &dctx,
 				dns_masterformat_text, NULL);
+// 	dctx->total_bytes=total_truncated_bytes;
+	printf("\n t30 total_truncated_bytes: %u\n", total_truncated_bytes);	//ok
 	if (result != ISC_R_SUCCESS)
 		return (result);
 	isc_task_attach(task, &dctx->task);

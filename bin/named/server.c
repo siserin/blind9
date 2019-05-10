@@ -249,6 +249,7 @@ struct dumpcontext {
 	dns_db_t			*cache;
 	isc_task_t			*task;
 	dns_dbversion_t			*version;
+	unsigned int		total_truncated_bytes
 };
 
 struct viewlistentry {
@@ -10768,7 +10769,8 @@ dumpdone(void *arg, isc_result_t result) {
 				dns_cache_getname(dctx->view->view->cache));
 			result = dns_master_dumptostreaminc(dctx->mctx,
 							    dctx->cache, NULL,
-							    style, dctx->fp,
+							    style, dctx->total_truncated_bytes,
+							    dctx->fp,
 							    dctx->task,
 							    dumpdone, dctx,
 							    &dctx->mdctx);
@@ -10827,7 +10829,8 @@ dumpdone(void *arg, isc_result_t result) {
 			result = dns_master_dumptostreaminc(dctx->mctx,
 							    dctx->db,
 							    dctx->version,
-							    style, dctx->fp,
+							    style, dctx->total_truncated_bytes,
+							    dctx->fp,
 							    dctx->task,
 							    dumpdone, dctx,
 							    &dctx->mdctx);
@@ -10850,6 +10853,7 @@ dumpdone(void *arg, isc_result_t result) {
 		goto nextview;
  done:
 	fprintf(dctx->fp, "; Dump complete\n");
+	fprintf(dctx->fp, "\n t10 truncated_bytes should be here: %u\n", dctx->total_truncated_bytes);
 	result = isc_stdio_flush(dctx->fp);
 	if (result == ISC_R_SUCCESS)
 		isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
@@ -10890,6 +10894,7 @@ named_server_dumpdb(named_server_t *server, isc_lex_t *lex,
 	dctx->dumpfail = true;
 	dctx->dumpzones = false;
 	dctx->dumptruncated = false;
+	dctx->total_truncated_bytes = 0;
 	dctx->fp = NULL;
 	ISC_LIST_INIT(dctx->viewlist);
 	dctx->view = NULL;
