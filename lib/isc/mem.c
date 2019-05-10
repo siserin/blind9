@@ -160,10 +160,10 @@ struct isc_mem {
 #define VALID_MEMPOOL(c)	ISC_MAGIC_VALID(c, MEMPOOL_MAGIC)
 
 #define MPMC_QUEUE_SIZE 32768 /* Number of free items in the queue */
+
 struct isc_mempool {
 	/* always unlocked */
 	unsigned int	magic;
-	isc_mutex_t    *lock;		/*%< optional lock */
 	isc_mem_t      *mctx;		/*%< our memory context */
 	/*%< locked via the memory context's lock */
 	ISC_LINK(isc_mempool_t)	link;	/*%< next pool in this mem context */
@@ -1134,7 +1134,7 @@ isc_mem_gettag(isc_mem_t *ctx) {
  */
 
 isc_result_t
-isc_mempool_create(isc_mem_t *mctx, size_t size,
+isc_mempool_create(isc_mem_t *mctx, const size_t size,
 		   isc_mempool_t **mpctxp) {
 	isc_mempool_t *mpctx;
 
