@@ -395,9 +395,9 @@ static inline void
 mem_accounting_del(const isc_mem_t *ctx, const size_t size) {
 	perthread_t * pt = get_perthread(ctx);
 
-	atomic_fetch_sub_relaxed(&pt->gets, 1);
-	atomic_fetch_sub_relaxed(&pt->inuse, size);
-	atomic_fetch_sub_relaxed(&pt->malloced, size);
+	atomic_fetch_sub_release(&pt->gets, 1);
+	atomic_fetch_sub_release(&pt->inuse, size);
+	atomic_fetch_sub_release(&pt->malloced, size);
 }
 
 static inline void *
