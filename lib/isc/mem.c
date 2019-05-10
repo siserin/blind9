@@ -1355,7 +1355,7 @@ isc__mempool_get(isc_mempool_t *mpctx0 FLARG) {
 		UNLOCK(mpctx->lock);
 
 #if ISC_MEM_TRACKLINES
-	if (item != NULL) {
+	if (ISC_LIKELY(item != NULL)) {
 		ADD_TRACE(mctx, item, mpctx->size, file, line);
 	}
 #endif /* ISC_MEM_TRACKLINES */
