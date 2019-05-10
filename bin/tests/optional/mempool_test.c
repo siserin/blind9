@@ -39,9 +39,6 @@ main(int argc, char *argv[]) {
 	mp2 = NULL;
 	RUNTIME_CHECK(isc_mempool_create(mctx, 31, &mp2) == ISC_R_SUCCESS);
 
-	isc_mempool_associatelock(mp1, &lock);
-	isc_mempool_associatelock(mp2, &lock);
-
 	isc_mem_stats(mctx, stderr);
 
 	isc_mempool_setfillcount(mp1, 10);

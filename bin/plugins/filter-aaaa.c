@@ -391,7 +391,6 @@ plugin_register(const char *parameters,
 	 */
 	isc_mempool_setfillcount(inst->datapool, 1024);
 	isc_mutex_init(&inst->plock);
-	isc_mempool_associatelock(inst->datapool, &inst->plock);
 
 	/*
 	 * Set hook points in the view's hooktable.

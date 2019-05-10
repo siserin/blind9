@@ -2665,7 +2665,6 @@ dns_adb_create(isc_mem_t *mem, dns_view_t *view, isc_timermgr_t *timermgr,
 		goto fail2; \
 	isc_mempool_setfillcount((p), FILL_COUNT); \
 	isc_mempool_setname((p), n); \
-	isc_mempool_associatelock((p), &adb->mplock); \
 	} while (0)
 
 	MPINIT(dns_adbname_t, adb->nmp, "adbname");

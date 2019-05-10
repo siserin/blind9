@@ -1232,12 +1232,6 @@ isc_mempool_destroy(isc_mempool_t **mpctxp) {
 	isc_mem_put((isc_mem_t *)mpctx->mctx, mpctx, sizeof(isc_mempool_t));
 }
 
-void
-isc_mempool_associatelock(isc_mempool_t *mpctx0, isc_mutex_t *lock) {
-	UNUSED(mpctx0);
-	UNUSED(lock);
-}
-
 void *
 isc__mempool_get(isc_mempool_t *mpctx FLARG) {
 	void *item = NULL;
