@@ -37,20 +37,6 @@
 #include "mem_p.h"
 #include "mpmc_queue.c"
 
-/* Address Sanitizer Manual Poisoning */
-
-#if defined(__SANITIZE_ADDRESS__)
-#define ASAN_POISON_MEMORY_REGION(addr, size) \
-	__asan_poison_memory_region((addr), (size))
-#define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
-	__asan_unpoison_memory_region((addr), (size))
-#else
-#define ASAN_POISON_MEMORY_REGION(addr, size) \
-	((void)(addr), (void)(size))
-#define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
-	((void)(addr), (void)(size))
-#endif
-
 #define MCTXLOCK(m, l) LOCK(l)
 #define MCTXUNLOCK(m, l) UNLOCK(l)
 
@@ -1300,7 +1286,6 @@ isc__mempool_get(isc_mempool_t *mpctx FLARG) {
  out:
 
 	if (ISC_LIKELY(item != NULL)) {
-		ASAN_UNPOISON_MEMORY_REGION(item, mpctx->size);
 #if ISC_MEM_TRACKLINES
 		ADD_TRACE(mctx, item, mpctx->size, file, line);
 #endif /* ISC_MEM_TRACKLINES */
@@ -1323,8 +1308,6 @@ isc__mempool_put(isc_mempool_t *mpctx, void *mem FLARG) {
 #if ISC_MEM_TRACKLINES
 	DELETE_TRACE(mctx, mem, mpctx->size, file, line);
 #endif /* ISC_MEM_TRACKLINES */
-
-	ASAN_POISON_MEMORY_REGION(mem, mpctx->size);
 
 	int64_t allocated = atomic_fetch_sub_release(&mpctx->allocated, 1);
 	INSIST(allocated > 0);
