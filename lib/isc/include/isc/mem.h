@@ -257,8 +257,7 @@ isc_mem_stats(isc_mem_t *mctx, FILE *out);
  */
 
 void
-isc_mem_setdestroycheck(isc_mem_t *mctx,
-			bool on);
+isc_mem_setdestroycheck(isc_mem_t *mctx, const bool on);
 /*%<
  * If 'on' is true, 'mctx' will check for memory leaks when
  * destroyed and abort the program if any are present.
@@ -295,8 +294,9 @@ isc_mem_isovermem(isc_mem_t *mctx);
  */
 
 void
-isc_mem_setwater(isc_mem_t *mctx, isc_mem_water_t water, void *water_arg,
-		 size_t hiwater, size_t lowater);
+isc_mem_setwater(isc_mem_t *mctx,
+		 const isc_mem_water_t water, void *water_arg,
+		 const size_t hiwater, const size_t lowater);
 /*%<
  * Set high and low water marks for this memory context.
  *
@@ -332,7 +332,7 @@ isc_mem_setwater(isc_mem_t *mctx, isc_mem_water_t water, void *water_arg,
  */
 
 void
-isc_mem_waterack(isc_mem_t *ctx, int mark);
+isc_mem_waterack(isc_mem_t *ctx, const int mark);
 /*%<
  * Called to acknowledge changes in signaled by calls to 'water'.
  */
@@ -418,7 +418,8 @@ isc_mem_renderjson(json_object *memobj);
  */
 
 isc_result_t
-isc_mempool_create(isc_mem_t *mctx, size_t size, isc_mempool_t **mpctxp);
+isc_mempool_create(isc_mem_t *mctx, const size_t size,
+		   isc_mempool_t **mpctxp);
 /*%<
  * Create a memory pool.
  *
@@ -523,7 +524,7 @@ isc_mempool_getmaxalloc(isc_mempool_t *mpctx);
  */
 
 void
-isc_mempool_setmaxalloc(isc_mempool_t *mpctx, unsigned int limit);
+isc_mempool_setmaxalloc(isc_mempool_t *mpctx, const size_t limit);
 /*%<
  * Sets the maximum allowed number of allocations.
  *
@@ -545,7 +546,7 @@ isc_mempool_getfillcount(isc_mempool_t *mpctx);
  */
 
 void
-isc_mempool_setfillcount(isc_mempool_t *mpctx, unsigned int limit);
+isc_mempool_setfillcount(isc_mempool_t *mpctx, const size_t limit);
 /*%<
  * Sets the fillcount.
  *
@@ -558,15 +559,15 @@ isc_mempool_setfillcount(isc_mempool_t *mpctx, unsigned int limit);
  * Pseudo-private functions for use via macros.  Do not call directly.
  */
 void *
-ISCMEMFUNC(get)(isc_mem_t *, size_t _ISC_MEM_FLARG);
+ISCMEMFUNC(get)(isc_mem_t *, const size_t _ISC_MEM_FLARG);
 void
-ISCMEMFUNC(putanddetach)(isc_mem_t **, void *, size_t _ISC_MEM_FLARG);
+ISCMEMFUNC(putanddetach)(isc_mem_t **, void *, const size_t _ISC_MEM_FLARG);
 void
-ISCMEMFUNC(put)(isc_mem_t *, void *, size_t _ISC_MEM_FLARG);
+ISCMEMFUNC(put)(isc_mem_t *, void *, const size_t _ISC_MEM_FLARG);
 void *
-ISCMEMFUNC(allocate)(isc_mem_t *, size_t _ISC_MEM_FLARG);
+ISCMEMFUNC(allocate)(isc_mem_t *, const size_t _ISC_MEM_FLARG);
 void *
-ISCMEMFUNC(reallocate)(isc_mem_t *, void *, size_t _ISC_MEM_FLARG);
+ISCMEMFUNC(reallocate)(isc_mem_t *, void *, const size_t _ISC_MEM_FLARG);
 void
 ISCMEMFUNC(free)(isc_mem_t *, void * _ISC_MEM_FLARG);
 char *
