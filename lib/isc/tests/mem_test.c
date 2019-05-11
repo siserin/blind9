@@ -82,10 +82,10 @@ isc_mem_test(void **state) {
 	result = isc_mem_create(&localmctx);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
-	result = isc_mempool_create(localmctx, 24, &mp1);
+	result = isc_mempool_create(localmctx, 24, isc_mempool_spsc, &mp1);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
-	result = isc_mempool_create(localmctx, 31, &mp2);
+	result = isc_mempool_create(localmctx, 31, isc_mempool_spsc, &mp2);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	isc_mempool_setfillcount(mp1, MP1_FILLCNT);
@@ -151,7 +151,7 @@ isc_mem_test(void **state) {
 	result = isc_mem_create(&localmctx);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
-	result = isc_mempool_create(localmctx, 2, &mp1);
+	result = isc_mempool_create(localmctx, 2, isc_mempool_spsc, &mp1);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	tmp = isc_mempool_get(mp1);
@@ -492,7 +492,7 @@ isc_mempool_benchmark(void **state) {
 	isc_mempool_t *mp = NULL;
 	char *cmocka_message_output = getenv("CMOCKA_MESSAGE_OUTPUT");
 
-	result = isc_mempool_create(mctx, ITEM_SIZE, &mp);
+	result = isc_mempool_create(mctx, ITEM_SIZE, isc_mempool_mpmc, &mp);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	isc_mempool_setfillcount(mp, ISC_MAX(NUM_ITEMS / nthreads, 1));

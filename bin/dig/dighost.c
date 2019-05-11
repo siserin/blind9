@@ -1380,7 +1380,7 @@ setup_libs(void) {
 	check_result(result, "dst_lib_init");
 	is_dst_up = true;
 
-	result = isc_mempool_create(mctx, COMMSIZE, &commctx);
+	result = isc_mempool_create(mctx, COMMSIZE, isc_mempool_spsc, &commctx);
 	check_result(result, "isc_mempool_create");
 	isc_mempool_setname(commctx, "COMMPOOL");
 	/*

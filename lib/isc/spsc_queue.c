@@ -1,4 +1,4 @@
-/** Lock-free Multiple-Producer Multiple-consumer (MPMC) queue.
+/** Lock-free Single-Producer Single-consumer (MPMC) queue.
  *
  * Based on Dmitry Vyukov#s Bounded MPMC queue:
  *   http://www.1024cores.net/home/lock-free-algorithms/queues/bounded-mpmc-queue
@@ -31,51 +31,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _MPMC_QUEUE_H_
-#define _MPMC_QUEUE_H_
-
-#include <isc/atomic.h>
 #include <isc/mem.h>
 #include <isc/result.h>
-#include <isc/types.h>
 
-#define CACHELINE_SIZE 64
+#include "spsc_queue.h"
 
-typedef char cacheline_pad_t[CACHELINE_SIZE];
-
-struct mpmc_queue_cell {
-	atomic_uint_fast64_t sequence;
-	void *data;
-};
-
-struct mpmc_queue {
-	/**< Shared area: all threads read */
-	isc_mem_t *mctx;
-	size_t buffer_mask;
-	struct mpmc_queue_cell *buffer;
-	char _pad0[CACHELINE_SIZE
-		   - sizeof(isc_mem_t *)
-		   - sizeof(size_t)
-		   - sizeof(void *)];
-
-	/**> Producer area: only producers read & write */
-	atomic_uint_fast64_t	tail;	/**> Queue tail pointer */
-	char _pad1[CACHELINE_SIZE - sizeof(atomic_uint_fast64_t)];
-
-	/**> Consumer area: only consumers read & write */
-	atomic_uint_fast64_t	head;	/**> Queue head pointer */
-	char _pad2[CACHELINE_SIZE - sizeof(atomic_uint_fast64_t)];
-};
-
-typedef struct mpmc_queue mpmc_queue_t;
-
-/** Initialize MPMC queue */
+/** Initialize SPSC queue */
 static inline isc_result_t
-mpmc_queue_init(struct mpmc_queue *q, size_t size, isc_mem_t *mctx);
+spsc_queue_init(struct spsc_queue *q, size_t size, isc_mem_t *mctx)
+{
+	/* Queue size must be 2 exponent */
+	if ((size < 2) || ((size & (size - 1)) != 0)) {
+		return (ISC_R_RANGE);
+	}
 
-/** Destroy MPMC queue and release memory */
+	q->mctx = mctx;
+	q->buffer_mask = size - 1;
+	q->buffer = isc_mem_get(q->mctx, sizeof(q->buffer[0]) * size);
+
+	q->tail = 0;
+	q->head = 0;
+
+	return (ISC_R_SUCCESS);
+}
+
 static inline void
-mpmc_queue_destroy(struct mpmc_queue *q);
+spsc_queue_destroy(struct spsc_queue *q)
+{
+	isc_mem_put(q->mctx, q->buffer,
+		    (q->buffer_mask + 1) * sizeof(q->buffer[0]));
+}
 
 /** Return estimation of current queue usage.
  *
@@ -83,12 +68,30 @@ mpmc_queue_destroy(struct mpmc_queue *q);
  *       threads are performing operations.
  */
 static inline size_t
-mpmc_queue_size(struct mpmc_queue *q);
+spsc_queue_size(struct spsc_queue *q)
+{
+	return (&q->tail - &q->head);
+}
 
 static inline isc_result_t
-mpmc_queue_put(struct mpmc_queue *q, void *ptr);
+spsc_queue_put(struct spsc_queue *q, void *ptr)
+{
+	if (((q->head - (q->tail + 1)) & q->buffer_mask) == 0) {
+		return (ISC_R_NOSPACE);
+	}
+
+	q->buffer[q->tail & q->buffer_mask] = ptr;
+	q->tail++;
+	return (ISC_R_SUCCESS);
+}
 
 static inline isc_result_t
-mpmc_queue_get(struct mpmc_queue *q, void **ptr);
+spsc_queue_get(struct spsc_queue *q, void **ptr) {
+	if (((q->tail - q->head) & q->buffer_mask) == 0) {
+		return (ISC_R_NOMEMORY);
+	}
 
-#endif /* _MPMC_QUEUE_H_ */
+	*ptr = q->buffer[q->head & q->buffer_mask];
+	q->head++;
+	return (ISC_R_SUCCESS);
+}

@@ -34,10 +34,10 @@ main(int argc, char *argv[]) {
 	RUNTIME_CHECK(isc_mem_create(&mctx) == ISC_R_SUCCESS);
 
 	mp1 = NULL;
-	RUNTIME_CHECK(isc_mempool_create(mctx, 24, &mp1) == ISC_R_SUCCESS);
+	RUNTIME_CHECK(isc_mempool_create(mctx, 24, isc_mempool_spsc, &mp1) == ISC_R_SUCCESS);
 
 	mp2 = NULL;
-	RUNTIME_CHECK(isc_mempool_create(mctx, 31, &mp2) == ISC_R_SUCCESS);
+	RUNTIME_CHECK(isc_mempool_create(mctx, 31, isc_mempool_spsc, &mp2) == ISC_R_SUCCESS);
 
 	isc_mem_stats(mctx, stderr);
 

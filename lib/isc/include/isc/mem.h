@@ -155,6 +155,11 @@ struct isc_mem;
  */
 struct isc_mempool;
 
+typedef enum {
+	isc_mempool_spsc,
+	isc_mempool_mpmc,
+} isc_mempool_type;
+
 /*%
  * These functions are actually implemented in isc__mem_<function>
  * (two underscores). The single-underscore macros are used to pass
@@ -404,7 +409,8 @@ isc_mem_renderjson(json_object *memobj);
  */
 
 isc_result_t
-isc_mempool_create(isc_mem_t *mctx, size_t size,
+isc_mempool_create(isc_mem_t *mctx, const size_t size,
+		   isc_mempool_type type,
 		   isc_mempool_t **mpctxp);
 /*%<
  * Create a memory pool.

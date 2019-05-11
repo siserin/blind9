@@ -375,6 +375,7 @@ plugin_register(const char *parameters,
 	}
 
 	CHECK(isc_mempool_create(mctx, sizeof(filter_data_t),
+				 isc_mempool_mpmc,
 				 &inst->datapool));
 	CHECK(isc_ht_init(&inst->ht, mctx, 16));
 	isc_mutex_init(&inst->hlock);

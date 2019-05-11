@@ -746,6 +746,7 @@ dns_message_create(isc_mem_t *mctx, unsigned int intent, dns_message_t **msgp)
 	 */
 
 	result = isc_mempool_create(m->mctx, sizeof(dns_name_t),
+				    isc_mempool_spsc,
 				    &m->namepool);
 	if (result != ISC_R_SUCCESS)
 		goto cleanup;
@@ -753,6 +754,7 @@ dns_message_create(isc_mem_t *mctx, unsigned int intent, dns_message_t **msgp)
 	isc_mempool_setname(m->namepool, "msg:names");
 
 	result = isc_mempool_create(m->mctx, sizeof(dns_rdataset_t),
+				    isc_mempool_spsc,
 				    &m->rdspool);
 	if (result != ISC_R_SUCCESS)
 		goto cleanup;
