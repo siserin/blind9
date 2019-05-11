@@ -27,6 +27,7 @@
 #include <isc/mem.h>
 #include <isc/mutex.h>
 #include <isc/once.h>
+#include <isc/os.h>
 #include <isc/print.h>
 #include <isc/refcount.h>
 #include <isc/strerr.h>
@@ -53,6 +54,7 @@ LIBISC_EXTERNAL_DATA unsigned int isc_mem_flags = ISC_MEMFLAG_DEFAULT;
 #define ALIGNMENT_SIZE		8U		/*%< must be a power of 2 */
 #define DEBUG_TABLE_COUNT	512U
 #define PERTHREAD_TABLE_SIZE	128U
+#define ELIMINATION_TABLE_SIZE	64U
 
 /*
  * Types.
@@ -120,10 +122,13 @@ static uint64_t		totallost;
 #if defined(HAVE_THREAD_LOCAL)
 #include <threads.h>
 static thread_local int tid = -1;
+static thread_local int elid = -1;
 #elif defined(HAVE___THREAD)
 static __thread int tid = -1;
+static __thread int elid = -1;
 #elif defined(HAVE___DECLSPEC_THREAD)
 static __declspec( thread ) int tid = -1;
+static __declspec( thread ) int elid = -1;
 #else
 #error "Unknown method for defining a TLS variable!"
 #endif
@@ -165,6 +170,7 @@ struct isc_mempool {
 	/* always unlocked */
 	unsigned int	magic;
 	isc_mem_t      *mctx;		/*%< our memory context */
+	atomic_uintptr_t	*elimination;
 	/*%< locked via the memory context's lock */
 	ISC_LINK(isc_mempool_t)	link;	/*%< next pool in this mem context */
 	/*%< protected by atomics */
@@ -226,6 +232,16 @@ get_perthread(const isc_mem_t *ctx) {
 		INSIST(tid < ctx->pt_size);
 	}
 	return (&ctx->pt[tid]);
+}
+
+static inline size_t
+get_perthread_elid(const isc_mem_t *ctx) {
+	perthread_t *pt = get_perthread(ctx);
+	UNUSED(pt);
+	if (elid == -1) {
+		elid = tid / 2;
+	}
+	return (elid);
 }
 
 #define _register(field)						\
@@ -1146,8 +1162,15 @@ isc_mempool_create(isc_mem_t *mctx, const size_t size,
 	 * Allocate space for this pool, initialize values, and if all works
 	 * well, attach to the memory context.
 	 */
-	mpctx = isc_mem_get((isc_mem_t *)mctx, sizeof(isc_mempool_t));
+	mpctx = isc_mem_get(mctx, sizeof(isc_mempool_t));
 	RUNTIME_CHECK(mpctx != NULL);
+
+	/* Elimination Array */
+	mpctx->elimination = isc_mem_get(mctx, ELIMINATION_TABLE_SIZE
+					 * sizeof(mpctx->elimination[0]));
+	for (unsigned int i = 0; i < ELIMINATION_TABLE_SIZE; i++) {
+		atomic_init(&mpctx->elimination[i], 0);
+	}
 
 	mpctx->mctx = mctx;
 
@@ -1212,6 +1235,29 @@ isc_mempool_destroy(isc_mempool_t **mpctxp) {
 	*mpctxp = NULL;
 
 	/*
+	 * Return any items in the elimination table
+	 */
+	for (size_t i = 0; i < ELIMINATION_TABLE_SIZE; i++) {
+		uintptr_t empty = 0;
+		do {
+			item = (void *)atomic_load_acquire(
+				&mpctx->elimination[i]);
+			if (item == NULL) {
+				break;
+			}
+		} while (atomic_compare_exchange_weak_acq_rel(
+				 &mpctx->elimination[i],
+				 (uintptr_t *)&item,
+				 empty) == false);
+		if (item != NULL) {
+			mem_putunlocked(mctx, item, mpctx->size);
+		}
+	}
+
+	isc_mem_put(mctx, mpctx->elimination,
+		    ELIMINATION_TABLE_SIZE * sizeof(mpctx->elimination[0]));
+
+	/*
 	 * Return any items on the free list
 	 */
 	while (mpmc_queue_get(&mpctx->items, &item) == ISC_R_SUCCESS) {
@@ -1236,7 +1282,6 @@ void *
 isc__mempool_get(isc_mempool_t *mpctx FLARG) {
 	void *item = NULL;
 	isc_mem_t *mctx;
-	unsigned int i;
 	int ret;
 
 	REQUIRE(VALID_MEMPOOL(mpctx));
@@ -1252,11 +1297,30 @@ isc__mempool_get(isc_mempool_t *mpctx FLARG) {
 		goto out;
 	}
 
+	/* Check elimination array */
+	uintptr_t empty = 0;
+
+	size_t pt_id = get_perthread_elid(mctx);
+
+	do {
+		item = (void *)atomic_load_acquire(&mpctx->elimination[pt_id]);
+		if (item == NULL) {
+			break;
+		}
+	} while (atomic_compare_exchange_weak_acq_rel(
+			 &mpctx->elimination[pt_id],
+			 (uintptr_t *)&item,
+			 empty) == false);
+
+	if (item != NULL) {
+		goto out;
+	}
+
 	ret = mpmc_queue_get(&mpctx->items, &item);
 
 	if (ISC_UNLIKELY(ret != ISC_R_SUCCESS)) {
 		int64_t fillcount = atomic_load_relaxed(&mpctx->fillcount);
-		for (i = 0; i < fillcount; i++) {
+		for (unsigned int i = 0; i < fillcount; i++) {
 			item = mem_getunlocked(mctx, mpctx->size);
 			ret = mpmc_queue_put(&mpctx->items, item);
 			if (ret != ISC_R_SUCCESS) {
@@ -1274,12 +1338,11 @@ isc__mempool_get(isc_mempool_t *mpctx FLARG) {
 		}
 	}
 
-	atomic_fetch_add_relaxed(&mpctx->gets, 1);
-	atomic_fetch_add_relaxed(&mpctx->allocated, 1);
-
- out:
+out:
 
 	if (ISC_LIKELY(item != NULL)) {
+		atomic_fetch_add_relaxed(&mpctx->gets, 1);
+		atomic_fetch_add_relaxed(&mpctx->allocated, 1);
 #if ISC_MEM_TRACKLINES
 		ADD_TRACE(mctx, item, mpctx->size, file, line);
 #endif /* ISC_MEM_TRACKLINES */
@@ -1306,12 +1369,19 @@ isc__mempool_put(isc_mempool_t *mpctx, void *mem FLARG) {
 	int64_t allocated = atomic_fetch_sub_release(&mpctx->allocated, 1);
 	INSIST(allocated > 0);
 
-	r = mpmc_queue_put(&mpctx->items, mem);
-	/*
-	 * If our free list is full, return this to the mctx directly.
-	 */
-	if (r != ISC_R_SUCCESS) {
-		mem_putunlocked(mctx, mem, mpctx->size);
+	size_t pt_id = get_perthread_elid(mctx);
+
+	uintptr_t item =
+		atomic_exchange(&mpctx->elimination[pt_id], (uintptr_t)mem);
+
+	if (item != 0) {
+		r = mpmc_queue_put(&mpctx->items, (void *)item);
+		/*
+		 * If our free list is full, return this to the mctx directly.
+		 */
+		if (r != ISC_R_SUCCESS) {
+			mem_putunlocked(mctx, (void *)item, mpctx->size);
+		}
 	}
 }
 
