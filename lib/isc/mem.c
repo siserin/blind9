@@ -166,11 +166,18 @@ struct isc_mem {
 
 #define MPMC_QUEUE_SIZE 32768 /* Number of free items in the queue */
 
+typedef struct {
+  #if __STDC_VERSION__ >= 201112L
+	_Alignas(64)
+  #endif
+	atomic_uintptr_t item;
+} elimination_t;
+
 struct isc_mempool {
 	/* always unlocked */
 	unsigned int	magic;
 	isc_mem_t      *mctx;		/*%< our memory context */
-	atomic_uintptr_t	*elimination;
+	elimination_t	*elimination;
 	/*%< locked via the memory context's lock */
 	ISC_LINK(isc_mempool_t)	link;	/*%< next pool in this mem context */
 	/*%< protected by atomics */
@@ -224,7 +231,7 @@ print_active(const isc_mem_t *ctx, FILE *out);
 #endif /* ISC_MEM_TRACKLINES */
 
 
-static perthread_t *
+static inline perthread_t *
 get_perthread(const isc_mem_t *ctx) {
 	INSIST(tid < ctx->pt_size);
 	if (tid == -1) {
@@ -234,14 +241,14 @@ get_perthread(const isc_mem_t *ctx) {
 	return (&ctx->pt[tid]);
 }
 
-static inline size_t
-get_perthread_elid(const isc_mem_t *ctx) {
-	perthread_t *pt = get_perthread(ctx);
+static inline elimination_t *
+get_perthread_elimination(const isc_mempool_t *mpctx) {
+	perthread_t *pt = get_perthread(mpctx->mctx);
 	UNUSED(pt);
 	if (elid == -1) {
 		elid = tid / 2;
 	}
-	return (elid);
+	return (&mpctx->elimination[elid]);
 }
 
 #define _register(field)						\
@@ -1168,9 +1175,8 @@ isc_mempool_create(isc_mem_t *mctx, const size_t size,
 	/* Elimination Array */
 	mpctx->elimination = isc_mem_get(mctx, ELIMINATION_TABLE_SIZE
 					 * sizeof(mpctx->elimination[0]));
-	for (unsigned int i = 0; i < ELIMINATION_TABLE_SIZE; i++) {
-		atomic_init(&mpctx->elimination[i], 0);
-	}
+	memset(mpctx->elimination, 0, ELIMINATION_TABLE_SIZE
+	       * sizeof(mpctx->elimination[0]));
 
 	mpctx->mctx = mctx;
 
@@ -1241,12 +1247,12 @@ isc_mempool_destroy(isc_mempool_t **mpctxp) {
 		uintptr_t empty = 0;
 		do {
 			item = (void *)atomic_load_acquire(
-				&mpctx->elimination[i]);
+				&mpctx->elimination[i].item);
 			if (item == NULL) {
 				break;
 			}
 		} while (atomic_compare_exchange_weak_acq_rel(
-				 &mpctx->elimination[i],
+				 &mpctx->elimination[i].item,
 				 (uintptr_t *)&item,
 				 empty) == false);
 		if (item != NULL) {
@@ -1300,15 +1306,15 @@ isc__mempool_get(isc_mempool_t *mpctx FLARG) {
 	/* Check elimination array */
 	uintptr_t empty = 0;
 
-	size_t pt_id = get_perthread_elid(mctx);
+	elimination_t *pt_el = get_perthread_elimination(mpctx);
 
 	do {
-		item = (void *)atomic_load_acquire(&mpctx->elimination[pt_id]);
+	  item = (void *)atomic_load_relaxed(&pt_el->item);
 		if (item == NULL) {
 			break;
 		}
-	} while (atomic_compare_exchange_weak_acq_rel(
-			 &mpctx->elimination[pt_id],
+	} while (atomic_compare_exchange_weak_relaxed(
+			 &pt_el->item,
 			 (uintptr_t *)&item,
 			 empty) == false);
 
@@ -1369,12 +1375,17 @@ isc__mempool_put(isc_mempool_t *mpctx, void *mem FLARG) {
 	int64_t allocated = atomic_fetch_sub_release(&mpctx->allocated, 1);
 	INSIST(allocated > 0);
 
-	size_t pt_id = get_perthread_elid(mctx);
+	elimination_t *pt_el = get_perthread_elimination(mpctx);
 
-	uintptr_t item =
-		atomic_exchange(&mpctx->elimination[pt_id], (uintptr_t)mem);
+	void *item = (void *)atomic_load_relaxed(&pt_el->item);
+	if (item == NULL) {
+	  item =
+	    (void *)atomic_exchange_relaxed(&pt_el->item, (uintptr_t)mem);
+	} else {
+	  item = mem;
+	}
 
-	if (item != 0) {
+	if (item != NULL) {
 		r = mpmc_queue_put(&mpctx->items, (void *)item);
 		/*
 		 * If our free list is full, return this to the mctx directly.

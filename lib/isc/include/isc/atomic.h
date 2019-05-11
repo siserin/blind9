@@ -45,3 +45,6 @@
 
 #define atomic_load_acquire(o)						\
 	atomic_load_explicit((o), memory_order_acquire)
+
+#define atomic_exchange_relaxed(o, v)	\
+	atomic_exchange_explicit((o), (v), memory_order_relaxed)
