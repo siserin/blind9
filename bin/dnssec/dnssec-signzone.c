@@ -155,7 +155,8 @@ static unsigned char *gsalt = saltbuf;
 static size_t salt_length = 0;
 static isc_task_t *master = NULL;
 static unsigned int ntasks = 0;
-static bool shuttingdown = false, finished = false;
+static atomic_bool shuttingdown = ATOMIC_VAR_INIT(false);
+static bool finished = false;
 static bool nokeys = false;
 static bool removefile = false;
 static bool generateds = false;
@@ -1478,8 +1479,9 @@ assignwork(isc_task_t *task, isc_task_t *worker) {
 	static dns_fixedname_t fzonecut;	/* Protected by namelock. */
 	static unsigned int ended = 0;		/* Protected by namelock. */
 
-	if (shuttingdown)
+	if (atomic_load(&shuttingdown)) {
 		return;
+	}
 
 	LOCK(&namelock);
 	if (finished) {
@@ -3871,7 +3873,7 @@ main(int argc, char *argv[]) {
 			fatal("process aborted by user");
 	} else
 		isc_task_detach(&master);
-	shuttingdown = true;
+	atomic_store(&shuttingdown, true);;
 	for (i = 0; i < (int)ntasks; i++)
 		isc_task_detach(&tasks[i]);
 	isc_taskmgr_destroy(&taskmgr);
