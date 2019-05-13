@@ -31,6 +31,15 @@ typedef enum {
 	isc_rwlocktype_write
 } isc_rwlocktype_t;
 
+#if USE_PTHREAD_RWLOCK || __has_feature(thread_sanitizer)
+
+struct isc_rwlock {
+	pthread_rwlock_t	rwlock;
+	atomic_bool             downgrade;
+};
+
+#else /* USE_PTHREAD_RWLOCK || __has_feature(thread_sanitizer) */
+
 struct isc_rwlock {
 	/* Unlocked. */
 	unsigned int		magic;
@@ -65,8 +74,9 @@ struct isc_rwlock {
 
 	/* Unlocked. */
 	unsigned int		write_quota;
-
 };
+
+#endif /* USE_PTHREAD_RWLOCK || __has_feature(thread_sanitizer) */
 
 isc_result_t
 isc_rwlock_init(isc_rwlock_t *rwl, unsigned int read_quota,
