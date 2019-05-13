@@ -1119,7 +1119,9 @@ cleaner_shutdown_action(isc_task_t *task, isc_event_t *event) {
 	cache->live_tasks--;
 	INSIST(cache->live_tasks == 0);
 
-	should_free = (isc_refcount_current(&cache->references) == 0);
+	if (isc_refcount_current(&cache->references) == 0) {
+		should_free = true;
+	}
 
 	/*
 	 * By detaching the timer in the context of its task,

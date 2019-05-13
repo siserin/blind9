@@ -3093,7 +3093,7 @@ load_quantum(isc_task_t *task, isc_event_t *event) {
 	lctx = event->ev_arg;
 	REQUIRE(DNS_LCTX_VALID(lctx));
 
-	if (atomic_load(&lctx->canceled)) {
+	if (atomic_load_acquire(&lctx->canceled)) {
 		result = ISC_R_CANCELED;
 	} else {
 		result = (lctx->load)(lctx);
@@ -3125,7 +3125,7 @@ void
 dns_loadctx_cancel(dns_loadctx_t *lctx) {
 	REQUIRE(DNS_LCTX_VALID(lctx));
 
-	atomic_store(&lctx->canceled, true);
+	atomic_store_release(&lctx->canceled, true);
 }
 
 void

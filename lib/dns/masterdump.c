@@ -1329,7 +1329,7 @@ void
 dns_dumpctx_cancel(dns_dumpctx_t *dctx) {
 	REQUIRE(DNS_DCTX_VALID(dctx));
 
-	atomic_store(&dctx->canceled, true);
+	atomic_store_release(&dctx->canceled, true);
 }
 
 static isc_result_t
@@ -1411,7 +1411,7 @@ dump_quantum(isc_task_t *task, isc_event_t *event) {
 	REQUIRE(event != NULL);
 	dctx = event->ev_arg;
 	REQUIRE(DNS_DCTX_VALID(dctx));
-	if (atomic_load(&dctx->canceled)) {
+	if (atomic_load_acquire(&dctx->canceled)) {
 		result = ISC_R_CANCELED;
 	} else {
 		result = dumptostreaminc(dctx);

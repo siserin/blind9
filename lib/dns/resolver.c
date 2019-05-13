@@ -1642,7 +1642,7 @@ fctx_sendevents(fetchctx_t *fctx, isc_result_t result, int line) {
 	    (count < fctx->res->spillatmax || fctx->res->spillatmax == 0)) {
 		LOCK(&fctx->res->lock);
 		if (count == fctx->res->spillat &&
-		    !atomic_load(&fctx->res->exiting)) {
+		    !atomic_load_acquire(&fctx->res->exiting)) {
 			old_spillat = fctx->res->spillat;
 			fctx->res->spillat += 5;
 			if (fctx->res->spillat > fctx->res->spillatmax &&
@@ -4279,7 +4279,7 @@ fctx_unlink(fetchctx_t *fctx) {
 
 	dec_stats(res, dns_resstatscounter_nfetch);
 
-	if (atomic_load(&res->buckets[bucketnum].exiting) &&
+	if (atomic_load_acquire(&res->buckets[bucketnum].exiting) &&
 	    ISC_LIST_EMPTY(res->buckets[bucketnum].fctxs))
 	{
 		return (true);
@@ -7341,7 +7341,7 @@ resquery_response(isc_task_t *task, isc_event_t *event) {
 
 	rctx_respinit(task, devent, query, fctx, &rctx);
 
-	if (atomic_load(&fctx->res->exiting)) {
+	if (atomic_load_acquire(&fctx->res->exiting)) {
 		result = ISC_R_SHUTTINGDOWN;
 		FCTXTRACE("resolver shutting down");
 		rctx_done(&rctx, result);
@@ -9882,7 +9882,7 @@ spillattimer_countdown(isc_task_t *task, isc_event_t *event) {
 	UNUSED(task);
 
 	LOCK(&res->lock);
-	INSIST(!atomic_load(&res->exiting));
+	INSIST(!atomic_load_acquire(&res->exiting));
 	if (res->spillat > res->spillatmin) {
 		res->spillat--;
 		logit = true;
@@ -10010,7 +10010,7 @@ dns_resolver_create(dns_view_t *view,
 		isc_mem_setname(res->buckets[i].mctx, name, NULL);
 		isc_task_setname(res->buckets[i].task, name, res);
 		ISC_LIST_INIT(res->buckets[i].fctxs);
-		atomic_store(&res->buckets[i].exiting, false);
+		atomic_store_release(&res->buckets[i].exiting, false);
 		buckets_created++;
 	}
 
@@ -10201,7 +10201,7 @@ dns_resolver_prime(dns_resolver_t *res) {
 	LOCK(&res->lock);
 
 	/* XXXOND: cas needs to be used here */
-	if (!atomic_load(&res->exiting) && !res->priming) {
+	if (!atomic_load_acquire(&res->exiting) && !res->priming) {
 		INSIST(res->primefetch == NULL);
 		res->priming = true;
 		want_priming = true;
@@ -10268,11 +10268,11 @@ dns_resolver_attach(dns_resolver_t *source, dns_resolver_t **targetp) {
 
 	RRTRACE(source, "attach");
 
-	/* XXXOND: There's possibly a race between exiting and references? */
-
-	REQUIRE(!atomic_load(&source->exiting));
+	LOCK(&res->lock);
+	REQUIRE(!atomic_load_acquire(&source->exiting));
 
 	isc_refcount_increment(&source->references);
+	UNLOCK(&res->lock);
 
 	*targetp = source;
 }
@@ -10292,7 +10292,7 @@ dns_resolver_whenshutdown(dns_resolver_t *res, isc_task_t *task,
 
 	LOCK(&res->lock);
 
-	if (atomic_load(&res->exiting) && res->activebuckets == 0) {
+	if (atomic_load_acquire(&res->exiting) && res->activebuckets == 0) {
 		/*
 		 * We're already shutdown.  Send the event.
 		 */
@@ -10365,10 +10365,10 @@ dns_resolver_detach(dns_resolver_t **resp) {
 	*resp = NULL;
 
 	if (isc_refcount_decrement(&res->references) == 1) {
-		INSIST(atomic_load(&res->exiting) && res->activebuckets == 0);
+		INSIST(atomic_load_acquire(&res->exiting));
+		INSIST(res->activebuckets == 0);
 		destroy(res);
 	}
-
 }
 
 static inline bool
