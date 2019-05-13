@@ -58,10 +58,10 @@ struct isc_rwlock {
 	/* Locked by lock. */
 	isc_condition_t		readable;
 	isc_condition_t		writeable;
-	unsigned int		readers_waiting;
+	unsigned int			readers_waiting;
 
 	/* Locked by rwlock itself. */
-	unsigned int		write_granted;
+	atomic_int_fast32_t		write_granted;
 
 	/* Unlocked. */
 	unsigned int		write_quota;
