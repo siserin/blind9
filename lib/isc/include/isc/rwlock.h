@@ -35,7 +35,7 @@ struct isc_rwlock {
 	/* Unlocked. */
 	unsigned int		magic;
 	isc_mutex_t		lock;
-	int32_t		spins;
+	atomic_int_fast32_t	spins;
 
 	/*
 	 * When some atomic instructions with hardware assistance are

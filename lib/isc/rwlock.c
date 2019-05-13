@@ -101,7 +101,7 @@ isc_rwlock_init(isc_rwlock_t *rwl, unsigned int read_quota,
 	 */
 	rwl->magic = 0;
 
-	rwl->spins = 0;
+	atomic_init(&rwl->spins, 0);
 	atomic_init(&rwl->write_requests, 0);
 	atomic_init(&rwl->write_completions, 0);
 	atomic_init(&rwl->cnt_and_flag, 0);
@@ -326,11 +326,9 @@ isc__rwlock_lock(isc_rwlock_t *rwl, isc_rwlocktype_t type) {
 isc_result_t
 isc_rwlock_lock(isc_rwlock_t *rwl, isc_rwlocktype_t type) {
 	int32_t cnt = 0;
-	int32_t max_cnt = rwl->spins * 2 + 10;
+	int32_t spins = atomic_load_acquire(&rwl->spins) * 2 + 10;
+	int32_t max_cnt = ISC_MAX(spins, RWLOCK_MAX_ADAPTIVE_COUNT);
 	isc_result_t result = ISC_R_SUCCESS;
-
-	if (max_cnt > RWLOCK_MAX_ADAPTIVE_COUNT)
-		max_cnt = RWLOCK_MAX_ADAPTIVE_COUNT;
 
 	do {
 		if (cnt++ >= max_cnt) {
@@ -340,7 +338,7 @@ isc_rwlock_lock(isc_rwlock_t *rwl, isc_rwlocktype_t type) {
 		isc_rwlock_pause();
 	} while (isc_rwlock_trylock(rwl, type) != ISC_R_SUCCESS);
 
-	rwl->spins += (cnt - rwl->spins) / 8;
+	atomic_fetch_add_relaxed(&rwl->spins, (cnt - spins) / 8);
 
 	return (result);
 }
