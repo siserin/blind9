@@ -156,7 +156,7 @@ static size_t salt_length = 0;
 static isc_task_t *master = NULL;
 static unsigned int ntasks = 0;
 static atomic_bool shuttingdown = ATOMIC_VAR_INIT(false);
-static bool finished = false;
+static atomic_bool finished = ATOMIC_VAR_INIT(false);
 static bool nokeys = false;
 static bool removefile = false;
 static bool generateds = false;
@@ -1455,11 +1455,12 @@ signapex(void) {
 	cleannode(gdb, gversion, node);
 	dns_db_detachnode(gdb, &node);
 	result = dns_dbiterator_first(gdbiter);
-	if (result == ISC_R_NOMORE)
-		finished = true;
-	else if (result != ISC_R_SUCCESS)
+	if (result == ISC_R_NOMORE) {
+		atomic_store(&finished, true);
+	} else if (result != ISC_R_SUCCESS) {
 		fatal("failure iterating database: %s",
 		      isc_result_totext(result));
+	}
 }
 
 /*%
@@ -1484,7 +1485,7 @@ assignwork(isc_task_t *task, isc_task_t *worker) {
 	}
 
 	LOCK(&namelock);
-	if (finished) {
+	if (atomic_load(&finished)) {
 		ended++;
 		if (ended == ntasks) {
 			isc_task_detach(&task);
@@ -1554,7 +1555,7 @@ assignwork(isc_task_t *task, isc_task_t *worker) {
  next:
 		result = dns_dbiterator_next(gdbiter);
 		if (result == ISC_R_NOMORE) {
-			finished = true;
+			atomic_store(&finished, true);
 			break;
 		} else if (result != ISC_R_SUCCESS)
 			fatal("failure iterating database: %s",
@@ -3856,7 +3857,7 @@ main(int argc, char *argv[]) {
 	presign();
 	TIME_NOW(&sign_start);
 	signapex();
-	if (!finished) {
+	if (!atomic_load(&finished)) {
 		/*
 		 * There is more work to do.  Spread it out over multiple
 		 * processors if possible.
@@ -3869,8 +3870,9 @@ main(int argc, char *argv[]) {
 				      isc_result_totext(result));
 		}
 		(void)isc_app_run();
-		if (!finished)
+		if (!atomic_load(&finished)) {
 			fatal("process aborted by user");
+		}
 	} else
 		isc_task_detach(&master);
 	atomic_store(&shuttingdown, true);;
