@@ -249,7 +249,7 @@ struct dumpcontext {
 	dns_db_t			*cache;
 	isc_task_t			*task;
 	dns_dbversion_t			*version;
-	unsigned int		total_truncated_bytes
+	unsigned int		total_truncated_bytes;
 };
 
 struct viewlistentry {
@@ -10769,7 +10769,7 @@ dumpdone(void *arg, isc_result_t result) {
 				dns_cache_getname(dctx->view->view->cache));
 			result = dns_master_dumptostreaminc(dctx->mctx,
 							    dctx->cache, NULL,
-							    style, dctx->total_truncated_bytes,
+							    style, &dctx->total_truncated_bytes,
 							    dctx->fp,
 							    dctx->task,
 							    dumpdone, dctx,
@@ -10829,7 +10829,7 @@ dumpdone(void *arg, isc_result_t result) {
 			result = dns_master_dumptostreaminc(dctx->mctx,
 							    dctx->db,
 							    dctx->version,
-							    style, dctx->total_truncated_bytes,
+							    style, &dctx->total_truncated_bytes,
 							    dctx->fp,
 							    dctx->task,
 							    dumpdone, dctx,
@@ -10894,7 +10894,7 @@ named_server_dumpdb(named_server_t *server, isc_lex_t *lex,
 	dctx->dumpfail = true;
 	dctx->dumpzones = false;
 	dctx->dumptruncated = false;
-	dctx->total_truncated_bytes = 0;
+	dctx->total_truncated_bytes = 90;
 	dctx->fp = NULL;
 	ISC_LIST_INIT(dctx->viewlist);
 	dctx->view = NULL;
