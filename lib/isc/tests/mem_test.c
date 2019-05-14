@@ -404,18 +404,19 @@ isc_mem_traceflag_test(void **state) {
 }
 #endif
 
-#define ITERS 512
+#define ITERS 4096
 #define NUM_ITEMS 1024 //768
 #define ITEM_SIZE 1024
 
 static void *
 mem_thread(void *arg) {
-	void *items[NUM_ITEMS];
+	uint8_t *items[NUM_ITEMS];
 	size_t size = *((size_t *)arg);
 
 	for (int i = 0; i < ITERS; i++) {
 		for (int j = 0; j < NUM_ITEMS; j++) {
 			items[j] = isc_mem_get(mctx, size);
+			items[j][0] = 7;
 		}
 		for (int j = 0; j < NUM_ITEMS; j++) {
 			isc_mem_put(mctx, items[j], size);
@@ -467,11 +468,12 @@ isc_mem_benchmark(void **state) {
 static void *
 mempool_thread(void *arg) {
 	isc_mempool_t *mp = (isc_mempool_t *)arg;
-	void *items[NUM_ITEMS];
+	uint8_t *items[NUM_ITEMS];
 
 	for (int i = 0; i < ITERS; i++) {
 		for (int j = 0; j < NUM_ITEMS; j++) {
 			items[j] = isc_mempool_get(mp);
+			items[j][512] = 7;
 		}
 		for (int j = 0; j < NUM_ITEMS; j++) {
 			isc_mempool_put(mp, items[j]);

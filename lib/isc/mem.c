@@ -1300,59 +1300,7 @@ isc__mempool_get(isc_mempool_t *mpctx FLARG) {
 	REQUIRE(VALID_MEMPOOL(mpctx));
 
 	mctx = mpctx->mctx;
-
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
-	/*
-	 * Don't let the caller go over quota
-	 */
-	if (ISC_UNLIKELY(mpctx->allocated >= mpctx->maxalloc)) {
-		item = NULL;
-		goto out;
-	}
-
-	if (ISC_UNLIKELY(mpctx->items == NULL)) {
-		/*
-		 * We need to dip into the well.  Lock the memory context
-		 * here and fill up our free list.
-		 */
-		MCTXLOCK(mctx, &mctx->lock);
-		for (i = 0; i < mpctx->fillcount; i++) {
-			item = mem_getunlocked(mctx, mpctx->size);
-			if (ISC_UNLIKELY(item == NULL))
-				break;
-			item->next = mpctx->items;
-			mpctx->items = item;
-			mpctx->freecount++;
-		}
-		MCTXUNLOCK(mctx, &mctx->lock);
-	}
-
-	/*
-	 * If we didn't get any items, return NULL.
-	 */
-	item = mpctx->items;
-	if (ISC_UNLIKELY(item == NULL))
-		goto out;
-
-	mpctx->items = item->next;
-	INSIST(mpctx->freecount > 0);
-	mpctx->freecount--;
-	mpctx->gets++;
-	mpctx->allocated++;
-
- out:
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
-
-#if ISC_MEM_TRACKLINES
-	if (ISC_LIKELY(item != NULL)) {
-		ADD_TRACE(mctx, item, mpctx->size, file, line);
-	}
-#endif /* ISC_MEM_TRACKLINES */
-
-	return (item);
+	return (isc__mem_get(mctx, mpctx->size));
 }
 
 /* coverity[+free : arg-1] */
@@ -1363,41 +1311,8 @@ isc__mempool_put(isc_mempool_t *mpctx, void *mem FLARG) {
 
 	REQUIRE(VALID_MEMPOOL(mpctx));
 	REQUIRE(mem != NULL);
-
 	mctx = mpctx->mctx;
-
-	if (mpctx->lock != NULL)
-		LOCK(mpctx->lock);
-
-	INSIST(mpctx->allocated > 0);
-	mpctx->allocated--;
-
-#if ISC_MEM_TRACKLINES
-	DELETE_TRACE(mctx, mem, mpctx->size, file, line);
-#endif /* ISC_MEM_TRACKLINES */
-
-	/*
-	 * If our free list is full, return this to the mctx directly.
-	 */
-	if (mpctx->freecount >= mpctx->freemax) {
-		MCTXLOCK(mctx, &mctx->lock);
-		mem_putunlocked(mctx, mem, mpctx->size);
-		MCTXUNLOCK(mctx, &mctx->lock);
-		if (mpctx->lock != NULL)
-			UNLOCK(mpctx->lock);
-		return;
-	}
-
-	/*
-	 * Otherwise, attach it to our free list and bump the counter.
-	 */
-	mpctx->freecount++;
-	item = (element *)mem;
-	item->next = mpctx->items;
-	mpctx->items = item;
-
-	if (mpctx->lock != NULL)
-		UNLOCK(mpctx->lock);
+	isc__mem_put(mctx, mem, mpctx->size);
 }
 
 /*
