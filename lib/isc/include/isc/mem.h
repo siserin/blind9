@@ -38,7 +38,7 @@ typedef void (*isc_memfree_t)(void *, void *);
  * allocation and freeing by file and line number.
  */
 #ifndef ISC_MEM_TRACKLINES
-#define ISC_MEM_TRACKLINES 1
+#define ISC_MEM_TRACKLINES 0
 #endif
 
 /*%
@@ -104,7 +104,7 @@ LIBISC_EXTERNAL_DATA extern unsigned int isc_mem_flags;
 #define ISC_MEMFLAG_FILL		0x00000004	 /* fill with pattern after alloc and frees */
 
 #ifndef NDEBUG
-#define ISC_MEMFLAG_DEFAULT 	ISC_MEMFLAG_FILL
+#define ISC_MEMFLAG_DEFAULT 	0
 #else
 #define ISC_MEMFLAG_DEFAULT	0
 #endif

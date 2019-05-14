@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <limits.h>
+#include <malloc.h>
 
 #include <isc/atomic.h>
 #include <isc/bind9.h>
@@ -51,7 +52,8 @@ LIBISC_EXTERNAL_DATA unsigned int isc_mem_flags = ISC_MEMFLAG_DEFAULT;
 
 #define ALIGNMENT_SIZE		8U		/*%< must be a power of 2 */
 #define DEBUG_TABLE_COUNT	512U
-#define PERTHREAD_TABLE_SIZE	128U
+#define PERTHREAD_TABLE_SIZE	128
+#define PERTHREAD_TABLE_POOL	96
 
 /*
  * Types.
@@ -138,7 +140,6 @@ struct isc_mem {
 	isc_mutex_t		lock;
 	atomic_bool		checkfree;
 	perthread_t		*pt;
-	int			pt_size;
 	isc_refcount_t		references;
 	char			name[16];
 	void *			tag;
@@ -223,12 +224,16 @@ print_active(const isc_mem_t *ctx, FILE *out);
 #endif /* ISC_MEM_TRACKLINES */
 
 
-static perthread_t *
+static inline perthread_t *
 get_perthread(const isc_mem_t *ctx) {
-	INSIST(tid < ctx->pt_size);
-	if (tid == -1) {
-		tid = atomic_fetch_add_relaxed(&pt_max, 1) % ctx->pt_size;
-		INSIST(tid < ctx->pt_size);
+	INSIST(tid < PERTHREAD_TABLE_SIZE);
+	if (ISC_UNLIKELY(tid == -1)) {
+		tid = atomic_fetch_add_relaxed(&pt_max, 1);
+		if (tid >= PERTHREAD_TABLE_SIZE) {
+			tid %= (PERTHREAD_TABLE_SIZE - PERTHREAD_TABLE_POOL);
+			tid += PERTHREAD_TABLE_POOL;
+		}
+		INSIST(tid < PERTHREAD_TABLE_SIZE);
 	}
 	return (&ctx->pt[tid]);
 }
@@ -379,25 +384,45 @@ static inline void
 mem_accounting_add(const isc_mem_t *ctx, const size_t size) {
 	perthread_t *pt = get_perthread(ctx);
 	int64_t malloced;
-
-	atomic_fetch_add_relaxed(&pt->total, size);
-	atomic_fetch_add_relaxed(&pt->inuse, size);
-	atomic_fetch_add_relaxed(&pt->gets, 1);
-	atomic_fetch_add_relaxed(&pt->totalgets, 1);
-
-	malloced = atomic_fetch_add_relaxed(&pt->malloced, size) + size;
+	if (ISC_UNLIKELY(tid > PERTHREAD_TABLE_POOL)) {
+		atomic_fetch_add_relaxed(&pt->gets, 1);
+		atomic_fetch_add_relaxed(&pt->totalgets, 1);
+		atomic_fetch_add_relaxed(&pt->total, size);
+		atomic_fetch_add_relaxed(&pt->inuse, size);
+		malloced = atomic_fetch_add_relaxed(&pt->malloced, size) + size;
+	} else {
+		uint64_t *p = &pt->gets;
+		(*p)++;
+		p = &pt->totalgets;
+		(*p)++;
+		p = &pt->total;
+		(*p)+=size;
+		p = &pt->inuse;
+		(*p)+=size;
+		p = &pt->malloced;
+		(*p) += size;
+		malloced = (*p);
+	}
 	if (malloced > atomic_load_relaxed(&pt->maxmalloced)) {
 		atomic_store_relaxed(&pt->maxmalloced, malloced);
-	}
+	}		
 }
 
 static inline void
 mem_accounting_del(const isc_mem_t *ctx, const size_t size) {
 	perthread_t * pt = get_perthread(ctx);
-
-	atomic_fetch_sub_release(&pt->gets, 1);
-	atomic_fetch_sub_release(&pt->inuse, size);
-	atomic_fetch_sub_release(&pt->malloced, size);
+	if (ISC_UNLIKELY(tid > PERTHREAD_TABLE_POOL)) {
+		atomic_fetch_sub_relaxed(&pt->gets, 1);
+		atomic_fetch_sub_relaxed(&pt->inuse, size);
+		atomic_fetch_sub_relaxed(&pt->malloced, size);
+	} else {
+		uint64_t *p = &pt->gets;
+		(*p)--;
+		p = &pt->inuse;
+		(*p)-=size;
+		p = &pt->malloced;
+		(*p) -= size;
+	}
 }
 
 static inline void *
@@ -454,9 +479,8 @@ isc_mem_create(isc_mem_t **ctxp)
 	isc_refcount_init(&ctx->references, 1);
 	memset(ctx->name, 0, sizeof(ctx->name));
 	ctx->tag = NULL;
-	ctx->pt_size = PERTHREAD_TABLE_SIZE;
-	ctx->pt = malloc(ctx->pt_size * sizeof(perthread_t));
-	for (i=0; i<ctx->pt_size; i++) {
+	ctx->pt = memalign(64, (PERTHREAD_TABLE_SIZE * sizeof(perthread_t)));
+	for (i=0; i<PERTHREAD_TABLE_SIZE; i++) {
 		atomic_init(&ctx->pt[i].gets, 0);
 		atomic_init(&ctx->pt[i].totalgets, 0);
 		atomic_init(&ctx->pt[i].inuse, 0);
@@ -1894,7 +1918,7 @@ isc__mem_printactive(isc_mem_t *ctx, FILE *file) {
 
 	print_active(ctx, file);
 #else
-	UNUSED(ctx0);
+	UNUSED(ctx);
 	UNUSED(file);
 #endif
 }
