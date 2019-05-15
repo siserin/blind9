@@ -2447,22 +2447,34 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-echo_i "checking that the NSEC record is properly generated when DNSKEY are added via auto-dnssec ($n)"
+echo_i "checking new keys processing for a signed zone with auto-dnssec (NSEC, 1 algorithm) ($n)"
 ret=0
-dig_with_opts +dnssec a auto-nsec.example. @10.53.0.4 > dig.out.ns4.test$n || ret=1
-grep "NOERROR" dig.out.ns4.test$n > /dev/null || ret=1
-grep "flags:.* ad[ ;]" dig.out.ns4.test$n > /dev/null || ret=1
-grep "IN.NSEC[^3].* DNSKEY" dig.out.ns4.test$n > /dev/null || ret=1
+dig_with_opts axfr auto-nsec.example. @10.53.0.3 > dig.out.ns3.test$n || ret=1
+$VERIFY -o auto-nsec.example. dig.out.ns3.test$n > verify.out.$n 2>&1 || ret=1
 n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-echo_i "checking that the NSEC3 record is properly generated when DNSKEY are added via auto-dnssec ($n)"
+echo_i "checking new keys processing for a signed zone with auto-dnssec (NSEC, 2 algorithms) ($n)"
 ret=0
-dig_with_opts +dnssec a auto-nsec3.example. @10.53.0.4 > dig.out.ns4.test$n || ret=1
-grep "NOERROR" dig.out.ns4.test$n > /dev/null || ret=1
-grep "flags:.* ad[ ;]" dig.out.ns4.test$n > /dev/null || ret=1
-grep "IN.NSEC3 .* DNSKEY" dig.out.ns4.test$n > /dev/null || ret=1
+dig_with_opts axfr auto-nsec-two-algos.example. @10.53.0.3 > dig.out.ns3.test$n || ret=1
+$VERIFY -o auto-nsec-two-algos.example. dig.out.ns3.test$n > verify.out.$n 2>&1 || ret=1
+n=$((n+1))
+test "$ret" -eq 0 || echo_i "failed"
+status=$((status+ret))
+
+echo_i "checking new keys processing for a signed zone with auto-dnssec (NSEC3, 1 algorithm) ($n)"
+ret=0
+dig_with_opts axfr auto-nsec3.example. @10.53.0.3 > dig.out.ns3.test$n || ret=1
+$VERIFY -o auto-nsec3.example. dig.out.ns3.test$n > verify.out.$n 2>&1 || ret=1
+n=$((n+1))
+test "$ret" -eq 0 || echo_i "failed"
+status=$((status+ret))
+
+echo_i "checking new keys processing for a signed zone with auto-dnssec (NSEC3, 2 algorithms) ($n)"
+ret=0
+dig_with_opts axfr auto-nsec3-two-algos.example. @10.53.0.3 > dig.out.ns3.test$n || ret=1
+$VERIFY -o auto-nsec3-two-algos.example. dig.out.ns3.test$n > verify.out.$n 2>&1 || ret=1
 n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))

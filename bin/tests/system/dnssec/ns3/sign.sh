@@ -416,8 +416,9 @@ cat "$infile" "$kskname.key" "$zskname.key" > "$zonefile"
 "$SIGNER" -P -3 - -o "$zone" "$zonefile" > /dev/null 2>&1
 
 #
-# A NSEC signed zone that will have auto-dnssec enabled and
-# extra keys not in the initial signed zone.
+# An NSEC-signed zone with "auto-dnssec maintain;" set which has two additional
+# keys generated that are not present in the initial signed zone and are using
+# the same algorithm as the two keys present in the initial signed zone.
 #
 zone=auto-nsec.example.
 infile=auto-nsec.example.db.in
@@ -431,15 +432,48 @@ cat "$infile" "$kskname.key" "$zskname.key" > "$zonefile"
 "$SIGNER" -P -o "$zone" "$zonefile" > /dev/null 2>&1
 
 #
-# A NSEC3 signed zone that will have auto-dnssec enabled and
-# extra keys not in the initial signed zone.
+# An NSEC-signed zone with "auto-dnssec maintain;" set which has two additional
+# keys generated that are not present in the initial signed zone and are using
+# a different algorithm than the two keys present in the initial signed zone.
+#
+zone=auto-nsec-two-algos.example.
+infile=auto-nsec.example.db.in
+zonefile=auto-nsec-two-algos.example.db
+
+kskname=$("$KEYGEN" -q -a "$ALTERNATIVE_ALGORITHM" -b "$ALTERNATIVE_BITS" -fk "$zone")
+zskname=$("$KEYGEN" -q -a "$ALTERNATIVE_ALGORITHM" -b "$ALTERNATIVE_BITS" "$zone")
+kskname=$("$KEYGEN" -q -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" -fk "$zone")
+zskname=$("$KEYGEN" -q -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" "$zone")
+cat "$infile" "$kskname.key" "$zskname.key" > "$zonefile"
+"$SIGNER" -P -o "$zone" "$zonefile" > /dev/null 2>&1
+
+#
+# An NSEC3-signed zone with "auto-dnssec maintain;" set which has two additional
+# keys generated that are not present in the initial signed zone and are using
+# the same algorithm as the two keys present in the initial signed zone.
 #
 zone=auto-nsec3.example.
-infile=auto-nsec3.example.db.in
+infile=auto-nsec.example.db.in
 zonefile=auto-nsec3.example.db
 
 kskname=$("$KEYGEN" -q -3 -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" -fk "$zone")
 zskname=$("$KEYGEN" -q -3 -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" "$zone")
+kskname=$("$KEYGEN" -q -3 -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" -fk "$zone")
+zskname=$("$KEYGEN" -q -3 -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" "$zone")
+cat "$infile" "$kskname.key" "$zskname.key" > "$zonefile"
+"$SIGNER" -P -3 - -o "$zone" "$zonefile" > /dev/null 2>&1
+
+#
+# An NSEC3-signed zone with "auto-dnssec maintain;" set which has two additional
+# keys generated that are not present in the initial signed zone and are using a
+# different algorithm than the two keys present in the initial signed zone.
+#
+zone=auto-nsec3-two-algos.example.
+infile=auto-nsec.example.db.in
+zonefile=auto-nsec3-two-algos.example.db
+
+kskname=$("$KEYGEN" -q -3 -a "$ALTERNATIVE_ALGORITHM" -b "$ALTERNATIVE_BITS" -fk "$zone")
+zskname=$("$KEYGEN" -q -3 -a "$ALTERNATIVE_ALGORITHM" -b "$ALTERNATIVE_BITS" "$zone")
 kskname=$("$KEYGEN" -q -3 -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" -fk "$zone")
 zskname=$("$KEYGEN" -q -3 -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" "$zone")
 cat "$infile" "$kskname.key" "$zskname.key" > "$zonefile"

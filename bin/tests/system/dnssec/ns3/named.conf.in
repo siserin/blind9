@@ -212,11 +212,25 @@ zone "auto-nsec.example" {
 	file "auto-nsec.example.db.signed";
 };
 
+zone "auto-nsec-two-algos.example" {
+	type master;
+	auto-dnssec maintain;
+	allow-update { !0.0.0.0; };
+	file "auto-nsec-two-algos.example.db.signed";
+};
+
 zone "auto-nsec3.example" {
 	type master;
 	auto-dnssec maintain;
 	allow-update { !0.0.0.0; };
 	file "auto-nsec3.example.db.signed";
+};
+
+zone "auto-nsec3-two-algos.example" {
+	type master;
+	auto-dnssec maintain;
+	allow-update { !0.0.0.0; };
+	file "auto-nsec3-two-algos.example.db.signed";
 };
 
 zone "insecure.below-cname.example" {

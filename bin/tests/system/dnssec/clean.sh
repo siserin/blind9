@@ -52,7 +52,8 @@ rm -f ./ns2/single-nsec3.db
 rm -f ./ns2/updatecheck-kskonly.secure.*
 rm -f ./ns3/secure.example.db ./ns3/*.managed.db ./ns3/*.trusted.db
 rm -f ./ns3/unsupported.managed.db.tmp ./ns3/unsupported.trusted.db.tmp
-rm -f ./ns3/auto-nsec.example.db ./ns3/auto-nsec3.example.db
+rm -f ./ns3/auto-nsec.example.db ./ns3/auto-nsec-two-algos.example.db
+rm -f ./ns3/auto-nsec3.example.db ./ns3/auto-nsec3-two-algos.example.db
 rm -f ./ns3/badds.example.db
 rm -f ./ns3/dname-at-apex-nsec3.example.db
 rm -f ./ns3/dnskey-nsec3-unknown.example.db
@@ -110,3 +111,4 @@ rm -f ./signer/general/signer.out.*
 rm -f ./signer/nsec3param.out
 rm -f ./signer/signer.out.*
 rm -f ./signing.out*
+rm -f ./verify.out*
