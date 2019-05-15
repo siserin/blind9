@@ -8638,6 +8638,27 @@ del_sig(dns_db_t *db, dns_dbversion_t *version, dns_name_t *name,
 /*
  * Incrementally sign the zone using the keys requested.
  * Builds the NSEC chain if required.
+ *
+ * Initial zone signing with NSEC3 is a three-phase process:
+ *
+ *  1. First, zone apex records are adjusted and signed in zone_rekey().
+ *
+ *  2. Then, in zone_sign(), regular zone nodes are walked; signatures are
+ *     generated for zone data and the NSEC3 chain is gradually built, but not
+ *     yet signed.
+ *
+ *  3. When all the regular zone nodes are processed, the NSEC3 chain is
+ *     walked and signed.
+ *
+ *  This approach minimizes the amount of computation required because every
+ *  NSEC3 record is only signed once (if NSEC3 records were signed immediately
+ *  upon creation, their signatures would have to be regenerated for every Next
+ *  Hashed Owner Name change caused by new nodes being added to the NSEC3
+ *  chain).  However, it is important to note that this approach also requires
+ *  no NSEC3 signatures to be generated before step 3 because that step does
+ *  not update existing signatures (which may be required due to NSEC3 RDATA
+ *  changes introduced after the signature was generated in one of the previous
+ *  steps).
  */
 static void
 zone_sign(dns_zone_t *zone) {
