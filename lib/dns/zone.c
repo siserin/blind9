@@ -9029,8 +9029,8 @@ zone_sign(dns_zone_t *zone) {
 						       &node, nextname);
 				dns_db_detachnode(db, &node);
 				/*
-				 * Do not sign the next node unless it is not
-				 * below the current node, which was determined
+				 * Do not sign the next node unless it is at or
+				 * above the current node, which was determined
 				 * to be at bottom of zone.
 				 */
 				if (!dns_name_issubdomain(nextname, name)) {
