@@ -10894,7 +10894,7 @@ named_server_dumpdb(named_server_t *server, isc_lex_t *lex,
 	dctx->dumpfail = true;
 	dctx->dumpzones = false;
 	dctx->dumptruncated = false;
-	dctx->total_truncated_bytes = 90;
+	dctx->total_truncated_bytes = 0;
 	dctx->fp = NULL;
 	ISC_LIST_INIT(dctx->viewlist);
 	dctx->view = NULL;

@@ -100,7 +100,7 @@ typedef struct dns_totext_ctx {
 	bool 		current_ttl_valid;
 	dns_ttl_t		serve_stale_ttl;
 	bool			dumptruncated;
-	unsigned int	bytes_truncated;	//needs * here later
+	unsigned int	bytes_truncated;
 } dns_totext_ctx_t;
 
 LIBDNS_EXTERNAL_DATA const dns_master_style_t
@@ -500,16 +500,13 @@ truncate_rdata(isc_buffer_t *buffer, unsigned int used_before, dns_totext_ctx_t 
 	const unsigned int length_limit = TRUNCATED_RDATA_LENGTH_LIMIT;
 	const unsigned int used_after = isc_buffer_usedlength(buffer);
 	const unsigned int rdata_length = used_after - used_before;
-// 	dns_dumpctx_t *dctx;
 
 	if (rdata_length > length_limit) {
 		isc_buffer_subtract(buffer, rdata_length - length_limit);
 		isc_buffer_printf(buffer, "...");
 		unsigned int omitted_bytes = rdata_length - length_limit;
-		ctx->bytes_truncated+= omitted_bytes;
+		ctx->bytes_truncated += omitted_bytes;
 	}
-// 	dctx->total_bytes+=ctx->bytes_truncated;
-// 	printf("\n t40 bytes_truncated: %u\n total_bytes: %u\n", ctx->bytes_truncated, dctx->total_bytes);
 }
 
 /*
@@ -1477,12 +1474,14 @@ dump_quantum(isc_task_t *task, isc_event_t *event) {
 		result = ISC_R_CANCELED;
 	else
 		result = dumptostreaminc(dctx);
-// 		*dctx->total_bytes+=dctx->tctx.bytes_truncated;	//or here?
+	
 	if (result == DNS_R_CONTINUE) {
 		event->ev_arg = dctx;
 		isc_task_send(task, &event);
 		return;
 	}
+	*dctx->total_bytes = dctx->tctx.bytes_truncated;
+	printf("\n t40 bytes_truncated: %u\n total_bytes: %u\n", dctx->tctx.bytes_truncated, *dctx->total_bytes);
 
 	if (dctx->file != NULL) {
 		tresult = closeandrename(dctx->f, result,
@@ -1831,18 +1830,16 @@ dns_master_dumptostreaminc(isc_mem_t *mctx, dns_db_t *db,
 
 	result = dumpctx_create(mctx, db, version, style, f, &dctx,
 				dns_masterformat_text, NULL);
-	fprintf(stderr, "-- result: %s\n", isc_result_totext(result));
-	
-	dctx->total_bytes=total_truncated_bytes;	//crashes when I have this line here
+	//fprintf(stderr, "-- result: %s\n", isc_result_totext(result));
 
-	printf("\n t30 total_truncated_bytes: %u\n", *total_truncated_bytes);	//ok
 	if (result != ISC_R_SUCCESS)
 		return (result);
 	isc_task_attach(task, &dctx->task);
 	dctx->done = done;
 	dctx->done_arg = done_arg;
 	dctx->nodes = 100;
-// 	dctx->total_bytes=total_truncated_bytes;	//but not when the same line is here
+	dctx->total_bytes=total_truncated_bytes;	//ok
+	printf("\n t30 total_truncated_bytes: %u\n", dctx->total_bytes);
 
 	result = task_send(dctx);
 	if (result == ISC_R_SUCCESS) {
