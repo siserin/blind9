@@ -468,6 +468,8 @@ more_frags(isc__mem_t *ctx, size_t new_size) {
 
 static inline void *
 mem_getunlocked(isc__mem_t *ctx, size_t size) {
+	return (malloc(size));
+
 	size_t new_size = quantize(size);
 	void *ret;
 
@@ -545,6 +547,8 @@ check_overrun(void *mem, size_t size, size_t new_size) {
 /* coverity[+free : arg-1] */
 static inline void
 mem_putunlocked(isc__mem_t *ctx, void *mem, size_t size) {
+	free(mem);
+	return;
 	size_t new_size = quantize(size);
 
 	if (new_size >= ctx->max_size) {
