@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <limits.h>
+#include <jemalloc/jemalloc.h>
 
 #include <isc/bind9.h>
 #include <isc/hash.h>
