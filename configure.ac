@@ -750,6 +750,20 @@ AS_IF([test "$enable_pthread_rwlock" = "yes"],
 AS_IF([test "$enable_pthread_rwlock" = "yes" -a "$enable_developer" != "yes"],
       [AC_MSG_ERROR([pthread rwlock is not meant used in production and the developer mode must be enabled])])
 
+#
+# Do we want to emulate atomics with mutex-locked variables? (useful for debugging)
+#
+AC_ARG_ENABLE([mutex_atomics],
+	      [AS_HELP_STRING([--enable-mutex-atomics],
+			      [use mutex-locked variables instead of atomics (EXPERIMENTAL)])],
+	      [], [enable_mutex_atomics=no])
+
+AS_IF([test "$enable_mutex_atomics" = "yes"],
+      [AC_DEFINE([USE_MUTEX_ATOMICS], [1], [define if you want to use mutex-locked atomics])])
+
+AS_IF([test "$enable_mutex_atomics" = "yes" -a "$enable_developer" != "yes"],
+      [AC_MSG_ERROR([mutex atomics are not meant used in production and the developer mode must be enabled])])
+
 CRYPTO=OpenSSL
 
 #

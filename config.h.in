@@ -550,6 +550,9 @@
    non-blocking. */
 #undef USE_FIONBIO_IOCTL
 
+/* define if you want to use mutex-locked atomics */
+#undef USE_MUTEX_ATOMICS
+
 /* define if OpenSSL is used for Public-Key Cryptography */
 #undef USE_OPENSSL
 

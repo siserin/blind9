@@ -1237,7 +1237,7 @@ dispatch(isc__taskmgr_t *manager, unsigned int threadid) {
 		 * we're stuck.  Automatically drop privileges at that
 		 * point and continue with the regular ready queue.
 		 */
-		if (manager->mode != isc_taskmgrmode_normal &&
+		if (atomic_load_relaxed(&manager->mode) != isc_taskmgrmode_normal &&
 		    atomic_load_explicit(&manager->tasks_running,
 					 memory_order_acquire) == 0)
 		{
@@ -1250,7 +1250,7 @@ dispatch(isc__taskmgr_t *manager, unsigned int threadid) {
 			 * we'll end up in a deadlock over queue locks.
 			 *
 			 */
-			if (manager->mode != isc_taskmgrmode_normal &&
+			if (atomic_load_relaxed(&manager->mode) != isc_taskmgrmode_normal &&
 			    atomic_load_explicit(&manager->tasks_running,
 						 memory_order_acquire) == 0)
 			{
@@ -1354,14 +1354,14 @@ isc_taskmgr_create(isc_mem_t *mctx, unsigned int workers,
 	manager->queues = isc_mem_get(mctx, workers * sizeof(isc__taskqueue_t));
 	RUNTIME_CHECK(manager->queues != NULL);
 
-	manager->tasks_running = 0;
-	manager->tasks_ready = 0;
-	manager->curq = 0;
-	manager->exiting = false;
+	atomic_init(&manager->tasks_running, 0);
+	atomic_init(&manager->tasks_ready, 0);
+	atomic_init(&manager->curq, 0);
+	atomic_init(&manager->exiting, false);
 	manager->excl = NULL;
 	manager->halted = 0;
-	atomic_store_relaxed(&manager->exclusive_req, false);
-	atomic_store_relaxed(&manager->pause_req, false);
+	atomic_init(&manager->exclusive_req, false);
+	atomic_init(&manager->pause_req, false);
 
 	isc_mem_attach(mctx, &manager->mctx);
 
@@ -1523,8 +1523,8 @@ void
 isc__taskmgr_resume(isc_taskmgr_t *manager0) {
 	isc__taskmgr_t *manager = (isc__taskmgr_t *)manager0;
 	LOCK(&manager->halt_lock);
-	if (manager->pause_req) {
-		manager->pause_req = false;
+	if (atomic_load_relaxed(&manager->pause_req)) {
+		atomic_store_relaxed(&manager->pause_req, false);
 		while (manager->halted > 0) {
 			BROADCAST(&manager->halt_cond);
 			WAIT(&manager->halt_cond, &manager->halt_lock);

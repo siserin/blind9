@@ -11,12 +11,15 @@
 
 #pragma once
 
+#ifdef USE_MUTEX_ATOMICS
+#include <isc/mutexatomic.h>
+#else
 #if HAVE_STDATOMIC_H
 #include <stdatomic.h>
 #else
 #include <isc/stdatomic.h>
 #endif
-
+#endif
 /*
  * We define a few additional macros to make things easier
  */
