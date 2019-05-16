@@ -9690,7 +9690,7 @@ get_matching_view(isc_netaddr_t *srcaddr, isc_netaddr_t *destaddr,
 			    !(view->matchrecursiveonly &&
 			      (message->flags & DNS_MESSAGEFLAG_RD) == 0))
 			{
-				dns_view_attach(view, viewp);
+				*viewp = view; // dns_view_attach(view, viewp);
 				return (ISC_R_SUCCESS);
 			}
 		}

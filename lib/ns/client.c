@@ -462,8 +462,10 @@ exit_check(ns_client_t *client) {
 	 * Keep the view attached until any outstanding updates complete.
 	 */
 	if (client->nupdates == 0 &&
-	    client->newstate == NS_CLIENTSTATE_FREED && client->view != NULL)
-		dns_view_detach(&client->view);
+	    client->newstate == NS_CLIENTSTATE_FREED && client->view != NULL) {
+	    	client->view = NULL;
+		// dns_view_detach(&client->view);
+	}
 
 	if (client->state == NS_CLIENTSTATE_WORKING ||
 	    client->state == NS_CLIENTSTATE_RECURSING)
@@ -893,7 +895,8 @@ ns_client_endrequest(ns_client_t *client) {
 			dns_adb_flush(client->view->adb);
 		}
 #endif
-		dns_view_detach(&client->view);
+//		dns_view_detach(&client->view);
+		client->view = NULL;
 	}
 	if (client->opt != NULL) {
 		INSIST(dns_rdataset_isassociated(client->opt));
