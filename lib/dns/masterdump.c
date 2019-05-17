@@ -45,6 +45,7 @@
 #include <dns/result.h>
 #include <dns/time.h>
 #include <dns/ttl.h>
+#include <dns/types.h>
 
 #define DNS_DCTX_MAGIC		ISC_MAGIC('D', 'c', 't', 'x')
 #define DNS_DCTX_VALID(d)	ISC_MAGIC_VALID(d, DNS_DCTX_MAGIC)
@@ -79,6 +80,8 @@ struct dns_master_style {
  */
 #define DNS_TOTEXT_LINEBREAK_MAXLEN 100
 
+#define TRUNCATED_RDATA_LENGTH_LIMIT 192
+
 /*% Does the rdataset 'r' contain a stale answer? */
 #define STALE(r) (((r)->attributes & DNS_RDATASETATTR_STALE) != 0)
 
@@ -87,15 +90,16 @@ struct dns_master_style {
  */
 typedef struct dns_totext_ctx {
 	dns_master_style_t	style;
-	bool 			class_printed;
+	bool 		class_printed;
 	char *			linebreak;
 	char 			linebreak_buf[DNS_TOTEXT_LINEBREAK_MAXLEN];
 	dns_name_t *		origin;
 	dns_name_t *		neworigin;
 	dns_fixedname_t		origin_fixname;
 	uint32_t 		current_ttl;
-	bool 			current_ttl_valid;
+	bool 		current_ttl_valid;
 	dns_ttl_t		serve_stale_ttl;
+	uint64_t		*bytes_truncated;
 } dns_totext_ctx_t;
 
 LIBDNS_EXTERNAL_DATA const dns_master_style_t
@@ -135,6 +139,14 @@ dns_master_style_full = {
 };
 
 LIBDNS_EXTERNAL_DATA const dns_master_style_t
+dns_master_style_full_tr = {
+	DNS_STYLEFLAG_COMMENT |
+	DNS_STYLEFLAG_RESIGN |
+	DNS_STYLEFLAG_TRUNCATE_RDATA,
+	46, 46, 46, 64, 120, 8, UINT_MAX
+};
+
+LIBDNS_EXTERNAL_DATA const dns_master_style_t
 dns_master_style_explicitttl = {
 	DNS_STYLEFLAG_OMIT_OWNER |
 	DNS_STYLEFLAG_OMIT_CLASS |
@@ -154,6 +166,18 @@ dns_master_style_cache = {
 	DNS_STYLEFLAG_RRCOMMENT |
 	DNS_STYLEFLAG_TRUST |
 	DNS_STYLEFLAG_NCACHE,
+	24, 32, 32, 40, 80, 8, UINT_MAX
+};
+
+LIBDNS_EXTERNAL_DATA const dns_master_style_t
+dns_master_style_cache_tr = {
+	DNS_STYLEFLAG_OMIT_OWNER |
+	DNS_STYLEFLAG_OMIT_CLASS |
+	DNS_STYLEFLAG_MULTILINE |
+	DNS_STYLEFLAG_RRCOMMENT |
+	DNS_STYLEFLAG_TRUST |
+	DNS_STYLEFLAG_NCACHE |
+	DNS_STYLEFLAG_TRUNCATE_RDATA,
 	24, 32, 32, 40, 80, 8, UINT_MAX
 };
 
@@ -390,6 +414,7 @@ totext_ctx_init(const dns_master_style_t *style, dns_totext_ctx_t *ctx) {
 	ctx->current_ttl = 0;
 	ctx->current_ttl_valid = false;
 	ctx->serve_stale_ttl = 0;
+	ctx->bytes_truncated = NULL;
 
 	return (ISC_R_SUCCESS);
 }
@@ -467,6 +492,22 @@ ncache_summary(dns_rdataset_t *rdataset, bool omit_final_dot,
 		dns_rdataset_disassociate(&rds);
 
 	return (result);
+}
+
+static void
+truncate_rdata(isc_buffer_t *buffer, unsigned int used_before, dns_totext_ctx_t *ctx) {
+	const unsigned int length_limit = TRUNCATED_RDATA_LENGTH_LIMIT;
+	const unsigned int used_after = isc_buffer_usedlength(buffer);
+	const unsigned int rdata_length = used_after - used_before;
+
+	if (rdata_length > length_limit) {
+		isc_buffer_subtract(buffer, rdata_length - length_limit);
+		isc_buffer_printf(buffer, "...");
+		uint64_t omitted_bytes = rdata_length - length_limit;
+		if (ctx->bytes_truncated != NULL) {
+			*ctx->bytes_truncated += omitted_bytes;
+		}
+	}
 }
 
 /*
@@ -671,6 +712,9 @@ rdataset_totext(dns_rdataset_t *rdataset,
 			dns_rdata_t rdata = DNS_RDATA_INIT;
 			isc_region_t r;
 
+			const unsigned int used_before =
+				isc_buffer_usedlength(target);
+
 			dns_rdataset_current(rdataset, &rdata);
 
 			RETERR(dns_rdata_tofmttext(&rdata,
@@ -681,6 +725,10 @@ rdataset_totext(dns_rdataset_t *rdataset,
 						   ctx->style.split_width,
 						   ctx->linebreak,
 						   target));
+
+			if ((ctx->style.flags & DNS_STYLEFLAG_TRUNCATE_RDATA) != 0) {
+				truncate_rdata(target, used_before, ctx);
+			}
 
 			isc_buffer_availableregion(target, &r);
 			if (r.length < 1)
@@ -1691,6 +1739,7 @@ dumptostreaminc(dns_dumpctx_t *dctx) {
 		}
 		result = dns_db_allrdatasets(dctx->db, node, dctx->version,
 					     dctx->now, &rdsiter);
+
 		if (result != ISC_R_SUCCESS) {
 			dns_db_detachnode(dctx->db, &node);
 			goto cleanup;
@@ -1758,7 +1807,7 @@ dumptostreaminc(dns_dumpctx_t *dctx) {
 isc_result_t
 dns_master_dumptostreaminc(isc_mem_t *mctx, dns_db_t *db,
 			   dns_dbversion_t *version,
-			   const dns_master_style_t *style,
+			   const dns_master_style_t *style, uint64_t *total_truncated_bytes,
 			   FILE *f, isc_task_t *task,
 			   dns_dumpdonefunc_t done, void *done_arg,
 			   dns_dumpctx_t **dctxp)
@@ -1778,6 +1827,7 @@ dns_master_dumptostreaminc(isc_mem_t *mctx, dns_db_t *db,
 	dctx->done = done;
 	dctx->done_arg = done_arg;
 	dctx->nodes = 100;
+	dctx->tctx.bytes_truncated = total_truncated_bytes;
 
 	result = task_send(dctx);
 	if (result == ISC_R_SUCCESS) {
