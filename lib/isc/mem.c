@@ -266,7 +266,7 @@ static void *
 default_memalloc(const size_t size) {
 	void *ptr;
 
-	ptr = malloc(size);
+	ptr = memalign(64, size);
 
 	/*
 	 * If the space cannot be allocated, a null pointer is returned. If the
