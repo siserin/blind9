@@ -113,7 +113,7 @@ typedef struct filter_instance {
 				  NS_QUERYATTR_RECURSIONOK) != 0)
 
 /*
- * Forward declarations of functions referenced in install_hooks().
+ * Forward declarations.
  */
 static ns_hookresult_t
 filter_qctx_initialize(void *arg, void *cbdata, isc_result_t *resp);
@@ -127,6 +127,9 @@ static ns_hookresult_t
 filter_query_done_send(void *arg, void *cbdata, isc_result_t *resp);
 static ns_hookresult_t
 filter_qctx_destroy(void *arg, void *cbdata, isc_result_t *resp);
+
+static void
+client_state_destroy_all(filter_instance_t *inst);
 
 /*%
  * Register the functions to be called at each hook point in 'hooktable', using
@@ -447,6 +450,7 @@ plugin_destroy(void **instp) {
 	filter_instance_t *inst = (filter_instance_t *) *instp;
 
 	if (inst->ht != NULL) {
+		client_state_destroy_all(inst);
 		isc_ht_destroy(&inst->ht);
 		isc_mutex_destroy(&inst->hlock);
 	}
@@ -566,6 +570,31 @@ client_state_destroy(const query_ctx_t *qctx, filter_instance_t *inst) {
 	RUNTIME_CHECK(result == ISC_R_SUCCESS);
 
 	isc_mempool_put(inst->datapool, client_state);
+}
+
+static void
+client_state_destroy_all(filter_instance_t *inst) {
+	isc_ht_iter_t *iterator = NULL;
+	isc_result_t result;
+
+	LOCK(&inst->hlock);
+
+	result = isc_ht_iter_create(inst->ht, &iterator);
+	RUNTIME_CHECK(result == ISC_R_SUCCESS);
+
+	for (result = isc_ht_iter_first(iterator);
+	     result == ISC_R_SUCCESS;
+	     result = isc_ht_iter_delcurrent_next(iterator))
+	{
+		filter_data_t *client_state = NULL;
+		isc_ht_iter_current(iterator, (void **)&client_state);
+		isc_mempool_put(inst->datapool, client_state);
+	}
+
+	RUNTIME_CHECK(result == ISC_R_NOMORE);
+	isc_ht_iter_destroy(&iterator);
+
+	UNLOCK(&inst->hlock);
 }
 
 /*%
