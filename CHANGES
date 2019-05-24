@@ -1,3 +1,5 @@
+5238.	[bug]		TCP failures were affecting EDNS statistics. [GL #xxx]
+
 5237.	[bug]		Recurse to find the root server list with 'dig +trace'.
 			[GL #1028]
 
