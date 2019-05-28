@@ -92,7 +92,6 @@
 #include <dns/tkey.h>
 #include <dns/tsig.h>
 #include <dns/ttl.h>
-#include <dns/types.h>
 #include <dns/view.h>
 #include <dns/zone.h>
 #include <dns/zt.h>
@@ -239,7 +238,7 @@ struct dumpcontext {
 	bool			dumpadb;
 	bool			dumpbad;
 	bool			dumpfail;
-	bool			dumptruncated;
+	bool			truncate;
 	FILE				*fp;
 	ISC_LIST(struct viewlistentry)	viewlist;
 	struct viewlistentry		*view;
@@ -249,7 +248,7 @@ struct dumpcontext {
 	dns_db_t			*cache;
 	isc_task_t			*task;
 	dns_dbversion_t			*version;
-	uint64_t		total_truncated_bytes;
+	uint64_t		bytes_truncated;
 };
 
 struct viewlistentry {
@@ -10731,6 +10730,7 @@ dumpdone(void *arg, isc_result_t result) {
 	struct dumpcontext *dctx = arg;
 	char buf[1024+32];
 	const dns_master_style_t *style;
+	uint64_t *truncated = &dctx->bytes_truncated;
 
 	if (result != ISC_R_SUCCESS)
 		goto cleanup;
@@ -10754,7 +10754,7 @@ dumpdone(void *arg, isc_result_t result) {
 	} else if (dctx->zone == NULL && dctx->cache == NULL &&
 		   dctx->dumpcache)
 	{
-		if (dctx->dumptruncated) {
+		if (dctx->truncate) {
 			style = &dns_master_style_cache_tr;
 		} else {
 			style = &dns_master_style_cache;
@@ -10769,7 +10769,7 @@ dumpdone(void *arg, isc_result_t result) {
 				dns_cache_getname(dctx->view->view->cache));
 			result = dns_master_dumptostreaminc(dctx->mctx,
 							    dctx->cache, NULL,
-							    style, &dctx->total_truncated_bytes,
+							    style, truncated,
 							    dctx->fp,
 							    dctx->task,
 							    dumpdone, dctx,
@@ -10800,7 +10800,7 @@ dumpdone(void *arg, isc_result_t result) {
 		dns_db_detach(&dctx->cache);
 	}
 	if (dctx->dumpzones) {
-		if (dctx->dumptruncated) {
+		if (dctx->truncate) {
 			style = &dns_master_style_full_tr;
 		} else {
 			style = &dns_master_style_full;
@@ -10829,7 +10829,7 @@ dumpdone(void *arg, isc_result_t result) {
 			result = dns_master_dumptostreaminc(dctx->mctx,
 							    dctx->db,
 							    dctx->version,
-							    style, &dctx->total_truncated_bytes,
+							    style, truncated,
 							    dctx->fp,
 							    dctx->task,
 							    dumpdone, dctx,
@@ -10853,13 +10853,9 @@ dumpdone(void *arg, isc_result_t result) {
 		goto nextview;
  done:
 	fprintf(dctx->fp, "; Dump complete\n");
-	if(dctx->total_truncated_bytes < 1000) {
-		fprintf(dctx->fp, "\nThe total truncated size is: %" PRIu64 " bytes.\n",
-		dctx->total_truncated_bytes);
-	} else {
-	fprintf(dctx->fp, "\nThe total truncated size is: %" PRIu64 ".%03" PRIu64 " megabytes.\n",
-		(uint64_t) (dctx->total_truncated_bytes / 1000),
-		(uint64_t) (dctx->total_truncated_bytes % 1000));
+	if (dctx->truncate) {
+		fprintf(dctx->fp, "\nThe total truncated size is: %" PRIu64
+		" bytes.\n", dctx->bytes_truncated);
 	}
 	result = isc_stdio_flush(dctx->fp);
 	if (result == ISC_R_SUCCESS)
@@ -10900,8 +10896,8 @@ named_server_dumpdb(named_server_t *server, isc_lex_t *lex,
 	dctx->dumpbad = true;
 	dctx->dumpfail = true;
 	dctx->dumpzones = false;
-	dctx->dumptruncated = false;
-	dctx->total_truncated_bytes = 0;
+	dctx->truncate = false;
+	dctx->bytes_truncated = 0;
 	dctx->fp = NULL;
 	ISC_LIST_INIT(dctx->viewlist);
 	dctx->view = NULL;
@@ -10945,7 +10941,7 @@ named_server_dumpdb(named_server_t *server, isc_lex_t *lex,
 		dctx->dumpcache = false;
 		dctx->dumpfail = false;
 		dctx->dumpzones = true;
-		dctx->dumptruncated = true;
+		dctx->truncate = true;
 		ptr = next_token(lex, NULL);
 	}  else if (ptr != NULL && strcmp(ptr, "-adb") == 0) {
 		/* only dump adb, suppress other caches */

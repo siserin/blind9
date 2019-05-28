@@ -45,7 +45,6 @@
 #include <dns/result.h>
 #include <dns/time.h>
 #include <dns/ttl.h>
-#include <dns/types.h>
 
 #define DNS_DCTX_MAGIC		ISC_MAGIC('D', 'c', 't', 'x')
 #define DNS_DCTX_VALID(d)	ISC_MAGIC_VALID(d, DNS_DCTX_MAGIC)
@@ -80,6 +79,7 @@ struct dns_master_style {
  */
 #define DNS_TOTEXT_LINEBREAK_MAXLEN 100
 
+/*% Arbitrarily chosen limit for the RData length */
 #define TRUNCATED_RDATA_LENGTH_LIMIT 192
 
 /*% Does the rdataset 'r' contain a stale answer? */
@@ -90,14 +90,14 @@ struct dns_master_style {
  */
 typedef struct dns_totext_ctx {
 	dns_master_style_t	style;
-	bool 		class_printed;
+	bool 			class_printed;
 	char *			linebreak;
 	char 			linebreak_buf[DNS_TOTEXT_LINEBREAK_MAXLEN];
 	dns_name_t *		origin;
 	dns_name_t *		neworigin;
 	dns_fixedname_t		origin_fixname;
 	uint32_t 		current_ttl;
-	bool 		current_ttl_valid;
+	bool 			current_ttl_valid;
 	dns_ttl_t		serve_stale_ttl;
 	uint64_t		*bytes_truncated;
 } dns_totext_ctx_t;
@@ -499,11 +499,11 @@ truncate_rdata(isc_buffer_t *buffer, unsigned int used_before, dns_totext_ctx_t 
 	const unsigned int length_limit = TRUNCATED_RDATA_LENGTH_LIMIT;
 	const unsigned int used_after = isc_buffer_usedlength(buffer);
 	const unsigned int rdata_length = used_after - used_before;
+	uint64_t omitted_bytes = rdata_length - length_limit;
 
 	if (rdata_length > length_limit) {
-		isc_buffer_subtract(buffer, rdata_length - length_limit);
+		isc_buffer_subtract(buffer, omitted_bytes);
 		isc_buffer_printf(buffer, "...");
-		uint64_t omitted_bytes = rdata_length - length_limit;
 		if (ctx->bytes_truncated != NULL) {
 			*ctx->bytes_truncated += omitted_bytes;
 		}
@@ -1739,7 +1739,6 @@ dumptostreaminc(dns_dumpctx_t *dctx) {
 		}
 		result = dns_db_allrdatasets(dctx->db, node, dctx->version,
 					     dctx->now, &rdsiter);
-
 		if (result != ISC_R_SUCCESS) {
 			dns_db_detachnode(dctx->db, &node);
 			goto cleanup;
@@ -1807,7 +1806,7 @@ dumptostreaminc(dns_dumpctx_t *dctx) {
 isc_result_t
 dns_master_dumptostreaminc(isc_mem_t *mctx, dns_db_t *db,
 			   dns_dbversion_t *version,
-			   const dns_master_style_t *style, uint64_t *total_truncated_bytes,
+			   const dns_master_style_t *style, uint64_t *bytes_truncated,
 			   FILE *f, isc_task_t *task,
 			   dns_dumpdonefunc_t done, void *done_arg,
 			   dns_dumpctx_t **dctxp)
@@ -1827,7 +1826,7 @@ dns_master_dumptostreaminc(isc_mem_t *mctx, dns_db_t *db,
 	dctx->done = done;
 	dctx->done_arg = done_arg;
 	dctx->nodes = 100;
-	dctx->tctx.bytes_truncated = total_truncated_bytes;
+	dctx->tctx.bytes_truncated = bytes_truncated;
 
 	result = task_send(dctx);
 	if (result == ISC_R_SUCCESS) {

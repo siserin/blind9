@@ -103,7 +103,7 @@ command is one of the following:\n\
 		Close, truncate and re-open the DNSTAP output file.\n\
   dnstap -roll count\n\
 		Close, rename and re-open the DNSTAP output file(s).\n\
-  dumpdb [-all|-cache|-zones|-adb|-bad|-fail] [view ...]\n\
+  dumpdb [-all|-cache|-zones|-truncated|-adb|-bad|-fail] [view ...]\n\
 		Dump cache(s) to the dump file (named_dump.db).\n\
   flush 	Flushes all of the server's caches.\n\
   flush [view]	Flushes the server's cache for a view.\n\
