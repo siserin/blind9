@@ -836,7 +836,7 @@ pk11_parse_uri(pk11_object_t *obj, const char *label,
 	char *uri, *p, *a, *na, *v;
 	size_t len, l;
 	FILE *stream = NULL;
-	char pin[PINLEN + 1];
+	char pin[PINLEN + 1] = { 0 };
 	bool gotpin = false;
 	isc_result_t ret;
 
@@ -940,20 +940,34 @@ pk11_parse_uri(pk11_object_t *obj, const char *label,
 			attr->type = CKA_ID;
 			memmove(attr->pValue, v, l);
 		} else if (strcmp(a, "pin-source") == 0) {
-			/* pin-source: PIN */
-			ret = isc_stdio_open(v, "r", &stream);
-			if (ret != ISC_R_SUCCESS)
+			if (strncmp(v, "%", 1) == 0) {
+				if (strlcpy(pin, getenv(v+1), sizeof(pin))
+				    >= sizeof(pin)) {
+					DST_RET(ISC_R_RANGE);
+				}
+			} else if (strcmp(v, "-")) {
+				stream = stdin;
+			} else {
+				/* pin-source: PIN */
+				ret = isc_stdio_open(v, "r", &stream);
+				if (ret != ISC_R_SUCCESS) {
+					goto err;
+				}
+			}
+			ret = isc_stdio_read(pin, 1, sizeof(pin), stream, &l);
+			if ((ret != ISC_R_SUCCESS) && (ret != ISC_R_EOF)) {
 				goto err;
-			memset(pin, 0, PINLEN + 1);
-			ret = isc_stdio_read(pin, 1, PINLEN + 1, stream, &l);
-			if ((ret != ISC_R_SUCCESS) && (ret != ISC_R_EOF))
-				goto err;
-			if (l > PINLEN)
+			}
+			if (l > PINLEN) {
 				DST_RET(ISC_R_RANGE);
-			ret = isc_stdio_close(stream);
-			stream = NULL;
-			if (ret != ISC_R_SUCCESS)
-				goto err;
+			}
+			if (stream != stdin) {
+				ret = isc_stdio_close(stream);
+				stream = NULL;
+				if (ret != ISC_R_SUCCESS) {
+					goto err;
+				}
+			}
 			gotpin = true;
 		} else
 			DST_RET(PK11_R_NOPROVIDER);

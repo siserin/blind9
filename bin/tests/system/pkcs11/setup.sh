@@ -29,10 +29,10 @@ if [ "x$have_rsa" != "x" ]; then
 
     rsazsk1=`$KEYFRLAB -a RSASHA1 \
             -l "object=robie-rsa-zsk1;pin-source=$PWD/pin" rsa.example`
-    rsazsk2=`$KEYFRLAB -a RSASHA1 \
-            -l "object=robie-rsa-zsk2;pin-source=$PWD/pin" rsa.example`
-    rsaksk=`$KEYFRLAB -a RSASHA1 -f ksk \
-            -l "object=robie-rsa-ksk;pin-source=$PWD/pin" rsa.example`
+    rsazsk2=`${HSMPIN:-1234} | $KEYFRLAB -a RSASHA1 \
+            -l "object=robie-rsa-zsk2;pin-source=-" rsa.example`
+    rsaksk=`HSMPIN=${HSMPIN:-1234} $KEYFRLAB -a RSASHA1 -f ksk \
+            -l "object=robie-rsa-ksk;pin-source=%HSMPIN" rsa.example`
 
     cat $infile $rsazsk1.key $rsaksk.key > $zonefile
     $SIGNER -a -P -g -o $zone $zonefile \
