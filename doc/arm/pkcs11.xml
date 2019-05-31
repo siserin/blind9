@@ -596,11 +596,22 @@ $ <userinput>dnssec-signzone -E '' -S example.net</userinput>
       them.)
     </para>
     <para>
-      In native PKCS#11 mode, the PIN can be provided in a file specified
-      as an attribute of the key's label.  For example, if a key had the label
+      In native PKCS#11 mode, the PIN can be provided either in a file
+      specified as an attribute of the key's label
+      (<command>pin-source=file</command>), or on the standard input
+      (<command>pin-source=-</command>), or from the environment
+      variable (<command>pin-source=%varname</command>).  For example,
+      if a key had the label
       <userinput>pkcs11:object=local-zsk;pin-source=/etc/hsmpin</userinput>,
       then the PIN would be read from the file
-      <filename>/etc/hsmpin</filename>.
+      <filename>/etc/hsmpin</filename>, if a key had the label
+      <userinput>pkcs11:object=local-zsk;pin-source=-</userinput>,
+      then the PIN would be read from the standard input on any
+      invocation that uses the key, and finally, if a key had the
+      label
+      <userinput>pkcs11:object=local-zsk;pin-source=%HSMPIN</userinput>,
+      then the PIN would be read from the environmant variable named
+      <command>HSMPIN</command>.
     </para>
     <warning>
       <para>

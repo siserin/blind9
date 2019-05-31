@@ -86,7 +86,7 @@
   <section xml:id="relnotes_security"><info><title>Security Fixes</title></info>
     <itemizedlist>
       <listitem>
-        <para>
+	<para>
 	  In certain configurations, <command>named</command> could crash
 	  with an assertion failure if <command>nxdomain-redirect</command>
 	  was in use and a redirected query resulted in an NXDOMAIN from the
@@ -111,7 +111,16 @@
 	  or not the <command>response-policy</command> zone's SOA record
 	  should be included in the additional section of RPZ responses.
 	  [GL #865]
-        </para>
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  In native PKCS#11 mode, the pin-source= option for the key
+	  label now accepts <command>pin-source=-</command> to read the HSM PIN
+	  from the standard input, and <command>pin-source=%variable</command>
+	  to read the HSM PIN from arbitrarily named environment variable.
+	  [GL #911]
+	</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -177,7 +186,7 @@
   <section xml:id="relnotes_bugs"><info><title>Bug Fixes</title></info>
     <itemizedlist>
       <listitem>
-        <para>
+	<para>
 	  The <command>allow-update</command> and
 	  <command>allow-update-forwarding</command> options were
 	  inadvertently treated as configuration errors when used at the

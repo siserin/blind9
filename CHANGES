@@ -1,3 +1,7 @@
+5243.	[func]		In native PKCS#11, provide option to read the HSM
+			PIN from stdin (pin-source=-) or environment
+			variable (pin-source=%variable).
+
 5242.	[bug]		In relaxed qname minimizatiom mode, fall back to
 			normal resolution when encountering a lame
 			delegation, and use _.domain/A queries rather
