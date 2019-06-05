@@ -80,6 +80,7 @@ libisc_la_HEADERS = 			\
 	%reldir%/include/isc/rwlock.h	\
 	%reldir%/include/isc/safe.h	\
 	%reldir%/include/isc/serial.h	\
+	%reldir%/include/isc/siphash.h		\
 	%reldir%/include/isc/sockaddr.h	\
 	%reldir%/include/isc/socket.h	\
 	%reldir%/include/isc/stats.h	\
@@ -161,6 +162,7 @@ libisc_la_SOURCES =			\
 	%reldir%/result.c		\
 	%reldir%/rwlock.c		\
 	%reldir%/serial.c		\
+	%reldir%/siphash.c		\
 	%reldir%/sockaddr.c		\
 	%reldir%/stats.c		\
 	%reldir%/string.c		\
