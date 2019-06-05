@@ -1,14 +1,15 @@
 ACLOCAL_AMFLAGS = -I $(top_srcdir)/m4
 
 AM_CPPFLAGS = \
-	-include $(top_builddir)/config.h	\
-	-I$(top_srcdir)/lib/isc/unix/include	\
+	-include $(top_builddir)/config.h		\
+	-I$(top_srcdir)/lib/isc/unix/include		\
 	-I$(top_srcdir)/lib/isc/pthreads/include	\
 	-I$(top_srcdir)/lib/isc/include		\
 	-I$(top_srcdir)/lib/dns/include		\
 	-I$(top_srcdir)/lib/irs/include		\
-	$(OPENSSL_CFLAGS)			\
-	$(OPENSSL_INCLUDES)
+	$(OPENSSL_CFLAGS)				\
+	$(OPENSSL_INCLUDES)				\
+	$(JSON_C_CFLAGS)
 
 noinst_PROGRAMS = 	\
 	resolve		\

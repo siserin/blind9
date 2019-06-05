@@ -16,6 +16,7 @@ AM_CPPFLAGS = \
 	$(LIBIDN2_CFLAGS)			\
 	$(OPENSSL_CFLAGS)			\
 	$(OPENSSL_INCLUDES)			\
+	$(JSON_C_CFLAGS)			\
 	-DRNDC_KEYFILE=\"${sysconfdir}/rndc.key\"
 
 LDADD =					\

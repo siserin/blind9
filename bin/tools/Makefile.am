@@ -14,6 +14,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/bind9/include	\
 	$(OPENSSL_CFLAGS)			\
 	$(OPENSSL_INCLUDES)			\
+	$(JSON_C_CFLAGS)			\
 	-DSYSCONFDIR=\"${sysconfdir}\"
 
 LDADD =				\

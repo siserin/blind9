@@ -9,7 +9,8 @@ AM_CPPFLAGS = \
 	-DNAMED_PLUGINDIR=\"$(libdir)/named\"	\
 	$(OPENSSL_CFLAGS)			\
 	$(OPENSSL_INCLUDES)			\
-	$(CMOCKA_CFLAGS)
+	$(CMOCKA_CFLAGS)			\
+	$(JSON_C_CFLAGS)
 
 AM_LDFLAGS = \
 	../../libisc.la	\

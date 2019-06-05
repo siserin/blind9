@@ -16,6 +16,7 @@ AM_CPPFLAGS = \
 	$(DNSTAP_CFLAGS)			\
 	$(OPENSSL_CFLAGS)			\
 	$(OPENSSL_INCLUDES)			\
+	$(JSON_C_CFLAGS)			\
 	-DNAMED_LOCALSTATEDIR=\"${localstatedir}\" \
 	-DNAMED_SYSCONFDIR=\"${sysconfdir}\"
 
@@ -73,4 +74,5 @@ named_LDADD =					\
 	$(top_builddir)/libltdl/libltdlc.la	\
 	$(OPENSSL_LIBS)				\
 	$(LIBCAP_LIBS)				\
-	$(DNSTAP_LIBS)
+	$(DNSTAP_LIBS)				\
+	$(JSON_C_LIBS)

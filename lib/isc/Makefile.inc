@@ -9,7 +9,8 @@ ISC_INCLUDES = \
 	-I%canon_reldir%/pthreads/include	\
 	-I%canon_reldir%/include		\
 	$(OPENSSL_CFLAGS)			\
-	$(OPENSSL_INCLUDES)
+	$(OPENSSL_INCLUDES)			\
+	$(JSON_C_CFLAGS)
 
 lib_LTLIBRARIES += libisc.la
 
@@ -175,13 +176,13 @@ libisc_la_SOURCES =			\
 libisc_la_CPPFLAGS =			\
 	$(AM_CPPFLAGS)			\
 	$(ISC_INCLUDES)			\
-	$(DNS_INCLUDES)			\
-	$(OPENSSL_CFLAGS)		\
-	$(OPENSSL_INCLUDES)
+	$(DNS_INCLUDES)
 
 libisc_la_LDFLAGS =			\
 	-release $(PACKAGE_VERSION)	\
-	$(OPENSSL_LDFLAGS)
+	$(OPENSSL_LDFLAGS)		\
+	$(JSON_C_LDFLAGS)
 
 libisc_la_LIBADD =			\
-	$(OPENSSL_LIBS)
+	$(OPENSSL_LIBS)		\
+	$(JSON_C_LIBS)

@@ -15,6 +15,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/bind9/include	\
 	$(OPENSSL_CFLAGS)			\
 	$(OPENSSL_INCLUDES)			\
+	$(JSON_C_CFLAGS)			\
 	-DSESSION_KEYFILE=\"${localstatedir}/run/named/session.key\" \
 	$(DST_GSSAPI_INC)
 

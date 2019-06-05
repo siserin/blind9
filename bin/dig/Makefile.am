@@ -15,7 +15,8 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/bind9/include	\
 	$(LIBIDN2_CFLAGS)			\
 	$(OPENSSL_CFLAGS)			\
-	$(OPENSSL_INCLUDES)
+	$(OPENSSL_INCLUDES)			\
+	$(JSON_C_CFLAGS)
 
 LDADD =				\
 	libdighost.la			\

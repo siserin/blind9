@@ -6,6 +6,7 @@ AM_CPPFLAGS = \
 	-DTESTS=\"$(abs_srcdir)\"		\
 	$(OPENSSL_CFLAGS)			\
 	$(OPENSSL_INCLUDES)			\
+	$(JSON_C_CFLAGS)			\
 	$(CMOCKA_CFLAGS)
 
 AM_LDFLAGS = \

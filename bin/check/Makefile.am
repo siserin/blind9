@@ -16,6 +16,7 @@ AM_CPPFLAGS = \
 	$(LIBIDN2_CFLAGS)			\
 	$(OPENSSL_CFLAGS)			\
 	$(OPENSSL_INCLUDES)			\
+	$(JSON_C_CFLAGS)			\
 	-DNAMED_CONFFILE=\"${sysconfdir}/named.conf\"
 
 noinst_LTLIBRARIES = libcheck-tool.la
