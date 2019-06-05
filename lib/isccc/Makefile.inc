@@ -37,8 +37,8 @@ libisccc_la_CPPFLAGS =			\
 	$(AM_CPPFLAGS)			\
 	$(ISC_INCLUDES)			\
 	$(DNS_INCLUDES)			\
-	$(ISCCC_INCLUDES) 		\
-	$(OPENSSL_INCLUDES)
+	$(ISCCC_INCLUDES)		\
+	$(OPENSSL_CFLAGS)
 
 libisccc_la_LDFLAGS =			\
 	$(OPENSSL_LDFLAGS)		\

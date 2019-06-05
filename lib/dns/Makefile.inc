@@ -266,7 +266,6 @@ libdns_la_CPPFLAGS =		\
 	$(DNS_INCLUDES)		\
 	-I%reldir%		\
 	$(OPENSSL_CFLAGS)	\
-	$(OPENSSL_INCLUDES)	\
 	$(DST_GSSAPI_INC)	\
 	$(USE_GSSAPI)
 

@@ -49,8 +49,7 @@ libns_la_CPPFLAGS = \
 	$(ISC_INCLUDES)			\
 	$(DNS_INCLUDES)			\
 	$(NS_INCLUDES)			\
-	$(OPENSSL_CFLAGS)		\
-	$(OPENSSL_INCLUDES)
+	$(OPENSSL_CFLAGS)
 
 libns_la_LDFLAGS = \
 	$(OPENSSL_LDFLAGS)		\

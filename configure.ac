@@ -1179,20 +1179,23 @@ AS_CASE([$with_json_c],
 AC_SUBST([JSON_C_CFLAGS])
 AC_SUBST([JSON_C_LIBS])
 
+#
+# was --with-zlib specified?
+#
 AC_ARG_WITH([zlib],
-           [AS_HELP_STRING([--with-zlib],
-                           [build with zlib for HTTP compression
-                            [default=yes]])],
-	   [], with_zlib="auto")
+	    [AS_HELP_STRING([--with-zlib],
+			    [build with zlib for HTTP compression
+			     [default=yes]])],
+	    [], with_zlib="auto")
 
 AS_CASE([$with_zlib],
-       [no],[],
-       [auto],[PKG_CHECK_MODULES([ZLIB], [zlib],
-                                 [AC_DEFINE([HAVE_ZLIB], [1], [Use zlib library])],
-                                 [:])],
-       [yes],[PKG_CHECK_MODULES([ZLIB], [zlib],
-                                [AC_DEFINE([HAVE_ZLIB], [1], [Use zlib library])])],
-       [AC_MSG_ERROR([Specifying zlib installation path is not supported, adjust PKG_CONFIG_PATH instead])])
+	[no],[],
+	[auto],[PKG_CHECK_MODULES([ZLIB], [zlib],
+				  [AC_DEFINE([HAVE_ZLIB], [1], [Use zlib library])],
+				  [:])],
+	[yes],[PKG_CHECK_MODULES([ZLIB], [zlib],
+				 [AC_DEFINE([HAVE_ZLIB], [1], [Use zlib library])])],
+	[AC_MSG_ERROR([Specifying zlib installation path is not supported, adjust PKG_CONFIG_PATH instead])])
 
 #
 # In solaris 10, SMF can manage named service
@@ -2367,6 +2370,7 @@ AC_CONFIG_FILES([Makefile
 		 bin/tests/Makefile
 		 bin/tests/system/Makefile
 		 bin/tests/system/dyndb/driver/Makefile
+		 bin/tests/system/dlzexternal/driver/Makefile
 		])
 
 AC_CONFIG_FILES([lib/isc/tests/Makefile

@@ -2,7 +2,7 @@
 
 #	@CHECKDS@ @COVERAGE@ @KEYMGR@ @DNSTAP@
 
-SUBDIRS = dyndb/driver
+SUBDIRS = dyndb/driver dlzexternal/driver
 
 AM_CPPFLAGS = \
 	-include $(top_builddir)/config.h		\

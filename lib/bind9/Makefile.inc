@@ -22,8 +22,7 @@ libbind9_la_CPPFLAGS =			\
 	$(ISCCFG_INCLUDES)		\
 	$(NS_INCLUDES)			\
 	$(BIND9_INCLUDES)		\
-	$(OPENSSL_CFLAGS)		\
-	$(OPENSSL_INCLUDES)
+	$(OPENSSL_CFLAGS)
 
 libbind9_la_LIBADD =			\
 	libisc.la			\

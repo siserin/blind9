@@ -7,7 +7,6 @@ AM_CPPFLAGS = \
 	-I../../irs/include			\
 	-DTESTS=\"$(abs_srcdir)\"		\
 	$(OPENSSL_CFLAGS)			\
-	$(OPENSSL_INCLUDES)			\
 	$(CMOCKA_CFLAGS)
 
 AM_LDFLAGS = \

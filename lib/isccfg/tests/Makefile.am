@@ -8,7 +8,6 @@ AM_CPPFLAGS = \
 	-DTESTS=\"$(abs_srcdir)\"		\
 	-DNAMED_PLUGINDIR=\"$(libdir)/named\"	\
 	$(OPENSSL_CFLAGS)			\
-	$(OPENSSL_INCLUDES)			\
 	$(CMOCKA_CFLAGS)
 
 AM_LDFLAGS = \

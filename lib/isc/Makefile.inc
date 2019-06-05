@@ -9,7 +9,6 @@ ISC_INCLUDES = \
 	-I%canon_reldir%/pthreads/include	\
 	-I%canon_reldir%/include		\
 	$(OPENSSL_CFLAGS)			\
-	$(OPENSSL_INCLUDES)			\
 	$(JSON_C_CFLAGS)
 
 lib_LTLIBRARIES += libisc.la

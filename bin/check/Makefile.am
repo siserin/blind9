@@ -15,7 +15,6 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/bind9/include	\
 	$(LIBIDN2_CFLAGS)			\
 	$(OPENSSL_CFLAGS)			\
-	$(OPENSSL_INCLUDES)			\
 	$(JSON_C_CFLAGS)			\
 	-DNAMED_CONFFILE=\"${sysconfdir}/named.conf\"
 
