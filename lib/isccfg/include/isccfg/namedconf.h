@@ -49,4 +49,10 @@ LIBISCCFG_EXTERNAL_DATA extern cfg_type_t cfg_type_keyref;
 /*%< Zone options */
 LIBISCCFG_EXTERNAL_DATA extern cfg_type_t cfg_type_zoneopts;
 
+/*%< Keystore options */
+LIBISCCFG_EXTERNAL_DATA extern cfg_type_t cfg_type_keystoreopts;
+
+/*%< DNSSEC Key and Signing Policy options */
+LIBISCCFG_EXTERNAL_DATA extern cfg_type_t cfg_type_dnssecpolicyopts;
+
 #endif /* ISCCFG_NAMEDCONF_H */

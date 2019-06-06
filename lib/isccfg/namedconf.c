@@ -82,12 +82,15 @@ static cfg_type_t cfg_type_controls_sockaddr;
 static cfg_type_t cfg_type_destinationlist;
 static cfg_type_t cfg_type_dialuptype;
 static cfg_type_t cfg_type_dlz;
+static cfg_type_t cfg_type_dnssecpolicy;
 static cfg_type_t cfg_type_dnstap;
 static cfg_type_t cfg_type_dnstapoutput;
+static cfg_type_t cfg_type_duration;
 static cfg_type_t cfg_type_dyndb;
 static cfg_type_t cfg_type_plugin;
 static cfg_type_t cfg_type_ixfrdifftype;
 static cfg_type_t cfg_type_key;
+static cfg_type_t cfg_type_keystore;
 static cfg_type_t cfg_type_logfile;
 static cfg_type_t cfg_type_logging;
 static cfg_type_t cfg_type_logseverity;
@@ -179,6 +182,7 @@ static cfg_type_t cfg_type_masters = {
 	"masters", cfg_parse_tuple, cfg_print_tuple, cfg_doc_tuple,
 	&cfg_rep_tuple, masters_fields
 };
+
 
 /*%
  * "sockaddrkeylist", a list of socket addresses with optional keys
@@ -416,6 +420,32 @@ static cfg_type_t cfg_type_zone = {
 };
 
 /*%
+ * A keystore statement.
+ */
+static cfg_tuplefielddef_t keystore_fields[] = {
+	{ "name", &cfg_type_astring, 0 },
+	{ "options", &cfg_type_keystoreopts, 0 },
+	{ NULL, NULL, 0 }
+};
+static cfg_type_t cfg_type_keystore = {
+	"keystore", cfg_parse_tuple, cfg_print_tuple, cfg_doc_tuple,
+	&cfg_rep_tuple, keystore_fields
+};
+
+/*%
+ * A dnssec-policy statement.
+ */
+static cfg_tuplefielddef_t dnssecpolicy_fields[] = {
+	{ "name", &cfg_type_astring, 0 },
+	{ "options", &cfg_type_dnssecpolicyopts, 0 },
+	{ NULL, NULL, 0 }
+};
+static cfg_type_t cfg_type_dnssecpolicy = {
+	"dnssec-policy", cfg_parse_tuple, cfg_print_tuple, cfg_doc_tuple,
+	&cfg_rep_tuple, dnssecpolicy_fields
+};
+
+/*%
  * A "category" clause in the "logging" statement.
  */
 static cfg_tuplefielddef_t category_fields[] = {
@@ -461,6 +491,62 @@ static cfg_tuplefielddef_t managedkey_fields[] = {
 static cfg_type_t cfg_type_managedkey = {
 	"managedkey", cfg_parse_tuple, cfg_print_tuple, cfg_doc_tuple,
 	&cfg_rep_tuple, managedkey_fields
+};
+
+/*%
+ * DNSSEC key roles.
+ */
+static const char *dnsseckeyrole_enums[] = { "csk", "ksk", "zsk", NULL };
+static cfg_type_t cfg_type_dnsseckeyrole = {
+	"dnssec-key-role", cfg_parse_enum, cfg_print_ustring, cfg_doc_enum,
+	&cfg_rep_string, &dnsseckeyrole_enums
+};
+
+/*%
+ * DNSSEC key storage types.
+ */
+static const char *dnsseckeystore_enums[] = { "directory", "hsm", NULL };
+static cfg_type_t cfg_type_dnsseckeystore = {
+	"dnssec-key-storage", cfg_parse_enum, cfg_print_ustring, cfg_doc_enum,
+	&cfg_rep_string, &dnsseckeystore_enums
+};
+
+/*%
+ * DNSSEC key availability.
+ */
+static const char *dnsseckeyavailability_enums[] = {
+	"offline", "online", NULL };
+static cfg_type_t cfg_type_dnsseckeyavailability = {
+	"dnssec-key-availability", cfg_parse_enum, cfg_print_ustring,
+	cfg_doc_enum, &cfg_rep_string, &dnsseckeyavailability_enums
+};
+
+/*%
+ * DNSSEC key signing strategy.
+ */
+static const char *dnsseckeyautosign_enums[] = { "automatic", "manual", NULL };
+static cfg_type_t cfg_type_dnsseckeyautosign = {
+	"dnssec-key-autosign", cfg_parse_enum, cfg_print_ustring,
+	cfg_doc_enum, &cfg_rep_string, &dnsseckeyautosign_enums
+};
+
+/*%
+ * A dnssec key, as used in the "keys" statement in a "dnssec-policy".
+ */
+static cfg_tuplefielddef_t kaspkey_fields[] = {
+	{ "role", &cfg_type_dnsseckeyrole, 0 },
+	{ "keystore-type", &cfg_type_dnsseckeystore, 0 },
+	{ "keystore-name", &cfg_type_astring, 0 },
+	{ "lifetime", &cfg_type_duration, 0 },
+	{ "availability", &cfg_type_dnsseckeyavailability, 0 },
+	{ "autosign", &cfg_type_dnsseckeyautosign, 0 },
+	{ "algorithm", &cfg_type_uint32, 0 },
+	{ "length", &cfg_type_optional_uint32, 0 },
+	{ NULL, NULL, 0 }
+};
+static cfg_type_t cfg_type_kaspkey = {
+	"kaspkey", cfg_parse_tuple, cfg_print_tuple, cfg_doc_tuple,
+	&cfg_rep_tuple, kaspkey_fields
 };
 
 static keyword_type_t wild_class_kw = { "class", &cfg_type_ustring };
@@ -631,10 +717,17 @@ static cfg_type_t cfg_type_dnsseckeys = {
  * keyword may take other values indicating different methods for the
  * key to be initialized.
  */
-
 static cfg_type_t cfg_type_managedkeys = {
 	"managedkeys", cfg_parse_bracketed_list, cfg_print_bracketed_list,
 	cfg_doc_bracketed_list, &cfg_rep_list, &cfg_type_managedkey
+};
+
+/*%
+ * A list of key entries, used in a DNSSEC Key and Signing Policy.
+ */
+static cfg_type_t cfg_type_kaspkeys = {
+	"kaspkeys", cfg_parse_bracketed_list, cfg_print_bracketed_list,
+	cfg_doc_bracketed_list, &cfg_rep_list, &cfg_type_kaspkey
 };
 
 static const char *forwardtype_enums[] = { "first", "only", NULL };
@@ -962,6 +1055,8 @@ static cfg_clausedef_t
 namedconf_clauses[] = {
 	{ "acl", &cfg_type_acl, CFG_CLAUSEFLAG_MULTI },
 	{ "controls", &cfg_type_controls, CFG_CLAUSEFLAG_MULTI },
+	{ "dnssec-policy", &cfg_type_dnssecpolicy, CFG_CLAUSEFLAG_MULTI },
+	{ "keystore", &cfg_type_keystore, CFG_CLAUSEFLAG_MULTI },
 	{ "logging", &cfg_type_logging, 0 },
 	{ "lwres", &cfg_type_bracketed_text,
 	  CFG_CLAUSEFLAG_MULTI | CFG_CLAUSEFLAG_OBSOLETE },
@@ -1991,6 +2086,71 @@ static cfg_type_t cfg_type_validityinterval = {
 };
 
 /*%
+ * Clauses that can be found in a 'keystore' statement.
+ */
+static cfg_clausedef_t
+keystore_clauses[] = {
+	{ "module", &cfg_type_astring, 0 },
+	{ "token-label", &cfg_type_astring, 0 },
+	{ "pin", &cfg_type_ustring, 0 },
+	{ "capacity", &cfg_type_uint32, 0 },
+	{ "require-backup", &cfg_type_boolean, 0 },
+	{ "skip-public-key", &cfg_type_boolean, 0 },
+	{ NULL, NULL, 0 }
+};
+
+/*%
+ * Types of denial of existence.
+ */
+static const char *denial_enums[] = { "nsec", "nsec3", NULL };
+static cfg_type_t cfg_type_denial = {
+	"denial-type", cfg_parse_enum, cfg_print_ustring, cfg_doc_enum,
+	&cfg_rep_string, &denial_enums
+};
+
+/*%
+ * Clauses that can be found in a 'dnssecpolicy' statement.
+ */
+static cfg_clausedef_t
+dnssecpolicy_clauses[] = {
+	{ "description", &cfg_type_qstring, 0 },
+	{ "signatures-resign", &cfg_type_duration, 0 },
+	{ "signatures-refresh", &cfg_type_duration, 0 },
+	{ "signatures-validity", &cfg_type_duration, 0 },
+	{ "signatures-validity-dnskey", &cfg_type_duration, 0 },
+	{ "signatures-validity-denial", &cfg_type_duration, 0 },
+	{ "signatures-jitter", &cfg_type_duration, 0 },
+	{ "signatures-inception-offset", &cfg_type_duration, 0 },
+	{ "denial-type", &cfg_type_denial, 0 },
+	{ "nsec3param-ttl", &cfg_type_ttlval, 0 },
+	{ "nsec3-optout", &cfg_type_boolean, 0 },
+	{ "nsec3-hash-algorithm", &cfg_type_uint32, 0 },
+	{ "nsec3-hash-iterations", &cfg_type_uint32, 0 },
+	{ "nsec3-salt-length", &cfg_type_uint32, 0 },
+	{ "nsec3-resalt", &cfg_type_duration, 0 },
+	{ "dnskey-ttl", &cfg_type_ttlval, 0 },
+	{ "dnskey-publish-safety", &cfg_type_duration, 0 },
+	{ "dnskey-retire-safety", &cfg_type_duration, 0 },
+	{ "share-keys", &cfg_type_boolean, 0 },
+	{ "purge-keys-after", &cfg_type_duration, 0 },
+	{ "keys", &cfg_type_kaspkeys, 0 },
+	{ "cds", &cfg_type_boolean, 0 },
+	{ "cdnskey", &cfg_type_boolean, 0 },
+	{ "zone-propagation-delay", &cfg_type_duration, 0 },
+	{ "zone-max-ttl", &cfg_type_ttlval, 0 },
+	{ "zone-soa-ttl", &cfg_type_ttlval, 0 },
+	{ "zone-soa-minimum", &cfg_type_ttlval, 0 },
+	{ "zone-soa-serial-update-method", &cfg_type_updatemethod, 0 },
+	{ "parent-propagation-delay", &cfg_type_duration, 0 },
+	{ "parent-ds-ttl", &cfg_type_ttlval, 0 },
+	{ "parent-soa-ttl", &cfg_type_ttlval, 0 },
+	{ "parent-soa-minimum", &cfg_type_ttlval, 0 },
+	// To do { "check-ds", &cfg_type_bracketed_aml, 0 },
+	// To do { "check-ds-interval", &cfg_type_duration, 0 },
+	{ NULL, NULL, 0 }
+};
+
+/*%
  * Clauses that can be found in a 'zone' statement,
  * with defaults in the 'view' or 'options' statement.
  *
@@ -2234,6 +2394,9 @@ zone_only_clauses[] = {
 	{ "dlz", &cfg_type_astring,
 		CFG_ZONE_MASTER | CFG_ZONE_SLAVE | CFG_ZONE_REDIRECT
 	},
+	{ "dnssec-policy", &cfg_type_astring,
+		CFG_ZONE_MASTER | CFG_ZONE_SLAVE
+	},
 	{ "file", &cfg_type_qstring,
 		CFG_ZONE_MASTER | CFG_ZONE_SLAVE | CFG_ZONE_MIRROR |
 		CFG_ZONE_STUB | CFG_ZONE_HINT | CFG_ZONE_REDIRECT
@@ -2337,6 +2500,28 @@ zone_clausesets[] = {
 LIBISCCFG_EXTERNAL_DATA cfg_type_t cfg_type_zoneopts = {
 	"zoneopts", cfg_parse_map, cfg_print_map,
 	cfg_doc_map, &cfg_rep_map, zone_clausesets };
+
+/*% The "keystore" statement syntax. */
+
+static cfg_clausedef_t *
+keystore_clausesets[] = {
+	keystore_clauses,
+	NULL
+};
+LIBISCCFG_EXTERNAL_DATA cfg_type_t cfg_type_keystoreopts = {
+	"keystoreopts", cfg_parse_map, cfg_print_map,
+	cfg_doc_map, &cfg_rep_map, keystore_clausesets };
+
+/*% The "dnssec-policy" statement syntax. */
+
+static cfg_clausedef_t *
+dnssecpolicy_clausesets[] = {
+	dnssecpolicy_clauses,
+	NULL
+};
+LIBISCCFG_EXTERNAL_DATA cfg_type_t cfg_type_dnssecpolicyopts = {
+	"dnssecpolicyopts", cfg_parse_map, cfg_print_map,
+	cfg_doc_map, &cfg_rep_map, dnssecpolicy_clausesets };
 
 /*% The "dynamically loadable zones" statement syntax. */
 
@@ -3801,6 +3986,179 @@ static void
 doc_maxttl(cfg_printer_t *pctx, const cfg_type_t *type) {
 	cfg_doc_enum_or_other(pctx, type, &cfg_type_ttlval);
 }
+
+/*
+ * duration_fromtext taken from OpenDNSSEC code base.
+ *
+ * Copyright (c) 2009-2018 NLNet Labs.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+static isc_result_t
+duration_fromtext(isc_textregion_t *source, cfg_duration_t *duration) {
+	char buf[CFG_DURATION_MAXLEN];
+	char *P, *X, *T, *W, *str;
+	bool not_weeks = false;
+	int i;
+
+	/*
+	 * Copy the buffer as it may not be NULL terminated.
+	 * Anyone having a duration longer than 63 characters is crazy.
+	 */
+	if (source->length > sizeof(buf) - 1) {
+		return (DNS_R_SYNTAX);
+	}
+	/* Copy source->length bytes and NULL terminate. */
+	snprintf(buf, sizeof(buf), "%.*s", (int)source->length, source->base);
+	str = buf;
+
+	/* Clear out duration */
+	for (i = 0; i < 7; i++) {
+		duration->parts[i] = 0;
+	}
+
+	/* Every duration starts with 'P' */
+	P = strchr(str, 'P');
+	if (!P) {
+		return (DNS_R_SYNTAX);
+	}
+
+	/* Record the time part */
+	T = strchr(str, 'T');
+
+	/* Record years */
+	X = strchr(str, 'Y');
+	if (X) {
+		duration->parts[0] = atoi(str+1);
+		str = X;
+		not_weeks = true;
+	}
+	/* Record months */
+	X = strchr(str, 'M');
+	if (X && (!T || (size_t) (X-P) < (size_t) (T-P))) {
+		duration->parts[1] = atoi(str+1);
+		str = X;
+		not_weeks = true;
+	}
+	/* Record days */
+	X = strchr(str, 'D');
+	if (X) {
+		duration->parts[3] = atoi(str+1);
+		str = X;
+		not_weeks = true;
+	}
+
+	/* Time part */
+	if (T) {
+		str = T;
+		not_weeks = true;
+	}
+
+	/* Record hours */
+	X = strchr(str, 'H');
+	if (X && T) {
+		duration->parts[4] = atoi(str+1);
+		str = X;
+		not_weeks = true;
+	}
+	/* Record minutes */
+	X = strrchr(str, 'M');
+	if (X && T && (size_t) (X-P) > (size_t) (T-P)) {
+		duration->parts[5] = atoi(str+1);
+		str = X;
+		not_weeks = true;
+	}
+	/* Record seconds */
+	X = strchr(str, 'S');
+	if (X && T) {
+		duration->parts[6] = atoi(str+1);
+		str = X;
+		not_weeks = true;
+	}
+
+	/* Or is the duration configured in weeks? */
+	W = strchr(str, 'W');
+	if (W) {
+		if (not_weeks) {
+			return (DNS_R_SYNTAX);
+		} else {
+			duration->parts[2] = atoi(str+1);
+			str = W;
+		}
+	}
+
+	/* To do: deal with trailing garbage */
+	return (ISC_R_SUCCESS);
+}
+
+static isc_result_t
+parse_duration(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret) {
+	isc_result_t result;
+	cfg_obj_t *obj = NULL;
+	cfg_duration_t duration;
+
+	UNUSED(type);
+
+	CHECK(cfg_gettoken(pctx, 0));
+	if (pctx->token.type != isc_tokentype_string) {
+		result = ISC_R_UNEXPECTEDTOKEN;
+		goto cleanup;
+	}
+
+	result = duration_fromtext(&pctx->token.value.as_textregion,
+				   &duration);
+	if (result != ISC_R_SUCCESS) {
+		goto cleanup;
+	}
+
+	CHECK(cfg_create_obj(pctx, &cfg_type_duration, &obj));
+	obj->value.duration = duration;
+	*ret = obj;
+	return (ISC_R_SUCCESS);
+
+ cleanup:
+	cfg_parser_error(pctx, CFG_LOG_NEAR,
+			 "expected ISO 8601 duration");
+	return (result);
+}
+
+/*%
+ * A duration as defined by ISO 8601 (P[n]Y[n]M[n]DT[n]H[n]M[n]S).
+ * - P is the duration designator ("period") placed at the start.
+ * - Y is the year designator that follows the value for the number of years.
+ * - M is the month designator that follows the value for the number of months.
+ * - D is the day designator that follows the value for the number of days.
+ * - T is the time designator that precedes the time components.
+ * - H is the hour designator that follows the value for the number of hours.
+ * - M is the minute designator that follows the value for the number of
+ *   minutes.
+ * - S is the second designator that follows the value for the number of
+ *   seconds.
+ */
+static cfg_type_t cfg_type_duration = {
+	"duration", parse_duration, cfg_print_duration, cfg_doc_terminal,
+	&cfg_rep_duration, NULL
+};
 
 /*%
  * A size or "unlimited", but not "default".

@@ -132,6 +132,8 @@ LIBISCCFG_EXTERNAL_DATA cfg_rep_t cfg_rep_fixedpoint =
 	{ "fixedpoint", free_noop };
 LIBISCCFG_EXTERNAL_DATA cfg_rep_t cfg_rep_percentage =
 	{ "percentage", free_noop };
+LIBISCCFG_EXTERNAL_DATA cfg_rep_t cfg_rep_duration =
+	{ "duration", free_noop };
 
 /*
  * Configuration type definitions.
@@ -967,9 +969,103 @@ LIBISCCFG_EXTERNAL_DATA cfg_type_t cfg_type_uint64 = {
 	&cfg_rep_uint64, NULL
 };
 
+
+/*
+ * Get the number of digits in a number.
+ */
+static size_t
+numlen(time_t num) {
+	uint32_t period = (uint32_t) num;
+	size_t count = 0;
+
+	if (!period) {
+		return 1;
+	}
+	while (period > 0) {
+		count++;
+		period /= 10;
+	}
+	return count;
+}
+
+/*
+ * duration
+ */
+void
+cfg_print_duration(cfg_printer_t *pctx, const cfg_obj_t *obj) {
+	char buf[CFG_DURATION_MAXLEN];
+	char *str;
+	const char *indicators = "YMWDHMS";
+	int count, i;
+	int durationlen[7];
+	cfg_duration_t duration;
+	bool T = false, D = false;
+
+	REQUIRE(pctx != NULL);
+	REQUIRE(obj != NULL);
+
+	/* Calculate length of string. */
+	duration = obj->value.duration;
+	buf[0] = 'P';
+	buf[1] = '\0';
+	str = &buf[1];
+	count = 2;
+	for (i = 0; i < 6; i++) {
+		if (duration.parts[i] > 0) {
+			durationlen[i] = 1 + numlen(duration.parts[i]);
+			if (i < 4) {
+				D = true;
+			} else {
+				T = true;
+			}
+		} else {
+			durationlen[i] = 0;
+		}
+		count += durationlen[i];
+	}
+	/* Special case for seconds */
+	if (duration.parts[6] > 0 ||
+	    (!D && !duration.parts[4] && !duration.parts[5])) {
+		durationlen[6] = 1 + numlen(duration.parts[6]);
+		T = true;
+		count += durationlen[6];
+	}
+	/* Add one character for the time indicator. */
+	if (T) {
+		count++;
+	}
+	INSIST(count < CFG_DURATION_MAXLEN);
+
+	/* Now print the duration */
+	for (i = 0; i < 6; i++) {
+		/*
+		 * We don't check here if weeks and other time indicators are
+		 * used mutually exclusively.
+		 */
+		if (duration.parts[i] > 0) {
+			snprintf(str, durationlen[i]+2, "%u%c",
+				 (uint32_t) duration.parts[i], indicators[i]);
+			str += durationlen[i]+1;
+		}
+		if (i == 3 && T) {
+			snprintf(str, 2, "T");
+			str += 1;
+		}
+
+	}
+	/* Special case for seconds */
+	if (duration.parts[6] > 0 ||
+	    (!D && !duration.parts[4] && !duration.parts[3])) {
+		snprintf(str, durationlen[6]+2, "%u%c",
+			 (uint32_t) duration.parts[6], indicators[6]);
+	}
+	cfg_print_chars(pctx, buf, strlen(buf));
+}
+
+
 /*
  * qstring (quoted string), ustring (unquoted string), astring
- * (any string)
+ * (any string), sstring (secret string)
  */
 
 /* Create a string object from a null-terminated C string. */

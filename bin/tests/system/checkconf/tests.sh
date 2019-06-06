@@ -387,6 +387,7 @@ grep "trusted-key for root from 2010 without updated" checkconf.out$n > /dev/nul
 if [ $ret != 0 ]; then echo_i "failed"; ret=1; fi
 status=`expr $status + $ret`
 
+n=`expr $n + 1`
 echo_i "check that the 2010 ICANN ROOT KSK with the 2017 ICANN ROOT KSK does not warning ($n)"
 ret=0
 $CHECKCONF check-root-ksk-both.conf > checkconf.out$n 2>/dev/null || ret=1
@@ -394,6 +395,7 @@ $CHECKCONF check-root-ksk-both.conf > checkconf.out$n 2>/dev/null || ret=1
 if [ $ret != 0 ]; then echo_i "failed"; ret=1; fi
 status=`expr $status + $ret`
 
+n=`expr $n + 1`
 echo_i "check that the 2017 ICANN ROOT KSK alone does not warning ($n)"
 ret=0
 $CHECKCONF check-root-ksk-2017.conf > checkconf.out$n 2>/dev/null || ret=1
@@ -401,6 +403,7 @@ $CHECKCONF check-root-ksk-2017.conf > checkconf.out$n 2>/dev/null || ret=1
 if [ $ret != 0 ]; then echo_i "failed"; ret=1; fi
 status=`expr $status + $ret`
 
+n=`expr $n + 1`
 echo_i "check that the dlv.isc.org KSK generates a warning ($n)"
 ret=0
 $CHECKCONF check-dlv-ksk-key.conf > checkconf.out$n 2>/dev/null || ret=1
@@ -409,12 +412,30 @@ grep "trusted-key for dlv.isc.org still present" checkconf.out$n > /dev/null || 
 if [ $ret != 0 ]; then echo_i "failed"; ret=1; fi
 status=`expr $status + $ret`
 
+n=`expr $n + 1`
 echo_i "check that 'geoip-use-ecs no' generates a warning ($n)"
 ret=0
 $CHECKCONF warn-geoip-use-ecs.conf > checkconf.out$n 2>/dev/null || ret=1
 [ -s checkconf.out$n ] || ret=1
 grep "'geoip-use-ecs' is obsolete" checkconf.out$n > /dev/null || ret=1
 if [ $ret != 0 ]; then echo_i "failed"; ret=1; fi
+status=`expr $status + $ret`
+
+n=`expr $n + 1`
+echo_i "check that a good 'kasp' configuration is accepted ($n)"
+ret=0
+$CHECKCONF good-kasp.conf > checkconf.out$n 2>/dev/null || ret=1
+if [ $ret != 0 ]; then echo_i "failed"; fi
+status=`expr $status + $ret`
+
+n=`expr $n + 1`
+echo_i "checking that named-checkconf prints a known good kasp config ($n)"
+ret=0
+awk 'BEGIN { ok = 0; } /cut here/ { ok = 1; getline } ok == 1 { print }' good-kasp.conf > good-kasp.conf.in
+[ -s good-kasp.conf.in ] || ret=1
+$CHECKCONF -p good-kasp.conf.in | grep -v '^good-kasp.conf.in:' > good-kasp.conf.out 2>&1 || ret=1
+cmp good-kasp.conf.in good-kasp.conf.out || ret=1
+if [ $ret != 0 ]; then echo_i "failed"; fi
 status=`expr $status + $ret`
 
 echo_i "exit status: $status"

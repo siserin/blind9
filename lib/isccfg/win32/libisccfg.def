@@ -106,6 +106,7 @@ cfg_print_bracketed_list
 cfg_print_chars
 cfg_print_clauseflags
 cfg_print_cstr
+cfg_print_duration
 cfg_print_fixedpoint
 cfg_print_grammar
 cfg_print_indent
@@ -130,6 +131,7 @@ cfg_ungettoken
 ; Exported Data
 
 ;cfg_rep_boolean
+;cfg_rep_duration
 ;cfg_rep_fixedpoint
 ;cfg_rep_list
 ;cfg_rep_map
