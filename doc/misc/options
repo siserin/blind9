@@ -21,12 +21,58 @@ dlz <string> {
         search <boolean>;
 }; // may occur multiple times
 
+dnssec-policy <string> {
+        cdnskey <boolean>;
+        cds <boolean>;
+        denial-type ( nsec | nsec3 );
+        description <quoted_string>;
+        dnskey-publish-safety <duration>;
+        dnskey-retire-safety <duration>;
+        dnskey-ttl <ttlval>;
+        keys { ( csk | ksk | zsk ) ( directory | hsm ) <string> <duration>
+            ( offline | online ) ( automatic | manual ) <integer> [
+            <integer> ]; ... };
+        nsec3-hash-algorithm <integer>;
+        nsec3-hash-iterations <integer>;
+        nsec3-optout <boolean>;
+        nsec3-resalt <duration>;
+        nsec3-salt-length <integer>;
+        nsec3param-ttl <ttlval>;
+        parent-ds-ttl <ttlval>;
+        parent-propagation-delay <duration>;
+        parent-soa-minimum <ttlval>;
+        parent-soa-ttl <ttlval>;
+        purge-keys-after <duration>;
+        share-keys <boolean>;
+        signatures-inception-offset <duration>;
+        signatures-jitter <duration>;
+        signatures-refresh <duration>;
+        signatures-resign <duration>;
+        signatures-validity <duration>;
+        signatures-validity-denial <duration>;
+        signatures-validity-dnskey <duration>;
+        zone-max-ttl <ttlval>;
+        zone-propagation-delay <duration>;
+        zone-soa-minimum <ttlval>;
+        zone-soa-serial-update-method ( date | increment | unixtime );
+        zone-soa-ttl <ttlval>;
+}; // may occur multiple times
+
 dyndb <string> <quoted_string> {
     <unspecified-text> }; // may occur multiple times
 
 key <string> {
         algorithm <string>;
         secret <string>;
+}; // may occur multiple times
+
+keystore <string> {
+        capacity <integer>;
+        module <string>;
+        pin <string>;
+        require-backup <boolean>;
+        skip-public-key <boolean>;
+        token-label <string>;
 }; // may occur multiple times
 
 logging {
@@ -138,7 +184,7 @@ options {
         dnsrps-options { <unspecified-text> }; // not configured
         dnssec-accept-expired <boolean>;
         dnssec-dnskey-kskonly <boolean>;
-        dnssec-enable <boolean>;
+        dnssec-enable <boolean>; // obsolete
         dnssec-loadkeys-interval <integer>;
         dnssec-lookaside ( <string> trust-anchor
             <string> | auto | no ); // may occur multiple times
@@ -186,7 +232,7 @@ options {
         fstrm-set-output-queue-model ( mpsc | spsc ); // not configured
         fstrm-set-output-queue-size <integer>; // not configured
         fstrm-set-reopen-interval <ttlval>; // not configured
-        geoip-directory ( <quoted_string> | none );
+        geoip-directory ( <quoted_string> | none ); // not configured
         geoip-use-ecs <boolean>; // obsolete
         glue-cache <boolean>;
         has-old-clients <boolean>; // ancient
@@ -207,7 +253,7 @@ options {
         listen-on-v6 [ port <integer> ] [ dscp
             <integer> ] {
             <address_match_element>; ... }; // may occur multiple times
-        lmdb-mapsize <sizeval>;
+        lmdb-mapsize <sizeval>; // non-operational
         lock-file ( <quoted_string> | none );
         maintain-ixfr-base <boolean>; // ancient
         managed-keys-directory <quoted_string>;
@@ -512,7 +558,7 @@ view <string> [ <class> ] {
         dnsrps-options { <unspecified-text> }; // not configured
         dnssec-accept-expired <boolean>;
         dnssec-dnskey-kskonly <boolean>;
-        dnssec-enable <boolean>;
+        dnssec-enable <boolean>; // obsolete
         dnssec-loadkeys-interval <integer>;
         dnssec-lookaside ( <string> trust-anchor
             <string> | auto | no ); // may occur multiple times
@@ -553,7 +599,7 @@ view <string> [ <class> ] {
         }; // may occur multiple times
         key-directory <quoted_string>;
         lame-ttl <ttlval>;
-        lmdb-mapsize <sizeval>;
+        lmdb-mapsize <sizeval>; // non-operational
         maintain-ixfr-base <boolean>; // ancient
         managed-keys { <string> <string>
             <integer> <integer> <integer>
@@ -764,6 +810,7 @@ view <string> [ <class> ] {
                 dnskey-sig-validity <integer>;
                 dnssec-dnskey-kskonly <boolean>;
                 dnssec-loadkeys-interval <integer>;
+                dnssec-policy <string>;
                 dnssec-secure-to-insecure <boolean>;
                 dnssec-update-mode ( maintain | no-resign );
                 file <quoted_string>;
@@ -869,6 +916,7 @@ zone <string> [ <class> ] {
         dnskey-sig-validity <integer>;
         dnssec-dnskey-kskonly <boolean>;
         dnssec-loadkeys-interval <integer>;
+        dnssec-policy <string>;
         dnssec-secure-to-insecure <boolean>;
         dnssec-update-mode ( maintain | no-resign );
         file <quoted_string>;

@@ -3224,6 +3224,31 @@ $ORIGIN 0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa.
 		</para>
 	      </entry>
 	    </row>
+
+
+	    <row rowsep="0">
+	      <entry colname="1">
+		<para><command>keystore</command></para>
+	      </entry>
+	      <entry colname="2">
+		<para>
+		  defines how a DNSSEC key repository looks like (keys that
+		  are used for signing zones).
+		</para>
+	      </entry>
+	    </row>
+
+	    <row rowsep="0">
+	      <entry colname="1">
+		<para><command>dnssec-policy</command></para>
+	      </entry>
+	      <entry colname="2">
+		<para>
+		  describes a DNSSEC key and signing policy for zones.
+		</para>
+	      </entry>
+	    </row>
+
 	    <row rowsep="0">
 	      <entry colname="1">
 		<para><command>view</command></para>
@@ -11002,6 +11027,39 @@ example.com                 CNAME   rpz-tcp-only.
 	  </para>
 	</section>
 
+	<section xml:id="keystore_grammar"><info><title><command>keystore</command> Statement Grammar</title></info>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="keystore.grammar.xml"/>
+	</section>
+	<section xml:id="keystore"><info><title><command>keystore</command> Statement Definition
+	    and Usage</title></info>
+
+	  <para>
+	    The <command>keystore</command> statement defines a repository
+	    where DNSSEC signing keys are stored.  Repositories represent
+	    a hardware security module (HSM).  These repositories can be
+	    referenced to by DNSSEC key and signing policies.
+	  </para>
+	  <para>
+	    A <command>keystore</command> statement contains a set of options
+	    about how to access and use the keys in the repository.
+	  </para>
+	</section>
+
+	<section xml:id="dnssec_policy_grammar"><info><title><command>dnssec-policy</command> Statement Grammar</title></info>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="dnssec-policy.grammar.xml"/>
+	</section>
+	<section xml:id="dnssec_policy"><info><title><command>dnssec-policy</command> Statement Definition
+	    and Usage</title></info>
+
+	  <para>
+	    The <command>dnssec-policy</command> statement defines a key and
+	    signing policy (KASP) for zones.
+	  </para>
+	  <para>
+	    TODO: More information
+	  </para>
+	</section>
+
 	<section xml:id="view_statement_grammar"><info><title><command>view</command> Statement Grammar</title></info>
 
 <programlisting><command>view</command> <replaceable>view_name</replaceable> [ <replaceable>class</replaceable> ] <command>{</command>
@@ -11657,6 +11715,15 @@ view "external" {
 	  <section xml:id="zone_options"><info><title>Zone Options</title></info>
 
 	    <variablelist>
+
+	      <varlistentry>
+		<term><command>dnssec-policy</command></term>
+		<listitem>
+		  <para>
+		    The key and signing policy for this zone.
+		  </para>
+		</listitem>
+	      </varlistentry>
 
 	      <varlistentry>
 		<term><command>allow-notify</command></term>
