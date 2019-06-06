@@ -22,6 +22,7 @@
     <command>dnskey-ttl</command> <replaceable>ttlval</replaceable>;
     <command>keys</command> { ( csk | ksk | zsk ) ( hsm | directory ) <replaceable>string</replaceable> <replaceable>duration</replaceable> ( offline | online ) ( automatic | manual ) <replaceable>string</replaceable> [ <replaceable>integer</replaceable> ] ; ... };
     <command>nsec3-hash-algorithm</command> <replaceable>integer</replaceable>;
+    <command>nsec3-hash-iterations</command> <replaceable>integer</replaceable>;
     <command>nsec3-optout</command> <replaceable>boolean</replaceable>;
     <command>nsec3-resalt</command> <replaceable>duration</replaceable>;
     <command>nsec3-salt-length</command> <replaceable>integer</replaceable>;
