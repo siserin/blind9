@@ -4983,16 +4983,18 @@ qctx_init(ns_client_t *client, dns_fetchevent_t *event,
 
 	memset(qctx, 0, sizeof(*qctx));
 
-	/* Set this first so CCTRACE will work */
+	/* Set client first so CCTRACE will work */
 	qctx->client = client;
-	dns_view_attach(client->view, &qctx->view);
-
-	CCTRACE(ISC_LOG_DEBUG(3), "qctx_init");
-
 	qctx->event = event;
 	qctx->qtype = qctx->type = qtype;
 	qctx->result = ISC_R_SUCCESS;
-	qctx->findcoveringnsec = qctx->view->synthfromdnssec;
+
+	if (client->view != NULL) {
+		dns_view_attach(client->view, &qctx->view);
+		qctx->findcoveringnsec = qctx->view->synthfromdnssec;
+	}
+
+	CCTRACE(ISC_LOG_DEBUG(3), "qctx_init");
 
 	CALL_HOOK_NORETURN(NS_QUERY_QCTX_INITIALIZED, qctx);
 }
@@ -5061,7 +5063,9 @@ static void
 qctx_destroy(query_ctx_t *qctx) {
 	CALL_HOOK_NORETURN(NS_QUERY_QCTX_DESTROYED, qctx);
 
-	dns_view_detach(&qctx->view);
+	if (qctx->view != NULL) {
+		dns_view_detach(&qctx->view);
+	}
 	if (qctx->detach_client) {
 		ns_client_detach(&qctx->client);
 	}
@@ -5562,6 +5566,7 @@ fetch_callback(isc_task_t *task, isc_event_t *event) {
 	isc_result_t result;
 	isc_logcategory_t *logcategory = NS_LOGCATEGORY_QUERY_ERRORS;
 	int errorloglevel;
+	query_ctx_t qctx;
 
 	UNUSED(task);
 
@@ -5609,13 +5614,22 @@ fetch_callback(isc_task_t *task, isc_event_t *event) {
 		} else {
 			query_next(client, ISC_R_CANCELED);
 		}
-		/*
-		 * This may destroy the client.
-		 */
-		ns_client_detach(&client);
-	} else {
-		query_ctx_t qctx;
 
+		/*
+		 * Setting up a stub query context is needed to ensure
+		 * that any persistent plugin data that was allocated
+		 * to service this client will be destroyed before the
+		 * client is detached.
+		 */
+		qctx_init(client, devent, 0, &qctx);
+
+		/*
+		 * This will call ns_client_detach() and may destroy
+		 * the client.
+		 */
+		qctx.detach_client = true;
+		qctx_destroy(&qctx);
+	} else {
 		/*
 		 * Initialize a new qctx and use it to resume
 		 * from recursion.

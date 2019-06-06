@@ -450,21 +450,6 @@ exit_check(ns_client_t *client) {
 
 	INSIST(client->newstate < NS_CLIENTSTATE_RECURSING);
 
-	/*
-	 * We need to detach from the view early when shutting down
-	 * the server to break the following vicious circle:
-	 *
-	 *  - The resolver will not shut down until the view refcount is zero
-	 *  - The view refcount does not go to zero until all clients detach
-	 *  - The client does not detach from the view until references is zero
-	 *  - references does not go to zero until the resolver has shut down
-	 *
-	 * Keep the view attached until any outstanding updates complete.
-	 */
-	if (client->nupdates == 0 &&
-	    client->newstate == NS_CLIENTSTATE_FREED && client->view != NULL)
-		dns_view_detach(&client->view);
-
 	if (client->state == NS_CLIENTSTATE_WORKING ||
 	    client->state == NS_CLIENTSTATE_RECURSING)
 	{
@@ -514,7 +499,12 @@ exit_check(ns_client_t *client) {
 						client, rlink);
 			UNLOCK(&manager->reclock);
 		}
+
 		ns_client_endrequest(client);
+
+		if (client->view != NULL) {
+			dns_view_detach(&client->view);
+		}
 
 		client->state = NS_CLIENTSTATE_READING;
 		INSIST(client->recursionquota == NULL);
@@ -530,7 +520,36 @@ exit_check(ns_client_t *client) {
 			} else
 				return (false);
 		}
+	} else if (client->nupdates == 0 &&
+		   client->newstate == NS_CLIENTSTATE_FREED &&
+		   client->view != NULL)
+	{
+		/*
+		 * If we're shutting down the server, clients that were
+		 * RECURSING or WORKING may need to hold on to the view
+		 * longer so queries can be canceled and cleaned up
+		 * properly.
+		 *
+		 * The view must also remain attached until outstanding
+		 * updates complete.
+		 *
+		 * All other clients detach from the view now, in
+		 * order to break the following vicious circle during
+		 * shutdown:
+		 *
+		 *  - The resolver will not shut down until the view
+		 *    refcount is zero
+		 *  - The view refcount does not go to zero until all
+		 *    clients detach
+		 *  - The client does not detach from the view until
+		 *    references is zero
+		 *  - references does not go to zero until the resolver
+		 *    has shut down
+		 */
+
+		dns_view_detach(&client->view);
 	}
+
 
 	if (client->state == NS_CLIENTSTATE_READING) {
 		/*
@@ -893,7 +912,6 @@ ns_client_endrequest(ns_client_t *client) {
 			dns_adb_flush(client->view->adb);
 		}
 #endif
-		dns_view_detach(&client->view);
 	}
 	if (client->opt != NULL) {
 		INSIST(dns_rdataset_isassociated(client->opt));
