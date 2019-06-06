@@ -1203,15 +1203,14 @@ setup(void) {
 	 */
 	/* xxdb_init(); */
 
-#ifdef ISC_DLZ_DLOPEN
 	/*
 	 * Register the DLZ "dlopen" driver.
 	 */
 	result = dlz_dlopen_init(named_g_mctx);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		named_main_earlyfatal("dlz_dlopen_init() failed: %s",
 				   isc_result_totext(result));
-#endif
+	}
 
 #if CONTRIB_DLZ
 	/*
@@ -1283,12 +1282,10 @@ cleanup(void) {
 	 */
 	dlz_drivers_clear();
 #endif
-#ifdef ISC_DLZ_DLOPEN
 	/*
 	 * Unregister "dlopen" DLZ driver.
 	 */
 	dlz_dlopen_clear();
-#endif
 
 	dns_name_destroy();
 
