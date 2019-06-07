@@ -14,9 +14,7 @@ AM_CPPFLAGS = \
 	$(OPENSSL_CFLAGS)			\
 	$(JSON_C_CFLAGS)
 
-plugins_LTLIBRARIES = filter-aaaa.la
-
-pluginsdir = $(libdir)/named
+pkglib_LTLIBRARIES = filter-aaaa.la
 
 filter_aaaa_la_SOURCES = filter-aaaa.c
 filter_aaaa_la_LDFLAGS = -avoid-version -module -shared -export-dynamic

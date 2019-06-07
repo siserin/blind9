@@ -29,7 +29,37 @@
 #include <dns/types.h>
 #include <dns/dlz_dlopen.h>
 
-#include "driver.h"
+/* aliases for exported symbols */
+
+#define dlz_version	dlzexternal_LTX_dlz_version
+#define dlz_create	dlzexternal_LTX_dlz_create
+#define dlz_destroy	dlzexternal_LTX_dlz_destroy
+#define dlz_findzonedb	dlzexternal_LTX_dlz_findzonedb
+#define dlz_lookup	dlzexternal_LTX_dlz_lookup
+#define dlz_allowzonexfr	dlzexternal_LTX_dlz_allowzonexfr
+#define dlz_allnodes	dlzexternal_LTX_dlz_allnodes
+#define dlz_newversion	dlzexternal_LTX_dlz_newversion
+#define	dlz_closeversion	dlzexternal_LTX_dlz_closeversion
+#define dlz_configure	dlzexternal_LTX_dlz_configure
+#define dlz_ssumatch	dlzexternal_LTX_dlz_ssumatch
+#define dlz_addrdataset	dlzexternal_LTX_dlz_addrdataset
+#define dlz_sbrdataset	dlzexternal_LTX_dlz_sbrdataset
+#define dlz_delrdataset	dlzexternal_LTX_dlz_delrdataset
+
+dlz_dlopen_version_t dlz_version;
+dlz_dlopen_create_t dlz_create;
+dlz_dlopen_destroy_t dlz_destroy;
+dlz_dlopen_findzonedb_t dlz_findzonedb;
+dlz_dlopen_lookup_t dlz_lookup;
+dlz_dlopen_allowzonexfr_t dlz_allowzonexfr;
+dlz_dlopen_allnodes_t dlz_allnodes;
+dlz_dlopen_newversion_t dlz_newversion;
+dlz_dlopen_closeversion_t dlz_closeversion;
+dlz_dlopen_configure_t dlz_configure;
+dlz_dlopen_ssumatch_t dlz_ssumatch;
+dlz_dlopen_addrdataset_t dlz_addrdataset;
+dlz_dlopen_subrdataset_t dlz_subrdataset;
+dlz_dlopen_delrdataset_t dlz_delrdataset;
 
 #define CHECK(x) \
 	do { \

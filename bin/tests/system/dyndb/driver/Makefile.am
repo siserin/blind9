@@ -8,9 +8,8 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/dns/include	\
 	$(JSON_C_CFLAGS)
 
-check_LTLIBRARIES = sample.la
-
-checkdir = $(libdir)/named
+dyndb_LTLIBRARIES = sample.la
+dyndbdir = ${abs_builddir}
 
 sample_la_SOURCES =	\
 	db.c		\

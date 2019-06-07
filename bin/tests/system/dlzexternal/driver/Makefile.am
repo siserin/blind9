@@ -8,11 +8,10 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/dns/include	\
 	$(JSON_C_CFLAGS)
 
-check_LTLIBRARIES = driver.la
+dlzexternal_LTLIBRARIES = dlzexternal.la
+dlzexternaldir = ${abs_builddir}
 
-# checkdir = $(libdir)/named
-
-driver_la_SOURCES =	\
+dlzexternal_la_SOURCES =	\
 	driver.c
 
-driver_la_LDFLAGS = -avoid-version -module -shared -export-dynamic
+dlzexternal_la_LDFLAGS = -avoid-version -module -shared -export-dynamic

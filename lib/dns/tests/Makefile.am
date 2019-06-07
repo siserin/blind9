@@ -9,7 +9,7 @@ AM_CPPFLAGS = \
 	$(CMOCKA_CFLAGS)			\
 	$(JSON_C_CFLAGS)
 
-LIBADD = \
+LDADD = \
 	../../libisc.la		\
 	../../libdns.la		\
 	libdnstest.la		\

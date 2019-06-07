@@ -59,3 +59,5 @@ kyua.log
 named.memstats
 named.run
 timestamp
+/get_port_range.state
+/get_port_range.lock
