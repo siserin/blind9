@@ -5681,6 +5681,41 @@ recparam_update(ns_query_recparam_t *param, dns_rdatatype_t qtype,
 	}
 }
 
+static atomic_uint_fast32_t last_soft, last_hard;
+static isc_once_t last_initialized = ISC_ONCE_INIT;
+static void
+last_init(void) {
+	atomic_init(&last_soft, 0);
+	atomic_init(&last_hard, 0);
+}
+
+static bool
+can_log_quota(isc_result_t which) {
+	atomic_uint_fast32_t *last;
+	isc_stdtime_t now;
+
+	isc_once_do(&last_initialized, last_init);
+
+	switch (which) {
+		case ISC_R_SOFTQUOTA:
+			last = &last_soft;
+			break;
+		case ISC_R_QUOTA:
+			last = &last_hard;
+			break;
+		default:
+			INSIST(0);
+	}
+
+	isc_stdtime_get(&now);
+	if (now != atomic_load_relaxed(last)) {
+		atomic_store_relaxed(last, now);
+		return (true);
+	} else {
+		return (false);
+	}
+}
+
 isc_result_t
 ns_query_recurse(ns_client_t *client, dns_rdatatype_t qtype, dns_name_t *qname,
 		 dns_name_t *qdomain, dns_rdataset_t *nameservers,
@@ -5726,16 +5761,7 @@ ns_query_recurse(ns_client_t *client, dns_rdatatype_t qtype, dns_name_t *qname,
 				   ns_statscounter_recursclients);
 
 		if  (result == ISC_R_SOFTQUOTA) {
-			static atomic_uint_fast32_t last;
-			static isc_once_t once = ISC_ONCE_INIT;
-			void __ain() {
-				atomic_init(&last, 0);
-			}
-			isc_once_do(&once, __ain);
-			isc_stdtime_t now;
-			isc_stdtime_get(&now);
-			if (now != atomic_load_relaxed(&last)) {
-				atomic_store_relaxed(&last, now);
+			if (can_log_quota(result)) {
 				ns_client_log(client, NS_LOGCATEGORY_CLIENT,
 				      NS_LOGMODULE_QUERY, ISC_LOG_WARNING,
 				      "recursive-clients soft limit "
@@ -5748,17 +5774,8 @@ ns_query_recurse(ns_client_t *client, dns_rdatatype_t qtype, dns_name_t *qname,
 			ns_client_killoldestquery(client);
 			result = ISC_R_SUCCESS;
 		} else if (result == ISC_R_QUOTA) {
-			static atomic_uint_fast32_t last;
-			static isc_once_t once = ISC_ONCE_INIT;
-			void __ain() {
-				atomic_init(&last, 0);
-			}
-			isc_once_do(&once, __ain);
-			isc_stdtime_t now;
-			isc_stdtime_get(&now);
-			if (now != atomic_load_relaxed(&last)) {
+			if (can_log_quota(result)) {
 				ns_server_t *sctx = client->sctx;
-				atomic_store_relaxed(&last, now);
 				ns_client_log(client, NS_LOGCATEGORY_CLIENT,
 				      NS_LOGMODULE_QUERY, ISC_LOG_WARNING,
 				      "no more recursive clients "
