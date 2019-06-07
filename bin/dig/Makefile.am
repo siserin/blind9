@@ -17,14 +17,15 @@ AM_CPPFLAGS = \
 	$(OPENSSL_CFLAGS)			\
 	$(JSON_C_CFLAGS)
 
-LDADD =				\
-	libdighost.la			\
-	${top_builddir}/lib/libisc.la	\
-	${top_builddir}/lib/libirs.la	\
-	${top_builddir}/lib/libdns.la	\
-	${top_builddir}/lib/libisccfg.la\
-	${top_builddir}/lib/libbind9.la	\
-	$(LIBIDN2_LIBS)			\
+LDADD =						\
+	libdighost.la				\
+	${top_builddir}/lib/libisc.la		\
+	${top_builddir}/lib/libirs.la		\
+	${top_builddir}/lib/libdns.la		\
+	${top_builddir}/lib/libisccfg.la	\
+	${top_builddir}/lib/libbind9.la		\
+	${top_builddir}/lib/libns.la		\
+	$(LIBIDN2_LIBS)				\
 	$(OPENSSL_LIBS)
 
 noinst_LTLIBRARIES = libdighost.la
