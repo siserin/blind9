@@ -101,19 +101,64 @@ typedef struct atomic_bool_s {
 
 
 #define atomic_init(obj, desired)		\
-	{ isc_mutex_init(&(obj)->m); isc_mutex_lock(&(obj)->m); (obj)->v = desired; isc_mutex_unlock(&(obj)->m); }
+	{ \
+	  isc_mutex_init(&(obj)->m); \
+	  isc_mutex_lock(&(obj)->m); \
+	  (obj)->v = desired; \
+	  isc_mutex_unlock(&(obj)->m); \
+	}
 #define atomic_load_explicit(obj, order)	\
-	({ typeof((obj)->v) __v; isc_mutex_lock(&(obj)->m); __v= (obj)->v; isc_mutex_unlock(&(obj)->m); __v;} )
+	({ \
+	  typeof((obj)->v) __v; \
+	  isc_mutex_lock(&(obj)->m); \
+	  __v= (obj)->v; \
+	  isc_mutex_unlock(&(obj)->m); \
+	  __v; \
+	})
 #define atomic_store_explicit(obj, desired, order)	\
-	{isc_mutex_lock(&(obj)->m); (obj)->v = desired; isc_mutex_unlock(&(obj)->m); }
+	{ \
+	  isc_mutex_lock(&(obj)->m); \
+	  (obj)->v = desired; \
+	  isc_mutex_unlock(&(obj)->m); \
+	}
 #define atomic_fetch_add_explicit(obj, arg, order)	\
-	({ typeof((obj)->v) __v; isc_mutex_lock(&(obj)->m); __v= (obj)->v; (obj)->v += arg; isc_mutex_unlock(&(obj)->m); __v;} )
+	({ \
+	  typeof((obj)->v) __v; \
+	  isc_mutex_lock(&(obj)->m); \
+	  __v= (obj)->v; \
+	  (obj)->v += arg; \
+	  isc_mutex_unlock(&(obj)->m); \
+	  __v; \
+	})
 #define atomic_fetch_sub_explicit(obj, arg, order)	\
-	({ typeof((obj)->v) __v; isc_mutex_lock(&(obj)->m); __v= (obj)->v; (obj)->v -= arg; isc_mutex_unlock(&(obj)->m); __v;} )
+	({ \
+	  typeof((obj)->v) __v; \
+	  isc_mutex_lock(&(obj)->m); \
+	  __v= (obj)->v; \
+	  (obj)->v -= arg; \
+	  isc_mutex_unlock(&(obj)->m); \
+	  __v; \
+	})
 #define atomic_compare_exchange_strong_explicit(obj, expected, desired, succ, fail)	\
-	({ bool __v; isc_mutex_lock(&(obj)->m); __v = ((obj)->v == *expected); *expected = (obj)->v; (obj)->v = __v ? desired : (obj)->v; isc_mutex_unlock(&(obj)->m); __v;} )
+	({ \
+	  bool __v; \
+	  isc_mutex_lock(&(obj)->m); \
+	  __v = ((obj)->v == *expected); \
+	  *expected = (obj)->v; \
+	  (obj)->v = __v ? desired : (obj)->v; \
+	  isc_mutex_unlock(&(obj)->m); \
+	  __v; \
+	})
 #define atomic_compare_exchange_weak_explicit(obj, expected, desired, succ, fail)	\
-	({ bool __v; isc_mutex_lock(&(obj)->m); __v = ((obj)->v == *expected); *expected = (obj)->v; (obj)->v = __v ? desired : (obj)->v; isc_mutex_unlock(&(obj)->m); __v;} )
+	({ \
+	  bool __v; \
+	  isc_mutex_lock(&(obj)->m); \
+	  __v = ((obj)->v == *expected); \
+	  *expected = (obj)->v; \
+	  (obj)->v = __v ? desired : (obj)->v; \
+	  isc_mutex_unlock(&(obj)->m); \
+	  __v; \
+	})
 
 
 
