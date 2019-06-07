@@ -11,3 +11,5 @@ named.run
 parallel.mk
 /*.log
 /*.trs
+/get_port_range.state
+/get_port_range.lock
