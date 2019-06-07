@@ -52,3 +52,6 @@ TESTS = \
 	xfer xferquota zero zonechecks
 
 LOG_COMPILER = ./system-test-driver.sh
+
+clean-local::
+	-rm -f get_port_range.status get_port_range.lock

@@ -62,6 +62,6 @@ fi
 
 echo "Running $TEST_PROGRAM"
 
-./run.sh -p "$(($RANDOM%32000+32000))" "$@" "$TEST_PROGRAM"
+./run.sh -p "$(./get_port_range.sh)" "$@" "$TEST_PROGRAM"
 
 exit $?
