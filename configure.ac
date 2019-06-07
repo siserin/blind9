@@ -114,7 +114,6 @@ AC_ARG_ENABLE([developer],
 	      [AS_HELP_STRING([--enable-developer],
 			      [enable developer build settings])])
 
-XTARGETS=
 AS_IF([test "$enable_developer" = "yes"],
       [STD_CDEFINES="$STD_CDEFINES -DISC_MEM_DEFAULTFILL=1 -DISC_LIST_CHECKINIT=1"
        test "${enable_fixed_rrset+set}" = set || enable_fixed_rrset=yes
@@ -125,9 +124,7 @@ AS_IF([test "$enable_developer" = "yes"],
        test "${enable_warn_error+set}" = set || enable_warn_error=yes
        test "${enable_warn_shadow+set}" = set || enable_warn_shadow=yes
        test "${with_zlib+set}" = set || with_zlib=yes
-       XTARGETS='${XTARGETS}'
        ])
-AC_SUBST([XTARGETS])
 
 AC_ARG_ENABLE([fuzzing],
 	      [AS_HELP_STRING([--enable-fuzzing=<afl|libfuzzer>],
@@ -182,26 +179,6 @@ no)
         ;;
 esac
 
-AC_PATH_PROG(AR, ar)
-ARFLAGS="cruv"
-AC_SUBST(AR)
-AC_SUBST(ARFLAGS)
-
-# The POSIX ln(1) program.  Non-POSIX systems may substitute
-# "copy" or something.
-LN=ln
-AC_SUBST(LN)
-
-case "$AR" in
-	"")
-		AC_MSG_ERROR([
-ar program not found.  Please fix your PATH to include the directory in
-which ar resides, or set AR in the environment with the full path to ar.
-])
-
-		;;
-esac
-
 #
 # Perl is optional; it is used only by some of the system test scripts.
 # Note: the backtrace feature (see below) uses perl to build the symbol table,
@@ -248,58 +225,14 @@ AS_IF([test "$enable_dnssec_keymgr" != "no"],
        AS_IF([test "$PYTHON" != ":"],
 	     [AX_PYTHON_MODULE([ply], [1])
 	      AX_PYTHON_MODULE([argparse], [1])
-	      AX_PYTHON_MODULE([dns.message], [1])
+	      AX_PYTHON_MODULE([dns.message], [1]) # FIXME: dns.message is only optional
 	     ])
        ])
 
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ":"])
 
-#
-# Make sure INSTALL uses an absolute path, else it will be wrong in all
-# Makefiles, since they use make/rules.in and INSTALL will be adjusted by
-# configure based on the location of the file where it is substituted.
-# Since in BIND9 INSTALL is only substituted into make/rules.in, an immediate
-# subdirectory of install-sh, This relative path will be wrong for all
-# directories more than one level down from install-sh.
-#
-case "$INSTALL" in
-	/*)
-		;;
-	*)
-		#
-		# Not all systems have dirname.
-		#
-		changequote({, })
-		ac_dir="`echo $INSTALL | sed 's%/[^/]*$%%'`"
-		changequote([, ])
-
-		ac_prog="`echo $INSTALL | sed 's%.*/%%'`"
-		test "X$ac_dir" = "X$ac_prog" && ac_dir=.
-		test -d "$ac_dir" && ac_dir="`(cd \"$ac_dir\" && pwd)`"
-		INSTALL="$ac_dir/$ac_prog"
-		;;
-esac
-
 AC_PROG_CC
 AC_PROG_CC_C99
-
-#
-# Using Solaris linker with gcc on Solaris breaks Thread Local Storage
-#
-AS_CASE([$host],
-	[*-solaris*],[
-	    AS_IF([test "$GCC" = "yes"],
-		  [LDFLAGS="$LDFLAGS -zrelax=transtls"
-		   AC_MSG_WARN([When using GNU C Compiler on Solaris, -zrelax=transtls linker flag is used to fix bug in Thread Local Storage])
-		  ])
-	])
-
-#
-# CCNOOPT defaults to -O0 on gcc and disables optimization when is last
-#
-if test "X$CCNOOPT" = "X" -a "X$GCC" = "Xyes"; then
-	CCNOOPT="-O0"
-fi
 
 AC_HEADER_STDC
 
