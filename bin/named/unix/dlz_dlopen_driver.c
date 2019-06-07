@@ -234,7 +234,7 @@ dlopen_dlz_create(const char *dlzname, unsigned int argc, char *argv[],
 	if (lt_dlinit() != 0) {
 		return (ISC_R_FAILURE);
 	}
-	
+
 	result = isc_mem_create(0, 0, &mctx);
 	cd = isc_mem_get(mctx, sizeof(*cd));
 	memset(cd, 0, sizeof(*cd));
@@ -246,7 +246,7 @@ dlopen_dlz_create(const char *dlzname, unsigned int argc, char *argv[],
 
 	/* Initialize the lock */
 	isc_mutex_init(&cd->lock);
-	
+
 	cd->dl_handle = lt_dlopenext(cd->dl_path);
 	if (cd->dl_handle == NULL) {
 		dlopen_log(ISC_LOG_ERROR,
