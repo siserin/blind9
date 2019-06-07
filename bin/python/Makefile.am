@@ -11,10 +11,15 @@ EXTRA_DIST = 			\
 	dnssec-keymgr.py
 
 BUILT_SOURCES =			\
-	isc/utils.py
+	isc/utils.py		\
+	isc/parsetab.py
 
 isc/utils.py: isc/utils.py.in
 	$(do_subst) < $< > $@
+
+isc/parsetab.py: isc/policy.py
+	$(PYTHON) isc/policy.py parse /dev/null >/dev/null
+	PYTHONPATH=$(abs_builddir)/isc $(PYTHON) -m parsetab
 
 dnssec-checkds: dnssec-checkds.py.in
 	$(do_subst) < $< > $@
@@ -39,6 +44,7 @@ python_PYTHON =			\
 	isc/keymgr.py		\
 	isc/keyseries.py	\
 	isc/keyzone.py		\
+	isc/parsetab.py		\
 	isc/policy.py		\
 	isc/rndc.py		\
 	isc/utils.py
