@@ -16,6 +16,7 @@ AM_CPPFLAGS = \
 	$(DNSTAP_CFLAGS)			\
 	$(OPENSSL_CFLAGS)			\
 	$(JSON_C_CFLAGS)			\
+	$(ZLIB_CFLAGS)				\
 	-DNAMED_LOCALSTATEDIR=\"${localstatedir}\" \
 	-DNAMED_SYSCONFDIR=\"${sysconfdir}\"
 
@@ -74,4 +75,5 @@ named_LDADD =					\
 	$(OPENSSL_LIBS)				\
 	$(LIBCAP_LIBS)				\
 	$(DNSTAP_LIBS)				\
-	$(JSON_C_LIBS)
+	$(JSON_C_LIBS)				\
+	$(ZLIB_LIBS)
