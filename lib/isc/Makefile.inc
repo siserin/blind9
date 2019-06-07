@@ -180,10 +180,8 @@ libisc_la_CPPFLAGS =			\
 	$(DNS_INCLUDES)
 
 libisc_la_LDFLAGS =			\
-	-release $(PACKAGE_VERSION)	\
-	$(OPENSSL_LDFLAGS)		\
-	$(JSON_C_LDFLAGS)
+	-release $(PACKAGE_VERSION)
 
 libisc_la_LIBADD =			\
-	$(OPENSSL_LIBS)		\
+	$(OPENSSL_LIBS)			\
 	$(JSON_C_LIBS)

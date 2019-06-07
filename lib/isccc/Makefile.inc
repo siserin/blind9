@@ -40,9 +40,6 @@ libisccc_la_CPPFLAGS =			\
 	$(ISCCC_INCLUDES)		\
 	$(OPENSSL_CFLAGS)
 
-libisccc_la_LDFLAGS =			\
-	$(OPENSSL_LDFLAGS)		\
-	$(OPENSSL_LIBS)
-
 libisccc_la_LIBADD =			\
-	libisc.la
+	libisc.la			\
+	$(OPENSSL_LIBS)

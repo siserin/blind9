@@ -51,11 +51,8 @@ libns_la_CPPFLAGS = \
 	$(NS_INCLUDES)			\
 	$(OPENSSL_CFLAGS)
 
-libns_la_LDFLAGS = \
-	$(OPENSSL_LDFLAGS)		\
-	$(OPENSSL_LIBS)
-
 libns_la_LIBADD =			\
 	libisc.la			\
 	libdns.la			\
+	$(OPENSSL_LIBS)			\
 	$(top_builddir)/libltdl/libltdlc.la

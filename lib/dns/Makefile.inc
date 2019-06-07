@@ -270,12 +270,12 @@ libdns_la_CPPFLAGS =		\
 	$(USE_GSSAPI)
 
 libdns_la_LDFLAGS =		\
-	$(OPENSSL_LDFLAGS)	\
-	$(OPENSSL_LIBS)		\
 	$(DNS_GSSAPI_LIBS)
 
 libdns_la_LIBADD =		\
-	libisc.la
+	libisc.la		\
+	$(OPENSSL_LIBS)		\
+	$(top_builddir)/libltdl/libltdlc.la
 
 if HAVE_DNSTAP
 BUILT_SOURCES +=				\
