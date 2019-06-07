@@ -2363,6 +2363,7 @@ AC_CONFIG_FILES([Makefile
 		 bin/check/Makefile
 		 bin/confgen/Makefile
 		 bin/python/Makefile
+		 bin/pkcs11/Makefile
 		 bin/plugins/Makefile
 		 lib/Makefile
 		 lib/samples/Makefile
