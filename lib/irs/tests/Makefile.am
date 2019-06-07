@@ -7,13 +7,14 @@ AM_CPPFLAGS = \
 	-I../../irs/include			\
 	-DTESTS=\"$(abs_srcdir)\"		\
 	$(OPENSSL_CFLAGS)			\
+	$(JSON_C_CFLAGS)			\
 	$(CMOCKA_CFLAGS)
 
-AM_LDFLAGS = \
-	../../libisc.la	\
-	../../libdns.la \
-	../../libirs.la \
-	$(OPENSSL_LIBS)	\
+LIBS =				\
+	../../libisc.la		\
+	../../libdns.la		\
+	../../libirs.la		\
+	$(OPENSSL_LIBS)		\
 	$(CMOCKA_LIBS)
 
 check_PROGRAMS = \

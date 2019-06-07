@@ -20,4 +20,5 @@ sample_la_SOURCES =	\
 	log.c		\
 	syncptr.c	\
 	zone.c
+
 sample_la_LDFLAGS = -avoid-version -module -shared -export-dynamic

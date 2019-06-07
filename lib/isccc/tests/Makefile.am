@@ -10,7 +10,7 @@ AM_CPPFLAGS = \
 	$(OPENSSL_CFLAGS)			\
 	$(CMOCKA_CFLAGS)
 
-AM_LDFLAGS = \
+LDADD = \
 	../../libisc.la	\
 	../../libdns.la \
 	../../libisccc.la \

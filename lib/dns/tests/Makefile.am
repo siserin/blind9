@@ -9,7 +9,7 @@ AM_CPPFLAGS = \
 	$(CMOCKA_CFLAGS)			\
 	$(JSON_C_CFLAGS)
 
-AM_LDFLAGS = \
+LIBADD = \
 	../../libisc.la		\
 	../../libdns.la		\
 	libdnstest.la		\
@@ -18,7 +18,6 @@ AM_LDFLAGS = \
 
 noinst_LTLIBRARIES = libdnstest.la
 libdnstest_la_SOURCES = dnstest.c dnstest.h
-libdnstest_la_LDFLAGS =
 
 check_PROGRAMS = \
 	acl_test \

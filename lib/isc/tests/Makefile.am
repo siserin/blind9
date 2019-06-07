@@ -16,7 +16,6 @@ LDADD = 			\
 
 noinst_LTLIBRARIES = libisctest.la
 libisctest_la_SOURCES = isctest.c isctest.h
-libisctest_la_LDFLAGS =
 
 check_PROGRAMS = \
 	aes_test \

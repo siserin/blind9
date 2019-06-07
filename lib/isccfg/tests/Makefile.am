@@ -8,12 +8,13 @@ AM_CPPFLAGS = \
 	-DTESTS=\"$(abs_srcdir)\"		\
 	-DNAMED_PLUGINDIR=\"$(libdir)/named\"	\
 	$(OPENSSL_CFLAGS)			\
+	$(JSON_C_CFLAGS)			\
 	$(CMOCKA_CFLAGS)
 
-AM_LDFLAGS = \
+LDADD = \
 	../../libisc.la	\
 	../../libdns.la \
-	../../libiscfg.la \
+	../../libisccfg.la \
 	$(OPENSSL_LIBS)	\
 	$(CMOCKA_LIBS)
 

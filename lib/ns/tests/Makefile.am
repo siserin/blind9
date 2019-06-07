@@ -11,7 +11,7 @@ AM_CPPFLAGS = \
 	$(CMOCKA_CFLAGS)			\
 	$(JSON_C_CFLAGS)
 
-AM_LDFLAGS = \
+LDADD = \
 	../../libisc.la	\
 	../../libdns.la \
 	../../libns.la \
@@ -21,7 +21,6 @@ AM_LDFLAGS = \
 
 noinst_LTLIBRARIES = libnstest.la
 libnstest_la_SOURCES = nstest.c nstest.h
-libnstest_la_LDFLAGS =
 
 check_PROGRAMS = \
 	listenlist_test \
