@@ -8,7 +8,7 @@ AM_CPPFLAGS = \
 	-DTESTS=\"$(abs_srcdir)\"		\
 	-DNAMED_PLUGINDIR=\"$(libdir)/named\"	\
 	$(OPENSSL_CFLAGS)			\
-	$(JSON_C_CFLAGS)			\
+	$(JSON_C_CFLAGS) $(LIBXML2_CFLAGS)			\
 	$(CMOCKA_CFLAGS)
 
 LDADD = \

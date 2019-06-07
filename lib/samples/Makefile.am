@@ -8,7 +8,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/dns/include		\
 	-I$(top_srcdir)/lib/irs/include		\
 	$(OPENSSL_CFLAGS)				\
-	$(JSON_C_CFLAGS)
+	$(JSON_C_CFLAGS) $(LIBXML2_CFLAGS)
 
 noinst_PROGRAMS = 	\
 	resolve		\

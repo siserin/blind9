@@ -6,7 +6,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/isc/pthreads/include\
 	-I$(top_srcdir)/lib/isc/include		\
 	-I$(top_srcdir)/lib/dns/include	\
-	$(JSON_C_CFLAGS)
+	$(JSON_C_CFLAGS) $(LIBXML2_CFLAGS)
 
 dyndb_LTLIBRARIES = sample.la
 dyndbdir = ${abs_builddir}

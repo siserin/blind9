@@ -15,7 +15,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/bind9/include	\
 	$(LIBIDN2_CFLAGS)			\
 	$(OPENSSL_CFLAGS)			\
-	$(JSON_C_CFLAGS)			\
+	$(JSON_C_CFLAGS) $(LIBXML2_CFLAGS)			\
 	-DNAMED_CONFFILE=\"${sysconfdir}/named.conf\"
 
 noinst_LTLIBRARIES = libcheck-tool.la

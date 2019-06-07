@@ -14,7 +14,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/irs/include		\
 	-I$(top_srcdir)/lib/bind9/include	\
 	$(OPENSSL_CFLAGS)			\
-	$(JSON_C_CFLAGS)			\
+	$(JSON_C_CFLAGS) $(LIBXML2_CFLAGS)			\
 	-DRNDC_CONFFILE=\"${sysconfdir}/rndc.conf\" \
 	-DRNDC_KEYFILE=\"${sysconfdir}/rndc.key\"
 

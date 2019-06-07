@@ -228,7 +228,6 @@ my @substtest = ("CHECKDS",
                  "JSONSTATS",
                  "KEYMGR",
                  "NZD_TOOLS",
-                 "XMLSTATS",
                  "ZLIB"),
 
 # includes
@@ -1873,7 +1872,6 @@ if ($use_libxml2 eq "yes") {
     }
     $configcond{"LIBXML2"} = 1;
     $configdefh{"HAVE_LIBXML2"} = 1;
-    $configtest{"XMLSTATS"} = 1;
     my $libxml2_inc = File::Spec->catdir($libxml2_path, "include");
     $configinc{"LIBXML2_INC"} = "$libxml2_inc";
     my $libxml2_libdir = File::Spec->catdir($libxml2_path, "win32\\bin.msvc");

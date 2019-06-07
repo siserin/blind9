@@ -7,7 +7,7 @@ AM_CPPFLAGS = \
 	-I../../irs/include			\
 	-DTESTS=\"$(abs_srcdir)\"		\
 	$(OPENSSL_CFLAGS)			\
-	$(JSON_C_CFLAGS)			\
+	$(JSON_C_CFLAGS) $(LIBXML2_CFLAGS)			\
 	$(CMOCKA_CFLAGS)
 
 LIBS =				\

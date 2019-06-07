@@ -6,7 +6,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/isc/pthreads/include\
 	-I$(top_srcdir)/lib/isc/include		\
 	$(OPENSSL_CFLAGS)			\
-	$(JSON_C_CFLAGS)			\
+	$(JSON_C_CFLAGS) $(LIBXML2_CFLAGS)			\
 	-DSYSCONFDIR=\"${sysconfdir}\"
 
 LDADD =		\
