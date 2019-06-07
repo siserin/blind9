@@ -20,7 +20,6 @@
 #include <synch.h> /* for smt_pause(3c) */
 #endif
 
-#include <isc/atomic.h>
 #include <isc/magic.h>
 #include <isc/platform.h>
 #include <isc/print.h>
@@ -31,7 +30,7 @@
 
 #include <errno.h>
 #include <pthread.h>
-
+#include <stdatomic.h>
 isc_result_t
 isc_rwlock_init(isc_rwlock_t *rwl, unsigned int read_quota,
 		unsigned int write_quota)
@@ -53,10 +52,12 @@ isc_rwlock_lock(isc_rwlock_t *rwl, isc_rwlocktype_t type) {
 		while (true) {
 			REQUIRE(pthread_rwlock_wrlock(&rwl->rwlock) == 0);
 			/* Unlock if in middle of downgrade operation */
-			if (atomic_load_acquire(&rwl->downgrade)) {
+			if (atomic_load_explicit(&rwl->downgrade,
+						 memory_order_acquire)) {
 				REQUIRE(pthread_rwlock_unlock(&rwl->rwlock)
 					== 0);
-				while (atomic_load_acquire(&rwl->downgrade));
+				while (atomic_load_explicit(&rwl->downgrade,
+							    memory_order_acquire));
 				continue;
 			}
 			break;
@@ -78,7 +79,9 @@ isc_rwlock_trylock(isc_rwlock_t *rwl, isc_rwlocktype_t type) {
 		break;
 	case isc_rwlocktype_write:
 		ret = pthread_rwlock_trywrlock(&rwl->rwlock);
-		if ((ret == 0) && atomic_load_acquire(&rwl->downgrade)) {
+		if ((ret == 0) &&
+		    atomic_load_explicit(&rwl->downgrade,
+					 memory_order_acquire)) {
 			isc_rwlock_unlock(rwl, type);
 			return (ISC_R_LOCKBUSY);
 		}
@@ -110,10 +113,10 @@ isc_rwlock_tryupgrade(isc_rwlock_t *rwl) {
 
 void
 isc_rwlock_downgrade(isc_rwlock_t *rwl) {
-	atomic_store_release(&rwl->downgrade, true);
+	atomic_store_explicit(&rwl->downgrade, true, memory_order_release);
 	isc_rwlock_unlock(rwl, isc_rwlocktype_write);
 	isc_rwlock_lock(rwl, isc_rwlocktype_read);
-	atomic_store_release(&rwl->downgrade, false);
+	atomic_store_explicit(&rwl->downgrade, false, memory_order_release);
 }
 
 void
@@ -122,6 +125,7 @@ isc_rwlock_destroy(isc_rwlock_t *rwl) {
 }
 
 #else
+#include <isc/atomic.h>
 
 #define RWLOCK_MAGIC		ISC_MAGIC('R', 'W', 'L', 'k')
 #define VALID_RWLOCK(rwl)	ISC_MAGIC_VALID(rwl, RWLOCK_MAGIC)

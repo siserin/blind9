@@ -14,6 +14,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <isc/mutex.h>
+#include <isc/rwlock.h>
 
 #if !defined(__has_feature)
 #define __has_feature(x) 0
@@ -74,89 +75,89 @@ enum memory_order {
 typedef enum memory_order memory_order;
 
 typedef struct atomic_int_fast32 {
-	isc_mutex_t m;
+	isc_rwlock_t m;
 	int32_t v;
 } atomic_int_fast32_t;
 
 typedef struct atomic_int_fast64 {
-	isc_mutex_t m;
+	isc_rwlock_t m;
 	int64_t v;
 } atomic_int_fast64_t;
 
 typedef struct atomic_uint_fast32 {
-	isc_mutex_t m;
+	isc_rwlock_t m;
 	uint32_t v;
 } atomic_uint_fast32_t;
 
 typedef struct atomic_uint_fast64 {
-	isc_mutex_t m;
+	isc_rwlock_t m;
 	uint64_t v;
 } atomic_uint_fast64_t;
 
 
 typedef struct atomic_bool_s {
-	isc_mutex_t m;
+	isc_rwlock_t m;
 	bool v;
 } atomic_bool;
 
 
 #define atomic_init(obj, desired)		\
 	{ \
-	  isc_mutex_init(&(obj)->m); \
-	  isc_mutex_lock(&(obj)->m); \
+	  isc_rwlock_init(&(obj)->m, 0, 0); \
+	  isc_rwlock_lock(&(obj)->m, isc_rwlocktype_write); \
 	  (obj)->v = desired; \
-	  isc_mutex_unlock(&(obj)->m); \
+	  isc_rwlock_unlock(&(obj)->m, isc_rwlocktype_write); \
 	}
 #define atomic_load_explicit(obj, order)	\
 	({ \
 	  typeof((obj)->v) __v; \
-	  isc_mutex_lock(&(obj)->m); \
+	  isc_rwlock_lock(&(obj)->m, isc_rwlocktype_read); \
 	  __v= (obj)->v; \
-	  isc_mutex_unlock(&(obj)->m); \
+	  isc_rwlock_unlock(&(obj)->m, isc_rwlocktype_read); \
 	  __v; \
 	})
 #define atomic_store_explicit(obj, desired, order)	\
 	{ \
-	  isc_mutex_lock(&(obj)->m); \
+	  isc_rwlock_lock(&(obj)->m, isc_rwlocktype_write); \
 	  (obj)->v = desired; \
-	  isc_mutex_unlock(&(obj)->m); \
+	  isc_rwlock_unlock(&(obj)->m, isc_rwlocktype_write); \
 	}
 #define atomic_fetch_add_explicit(obj, arg, order)	\
 	({ \
 	  typeof((obj)->v) __v; \
-	  isc_mutex_lock(&(obj)->m); \
+	  isc_rwlock_lock(&(obj)->m, isc_rwlocktype_write); \
 	  __v= (obj)->v; \
 	  (obj)->v += arg; \
-	  isc_mutex_unlock(&(obj)->m); \
+	  isc_rwlock_unlock(&(obj)->m, isc_rwlocktype_write); \
 	  __v; \
 	})
 #define atomic_fetch_sub_explicit(obj, arg, order)	\
 	({ \
 	  typeof((obj)->v) __v; \
-	  isc_mutex_lock(&(obj)->m); \
+	  isc_rwlock_lock(&(obj)->m, isc_rwlocktype_write); \
 	  __v= (obj)->v; \
 	  (obj)->v -= arg; \
-	  isc_mutex_unlock(&(obj)->m); \
+	  isc_rwlock_unlock(&(obj)->m, isc_rwlocktype_write); \
 	  __v; \
 	})
 #define atomic_compare_exchange_strong_explicit(obj, expected, desired, succ, fail)	\
 	({ \
 	  bool __v; \
-	  isc_mutex_lock(&(obj)->m); \
+	  isc_rwlock_lock(&(obj)->m, isc_rwlocktype_write); \
 	  __v = ((obj)->v == *expected); \
 	  *expected = (obj)->v; \
 	  (obj)->v = __v ? desired : (obj)->v; \
-	  isc_mutex_unlock(&(obj)->m); \
+	  isc_rwlock_unlock(&(obj)->m, isc_rwlocktype_write); \
 	  __v; \
 	})
 #define atomic_compare_exchange_weak_explicit(obj, expected, desired, succ, fail)	\
 	({ \
 	  bool __v; \
-	  isc_mutex_lock(&(obj)->m); \
+	  isc_rwlock_lock(&(obj)->m, isc_rwlocktype_write); \
 	  __v = ((obj)->v == *expected); \
 	  *expected = (obj)->v; \
 	  (obj)->v = __v ? desired : (obj)->v; \
-	  isc_mutex_unlock(&(obj)->m); \
+	  isc_rwlock_unlock(&(obj)->m, isc_rwlocktype_write); \
 	  __v; \
 	})
 

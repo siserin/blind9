@@ -17,7 +17,6 @@
 
 /*! \file isc/rwlock.h */
 
-#include <isc/atomic.h>
 #include <isc/condition.h>
 #include <isc/lang.h>
 #include <isc/platform.h>
@@ -36,10 +35,15 @@ typedef enum {
 
 struct isc_rwlock {
 	pthread_rwlock_t	rwlock;
-	atomic_bool             downgrade;
+	/*
+	 * We need to use bool volatile to avoid
+	 * chicken-and-egg problem with mutex atomics.
+	 */
+	bool volatile           downgrade;
 };
 
 #else /* USE_PTHREAD_RWLOCK */
+#include <isc/atomic.h>
 
 struct isc_rwlock {
 	/* Unlocked. */

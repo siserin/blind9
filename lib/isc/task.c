@@ -1335,7 +1335,7 @@ isc_taskmgr_create(isc_mem_t *mctx, unsigned int workers,
 	RUNTIME_CHECK(manager != NULL);
 	manager->common.impmagic = TASK_MANAGER_MAGIC;
 	manager->common.magic = ISCAPI_TASKMGR_MAGIC;
-	atomic_store(&manager->mode, isc_taskmgrmode_normal);
+	atomic_init(&manager->mode, isc_taskmgrmode_normal);
 	manager->mctx = NULL;
 	isc_mutex_init(&manager->lock);
 	isc_mutex_init(&manager->excl_lock);
@@ -1350,7 +1350,7 @@ isc_taskmgr_create(isc_mem_t *mctx, unsigned int workers,
 	}
 	manager->default_quantum = default_quantum;
 	INIT_LIST(manager->tasks);
-	atomic_store(&manager->tasks_count, 0);
+	atomic_init(&manager->tasks_count, 0);
 	manager->queues = isc_mem_get(mctx, workers * sizeof(isc__taskqueue_t));
 	RUNTIME_CHECK(manager->queues != NULL);
 

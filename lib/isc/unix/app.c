@@ -422,8 +422,8 @@ isc_app_finish(void) {
 void
 isc_app_block(void) {
 	sigset_t sset;
-	REQUIRE(isc_g_appctx.running);
-	REQUIRE(!isc_g_appctx.blocked);
+	REQUIRE(atomic_load_relaxed(&isc_g_appctx.running));
+	REQUIRE(!atomic_load_relaxed(&isc_g_appctx.blocked));
 
 	atomic_store_release(&isc_g_appctx.blocked, true);
 	blockedthread = pthread_self();
