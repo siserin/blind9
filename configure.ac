@@ -37,13 +37,11 @@ AM_MAINTAINER_MODE([enable])
 
 AC_CONFIG_HEADER(config.h)
 
-AC_USE_SYSTEM_EXTENSIONS
-AC_CANONICAL_HOST
-
 #
 # Enable system extensions to C and POSIX
 #
 AC_USE_SYSTEM_EXTENSIONS
+AC_CANONICAL_HOST
 
 #
 # Enable large file support
