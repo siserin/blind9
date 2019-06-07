@@ -8,10 +8,10 @@ AM_CPPFLAGS = \
 	$(JSON_C_CFLAGS)			\
 	$(CMOCKA_CFLAGS)
 
-AM_LDFLAGS = \
-	../../libisc.la	\
-	libisctest.la \
-	$(OPENSSL_LIBS)	\
+LDADD = 			\
+	../../libisc.la		\
+	libisctest.la		\
+	$(OPENSSL_LIBS)		\
 	$(CMOCKA_LIBS)
 
 noinst_LTLIBRARIES = libisctest.la
@@ -50,3 +50,7 @@ check_PROGRAMS = \
 	timer_test
 
 TESTS = $(check_PROGRAMS)
+
+random_test_LDADD = 	\
+	$(LDADD)	\
+	-lm
