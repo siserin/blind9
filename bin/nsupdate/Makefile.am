@@ -18,12 +18,13 @@ AM_CPPFLAGS = \
 	-DSESSION_KEYFILE=\"${localstatedir}/run/named/session.key\" \
 	$(DST_GSSAPI_INC)
 
-LDADD =					\
-	${top_builddir}/lib/libisc.la	\
-	${top_builddir}/lib/libirs.la	\
-	${top_builddir}/lib/libdns.la	\
-	${top_builddir}/lib/libisccfg.la\
-	${top_builddir}/lib/libbind9.la	\
+LDADD =						\
+	${top_builddir}/lib/libisc.la		\
+	${top_builddir}/lib/libirs.la		\
+	${top_builddir}/lib/libdns.la		\
+	${top_builddir}/lib/libns.la		\
+	${top_builddir}/lib/libisccfg.la	\
+	${top_builddir}/lib/libbind9.la		\
 	$(READLINE_LIB)
 
 bin_PROGRAMS = nsupdate
