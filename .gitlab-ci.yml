@@ -296,7 +296,7 @@ gcc:centos6:amd64:
   variables:
     CC: gcc
     CFLAGS: "-Wall -Wextra -O2 -g"
-    EXTRA_CONFIGURE: "--with-libidn2 --disable-warn-error"
+    EXTRA_CONFIGURE: "--with-libidn2 --disable-warn-error --without-python"
     PYTHON: python
   <<: *centos_centos6_amd64_image
   <<: *build_job
@@ -343,6 +343,7 @@ gcc:jessie:amd64:
     CC: gcc
     CFLAGS: "-Wall -Wextra -O2 -g"
     EXTRA_CONFIGURE: "--without-cmocka --with-python --disable-geoip"
+    PYTHON: python
   <<: *debian_jessie_amd64_image
   <<: *build_job
 
