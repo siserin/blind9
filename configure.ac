@@ -185,49 +185,51 @@ esac
 AC_PATH_PROGS(PERL, perl5 perl)
 AC_SUBST(PERL)
 
-AC_ARG_ENABLE([dnssec-keymgr],
-	      [AS_HELP_STRING([--disable-dnssec-keymgr],
-			      [Enable dnssec-keymgr tool,
-					     requires Python 3.2 or 2.7
-					     and ply, argparse and dnspython
-					     modules
-					     [default=yes]])],
-	      [],[enable_dnssec_keymgr=yes])
+AC_ARG_WITH([python],
+	    [AS_HELP_STRING([--with-python=PATH],
+			    [Python >= 3.2 or >= 2.7 and ply module
+			     is required for dnssec-keymgr tool
+			     (default uses $PYTHON environment variable)])],
+	    [PYTHON=$with_python])
 
 #
-# Python and modules are optional
+# Python (>= 3.2 or >= 2.7) and ply module is mandatory for dnssec-keymgr
 #
-AS_IF([test "$enable_dnssec_keymgr" != "no"],
-      [AS_IF([test -n "$PYTHON"],
-	     [AC_MSG_CHECKING([whether $PYTHON version is >= 3.2])
-	      AM_PYTHON_CHECK_VERSION([$PYTHON], [3.2],
-				      [AC_MSG_RESULT([yes])
-				       AM_PATH_PYTHON(,,[:])
-				      ],
-				      [AC_MSG_RESULT([no])
-				       AC_MSG_CHECKING([whether $PYTHON version is >= 2.7])
-				       AM_PYTHON_CHECK_VERSION([$PYTHON], [2.7],
-							       [AC_MSG_RESULT([yes])
-								AM_PATH_PYTHON(,,[:])
-							       ],
-							       [AC_MSG_RESULT([no])
-								unset PYTHON
-							       ])
-				      ])],
-	     [AM_PATH_PYTHON([3.2],
-			     [],
-			     [AM_PATH_PYTHON([2.7],
-					     []
-					     [:])])])
-
-       AS_IF([test "$PYTHON" != ":"],
-	     [AX_PYTHON_MODULE([ply], [1])
-	      AX_PYTHON_MODULE([argparse], [1])
-	      AX_PYTHON_MODULE([dns.message], [1]) # FIXME: dns.message is only optional
-	     ])
-       ])
+#
+AS_CASE([$with_python],
+	[no],[],
+	[AS_IF([test -n "$PYTHON"],
+	       [AC_MSG_CHECKING([whether $PYTHON version is >= 3.2])
+		AM_PYTHON_CHECK_VERSION([$PYTHON], [3.2],
+					[AC_MSG_RESULT([yes])
+					 AM_PATH_PYTHON(,,[:])
+					],
+					[AC_MSG_RESULT([no])
+					 AC_MSG_CHECKING([whether $PYTHON version is >= 2.7])
+					 AM_PYTHON_CHECK_VERSION([$PYTHON], [2.7],
+								 [AC_MSG_RESULT([yes])
+								  AM_PATH_PYTHON(,,[:])
+								 ],
+								 [AC_MSG_RESULT([no])
+								  unset PYTHON
+								 ])
+					])],
+	       [AM_PATH_PYTHON([3.2],
+			       [],
+			       [AM_PATH_PYTHON([2.7],
+					       []
+					       [:])])])
+	 AS_IF([test "$PYTHON" != ":"],
+	       [AX_PYTHON_MODULE([ply], [1]) # Mandatory
+		AX_PYTHON_MODULE([dns.message], []) # Optional
+	       ])
+	])
 
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ":"])
+
+#
+# Other python modules are optional
+#
 
 AC_PROG_CC
 AC_PROG_CC_C99

@@ -51,6 +51,10 @@ TESTS = \
 	unknown upforwd verify views wildcard \
 	xfer xferquota zero zonechecks
 
+if HAVE_PYTHON
+	TESTS += keymgr
+endif
+
 LOG_COMPILER = ./system-test-driver.sh
 
 clean-local::
