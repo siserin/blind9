@@ -192,44 +192,45 @@ AC_ARG_WITH([python],
 			     (default uses $PYTHON environment variable)])],
 	    [PYTHON=$with_python])
 
+AC_ARG_WITH([python-install-dir],
+	    AS_HELP_STRING([--with-python-install-dir=PATH],
+			   [installation directory for Python modules]),
+	    [am_cv_python_pythondir=$with_python_install_dir])
+
 #
 # Python (>= 3.2 or >= 2.7) and ply module is mandatory for dnssec-keymgr
 #
-#
+
+m4_define([python_errmsg], [m4_normalize([Python >= 2.7 or >= 3.2 and the PLY package
+			 are required for dnssec-keymgr and other
+			 Python-based tools. PLY may be available from
+			 your OS package manager as python-ply or
+			 python3-ply; it can also be installed via
+			 pip. To build without Python/PLY, use
+			 --without-python.])])
+
 AS_CASE([$with_python],
-	[no],[],
-	[AS_IF([test -n "$PYTHON"],
-	       [AC_MSG_CHECKING([whether $PYTHON version is >= 3.2])
-		AM_PYTHON_CHECK_VERSION([$PYTHON], [3.2],
-					[AC_MSG_RESULT([yes])
-					 AM_PATH_PYTHON(,,[:])
-					],
-					[AC_MSG_RESULT([no])
-					 AC_MSG_CHECKING([whether $PYTHON version is >= 2.7])
-					 AM_PYTHON_CHECK_VERSION([$PYTHON], [2.7],
-								 [AC_MSG_RESULT([yes])
-								  AM_PATH_PYTHON(,,[:])
-								 ],
-								 [AC_MSG_RESULT([no])
-								  unset PYTHON
-								 ])
-					])],
-	       [AM_PATH_PYTHON([3.2],
-			       [],
-			       [AM_PATH_PYTHON([2.7],
-					       []
-					       [:])])])
-	 AS_IF([test "$PYTHON" != ":"],
-	       [AX_PYTHON_MODULE([ply], [1]) # Mandatory
-		AX_PYTHON_MODULE([dns.message], []) # Optional
-	       ])
-	])
+	[no],[PYTHON=:],
+	[AS_IF([test -z "$PYTHON"],
+	       [AM_PATH_PYTHON([],[],[:])])
+	 AC_MSG_CHECKING([whether $PYTHON version is >= 3.2 or >= 2.7])
+	 AM_PYTHON_CHECK_VERSION([$PYTHON], [3.2], [AC_MSG_RESULT([yes])],
+				 [AM_PYTHON_CHECK_VERSION([$PYTHON], [3.0],
+							  [AC_MSG_RESULT([no])
+							   AC_MSG_ERROR([python_errmsg])],
+							  [AM_PYTHON_CHECK_VERSION([$PYTHON], [2.7],
+										   [AC_MSG_RESULT([yes])],
+										   [AC_MSG_RESULT([no])
+										    AC_MSG_ERROR([python_errmsg])])])])
+	 AM_PATH_PYTHON([],
+			[AX_PYTHON_MODULE([ply], []) # Mandatory
+			 AX_PYTHON_MODULE([dns.message], []) # Optional
+			],[:])
+	 AS_IF([test "$PYTHON" = ":" || test "$HAVE_PYMOD_PLY" != "yes"],
+	       [AC_MSG_ERROR([python_errmsg])])
+	 ])
 
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ":"])
-
-#
-# Other python modules are optional
-#
 
 AC_PROG_CC
 AC_PROG_CC_C99

@@ -294,7 +294,6 @@ my @substvar = ("BIND9_VERSION",
                 "prefix",
                 "PSSUSPEND",
                 "PYTHON",
-                "PYTHON_INSTALL_DIR",
                 "VCREDIST_PATH"),
 
 # defines

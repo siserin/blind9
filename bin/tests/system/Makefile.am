@@ -1,6 +1,6 @@
 # SUBDIRS = dlzexternal dyndb pipelined rndc rpz rsabigexponent tkey
 
-#	@CHECKDS@ @COVERAGE@ @KEYMGR@ @DNSTAP@
+#	@KEYMGR@ @DNSTAP@
 
 SUBDIRS = dyndb/driver dlzexternal/driver
 
@@ -52,7 +52,7 @@ TESTS = \
 	xfer xferquota zero zonechecks
 
 if HAVE_PYTHON
-	TESTS += keymgr
+	TESTS += checkds coverage keymgr
 endif
 
 LOG_COMPILER = ./system-test-driver.sh
