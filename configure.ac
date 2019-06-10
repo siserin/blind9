@@ -190,7 +190,10 @@ AC_ARG_WITH([python],
 			    [Python >= 3.2 or >= 2.7 and ply module
 			     is required for dnssec-keymgr tool
 			     (default uses $PYTHON environment variable)])],
-	    [PYTHON=$with_python])
+	    [AS_CASE([$with_python],
+		     [no],[],
+		     [yes],[],
+		     [*],[PYTHON=$with_python])])
 
 AC_ARG_WITH([python-install-dir],
 	    AS_HELP_STRING([--with-python-install-dir=PATH],

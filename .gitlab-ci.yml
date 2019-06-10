@@ -142,6 +142,7 @@ stages:
   stage: build
   before_script:
     - test -w "${CCACHE_DIR}" && export PATH="/usr/lib/ccache:${PATH}"
+    - touch configure config.status # Make sure configure timestamp is latest
   script:
     - *configure
     - make -j${BUILD_PARALLEL_JOBS:-1} -k all V=1
