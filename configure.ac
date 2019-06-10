@@ -214,7 +214,7 @@ m4_define([python_errmsg], [m4_normalize([Python >= 2.7 or >= 3.2 and the PLY pa
 
 AS_CASE([$with_python],
 	[no],[PYTHON=:],
-	[AS_IF([test -z "$PYTHON"],
+	[*],[AS_IF([test -z "$PYTHON"],
 	       [AM_PATH_PYTHON([],[],[:])])
 	 AC_MSG_CHECKING([whether $PYTHON version is >= 3.2 or >= 2.7])
 	 AM_PYTHON_CHECK_VERSION([$PYTHON], [3.2], [AC_MSG_RESULT([yes])],
@@ -226,8 +226,9 @@ AS_CASE([$with_python],
 										   [AC_MSG_RESULT([no])
 										    AC_MSG_ERROR([python_errmsg])])])])
 	 AM_PATH_PYTHON([],
-			[AX_PYTHON_MODULE([ply], []) # Mandatory
-			 AX_PYTHON_MODULE([dns.message], []) # Optional
+			[AC_MSG_NOTICE([Using $PYTHON as python interpreter])
+			 AX_PYTHON_MODULE([$PYTHON], [ply], [], [:]) # Mandatory
+			 AX_PYTHON_MODULE([$PYTHON], [dns.message], [], [:]) # Optional
 			],[:])
 	 AS_IF([test "$PYTHON" = ":" || test "$HAVE_PYMOD_PLY" != "yes"],
 	       [AC_MSG_ERROR([python_errmsg])])
