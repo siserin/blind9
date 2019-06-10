@@ -7,7 +7,6 @@ variables:
   CI_REGISTRY_IMAGE: registry.gitlab.isc.org/isc-projects/images/bind9
   CCACHE_DIR: "/ccache"
   SOFTHSM2_CONF: "/var/tmp/softhsm2/softhsm2.conf"
-  PYTHON: python3
 
   # VirtualBox driver needs to set build_dir to "/builds" in gitlab-runner.toml
   KYUA_RESULT: "$CI_PROJECT_DIR/kyua.results"
@@ -241,7 +240,6 @@ docs:sid:amd64:
   <<: *debian_sid_amd64_image
   stage: build
   script:
-    - autoreconf -fi
     - ./configure || cat config.log
     - make -C doc/misc docbook
     - make -C doc/arm Bv9ARM.html
@@ -297,7 +295,6 @@ gcc:centos6:amd64:
     CC: gcc
     CFLAGS: "-Wall -Wextra -O2 -g"
     EXTRA_CONFIGURE: "--with-libidn2 --disable-warn-error --without-python"
-    PYTHON: python
   <<: *centos_centos6_amd64_image
   <<: *build_job
 
@@ -320,7 +317,6 @@ gcc:centos7:amd64:
     CC: gcc
     CFLAGS: "-Wall -Wextra -O2 -g"
     EXTRA_CONFIGURE: "--enable-dnstap --with-libidn2"
-    PYTHON: python
   <<: *centos_centos7_amd64_image
   <<: *build_job
 
@@ -343,7 +339,6 @@ gcc:jessie:amd64:
     CC: gcc
     CFLAGS: "-Wall -Wextra -O2 -g"
     EXTRA_CONFIGURE: "--without-cmocka --with-python --disable-geoip"
-    PYTHON: python
   <<: *debian_jessie_amd64_image
   <<: *build_job
 
@@ -453,7 +448,6 @@ gcc:fedora30:amd64:
     CC: gcc
     CFLAGS: "-Wall -Wextra -O2 -g"
     EXTRA_CONFIGURE: "--with-libidn2"
-    PYTHON: python
   <<: *fedora_30_amd64_image
   <<: *build_job
 
