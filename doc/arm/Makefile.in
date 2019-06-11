@@ -10,57 +10,250 @@
 srcdir =	@srcdir@
 VPATH =		@srcdir@
 top_srcdir =	@top_srcdir@
+builddir =	@builddir@
+top_builddir =	@top_builddir@
 
 @BIND9_MAKE_RULES@
 
-MANOBJS = Bv9ARM.html notes.html
+man1_MANS =				\
+	man/arpaname.1			\
+	man/delv.1			\
+	man/dig.1			\
+	man/dnstap-read.1		\
+	man/host.1			\
+	man/mdig.1			\
+	man/named-rrchecker.1		\
+	man/nslookup.1			\
+	man/nsupdate.1			\
+	man/pkcs11-destroy.1		\
+	man/pkcs11-keygen.1		\
+	man/pkcs11-list.1		\
+	man/pkcs11-tokens.1
 
-TXTOBJS = notes.txt
+man5_MANS =				\
+	man/named.conf.5		\
+	man/rndc.conf.5		\
 
-PDFOBJS = Bv9ARM.pdf notes.pdf
+man8_MANS =				\
+	man/ddns-confgen.8		\
+	man/dnssec-cds.8		\
+	man/dnssec-checkds.8		\
+	man/dnssec-coverage.8		\
+	man/dnssec-dsfromkey.8		\
+	man/dnssec-importkey.8		\
+	man/dnssec-keyfromlabel.8	\
+	man/dnssec-keygen.8		\
+	man/dnssec-keymgr.8		\
+	man/dnssec-revoke.8		\
+	man/dnssec-settime.8		\
+	man/dnssec-signzone.8		\
+	man/dnssec-verify.8		\
+	man/filter-aaaa.8		\
+	man/named-checkconf.8		\
+	man/named-checkzone.8		\
+	man/named-journalprint.8	\
+	man/named-nzd2nzf.8		\
+	man/named.8			\
+	man/nsec3hash.8		\
+	man/rndc-confgen.8		\
+	man/rndc.8
 
-doc man:: ${MANOBJS} ${TXTOBJS} ${PDFOBJS}
+MANPAGES_RST =				\
+	man_arpaname.rst		\
+	man_ddns-confgen.rst		\
+	man_delv.rst			\
+	man_dig.rst			\
+	man_dnssec-cds.rst		\
+	man_dnssec-checkds.rst		\
+	man_dnssec-coverage.rst	\
+	man_dnssec-dsfromkey.rst	\
+	man_dnssec-importkey.rst	\
+	man_dnssec-keyfromlabel.rst	\
+	man_dnssec-keygen.rst		\
+	man_dnssec-keymgr.rst		\
+	man_dnssec-revoke.rst		\
+	man_dnssec-settime.rst		\
+	man_dnssec-signzone.rst	\
+	man_dnssec-verify.rst		\
+	man_dnstap-read.rst		\
+	man_filter-aaaa.rst		\
+	man_host.rst			\
+	man_mdig.rst			\
+	man_named-checkconf.rst	\
+	man_named-checkzone.rst	\
+	man_named-journalprint.rst	\
+	man_named-nzd2nzf.rst		\
+	man_named-rrchecker.rst	\
+	man_named.conf.rst		\
+	man_named.rst			\
+	man_nsec3hash.rst		\
+	man_nslookup.rst		\
+	man_nsupdate.rst		\
+	man_pkcs11-destroy.rst		\
+	man_pkcs11-keygen.rst		\
+	man_pkcs11-list.rst		\
+	man_pkcs11-tokens.rst		\
+	man_rndc-confgen.rst		\
+	man_rndc.conf.rst		\
+	man_rndc.rst
+
+MANPAGES_IN = \
+	man/arpaname.1in		\
+	man/ddns-confgen.8in		\
+	man/delv.1in			\
+	man/dig.1in			\
+	man/dnssec-cds.8in		\
+	man/dnssec-checkds.8in		\
+	man/dnssec-coverage.8in	\
+	man/dnssec-dsfromkey.8in	\
+	man/dnssec-importkey.8in	\
+	man/dnssec-keyfromlabel.8in	\
+	man/dnssec-keygen.8in		\
+	man/dnssec-keymgr.8in		\
+	man/dnssec-revoke.8in		\
+	man/dnssec-settime.8in		\
+	man/dnssec-signzone.8in	\
+	man/dnssec-verify.8in		\
+	man/dnstap-read.1in		\
+	man/filter-aaaa.8in		\
+	man/host.1in			\
+	man/mdig.1in			\
+	man/named-checkconf.8in	\
+	man/named-checkzone.8in	\
+	man/named-journalprint.8in	\
+	man/named-nzd2nzf.8in		\
+	man/named-rrchecker.1in	\
+	man/named.conf.5in		\
+	man/named.8in			\
+	man/nsec3hash.8in		\
+	man/nslookup.1in		\
+	man/nsupdate.1in		\
+	man/pkcs11-destroy.1in		\
+	man/pkcs11-keygen.1in		\
+	man/pkcs11-list.1in		\
+	man/pkcs11-tokens.1in		\
+	man/rndc-confgen.8in		\
+	man/rndc.conf.5in		\
+	man/rndc.8in
+
+PKCS11_MANPAGES_IN =			\
+	man_pkcs11-destroy.rst		\
+	man_pkcs11-keygen.rst		\
+	man_pkcs11-list.rst		\
+	man_pkcs11-tokens.rst
+
+PKCS11_MANPAGES_IN =			\
+	man/pkcs11-destroy.8in		\
+	man/pkcs11-keygen.8in		\
+	man/pkcs11-list.8in		\
+	man/pkcs11-tokens.8in
+
+pkcs11_man8_MANS =			\
+	man/pkcs11-destroy.8		\
+	man/pkcs11-keygen.8		\
+	man/pkcs11-list.8		\
+	man/pkcs11-tokens.8
+
+pkcs11_man8_MANS = @PKCS11_MANS@
+
+MKDIR_P=@MKDIR_P@
+
+BIND9_VERSION=@BIND9_VERSION@
+RELEASE_DATE=@RELEASE_DATE@
+BIND9_VERSIONSTRING=@BIND9_VERSIONSTRING@
+
+# You can set these variables from the command line.
+SPHINXBUILD = @SPHINX_BUILD@
+SPHINXBUILDDIR = ${builddir}/_build
+
+common_SPHINXOPTS =				\
+	-a					\
+	-v
+
+ALLSPHINXOPTS =				\
+	$(common_SPHINXOPTS)			\
+	-D version="${BIND9_VERSION}"		\
+	-D today="${RELEASE_DATE}"		\
+	-D release="${BIND9_VERSIONSTRING}"	\
+	$(SPHINXOPTS)				\
+	${srcdir}
+
+man_SPHINXOPTS =				\
+	-D version="@""BIND9_VERSION""@"	\
+	-D today="@""RELEASE_DATE""@"		\
+	-D release="@""BIND9_VERSIONSTRING""@"	\
+	$(SPHINXOPTS)				\
+	${srcdir}
+
+# Put it first so that "make" without argument does nothing
+all:
+	@:
+
+doc:: html dirhtml pdf
+
+html dirhtml:
+	$(SPHINXBUILD) -b $@ $(ALLSPHINXOPTS) "$(SPHINXBUILDDIR)"/$@
+
+pdf:
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) "$(SPHINXBUILDDIR)"/latex
+	make -C "$(SPHINXBUILDDIR)"/latex
+	cp "$(SPHINXBUILDDIR)"/latex/Bv9ARM.pdf "${builddir}"
+	cp "$(SPHINXBUILDDIR)"/latex/notes.pdf "${builddir}"
+
+$(MANPAGES_IN): $(MANPAGES_RST)
+	$(SPHINXBUILD) -M man $(ALLSPHINXOPTS) "$(SPHINXBUILDDIR)"/man
+	$(MKDIR_P) -- ${builddir}/man
+	for man in "$(SPHINXBUILDDIR)"/man/*; do \
+	  cp "$$man" "man/$$(basename $$man)in"; \
+	done
+
+man:: $(man1_MANS) $(man5_MANS) $(man8_MANS) @PKCS11_MANS@
+
+man_SUBST = sed							\
+	-e 's,[@]BIND9_VERSION[@],$(BIND9_VERSION),'			\
+	-e 's,[@]RELEASE_DATE[@],$(RELEASE_DATE),'			\
+	-e 's,[@]BIND9_VERSION_STRING[@],$(BIND9_VERSION_STRING),'	\
+	-e 's,[@]sysconfdir[@],$(sysconfdir),'				\
+	-e 's,[@]plugindir[@],$(plugindir),'
+
+$(man1_MANS): $(MANPAGES_IN)
+	for m in $(man1_MANS); do \
+		$(man_SUBST) $${m}in > $$m; \
+	done
+
+$(man5_MANS): $(MANPAGES_IN)
+	for m in $(man5_MANS); do \
+		$(man_SUBST) $${m}in > $$m; \
+	done
+
+$(man8_MANS): $(MANPAGES_IN)
+	for m in $(man8_MANS); do \
+		$(man_SUBST) $${m}in > $$m; \
+	done
+
+$(pkcs11_man8_MANS): $(MANPAGES_IN)
+	for m in $(pkcs11_man8_MANS); do \
+		$(man_SUBST) $${m}in > $$m; \
+	done
+
+.PHONY: help Makefile doc pdf man
+
+install::
+	for m in $(man1_MANPAGES); do ${INSTALL_DATA} $$m ${DESTDIR}${mandir}/man1/; done
+	for m in $(man5_MANPAGES); do ${INSTALL_DATA} $$m ${DESTDIR}${mandir}/man5/; done
+	for m in $(man8_MANPAGES); do ${INSTALL_DATA} $$m ${DESTDIR}${mandir}/man8/; done
+	for m in @PKCS11_MANS@; do ${INSTALL_DATA} $$m ${DESTDIR}${mandir}/man8/; done
+
+uninstall::
+	for m in $(man1_MANPAGES); do rm -f ${DESTDIR}${mandir}/man1/$$m; done
+	for m in $(man5_MANPAGES); do rm -f ${DESTDIR}${mandir}/man5/$$m; done
+	for m in $(man8_MANPAGES); do rm -f ${DESTDIR}${mandir}/man8/$$m; done
+	for m in @PKCS11_MANS@; do rm -f ${DESTDIR}${mandir}/man8/$$m; done
+
+docclean manclean maintainer-clean::
+	rm -f $(MANPAGES_IN)
 
 clean::
-	rm -f Bv9ARM.aux Bv9ARM.brf Bv9ARM.glo Bv9ARM.idx Bv9ARM.toc
-	rm -f Bv9ARM.log Bv9ARM.out
-	rm -f notes.aux notes.brf notes.glo notes.idx notes.toc
-	rm -f notes.log notes.out
-
-docclean manclean maintainer-clean:: clean
-	rm -f *.html ${PDFOBJS}
-
-maintainer-clean distclean::
-	rm -f releaseinfo.xml
-	rm -f pkgversion.xml
-	rm -f noteversion.xml
-
-# use xmllint to process include
-notes.html: notes-wrapper.xml notes.xml releaseinfo.xml pkgversion.xml noteversion.xml
-	expand notes-wrapper.xml | ${XMLLINT} --xinclude - | \
-	${XSLTPROC} --stringparam generate.toc "" ../xsl/isc-notes-html.xsl - > notes.html
-
-notes.pdf: notes-wrapper.xml notes.xml releaseinfo.xml pkgversion.xml noteversion.xml
-	${XSLTPROC} ${top_srcdir}/doc/xsl/pre-latex.xsl notes-wrapper.xml | \
-	${DBLATEX} -c notes.conf -Pdoc.layout="mainmatter" -o notes.pdf -
-
-notes.txt: notes.html
-	${W3M} -dump -cols 75 -O ascii -T text/html < notes.html | \
-		sed 's/  *$$//' | \
-		sed -e :a -e '/^\n*$$/{$$d;N;};/\n$$/ba' > notes.txt
-
-# use xmllint to process include
-Bv9ARM.html: Bv9ARM-book.xml releaseinfo.xml pkgversion.xml noteversion.xml
-	expand Bv9ARM-book.xml | ${XMLLINT} --xinclude - | \
-	${XSLTPROC} --stringparam root.filename Bv9ARM \
-		${top_srcdir}/doc/xsl/isc-docbook-chunk.xsl -
-
-# use xmllint to process include
-Bv9ARM-all.html: Bv9ARM-book.xml releaseinfo.xml pkgversion.xml noteversion.xml
-	expand Bv9ARM-book.xml | ${XMLLINT} --xinclude - |\
-	${XSLTPROC} -o Bv9ARM-all.html ../xsl/isc-docbook-html.xsl -
-
-Bv9ARM.pdf: Bv9ARM-book.xml releaseinfo.xml pkgversion.xml noteversion.xml
-	expand Bv9ARM-book.xml | \
-	${XSLTPROC} ${top_srcdir}/doc/xsl/pre-latex.xsl - | \
-	${DBLATEX} -c Bv9ARM.conf -o Bv9ARM.pdf -
+	-rm -f conf.py
+	-rm -rf $(BUILDDIR)
+	-rm -f $(man1_MANPAGES) $(man5_MANPAGES) $(man8_MANPAGES) @PKCS11_MANS@

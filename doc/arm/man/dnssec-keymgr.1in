@@ -1,0 +1,216 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "DNSSEC-KEYMGR" "1" "Jun 12, 2019" "" "BIND 9"
+.SH NAME
+dnssec-keymgr \- 
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH SYNOPSIS
+.sp
+\fBdnssec\-keymgr\fP [\fB\-K\fP directory] [\fB\-c\fP file] [\fB\-f\fP] [\fB\-k\fP] [\fB\-q\fP] [\fB\-v\fP] [\fB\-z\fP] [\fB\-g\fP path] [\fB\-s\fP path] [zone…]
+.SH DESCRIPTION
+.sp
+\fBdnssec\-keymgr\fP is a high level Python wrapper to facilitate the key
+rollover process for zones handled by BIND. It uses the BIND commands
+for manipulating DNSSEC key metadata: \fBdnssec\-keygen\fP and
+\fBdnssec\-settime\fP\&.
+.sp
+DNSSEC policy can be read from a configuration file (default
+\fB/etc/dnssec\-policy.conf\fP), from which the key parameters, publication
+and rollover schedule, and desired coverage duration for any given zone
+can be determined. This file may be used to define individual DNSSEC
+policies on a per\-zone basis, or to set a “\fBdefault\fP” policy used for
+all zones.
+.sp
+When \fBdnssec\-keymgr\fP runs, it examines the DNSSEC keys for one or more
+zones, comparing their timing metadata against the policies for those
+zones. If key settings do not conform to the DNSSEC policy (for example,
+because the policy has been changed), they are automatically corrected.
+.sp
+A zone policy can specify a duration for which we want to ensure the key
+correctness (\fBcoverage\fP). It can also specify a rollover period
+(\fBroll\-period\fP). If policy indicates that a key should roll over
+before the coverage period ends, then a successor key will automatically
+be created and added to the end of the key series.
+.sp
+If zones are specified on the command line, \fBdnssec\-keymgr\fP will
+examine only those zones. If a specified zone does not already have keys
+in place, then keys will be generated for it according to policy.
+.sp
+If zones are \fInot\fP specified on the command line, then \fBdnssec\-keymgr\fP
+will search the key directory (either the current working directory or
+the directory set by the \fB\-K\fP option), and check the keys for all the
+zones represented in the directory.
+.sp
+Key times that are in the past will not be updated unless the \fB\-f\fP is
+used (see below). Key inactivation and deletion times that are less than
+five minutes in the future will be delayed by five minutes.
+.sp
+It is expected that this tool will be run automatically and unattended
+(for example, by \fBcron\fP).
+.SH OPTIONS
+.INDENT 0.0
+.TP
+\fB\-c\fP file
+If \fB\-c\fP is specified, then the DNSSEC policy is read from \fBfile\fP\&.
+(If not specified, then the policy is read from
+\fB/etc/dnssec\-policy.conf\fP; if that file doesn’t exist, a built\-in
+global default policy is used.)
+.TP
+\fB\-f\fP
+Force: allow updating of key events even if they are already in the
+past. This is not recommended for use with zones in which keys have
+already been published. However, if a set of keys has been generated
+all of which have publication and activation dates in the past, but
+the keys have not been published in a zone as yet, then this option
+can be used to clean them up and turn them into a proper series of
+keys with appropriate rollover intervals.
+.TP
+\fB\-g\fP keygen\-path
+Specifies a path to a \fBdnssec\-keygen\fP binary. Used for testing. See
+also the \fB\-s\fP option.
+.TP
+\fB\-h\fP
+Print the \fBdnssec\-keymgr\fP help summary and exit.
+.TP
+\fB\-K\fP directory
+Sets the directory in which keys can be found. Defaults to the
+current working directory.
+.TP
+\fB\-k\fP
+Only apply policies to KSK keys. See also the \fB\-z\fP option.
+.TP
+\fB\-q\fP
+Quiet: suppress printing of \fBdnssec\-keygen\fP and \fBdnssec\-settime\fP\&.
+.TP
+\fB\-s\fP settime\-path
+Specifies a path to a \fBdnssec\-settime\fP binary. Used for testing.
+See also the \fB\-g\fP option.
+.TP
+\fB\-v\fP
+Print the \fBdnssec\-keymgr\fP version and exit.
+.TP
+\fB\-z\fP
+Only apply policies to ZSK keys. See also the \fB\-k\fP option.
+.UNINDENT
+.SH POLICY CONFIGURATION
+.sp
+The \fBdnssec\-policy.conf\fP file can specify three kinds of policies:
+.INDENT 0.0
+.IP \(bu 2
+\fIPolicy classes\fP (\fBpolicy name { ... };\fP) can be inherited by zone
+policies or other policy classes; these can be used to create sets of
+different security profiles. For example, a policy class \fBnormal\fP
+might specify 1024\-bit key sizes, but a class \fBextra\fP might specify
+2048 bits instead; \fBextra\fP would be used for zones that had
+unusually high security needs.
+.IP \(bu 2
+\fIAlgorithm policies:\fP (\fBalgorithm\-policy algorithm { ... };\fP )
+override default per\-algorithm settings. For example, by default,
+RSASHA256 keys use 2048\-bit key sizes for both KSK and ZSK. This can
+be modified using \fBalgorithm\-policy\fP, and the new key sizes would
+then be used for any key of type RSASHA256.
+.IP \(bu 2
+\fIZone policies:\fP (\fBzone name { ... };\fP ) set policy for a single
+zone by name. A zone policy can inherit a policy class by including a
+\fBpolicy\fP option. Zone names beginning with digits (i.e., 0\-9) must
+be quoted. If a zone does not have its own policy then the
+“\fBdefault\fP” policy applies.
+.UNINDENT
+.sp
+Options that can be specified in policies:
+.INDENT 0.0
+.TP
+.B \fBalgorithm\fP name\fB;\fP
+The key algorithm. If no policy is defined, the default is RSASHA256.
+.TP
+.B \fBcoverage\fP duration\fB;\fP
+The length of time to ensure that keys will be correct; no action
+will be taken to create new keys to be activated after this time.
+This can be represented as a number of seconds, or as a duration
+using human\-readable units (examples: “1y” or “6 months”). A default
+value for this option can be set in algorithm policies as well as in
+policy classes or zone policies. If no policy is configured, the
+default is six months.
+.TP
+.B \fBdirectory\fP path\fB;\fP
+Specifies the directory in which keys should be stored.
+.TP
+.B \fBkey\-size\fP keytype size\fB;\fP
+Specifies the number of bits to use in creating keys. The keytype is
+either “zsk” or “ksk”. A default value for this option can be set in
+algorithm policies as well as in policy classes or zone policies. If
+no policy is configured, the default is 2048 bits for RSA keys.
+.TP
+.B \fBkeyttl\fP duration\fB;\fP
+The key TTL. If no policy is defined, the default is one hour.
+.TP
+.B \fBpost\-publish\fP keytype duration\fB;\fP
+How long after inactivation a key should be deleted from the zone.
+Note: If \fBroll\-period\fP is not set, this value is ignored. The
+keytype is either “zsk” or “ksk”. A default duration for this option
+can be set in algorithm policies as well as in policy classes or zone
+policies. The default is one month.
+.TP
+.B \fBpre\-publish\fP keytype duration\fB;\fP
+How long before activation a key should be published. Note: If
+\fBroll\-period\fP is not set, this value is ignored. The keytype is
+either “zsk” or “ksk”. A default duration for this option can be set
+in algorithm policies as well as in policy classes or zone policies.
+The default is one month.
+.TP
+.B \fBroll\-period\fP keytype duration\fB;\fP
+How frequently keys should be rolled over. The keytype is either
+“zsk” or “ksk”. A default duration for this option can be set in
+algorithm policies as well as in policy classes or zone policies. If
+no policy is configured, the default is one year for ZSKs. KSKs do
+not roll over by default.
+.TP
+.B \fBstandby\fP keytype number\fB;\fP
+Not yet implemented.
+.UNINDENT
+.SH REMAINING WORK
+.INDENT 0.0
+.IP \(bu 2
+Enable scheduling of KSK rollovers using the \fB\-P sync\fP and
+\fB\-D sync\fP options to \fBdnssec\-keygen\fP and \fBdnssec\-settime\fP\&.
+Check the parent zone (as in \fBdnssec\-checkds\fP) to determine when
+it’s safe for the key to roll.
+.IP \(bu 2
+Allow configuration of standby keys and use of the REVOKE bit, for
+keys that use RFC 5011 semantics.
+.UNINDENT
+.SH SEE ALSO
+.sp
+\fBdnssec\-coverage(8)\fP, \fBdnssec\-keygen(8)\fP, \fBdnssec\-settime(8)\fP, \fBdnssec\-checkds(8)\fP\&.
+.SH AUTHOR
+Internet Systems Consortium
+.SH COPYRIGHT
+2019, Internet Systems Consortium
+.\" Generated by docutils manpage writer.
+.

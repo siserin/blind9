@@ -48,6 +48,7 @@ AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AX_POSIX_SHELL
+AC_PROG_MKDIR_P
 
 AC_SUBST(STD_CINCLUDES)
 AC_SUBST(STD_CDEFINES)
@@ -860,6 +861,7 @@ AS_CASE([$with_cc_alg],
 
 PKCS11_TOOLS=
 PKCS11_TEST=
+PKCS11_MANS=
 #
 # was --enable-native-pkcs11 specified?
 #
@@ -873,6 +875,7 @@ AS_CASE([$enable_native_pkcs11],
 	[no],[AC_MSG_RESULT([no])],
 	[yes],[PKCS11_TOOLS=pkcs11
 	       PKCS11_TEST=pkcs11
+	       PKCS11_MANS='${pkcs11_man8_MANS}'
 	       CRYPTO=pkcs11
 	       AS_IF([$use_threads],
 		     [:],
@@ -882,6 +885,7 @@ AS_CASE([$enable_native_pkcs11],
 	      ])
 AC_SUBST([PKCS11_TEST])
 AC_SUBST([PKCS11_TOOLS])
+AC_SUBST([PKCS11_MANS])
 
 AS_CASE([$CRYPTO],
 	[pkcs11],[AC_DEFINE([USE_PKCS11], [1], [define if PKCS11 is used for Public-Key Cryptography])],
@@ -2042,52 +2046,28 @@ esac
 #
 
 #
-# Look for TeX.
+# Look for sphinx-build
 #
-
-AC_PATH_PROGS(LATEX, latex, latex)
-AC_SUBST(LATEX)
-
-AC_PATH_PROGS(PDFLATEX, pdflatex, pdflatex)
-AC_SUBST(PDFLATEX)
-
-AC_PATH_PROGS(DBLATEX, dblatex, dblatex)
-AC_SUBST(DBLATEX)
+AC_PATH_PROGS([SPHINX_BUILD], [sphinx-build], [])
 
 #
-# Look for w3m
+# Pull release date from CHANGES file last modification date
+# for reproducible builds
 #
+release_date=`date -r CHANGES +%Y-%m-%d`
+AC_SUBST([RELEASE_DATE], $release_date)
 
-AC_PATH_PROGS(W3M, w3m, w3m)
-AC_SUBST(W3M)
-
-#
-# Look for pandoc
-#
-AC_PATH_PROG(PANDOC, pandoc, pandoc)
-AC_SUBST(PANDOC)
-
-
-#
-# Look for xsltproc (libxslt)
-#
-
-AC_PATH_PROG(XSLTPROC, xsltproc, xsltproc)
-AC_SUBST(XSLTPROC)
-
-#
-# Look for xmllint (libxml2)
-#
-
-AC_PATH_PROG(XMLLINT, xmllint, xmllint)
-AC_SUBST(XMLLINT)
+ARMDIR=arm
+AS_IF([test -z "$SPHINX_BUILD"],[
+	  # Don't build the documentation if the sphinx-build is not present
+	  ARMDIR=
+      ])
+AC_SUBST([ARMDIR])
 
 #
 # Look for Doxygen
 #
-
-AC_PATH_PROG(DOXYGEN, doxygen, doxygen)
-AC_SUBST(DOXYGEN)
+AC_PATH_PROGS([DOXYGEN], [doxygen])
 
 #
 # Look for curl
@@ -2851,9 +2831,6 @@ AC_CONFIG_FILES([
 	contrib/scripts/zone-edit.sh
 	doc/Makefile
 	doc/arm/Makefile
-	doc/arm/noteversion.xml
-	doc/arm/pkgversion.xml
-	doc/arm/releaseinfo.xml
 	doc/doxygen/Doxyfile
 	doc/doxygen/Makefile
 	doc/doxygen/doxygen-input-filter
