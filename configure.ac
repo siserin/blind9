@@ -1735,13 +1735,6 @@ AC_PATH_PROG(XMLLINT, xmllint, xmllint)
 AC_SUBST(XMLLINT)
 
 #
-# Look for Doxygen
-#
-
-AC_PATH_PROG(DOXYGEN, doxygen, doxygen)
-AC_SUBST(DOXYGEN)
-
-#
 # Look for curl
 #
 
@@ -2270,16 +2263,6 @@ AC_SUBST(BUILD_CFLAGS)
 AC_SUBST(BUILD_CPPFLAGS)
 AC_SUBST(BUILD_LDFLAGS)
 AC_SUBST(BUILD_LIBS)
-
-#
-# Commands to run at the end of config.status.
-# Don't just put these into configure, it won't work right if somebody
-# runs config.status directly (which autoconf allows).
-#
-
-AC_CONFIG_COMMANDS(
-	[chmod],
-	[chmod a+x doc/doxygen/doxygen-input-filter])
 
 #
 # Files to configure.  These are listed here because we used to
