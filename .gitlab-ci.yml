@@ -171,8 +171,8 @@ stages:
     - *setup_interfaces
     - *setup_softhsm
   script:
-    - ( cd bin/tests && make -j${TEST_PARALLEL_JOBS:-1} -k check V=1 )
-    - test -s bin/tests/system/systests.output
+    - ( cd bin/tests && make -j${TEST_PARALLEL_JOBS:-1} -k check V=1 ) || cat bin/tests/system/test-suite.log
+    - test -s bin/tests/system/test-suite.log
   artifacts:
     untracked: true
     expire_in: "1 week"
