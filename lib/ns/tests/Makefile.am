@@ -12,10 +12,10 @@ AM_CPPFLAGS = \
 	$(JSON_C_CFLAGS) $(LIBXML2_CFLAGS)
 
 LDADD = \
+	libnstest.la \
 	../../libisc.la	\
 	../../libdns.la \
 	../../libns.la \
-	libnstest.la \
 	$(OPENSSL_LIBS)	\
 	$(CMOCKA_LIBS)
 
