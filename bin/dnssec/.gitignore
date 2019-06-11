@@ -9,4 +9,5 @@ dnssec-signkey
 dnssec-signzone
 dnssec-verify
 dnssec-importkey
+kasp-setupdb
 .libs
