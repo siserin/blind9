@@ -1107,10 +1107,13 @@ add_sigs(dns_update_log_t *log, dns_zone_t *zone, dns_db_t *db,
 		bool both = false;
 
 		/* Don't add signatures for offline or inactive keys */
-		if (!dst_key_isprivate(keys[i])) {
+		if (dst_key_inactive(keys[i])) {
 			continue;
 		}
-		if (dst_key_inactive(keys[i])) {
+		if (!dst_key_isprivate(keys[i])) {
+			if (type == dns_rdatatype_dnskey) {
+				added_sig = true;
+			}
 			continue;
 		}
 
@@ -1238,11 +1241,15 @@ del_keysigs(dns_db_t *db, dns_dbversion_t *ver, dns_name_t *name,
 		RUNTIME_CHECK(result == ISC_R_SUCCESS);
 		found = false;
 		for (i = 0; i < nkeys; i++) {
-			if (rrsig.keyid == dst_key_id(keys[i])) {
+			if (rrsig.keyid == dst_key_id(keys[i]) &&
+			    rrsig.algorithm == dst_key_alg(keys[i])) {
 				found = true;
+fprintf(stderr, "XXXX rrsig.keyid=%u dst_key_isexternal=%u dst_key_isprivate=%u dst_key_inactive=%u\n",
+	rrsig.keyid, dst_key_isexternal(keys[i]), dst_key_isprivate(keys[i]), dst_key_inactive(keys[i]));
 				if (!dst_key_isprivate(keys[i]) &&
 				    !dst_key_inactive(keys[i]))
 				{
+fprintf(stderr, "skip\n");
 					/*
 					 * The re-signing code in zone.c
 					 * will mark this as offline.

@@ -363,6 +363,15 @@ zone "revoked.trusted" {
 	file "revoked.trusted.db.signed";
 };
 
+zone "offline-ksk.example" {
+	type master;
+	file "offline-ksk.example.db.signed";
+	auto-dnssec maintain;
+	update-check-ksk yes;
+	dnssec-dnskey-kskonly yes;
+	allow-update { any; };
+};
+
 include "siginterval.conf";
 
 include "trusted.conf";

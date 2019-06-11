@@ -750,6 +750,8 @@ dns_dnssec_findzonekeys(dns_db_t *db, dns_dbversion_t *ver,
 					  directory,
 					  mctx, &keys[count]);
 
+fprintf(stderr, "YYYY dst_key_fromfile(%u)->%s\n", dst_key_id(pubkey), dns_result_totext(result));
+
 		/*
 		 * If the key was revoked and the private file
 		 * doesn't exist, maybe it was revoked internally
@@ -822,6 +824,19 @@ dns_dnssec_findzonekeys(dns_db_t *db, dns_dbversion_t *ver,
 		if (result != ISC_R_SUCCESS)
 			goto failure;
 
+#if 0
+		/*
+		 * Use the public key for external keys.
+		 */
+		if (dst_key_isexternal(keys[count])) {
+			dst_key_free(&keys[count]);
+			keys[count] = pubkey;
+			pubkey = NULL;
+			count++;
+			goto next;
+		}
+#endif
+
 		/*
 		 * If a key is marked inactive, skip it
 		 */
@@ -845,6 +860,7 @@ dns_dnssec_findzonekeys(dns_db_t *db, dns_dbversion_t *ver,
 			dst_key_free(&keys[count]);
 			goto next;
 		}
+fprintf(stderr, "dst_key_isexternal=>%u\n", dst_key_isexternal(keys[count]));
 		count++;
  next:
 		if (pubkey != NULL)
@@ -1543,7 +1559,6 @@ addkey(dns_dnsseckeylist_t *keylist, dst_key_t **newkey,
 	*newkey = NULL;
 	return (ISC_R_SUCCESS);
 }
-
 
 /*%
  * Mark all keys which signed the DNSKEY/SOA RRsets as "active",

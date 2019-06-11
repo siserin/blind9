@@ -113,6 +113,67 @@ stripns () {
     awk '($4 == "NS") || ($4 == "RRSIG" && $5 == "NS") { next} { print }' "$1"
 }
 
+dig_with_opts @10.53.0.3 axfr offline-ksk.example +rrcomments
+
+set -x
+zone=offline-ksk.example
+zonefile=offline-ksk.example.db
+rm -rf offline
+mkdir -p offline
+dig_with_opts @10.53.0.3 dnskey +dnssec offline-ksk.example > offline/dnskey
+awk '$4 == "DNSKEY" && $5 == "256" { print }' < offline/dnskey > "offline/${zonefile}"
+alg=$(awk '$4 == "DNSKEY" && $5 == "256" { print $7 }' "offline/${zonefile}")
+ttl=$(awk '$4 == "DNSKEY" && $5 == "256" { print $2 }' "offline/${zonefile}")
+$IMPORTKEY -K offline -f "offline/${zonefile}" "${zone}"
+kskname=$("$KEYGEN" -K offline -q -a "$alg" -L "$ttl" -fk "$zone")
+# $IMPORTKEY -K ns3 -f "offline/${kskname}.key" -L "$ttl" -P now  "${zone}"
+cat "offline/${kskname}.key" >> "offline/${zonefile}"
+echo "@ 0 IN SOA . . 0 0 0 0 0" >> "offline/${zonefile}"
+echo "@ 0 IN NS ." >> "offline/${zonefile}"
+"$SIGNER" -K offline -P -o "${zone}" "offline/${zonefile}"
+(
+cat << EOF
+zone $zone
+server 10.53.0.3 $PORT
+del $zone DNSKEY
+EOF
+"$CHECKZONE" -qD "${zone}" "offline/${zonefile}.signed" |
+awk '$4 == "DNSKEY" || $4 == "RRSIG" && $5 == "DNSKEY" { print "add", $0 }'
+awk '$4 == "RRSIG" && $5 == "DNSKEY" { print "del", $0 }' < offline/dnskey
+echo send
+) > offline/nsupdate
+$NSUPDATE -d < offline/nsupdate
+
+dig_with_opts @10.53.0.3 dnskey +dnssec +rrcomments offline-ksk.example > dig.out.ns3.test$n
+id=$(awk '$4 == "DNSKEY" && $5 == "256" { print $NF }' < dig.out.ns3.test$n)
+(
+cat << EOF
+zone $zone
+server 10.53.0.3 $PORT
+del $zone DNSKEY
+EOF
+dig_with_opts @10.53.0.3 dnskey +dnssec offline-ksk.example |
+awk '$4 == "RRSIG" && $5 == "DNSKEY" && $11 == "'${id}'" { print "del", $0 }'
+echo send
+) | $NSUPDATE -d < offline/nsupdate
+
+dig_with_opts @10.53.0.3 axfr offline-ksk.example +rrcomments
+
+# rndccmd 10.53.0.3 sign offline-ksk.example
+
+# sleep 1
+
+# dig_with_opts @10.53.0.3 axfr offline-ksk.example +rrcomments
+
+# rm -rf offline
+
+# dig_with_opts @10.53.0.3 dnskey offline-ksk.example |
+# awk '$4 == "DNSKEY" && $5 == "256" { print }' |
+# $IMPORTKEY -f - -K offline
+# $KEYGEN -
+
+exit 0
+
 # Check that for a query against a validating resolver where the
 # authoritative zone is unsigned (insecure delegation), glue is returned
 # in the additional section
@@ -4119,6 +4180,22 @@ do
   test "$ret" -eq 0 || echo_i "failed"
   status=$((status+ret))
 done
+
+dig_with_opts @10.53.0.3 axfr offline-ksk.example +rrcomments
+
+rndccmd 10.53.0.3 sign offline-ksk.example
+
+sleep 1
+
+dig_with_opts @10.53.0.3 axfr offline-ksk.example +rrcomments
+
+rm -rf offline
+
+dig_with_opts @10.53.0.3 dnskey offline-ksk.example |
+awk '$4 == "DNSKEY" && $5 == "256" { print }' |
+$IMPORTKEY -f - -K offline
+$KEYGEN -
+
 
 echo_i "exit status: $status"
 [ $status -eq 0 ] || exit 1

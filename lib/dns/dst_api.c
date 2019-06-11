@@ -519,6 +519,8 @@ dst_key_fromnamedfile(const char *filename, const char *dirname,
 	newfilename = NULL;
 	RETERR(result);
 
+fprintf(stderr, "dst_key_read_public->%s\n", isc_result_totext(result));
+
 	if ((type & (DST_TYPE_PRIVATE | DST_TYPE_PUBLIC)) == DST_TYPE_PUBLIC ||
 	    (pubkey->key_flags & DNS_KEYFLAG_TYPEMASK) == DNS_KEYTYPE_NOKEY) {
 		result = computeid(pubkey);
@@ -572,6 +574,7 @@ dst_key_fromnamedfile(const char *filename, const char *dirname,
 	dst_key_free(&pubkey);
 
 	*keyp = key;
+fprintf(stderr, "key->external=%u\n", key->external);
 	return (ISC_R_SUCCESS);
 
  out:

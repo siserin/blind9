@@ -491,6 +491,7 @@ dst__privstruct_parse(dst_key_t *key, unsigned int alg, isc_lex_t *lex,
 		}
 
 		if (strcmp(DST_AS_STR(token), "External:") == 0) {
+fprintf(stderr, "match External:\n");
 			external = true;
 			goto next;
 		}
@@ -575,6 +576,7 @@ dst__privstruct_parse(dst_key_t *key, unsigned int alg, isc_lex_t *lex,
 		goto fail;
 	}
 
+fprintf(stderr, "external=%u\n", external);
 	key->external = external;
 
 	return (ISC_R_SUCCESS);
@@ -724,11 +726,11 @@ dst__privstruct_writefile(const dst_key_t *key, const dst_private_t *priv,
 		}
 		isc_buffer_usedregion(&b, &r);
 
-	       fprintf(fp, "%s %.*s\n", s, (int)r.length, r.base);
+		fprintf(fp, "%s %.*s\n", s, (int)r.length, r.base);
 	}
 
 	if (key->external)
-	       fprintf(fp, "External:\n");
+		fprintf(fp, "External:\n");
 
 	/* Add the metadata tags */
 	if (major > 1 || (major == 1 && minor >= 3)) {

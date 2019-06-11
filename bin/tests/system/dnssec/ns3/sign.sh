@@ -669,3 +669,30 @@ $DSFROMKEY "$dnskeyname.key" > "dsset-delegation.${zone}$TP"
 cat "$infile" "${kskname}.key" "${zskname}.key" "${keyname}.key" \
     "${dnskeyname}.key" "dsset-delegation.${zone}$TP" >"$zonefile"
 "$SIGNER" -P -o "$zone" "$zonefile" > /dev/null 2>&1
+
+#
+# Offline KSK test.
+#
+set -x
+zone=offline-ksk.example
+infile=offline-ksk.example.db.in
+zonefile=offline-ksk.example.db
+rm -rf offline
+mkdir -p offline
+# kskname=$("$KEYGEN" -K offline -q -a "$DEFAULT_ALGORITHM" -fk "$zone")
+zskname=$("$KEYGEN" -q -a "$DEFAULT_ALGORITHM" "$zone")
+# $IMPORTKEY "offline/${kskname}.key"
+$IMPORTKEY -K offline "${zskname}.key"
+cat "$infile" "${zskname}.key" > "$zonefile"
+# cat "$infile" "${kskname}.key" "${zskname}.key" > "$zonefile"
+# "$CHECKZONE" -qD "${zone}" "${zonefile}" |
+# awk '$4 == "SOA" || $4 == "DNSKEY" { print }' > "offline/${zonefile}"
+# cat << EOF >> "offline/${zonefile}"
+# @	0	IN	NS	.
+# EOF
+# "$SIGNER" -P -3 - -o "${zone}" "offline/${zonefile}"
+# "$CHECKZONE" -qD "${zone}" "offline/${zonefile}.signed" |
+# awk '$4 == "RRSIG" && $5 == "DNSKEY" { print } ' >> "$zonefile"
+cp "$zonefile" "${zonefile}.signed"
+# $DSFROMKEY "${kskname}.key" > "dsset-${zone}$TP"
+#"$SIGNER" -P -3 - -o "$zone" "$zonefile"
