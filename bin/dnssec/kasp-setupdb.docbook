@@ -1,0 +1,138 @@
+<!--
+ - Copyright (C) Internet Systems Consortium, Inc. ("ISC")
+ -
+ - This Source Code Form is subject to the terms of the Mozilla Public
+ - License, v. 2.0. If a copy of the MPL was not distributed with this
+ - file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ -
+ - See the COPYRIGHT file distributed with this work for additional
+ - information regarding copyright ownership.
+-->
+
+<refentry xmlns:db="http://docbook.org/ns/docbook" version="5.0" xml:id="man.dnssec-cds">
+  <info>
+    <date>2019-06-07</date>
+  </info>
+  <refentryinfo>
+    <corpname>ISC</corpname>
+    <corpauthor>Internet Systems Consortium, Inc.</corpauthor>
+  </refentryinfo>
+
+  <refmeta>
+    <refentrytitle><application>kasp-setupdb</application></refentrytitle>
+   <manvolnum>8</manvolnum>
+    <refmiscinfo>BIND9</refmiscinfo>
+  </refmeta>
+
+  <refnamediv>
+    <refname><application>kasp-setupdb</application></refname>
+    <refpurpose>Set up database for DNSSEC Key and Signing Policies</refpurpose>
+  </refnamediv>
+
+  <docinfo>
+    <copyright>
+      <year>2019</year>
+      <holder>Internet Systems Consortium, Inc. ("ISC")</holder>
+    </copyright>
+  </docinfo>
+
+  <refsynopsisdiv>
+    <cmdsynopsis sepchar=" ">
+      <command>kasp-setupdb</command>
+      <arg choice="opt" rep="norepeat"><option>-c <replaceable class="parameter">file</replaceable></option></arg>
+      <arg choice="opt" rep="norepeat"><option>-y</option></arg>
+      <arg choice="opt" rep="norepeat"><option>-h</option></arg>
+      <arg choice="opt" rep="norepeat"><option>-v <replaceable class="parameter">level</replaceable></option></arg>
+      <arg choice="opt" rep="norepeat"><option>-V</option></arg>
+      <arg choice="req" rep="norepeat">domain</arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsection><info><title>DESCRIPTION</title></info>
+
+    <para>
+      The <command>kasp-setupdb</command> command initializes a new database
+      for maintaining DNSSEC Key and Signing Policies (KASP).  Running this
+      command can override an existing database, it should only be called
+      when first setting up DNSSEC with KASP.
+    </para>
+
+  </refsection>
+
+  <refsection><info><title>OPTIONS</title></info>
+
+    <variablelist>
+
+      <varlistentry>
+	<term>-c <replaceable class="parameter">file</replaceable></term>
+        <listitem>
+          <para>
+	    Specify a named configuration file to determine where to store
+	    the KASP database.  If not specified,
+	    <filename>/etc/named.conf</filename> is read by default.
+	  </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>-h</term>
+        <listitem>
+          <para>
+	    Print help information and exit.
+          </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>-y</term>
+        <listitem>
+          <para>
+	    Don't run interactively, just say yes to all questions.
+          </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+	<term>-V</term>
+        <listitem>
+	  <para>
+	    Print version information and exit.
+	  </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>-v <replaceable class="parameter">level</replaceable></term>
+        <listitem>
+          <para>
+            Set verbose level. Level 1 is intended to be
+            usefully verbose for general users; higher levels are
+            intended for developers.
+          </para>
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
+  </refsection>
+
+  <refsection><info><title>EXIT STATUS</title></info>
+
+    <para>
+      The <command>kasp-setupdb</command> command exits 0 on success, or
+      non-zero if an error occurred.  It exits with -1 when usage is printed.
+    </para>
+
+  </refsection>
+
+  <refsection><info><title>SEE ALSO</title></info>
+
+    <para>
+      <citerefentry>
+        <refentrytitle>dnssec-keymgr</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>,
+      <citetitle>BIND 9 Administrator Reference Manual</citetitle>.
+    </para>
+
+  </refsection>
+
+</refentry>
