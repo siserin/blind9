@@ -191,7 +191,7 @@ stages:
   before_script:
     - *setup_softhsm
   script:
-    - cd lib && make check
+    - cd lib && make -j${TEST_PARALLEL_JOBS:-1} -k check V=1
   artifacts:
     paths:
       - lib/*/tests/*.log
