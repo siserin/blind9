@@ -9,7 +9,7 @@
  * information regarding copyright ownership.
  */
 
-#if !USE_PKCS11
+/*! \file */
 
 #if HAVE_OPENSSL_ED25519 || HAVE_OPENSSL_ED448
 
@@ -755,7 +755,3 @@ dst__openssleddsa_init(dst_func_t **funcp) {
 }
 
 #endif /* HAVE_OPENSSL_ED25519 || HAVE_OPENSSL_ED448 */
-
-#endif /* !USE_PKCS11 */
-
-/*! \file */

@@ -11,8 +11,7 @@
 
 /*! \file */
 
-#if USE_PKCS11 && \
-	(HAVE_PKCS11_ED25519 || HAVE_PKCS11_ED448)
+#if HAVE_PKCS11_ED25519 || HAVE_PKCS11_ED448
 
 #include <stdbool.h>
 
@@ -1094,4 +1093,4 @@ dst__pkcs11eddsa_init(dst_func_t **funcp) {
 	return (ISC_R_SUCCESS);
 }
 
-#endif /* USE_PKCS11 */
+#endif /* HAVE_PKCS11_ED25519 || HAVE_PKCS11_ED448 */

@@ -9,8 +9,6 @@
  * information regarding copyright ownership.
  */
 
-#if USE_PKCS11
-
 #include <isc/util.h>
 
 #include <dns/log.h>
@@ -34,6 +32,3 @@ dst__pkcs11_toresult(const char *funcname, const char *file, int line,
 		return (ISC_R_NOMEMORY);
 	return (fallback);
 }
-
-#endif /* USE_PKCS11 */
-/*! \file */

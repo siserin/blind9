@@ -11,8 +11,6 @@
 
 /*! \file */
 
-#if !USE_PKCS11
-
 #include <stdbool.h>
 
 #include <isc/mem.h>
@@ -637,5 +635,3 @@ dst__opensslecdsa_init(dst_func_t **funcp) {
 		*funcp = &opensslecdsa_functions;
 	return (ISC_R_SUCCESS);
 }
-
-#endif /* !USE_PKCS11 */

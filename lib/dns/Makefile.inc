@@ -200,14 +200,8 @@ libdns_la_SOURCES = \
 	%reldir%/nta.c		\
 	%reldir%/openssl_link.c	\
 	%reldir%/openssldh_link.c	\
-	%reldir%/opensslecdsa_link.c	\
-	%reldir%/openssleddsa_link.c	\
-	%reldir%/opensslrsa_link.c	\
 	%reldir%/order.c	\
 	%reldir%/peer.c		\
-	%reldir%/pkcs11ecdsa_link.c	\
-	%reldir%/pkcs11eddsa_link.c	\
-	%reldir%/pkcs11rsa_link.c	\
 	%reldir%/private.c	\
 	%reldir%/portlist.c	\
 	%reldir%/rbt.c		\
@@ -248,6 +242,19 @@ libdns_la_SOURCES = \
 	%reldir%/zt.c		\
 	%reldir%/client.c	\
 	%reldir%/ecdb.c
+
+if HAVE_PKCS11
+libdns_la_SOURCES +=			\
+	%reldir%/pkcs11.c		\
+	%reldir%/pkcs11ecdsa_link.c	\
+	%reldir%/pkcs11eddsa_link.c	\
+	%reldir%/pkcs11rsa_link.c
+else !HAVE_PKCS11
+libdns_la_SOURCES +=			\
+	%reldir%/opensslecdsa_link.c	\
+	%reldir%/openssleddsa_link.c	\
+	%reldir%/opensslrsa_link.c
+endif
 
 if USE_ISC_SPNEGO
 libdns_la_SOURCES +=		\

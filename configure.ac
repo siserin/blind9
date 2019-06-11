@@ -666,12 +666,10 @@ AX_RESTORE_FLAGS([openssl])
 AC_SUBST([OPENSSL_CFLAGS])
 AC_SUBST([OPENSSL_LIBS])
 
-PKCS11_TOOLS=
-PKCS11_TEST=
 #
 # was --enable-native-pkcs11 specified?
 #
-AC_ARG_ENABLE(native-pkcs11,
+AC_ARG_ENABLE([native-pkcs11],
 	      AS_HELP_STRING([--enable-native-pkcs11],
 			     [use native PKCS11 for public-key crypto [default=no]]),
 	      [:], [enable_native_pkcs11="no"])
@@ -680,9 +678,6 @@ AC_MSG_CHECKING([for PKCS11 for Public-Key Cryptography])
 AS_CASE([$enable_native_pkcs11],
 	[no],[AC_MSG_RESULT([no])],
 	[yes],[CRYPTO=pkcs11
-	       AS_IF([$use_threads],
-		     [:],
-		     [AC_MSG_ERROR([PKCS11 requires threading support])])
 	       AC_MSG_RESULT([yes])
 	       AC_CHECK_FUNCS([getpassphrase])
 	      ])
@@ -707,19 +702,7 @@ AC_DEFINE_UNQUOTED([PK11_LIB_LOCATION], ["$with_pkcs11"], [define the default PK
 
 # for PKCS11 benchmarks
 
-have_clock_gt=no
-AC_CHECK_FUNC(clock_gettime,have_clock_gt=yes,)
-if test "no" = "$have_clock_gt"; then
-	AC_CHECK_LIB(rt,clock_gettime,have_clock_gt=rt,)
-fi
-
-if test "no" != "$have_clock_gt"; then
-	AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [Define if clock_gettime is available.])
-fi
-
-if test "rt" = "$have_clock_gt"; then
-	LIBS="-lrt $LIBS"
-fi
+AC_CHECK_FUNCS([clock_gettime])
 
 AC_MSG_CHECKING(for GSSAPI library)
 AC_ARG_WITH(gssapi,
