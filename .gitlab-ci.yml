@@ -340,7 +340,7 @@ gcc:jessie:amd64:
   variables:
     CC: gcc
     CFLAGS: "-Wall -Wextra -O2 -g"
-    EXTRA_CONFIGURE: "--without-cmocka --with-python --disable-geoip"
+    EXTRA_CONFIGURE: "--without-cmocka --without-python --disable-geoip"
   <<: *debian_jessie_amd64_image
   <<: *build_job
 
