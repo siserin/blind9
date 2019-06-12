@@ -1,37 +1,30 @@
-ISC
-Internet Systems Consortium, Inc.
-pkcs11-tokens
-8
-BIND9
-pkcs11-tokens
-list PKCS#11 available tokens
-2014
-2015
-2016
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-pkcs11-tokens
--m
-module
--v
-DESCRIPTION
-===========
+.. highlight: console
+
+pkcs11-tokens - list PKCS#11 available tokens
+=============================================
+
+Synopsis
+--------
+
+:program:`pkcs11-tokens` [**-m** module] [**-v**]
+
+Description
+-----------
 
 ``pkcs11-tokens`` lists the PKCS#11 available tokens with defaults from
 the slot/token scan performed at application initialization.
 
-ARGUMENTS
-=========
+Arguments
+---------
 
--m module
+**-m** module
    Specify the PKCS#11 provider module. This must be the full path to a
    shared library object implementing the PKCS#11 API for the device.
 
--v
+**-v**
    Make the PKCS#11 libisc initialization verbose.
 
-SEE ALSO
-========
+See Also
+--------
 
-pkcs11-destroy8, pkcs11-keygen8, pkcs11-list8
+:manpage:`pkcs11-destroy(8)`, :manpage:`pkcs11-keygen(8)`, :manpage:`pkcs11-list(8)`

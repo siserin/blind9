@@ -185,7 +185,7 @@ Return Values
 and 0 otherwise.
 
 See Also
-========
+--------
 
 :manpage:`named(8)`, :manpage:`named-checkconf(8)`, RFC 1035, BIND 9 Administrator Reference
 Manual.

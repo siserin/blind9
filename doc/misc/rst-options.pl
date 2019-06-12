@@ -42,12 +42,12 @@ print <<END;
 named.conf - configuration file for **named**
 =============================================
 
-SYNOPSIS
+Synopsis
 --------
 
 :program:`named.conf`
 
-DESCRIPTION
+Description
 -----------
 
 ``named.conf`` is the configuration file for ``named``. Statements are
@@ -92,7 +92,7 @@ while (<FH>) {
 	if (m{^([a-z0-9-]+) }) {
 		my $HEADING = uc $1;
 		my $UNDERLINE = $HEADING;
-		$UNDERLINE =~ s/./=/g;
+		$UNDERLINE =~ s/./^/g;
 		print $HEADING . "\n";
 		print $UNDERLINE . "\n\n";
 		if ($HEADING eq "TRUSTED-KEYS") {
@@ -118,8 +118,8 @@ while (<FH>) {
 }
 
 print <<END;
-FILES
-=====
+Files
+-----
 
 ``/etc/named.conf``
 

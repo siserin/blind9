@@ -1,25 +1,14 @@
-ISC
-Internet Systems Consortium, Inc.
-rndc.conf
-5
-BIND9
-rndc.conf
-rndc configuration file
-2000
-2001
-2004
-2005
-2007
-2013
-2014
-2015
-2016
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-rndc.conf
-DESCRIPTION
-===========
+.. highlight: console
+
+rndc.conf - rndc configuration file
+
+Synopsis
+--------
+
+:program:`rndc.conf`
+
+Description
+-----------
 
 ``rndc.conf`` is the configuration file for ``rndc``, the BIND 9 name
 server control utility. This file has a similar structure and syntax to
@@ -77,8 +66,8 @@ used to generate a base-64 string from known input. ``mmencode`` does
 not ship with BIND 9 but is available on many systems. See the EXAMPLE
 section for sample command lines for each.
 
-EXAMPLE
-=======
+Example
+-------
 
 ::
 
@@ -138,8 +127,8 @@ To generate a base-64 secret with ``mmencode``:
 
 ``echo "known plaintext for a secret" | mmencode``
 
-NAME SERVER CONFIGURATION
-=========================
+Name Server Configuration
+-------------------------
 
 The name server must be configured to accept rndc connections and to
 recognize the key specified in the ``rndc.conf`` file, using the
@@ -147,7 +136,7 @@ controls statement in ``named.conf``. See the sections on the
 ``controls`` statement in the BIND 9 Administrator Reference Manual for
 details.
 
-SEE ALSO
-========
+See Also
+--------
 
-rndc8, rndc-confgen8, mmencode1, BIND 9 Administrator Reference Manual.
+:manpage:`rndc(8)`, :manpage:`rndc-confgen(8)`, :manpage:`mmencode(1)`, BIND 9 Administrator Reference Manual.

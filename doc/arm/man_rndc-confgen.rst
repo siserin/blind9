@@ -1,45 +1,15 @@
-ISC
-Internet Systems Consortium, Inc.
-rndc-confgen
-8
-BIND9
-rndc-confgen
-rndc key generation tool
-2001
-2003
-2004
-2005
-2007
-2009
-2013
-2014
-2015
-2016
-2017
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-rndc-confgen
--a
--A
-algorithm
--b
-keysize
--c
-keyfile
--h
--k
-keyname
--p
-port
--s
-address
--t
-chrootdir
--u
-user
-DESCRIPTION
-===========
+.. highlight: console
+
+rndc-confgen - rndc key generation tool
+=======================================
+
+Synopsis
+--------
+
+:program:`rndc-confgen` [**-a**] [**-A** algorithm] [**-b** keysize] [**-c** keyfile] [**-h**] [**-k** keyname] [**-p** port] [**-s** address] [**-t** chrootdir] [**-u** user]
+
+Description
+-----------
 
 ``rndc-confgen`` generates configuration files for ``rndc``. It can be
 used as a convenient alternative to writing the ``rndc.conf`` file and
@@ -48,10 +18,10 @@ by hand. Alternatively, it can be run with the ``-a`` option to set up a
 ``rndc.key`` file and avoid the need for a ``rndc.conf`` file and a
 ``controls`` statement altogether.
 
-OPTIONS
-=======
+Arguments
+---------
 
--a
+**-a**
    Do automatic ``rndc`` configuration. This creates a file ``rndc.key``
    in ``/etc`` (or whatever ``sysconfdir`` was specified as when BIND
    was built) that is read by both ``rndc`` and ``named`` on startup.
@@ -68,49 +38,49 @@ OPTIONS
    remotely, you should run ``rndc-confgen`` without the ``-a`` option
    and set up a ``rndc.conf`` and ``named.conf`` as directed.
 
--A algorithm
+**-A** algorithm
    Specifies the algorithm to use for the TSIG key. Available choices
    are: hmac-md5, hmac-sha1, hmac-sha224, hmac-sha256, hmac-sha384 and
    hmac-sha512. The default is hmac-sha256.
 
--b keysize
+**-b** keysize
    Specifies the size of the authentication key in bits. Must be between
    1 and 512 bits; the default is the hash size.
 
--c keyfile
+**-c** keyfile
    Used with the ``-a`` option to specify an alternate location for
    ``rndc.key``.
 
--h
+**-h**
    Prints a short summary of the options and arguments to
    ``rndc-confgen``.
 
--k keyname
+**-k** keyname
    Specifies the key name of the rndc authentication key. This must be a
    valid domain name. The default is ``rndc-key``.
 
--p port
+**-p** port
    Specifies the command channel port where ``named`` listens for
    connections from ``rndc``. The default is 953.
 
--s address
+**-s** address
    Specifies the IP address where ``named`` listens for command channel
    connections from ``rndc``. The default is the loopback address
    127.0.0.1.
 
--t chrootdir
+**-t** chrootdir
    Used with the ``-a`` option to specify a directory where ``named``
    will run chrooted. An additional copy of the ``rndc.key`` will be
    written relative to this directory so that it will be found by the
    chrooted ``named``.
 
--u user
+**-u** user
    Used with the ``-a`` option to set the owner of the ``rndc.key`` file
    generated. If ``-t`` is also specified only the file in the chroot
    area has its owner changed.
 
-EXAMPLES
-========
+Examples
+--------
 
 To allow ``rndc`` to be used with no manual configuration, run
 
@@ -121,7 +91,7 @@ To print a sample ``rndc.conf`` file and corresponding ``controls`` and
 
 ``rndc-confgen``
 
-SEE ALSO
-========
+See Also
+--------
 
-rndc8, rndc.conf5, named8, BIND 9 Administrator Reference Manual.
+:manpage:`rndc(8)`, :manpage:`rndc.conf(5)`, :manapge:`named(8)`, BIND 9 Administrator Reference Manual.

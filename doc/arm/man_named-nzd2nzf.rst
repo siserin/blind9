@@ -27,8 +27,3 @@ See Also
 --------
 
 BIND 9 Administrator Reference Manual.
-
-Author
-------
-
-Internet Systems Consortium
