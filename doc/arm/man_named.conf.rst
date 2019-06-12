@@ -23,14 +23,14 @@ C style: /\* \*/
 Unix style: # to end of line
 
 ACL
-^^^
+~~~
 
 ::
 
   acl string { address_match_element; ... };
 
 CONTROLS
-^^^^^^^^
+~~~~~~~~
 
 ::
 
@@ -47,7 +47,7 @@ CONTROLS
   };
 
 DLZ
-^^^
+~~~
 
 ::
 
@@ -57,7 +57,7 @@ DLZ
   };
 
 DNSSEC-KEYS
-^^^^^^^^^^^
+~~~~~~~~~~~
 
 ::
 
@@ -66,7 +66,7 @@ DNSSEC-KEYS
       quoted_string; ... };
 
 DYNDB
-^^^^^
+~~~~~
 
 ::
 
@@ -74,7 +74,7 @@ DYNDB
       unspecified-text };
 
 KEY
-^^^
+~~~
 
 ::
 
@@ -84,7 +84,7 @@ KEY
   };
 
 LOGGING
-^^^^^^^
+~~~~~~~
 
 ::
 
@@ -105,7 +105,7 @@ LOGGING
   };
 
 MANAGED-KEYS
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 
 See DNSSEC-KEYS.
 
@@ -117,7 +117,7 @@ See DNSSEC-KEYS.
       quoted_string; ... };, deprecated
 
 MASTERS
-^^^^^^^
+~~~~~~~
 
 ::
 
@@ -127,7 +127,7 @@ MASTERS
       integer ] ) [ key string ]; ... };
 
 OPTIONS
-^^^^^^^
+~~~~~~~
 
 ::
 
@@ -428,7 +428,7 @@ OPTIONS
   };
 
 PLUGIN
-^^^^^^
+~~~~~~
 
 ::
 
@@ -436,7 +436,7 @@ PLUGIN
       } ];
 
 SERVER
-^^^^^^
+~~~~~~
 
 ::
 
@@ -474,7 +474,7 @@ SERVER
   };
 
 STATISTICS-CHANNELS
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -486,7 +486,7 @@ STATISTICS-CHANNELS
   };
 
 TRUSTED-KEYS
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 
 Deprecated - see DNSSEC-KEYS.
 
@@ -497,7 +497,7 @@ Deprecated - see DNSSEC-KEYS.
       quoted_string; ... };, deprecated
 
 VIEW
-^^^^
+~~~~
 
 ::
 
@@ -877,7 +877,7 @@ VIEW
   };
 
 ZONE
-^^^^
+~~~~
 
 ::
 
