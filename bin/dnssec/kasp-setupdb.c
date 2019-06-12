@@ -54,7 +54,7 @@ usage(void) {
 	fprintf(stderr,	"    %s [options]\n", program);
 	fprintf(stderr, "Version: %s\n", VERSION);
 	fprintf(stderr, "Options:\n");
-	fprintf(stderr, "    -c <file>: named configuration with dnssec-policy\n");
+	fprintf(stderr, "    -c <file>: named configuration with dnssecpolicy\n");
 	fprintf(stderr, "    -h: print usage and exit\n");
 	fprintf(stderr, "    -V: print version and exit\n");
 	fprintf(stderr, "    -v <verbose level>\n");
@@ -78,7 +78,7 @@ print_dnssec_policies(const cfg_obj_t *config)
 	const cfg_obj_t *policies = NULL;
 	const cfg_obj_t *dpconfig = NULL;
 
-	(void)cfg_map_get(config, "dnssec-policy", &policies);
+	(void)cfg_map_get(config, "dnssecpolicy", &policies);
 	for (element = cfg_list_first(policies); element != NULL;
 	     element = cfg_list_next(element))
         {

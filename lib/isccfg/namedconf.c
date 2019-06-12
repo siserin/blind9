@@ -433,7 +433,7 @@ static cfg_type_t cfg_type_keystore = {
 };
 
 /*%
- * A dnssec-policy statement.
+ * A dnssecpolicy statement.
  */
 static cfg_tuplefielddef_t dnssecpolicy_fields[] = {
 	{ "name", &cfg_type_astring, 0 },
@@ -441,7 +441,7 @@ static cfg_tuplefielddef_t dnssecpolicy_fields[] = {
 	{ NULL, NULL, 0 }
 };
 static cfg_type_t cfg_type_dnssecpolicy = {
-	"dnssec-policy", cfg_parse_tuple, cfg_print_tuple, cfg_doc_tuple,
+	"dnssecpolicy", cfg_parse_tuple, cfg_print_tuple, cfg_doc_tuple,
 	&cfg_rep_tuple, dnssecpolicy_fields
 };
 
@@ -531,7 +531,7 @@ static cfg_type_t cfg_type_dnsseckeyautosign = {
 };
 
 /*%
- * A dnssec key, as used in the "keys" statement in a "dnssec-policy".
+ * A dnssec key, as used in the "keys" statement in a "dnssecpolicy".
  */
 static cfg_tuplefielddef_t kaspkey_fields[] = {
 	{ "role", &cfg_type_dnsseckeyrole, 0 },
@@ -1055,7 +1055,7 @@ static cfg_clausedef_t
 namedconf_clauses[] = {
 	{ "acl", &cfg_type_acl, CFG_CLAUSEFLAG_MULTI },
 	{ "controls", &cfg_type_controls, CFG_CLAUSEFLAG_MULTI },
-	{ "dnssec-policy", &cfg_type_dnssecpolicy, CFG_CLAUSEFLAG_MULTI },
+	{ "dnssecpolicy", &cfg_type_dnssecpolicy, CFG_CLAUSEFLAG_MULTI },
 	{ "keystore", &cfg_type_keystore, CFG_CLAUSEFLAG_MULTI },
 	{ "logging", &cfg_type_logging, 0 },
 	{ "lwres", &cfg_type_bracketed_text,
@@ -2512,7 +2512,7 @@ LIBISCCFG_EXTERNAL_DATA cfg_type_t cfg_type_keystoreopts = {
 	"keystoreopts", cfg_parse_map, cfg_print_map,
 	cfg_doc_map, &cfg_rep_map, keystore_clausesets };
 
-/*% The "dnssec-policy" statement syntax. */
+/*% The "dnssecpolicy" statement syntax. */
 
 static cfg_clausedef_t *
 dnssecpolicy_clausesets[] = {

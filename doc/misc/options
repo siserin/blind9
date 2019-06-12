@@ -21,7 +21,7 @@ dlz <string> {
         search <boolean>;
 }; // may occur multiple times
 
-dnssec-policy <string> {
+dnssecpolicy <string> {
         cdnskey <boolean>;
         cds <boolean>;
         denial-type ( nsec | nsec3 );

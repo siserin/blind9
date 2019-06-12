@@ -3240,7 +3240,7 @@ $ORIGIN 0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa.
 
 	    <row rowsep="0">
 	      <entry colname="1">
-		<para><command>dnssec-policy</command></para>
+		<para><command>dnssecpolicy</command></para>
 	      </entry>
 	      <entry colname="2">
 		<para>
@@ -11045,14 +11045,14 @@ example.com                 CNAME   rpz-tcp-only.
 	  </para>
 	</section>
 
-	<section xml:id="dnssec_policy_grammar"><info><title><command>dnssec-policy</command> Statement Grammar</title></info>
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="dnssec-policy.grammar.xml"/>
+	<section xml:id="dnssec_policy_grammar"><info><title><command>dnssecpolicy</command> Statement Grammar</title></info>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="dnssecpolicy.grammar.xml"/>
 	</section>
-	<section xml:id="dnssec_policy"><info><title><command>dnssec-policy</command> Statement Definition
+	<section xml:id="dnssec_policy"><info><title><command>dnssecpolicy</command> Statement Definition
 	    and Usage</title></info>
 
 	  <para>
-	    The <command>dnssec-policy</command> statement defines a key and
+	    The <command>dnssecpolicy</command> statement defines a key and
 	    signing policy (KASP) for zones.
 	  </para>
 	  <para>

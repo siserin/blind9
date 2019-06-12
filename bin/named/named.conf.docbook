@@ -1030,10 +1030,10 @@ keystore <replaceable>string</replaceable> {
 </literallayout>
   </refsection>
 
-  <refsection><info><title>DNSSEC-POLICY</title></info>
+  <refsection><info><title>DNSSECPOLICY</title></info>
 
     <literallayout class="normal">
-dnssec-policy <replaceable>string</replaceable> {
+dnssecpolicy <replaceable>string</replaceable> {
 	cdnskey <replaceable>boolean</replaceable>;
 	cds <replaceable>boolean</replaceable>;
 	denial-type ( nsec | nsec3 );

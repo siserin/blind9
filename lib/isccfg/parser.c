@@ -1367,7 +1367,8 @@ cfg_obj_isstring(const cfg_obj_t *obj) {
 
 const char *
 cfg_obj_asstring(const cfg_obj_t *obj) {
-	REQUIRE(obj != NULL && obj->type->rep == &cfg_rep_string);
+	REQUIRE(obj != NULL);
+	REQUIRE(obj->type->rep == &cfg_rep_string);
 	return (obj->value.string.base);
 }
 
