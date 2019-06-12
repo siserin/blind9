@@ -94,7 +94,7 @@ is set for a zone.
 1. `update-check-ksk`: When set to "no", KSK will also sign non-DNSKEY RRsets.
    This option will go away and key roles will be used to determine what
    keys sign which RRsets (A KSK that should sign all RRsets will have both
-   the KSK and ZSK role).
+   the KSK and ZSK role and is referred to as a CSK).
 
 Other DNSSEC related configuration options that are not related to the policy
 are likely to stay:
@@ -108,11 +108,14 @@ are likely to stay:
 
 ### Validation
 
-To do
+Out of scope
+
 
 # KASP Configuration
 
-The KASP Configuration may look something like this:
+The KASP Configuration may look something like the example configuration
+below. This includes all options as described in the KASP draft, but we may
+decide that some options are not required.
 
 ```
 keystore "softhsm" {
@@ -124,10 +127,11 @@ keystore "softhsm" {
     skip-public-key yes;
 };
 
-dnssec-policy "nsec3" {
+dnssecpolicy "nsec3" {
 
     description "policy for zones that require zone walking mitigation";
 
+    // Signatures
     signatures-resign PT2H;
     signatures-refresh P3D;
     signatures-validity P14D;
@@ -136,6 +140,7 @@ dnssec-policy "nsec3" {
     signatures-jitter PT12H;
     signatures-inception-offset PT300S;
 
+    // Denial of existence
     denial-type nsec3;
     nsec3param-ttl 0;
     nsec3-optout no;
@@ -144,6 +149,7 @@ dnssec-policy "nsec3" {
     nsec3-salt-length 8;
     nsec3-resalt P100D;
 
+    // Keys
     dnskey-ttl PT3600S;
     dnskey-publish-safety PT3600S;
     dnskey-retire-safety PT3600S;
@@ -157,23 +163,57 @@ dnssec-policy "nsec3" {
 		P30D online automatic ECDSAP256SHA256;
     };
 
+    // Parent synchronization
     cds yes;
     cdnskey yes;
+    check-ds { 127.0.0.53; };
+    check-ds-interval PT3600S;
 
+    // Zone properties
     zone-propagation-delay PT3600S;
     zone-soa-ttl 3600;
     zone-soa-minimum 3600;
     zone-soa-serial-update-method unixtime;
     zone-max-ttl 24H;
 
+    // Parent properties
     parent-propagation-delay PT24H;
     parent-ds-ttl 3600;
     parent-soa-ttl 3600;
     parent-soa-minimum 3600;
-    check-ds { 127.0.0.53; };
-    check-ds-interval PT3600S;
 };
 ```
 
-## Key roles
+# KASP Database
+
+Current strategy is to maintain information in comments in keyfiles:
+
+```
+; This is a key-signing key, keyid 52075, for test.
+; Created: 20190612091648 (Wed Jun 12 11:16:48 2019)
+; Publish: 20190612091648 (Wed Jun 12 11:16:48 2019)
+; Activate: 20190612091648 (Wed Jun 12 11:16:48 2019)
+```
+
+This by itself is good enough to maintain signatures (where the signature
+lifetime can be set in named.conf), but key rollovers are maintained with
+a separate tool `dnssec-keymgr` which wraps around `dnssec-keygen` and
+`dnssec-settime`.
+
+There are several options with the new approach to store state information:
+
+- Extend on the current strategy, store lifetime and other related timing
+  information in the keyfiles.
+
+- Store information in a database backend.  More work, but likely better
+  performance when signing and maintaing many zones, and a better relationship
+  between policies, zones, and keys.
+
+# Strategy
+
+1. Introduce the new named.conf options.
+2. Implement checks, so that dnssec-policy and existing DNSSEC sign options
+   cannot coexist.
+3. Implement the behavior of the new options.
+4. Implement KASP Database.
 
