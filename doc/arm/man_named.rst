@@ -1,15 +1,15 @@
 .. highlight: console
 
 named - Internet domain name server
-===================================
+-----------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`named` [ [**-4**] | [**-6**] ] [**-c** config-file] [**-d** debug-level] [**-D** string] [**-E** engine-name] [**-f**] [**-g**] [**-L** logfile] [**-M** option] [**-m** flag] [**-n** #cpus] [**-p** port] [**-s**] [**-S** #max-socks] [**-t** directory] [**-U** #listeners] [**-u** user] [**-v**] [**-V**] [**-X** lock-file] [**-x** cache-file]
 
 Description
------------
+~~~~~~~~~~~
 
 ``named`` is a Domain Name System (DNS) server, part of the BIND 9
 distribution from ISC. For more information on the DNS, see RFCs 1033,
@@ -20,7 +20,7 @@ configuration file ``/etc/named.conf``, read any initial data, and
 listen for queries.
 
 Options
--------
+~~~~~~~
 
 **-4**
    Use IPv4 only even if the host machine is capable of IPv6. ``-4`` and
@@ -171,7 +171,7 @@ Options
       developers and may be removed or changed in a future release.
 
 Signals
--------
+~~~~~~~
 
 In routine operation, signals should not be used to control the
 nameserver; ``rndc`` should be used instead.
@@ -185,7 +185,7 @@ SIGINT, SIGTERM
 The result of sending any other signals to the server is undefined.
 
 Configuration
--------------
+~~~~~~~~~~~~~
 
 The ``named`` configuration file is too complex to describe in detail
 here. A complete description is provided in the BIND 9 Administrator
@@ -197,7 +197,7 @@ need to have custom permissions, the ``umask`` should be set explicitly
 in the script used to start the ``named`` process.
 
 Files
------
+~~~~~
 
 ``/etc/named.conf``
    The default configuration file.
@@ -206,6 +206,6 @@ Files
    The default process-id file.
 
 See Also
---------
+~~~~~~~~
 
 RFC 1033, RFC 1034, RFC 1035, :manpage:`named-checkconf(8)`, :manpage:`named-checkzone(8)`, :manpage:`rndc(8), :manpage:`named.conf(5)`, BIND 9 Administrator Reference Manual.

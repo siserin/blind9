@@ -1,22 +1,22 @@
 ..highlight: console
 
 pkcs11-keygen - generate keys on a PKCS#11 device
-=================================================
+-------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`pkcs11-keygen` [**-a** algorithm] [**-b** keysize] [**-e**] [**-i** id] [**-m** module] [**-P**] [**-p** PIN] [**-q**] [**-S**] [**-s** slot] label
 
 Description
------------
+~~~~~~~~~~~
 
 ``pkcs11-keygen`` causes a PKCS#11 device to generate a new key pair
 with the given ``label`` (which must be unique) and with ``keysize``
 bits of prime.
 
 Arguments
----------
+~~~~~~~~~
 
 **-a** algorithm
    Specify the key algorithm class: Supported classes are RSA, DSA, DH,
@@ -62,6 +62,6 @@ Arguments
    Open the session with the given PKCS#11 slot. The default is slot 0.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`pkcs11-destroy(8)`, :manpage:`pkcs11-list(8)`, :manpage:`pkcs11-tokens(8)`, :manpage:`dnssec-keyfromlabel(8)`

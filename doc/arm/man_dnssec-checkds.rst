@@ -1,22 +1,22 @@
 .. highlight: console
 
 dnssec-checkds - DNSSEC delegation consistency checking tool
-============================================================
+------------------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`dnssec-checkds` [**-d** dig path] [**-D** dsfromkey path] [**-f** file] [**-l** domain] [**-s** file] {zone}
 
 Description
------------
+~~~~~~~~~~~
 
 ``dnssec-checkds`` verifies the correctness of Delegation Signer (DS) or
 DNSSEC Lookaside Validation (DLV) resource records for keys in a
 specified zone.
 
 Options
--------
+~~~~~~~
 
 **-f** file
    If a ``file`` is specified, then the zone is read from that file to
@@ -39,6 +39,6 @@ Options
    Specifies a path to a ``dnssec-dsfromkey`` binary. Used for testing.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dnssec-dsfromkey(8)`, :manpage:`dnssec-keygen(8)`, :manpage:`dnssec-signzone(8)`.

@@ -1,15 +1,15 @@
 .. highlight: console
 
 nslookup - query Internet name servers interactively
-====================================================
+----------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`nslookup` [-option] [name | -] [server]
 
 Description
------------
+~~~~~~~~~~~
 
 ``Nslookup`` is a program to query Internet domain name servers.
 ``Nslookup`` has two modes: interactive and non-interactive. Interactive
@@ -19,7 +19,7 @@ Non-interactive mode is used to print just the name and requested
 information for a host or domain.
 
 Arguments
----------
+~~~~~~~~~
 
 Interactive mode is entered in the following cases:
 
@@ -45,7 +45,7 @@ The ``-version`` option causes ``nslookup`` to print the version number
 and immediately exits.
 
 Interactive Commands
---------------------
+~~~~~~~~~~~~~~~~~~~~
 
 ``host`` [server]
    Look up information for host using the current default server or
@@ -175,13 +175,13 @@ Interactive Commands
       (Default = nofail)
 
 Return Values
--------------
+~~~~~~~~~~~~~
 
 ``nslookup`` returns with an exit status of 1 if any query failed, and 0
 otherwise.
 
 IDN Support
------------
+~~~~~~~~~~~
 
 If ``nslookup`` has been built with IDN (internationalized domain name)
 support, it can accept and display non-ASCII domain names. ``nslookup``
@@ -192,11 +192,11 @@ environment variable. The IDN support is disabled if the variable is set
 when ``nslookup`` runs or when the standard output is not a tty.
 
 Files
------
+~~~~~
 
 ``/etc/resolv.conf``
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dig(1)`, :manpage:`host(1)`, :manpage:`named(8)`.

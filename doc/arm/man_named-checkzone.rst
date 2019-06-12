@@ -1,17 +1,17 @@
 .. highlight: console
 
 named-checkzone, named-compilezone - zone file validity checking or converting tool
-===================================================================================
+-----------------------------------------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`named-checkzone` [**-d**] [**-h**] [**-j**] [**-q**] [**-v**] [**-c** class] [**-f** format] [**-F** format] [**-J** filename] [**-i** mode] [**-k** mode] [**-m** mode] [**-M** mode] [**-n** mode] [**-l** ttl] [**-L** serial] [**-o** filename] [**-r** mode] [**-s** style] [**-S** mode] [**-t** directory] [**-T** mode] [**-w** directory] [**-D**] [**-W** mode] {zonename} {filename}
 
 :program:`named-compilezone` [**-d**] [**-j**] [**-q**] [**-v**] [**-c** class] [**-C** mode] [**-f** format] [**-F** format] [**-J** filename] [**-i** mode] [**-k** mode] [**-m** mode] [**-n** mode] [**-l** ttl] [**-L** serial] [**-r** mode] [**-s** style] [**-t** directory] [**-T** mode] [**-w** directory] [**-D**] [**-W** mode] {**-o** filename} {zonename} {filename}
 
 Description
------------
+~~~~~~~~~~~
 
 ``named-checkzone`` checks the syntax and integrity of a zone file. It
 performs the same checks as ``named`` does when loading a zone. This
@@ -26,7 +26,7 @@ When manually specified otherwise, the check levels must at least be as
 strict as those specified in the ``named`` configuration file.
 
 Options
--------
+~~~~~~~
 
 **-d**
    Enable debugging.
@@ -179,13 +179,13 @@ filename
    The name of the zone file.
 
 Return Values
--------------
+~~~~~~~~~~~~~
 
 ``named-checkzone`` returns an exit status of 1 if errors were detected
 and 0 otherwise.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`named(8)`, :manpage:`named-checkconf(8)`, RFC 1035, BIND 9 Administrator Reference
 Manual.

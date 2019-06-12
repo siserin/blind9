@@ -1,15 +1,15 @@
 .. highlight: console
 
 dnssec-keyfromlabel - DNSSEC key generation tool
-================================================
+------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`dnssec-keyfromlabel` {**-l** label} [**-3**] [**-a** algorithm] [**-A** date/offset] [**-c** class] [**-D** date/offset] [**-D** sync date/offset] [**-E** engine] [**-f** flag] [**-G**] [**-I** date/offset] [**-i** interval] [**-k**] [**-K** directory] [**-L** ttl] [**-n** nametype] [**-P** date/offset] [**-P** sync date/offset] [**-p** protocol] [**-R** date/offset] [**-S** key] [**-t** type] [**-v** level] [**-V**] [**-y**] {name}
 
 Description
------------
+~~~~~~~~~~~
 
 ``dnssec-keyfromlabel`` generates a key pair of files that referencing a
 key object stored in a cryptographic hardware service module (HSM). The
@@ -22,7 +22,7 @@ The ``name`` of the key is specified on the command line. This must
 match the name of the zone for which the key is being generated.
 
 Options
--------
+~~~~~~~
 
 **-a** algorithm
    Selects the cryptographic algorithm. The value of ``algorithm`` must
@@ -160,7 +160,7 @@ Options
    involved.)
 
 Timing Options
---------------
+~~~~~~~~~~~~~~
 
 Dates can be expressed in the format YYYYMMDD or YYYYMMDDHHMMSS. If the
 argument begins with a '+' or '-', it is interpreted as an offset from
@@ -224,7 +224,7 @@ explicitly prevent a date from being set, use 'none' or 'never'.
    respectively. Without a suffix, the interval is measured in seconds.
 
 Generated Key Files
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 When ``dnssec-keyfromlabel`` completes successfully, it prints a string
 of the form ``Knnnn.+aaa+iiiii`` to the standard output. This is an
@@ -247,7 +247,7 @@ The ``.private`` file contains algorithm-specific fields. For obvious
 security reasons, this file does not have general read permission.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dnssec-keygen(8)`, :manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual,
 RFC 4034, The PKCS#11 URI Scheme (draft-pechanec-pkcs11uri-13).

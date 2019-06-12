@@ -1,15 +1,15 @@
 .. highlight: console
 
 filter-aaaa.so - filter AAAA in DNS responses when A is present
-===============================================================
+---------------------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`plugin query` "filter-aaaa.so" [{ parameters }];
 
 Description
------------
+~~~~~~~~~~~
 
 ``filter-aaaa.so`` is a query plugin module for ``named``, enabling
 ``named`` to omit some IPv6 addresses when responding to clients.
@@ -41,7 +41,7 @@ mechanism via IPv4, it will be denied AAAA records even if its client is
 using IPv6.
 
 Options
--------
+~~~~~~~
 
 ``filter-aaaa``
    Specifies a list of client addresses for which AAAA filtering is to
@@ -71,6 +71,6 @@ Options
    responses, set both options to ``yes``.
 
 See Also
---------
+~~~~~~~~
 
 BIND 9 Administrator Reference Manual.

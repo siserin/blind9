@@ -1,15 +1,15 @@
 .. highlight: console
 
 named-checkconf - named configuration file syntax checking tool
-===============================================================
+---------------------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`named-checkconf` [**-chjlvz**] [**-p** [**-x** ]] [**-t** directory] {filename}
 
 Description
------------
+~~~~~~~~~~~
 
 ``named-checkconf`` checks the syntax, but not the semantics, of a
 ``named`` configuration file. The file is parsed and checked for syntax
@@ -23,7 +23,7 @@ Note: files that ``named`` reads in separate parser contexts, such as
 ``named-checkconf`` can be run on these files explicitly, however.
 
 Options
--------
+~~~~~~~
 
 **-h**
    Print the usage summary and exit.
@@ -68,12 +68,12 @@ filename
    it defaults to ``/etc/named.conf``.
 
 Return Values
--------------
+~~~~~~~~~~~~~
 
 ``named-checkconf`` returns an exit status of 1 if errors were detected
 and 0 otherwise.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`named(8)`, :manpage:`named-checkzone(8)`, BIND 9 Administrator Reference Manual.

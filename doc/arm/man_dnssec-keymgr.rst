@@ -1,15 +1,15 @@
 .. highlight: console
 
 dnssec-keymgr - ensures correct DNSKEY coverage for a zone based on a defined policy
-====================================================================================
+------------------------------------------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`dnssec-keymgr` [**-K** directory] [**-c** file] [**-f**] [**-k**] [**-q**] [**-v**] [**-z**] [**-g** path] [**-s** path] [zone...]
 
 Description
------------
+~~~~~~~~~~~
 
 ``dnssec-keymgr`` is a high level Python wrapper to facilitate the key
 rollover process for zones handled by BIND. It uses the BIND commands
@@ -51,7 +51,7 @@ It is expected that this tool will be run automatically and unattended
 (for example, by ``cron``).
 
 Options
--------
+~~~~~~~
 
 **-c** file
    If ``-c`` is specified, then the DNSSEC policy is read from ``file``.
@@ -96,7 +96,7 @@ Options
    Only apply policies to ZSK keys. See also the ``-k`` option.
 
 Policy Configuration
---------------------
+~~~~~~~~~~~~~~~~~~~~
 
 The ``dnssec-policy.conf`` file can specify three kinds of policies:
 
@@ -170,7 +170,7 @@ Options that can be specified in policies:
    Not yet implemented.
 
 Remaining Work
---------------
+~~~~~~~~~~~~~~
 
 -  Enable scheduling of KSK rollovers using the ``-P sync`` and
    ``-D sync`` options to ``dnssec-keygen`` and ``dnssec-settime``.
@@ -181,6 +181,6 @@ Remaining Work
    keys that use RFC 5011 semantics.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dnssec-coverage(8)`, :manpage:`dnssec-keygen(8)`, :manpage:`dnssec-settime(8)`, :manpage:`dnssec-checkds(8)`.

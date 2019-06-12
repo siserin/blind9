@@ -1,17 +1,17 @@
 .. highlight: console
 
 nsec3hash - generate NSEC3 hash
-===============================
+-------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`nsec3hash` {salt} {algorithm} {iterations} {domain}
 
 :program:`nsec3hash` **-r** {algorithm} {flags} {iterations} {salt} {domain}
 
 Description
------------
+~~~~~~~~~~~
 
 ``nsec3hash`` generates an NSEC3 hash based on a set of NSEC3
 parameters. This can be used to check the validity of NSEC3 records in a
@@ -24,7 +24,7 @@ convenient to copy and paste a portion of an NSEC3 or NSEC3PARAM record
 into a command line to confirm the correctness of an NSEC3 hash.
 
 Arguments
----------
+~~~~~~~~~
 
 salt
    The salt provided to the hash algorithm.
@@ -45,6 +45,6 @@ domain
    The domain name to be hashed.
 
 See Also
---------
+~~~~~~~~
 
 BIND 9 Administrator Reference Manual, RFC 5155.

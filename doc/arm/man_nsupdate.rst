@@ -1,15 +1,15 @@
 .. highlight: console
 
 nsupdate - dynamic DNS update utility
-=====================================
+-------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`nsupdate` [**-d**] [**-D**] [**-i**] [**-L** level] [ [**-g**] | [**-o**] | [**-l**] | [**-y** [hmac:]keyname:secret] | [**-k** keyfile] ] [**-t** timeout] [**-u** udptimeout] [**-r** udpretries] [**-v**] [**-T**] [**-P**] [**-V**] [ [**-4**] | [**-6**] ] [filename]
 
 Description
------------
+~~~~~~~~~~~
 
 ``nsupdate`` is used to submit Dynamic DNS Update requests as defined in
 RFC 2136 to a name server. This allows resource records to be added or
@@ -48,7 +48,7 @@ on with the ``-g`` flag. A non-standards-compliant variant of GSS-TSIG
 used by Windows 2000 can be switched on with the ``-o`` flag.
 
 Options
--------
+~~~~~~~
 
 **-4**
    Use IPv4 only.
@@ -144,7 +144,7 @@ Options
    the user's shell.
 
 Input Format
-------------
+~~~~~~~~~~~~
 
 ``nsupdate`` reads input from ``filename`` or standard input. Each
 command is supplied on exactly one line of input. Some commands are for
@@ -278,7 +278,7 @@ The command formats and their meaning are as follows:
 Lines beginning with a semicolon are comments and are ignored.
 
 Examples
---------
+~~~~~~~~
 
 The examples below show how ``nsupdate`` could be used to insert and
 delete resource records from the ``example.com`` zone. Notice that the
@@ -314,7 +314,7 @@ been updated for DNSSEC in RFC 2535 to allow CNAMEs to have RRSIG,
 DNSKEY and NSEC records.)
 
 Files
------
+~~~~~
 
 ``/etc/resolv.conf``
    used to identify default name server
@@ -329,13 +329,13 @@ Files
    base-64 encoding of HMAC-MD5 key created by dnssec-keygen8.
 
 See Also
---------
+~~~~~~~~
 
 RFC 2136, RFC 3007, RFC 2104, RFC 2845, RFC 1034, RFC 2535, RFC 2931,
 :manpage:`named(8)`, :manpage:`ddns-confgen(8)`, :manpage:`dnssec-keygen(8)`.
 
 Bugs
-----
+~~~~
 
 The TSIG key is redundantly stored in two separate files. This is a
 consequence of nsupdate using the DST library for its cryptographic

@@ -1,15 +1,15 @@
 .. highlight: console
 
 dnssec-coverage - checks future DNSKEY coverage for a zone
-==========================================================
+----------------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`dnssec-coverage` [**-K** directory] [**-l** length] [**-f** file] [**-d** DNSKEY TTL] [**-m** max TTL] [**-r** interval] [**-c** compilezone path] [**-k**] [**-z**] [zone...]
 
 Description
------------
+~~~~~~~~~~~
 
 ``dnssec-coverage`` verifies that the DNSSEC keys for a given zone or a
 set of zones have timing metadata set properly to ensure no future
@@ -32,7 +32,7 @@ be scanned, and all zones for which there are keys will be analyzed.
 have keys in a given repository share the same TTL parameters.)
 
 Options
--------
+~~~~~~~
 
 **-K** directory
    Sets the directory in which keys can be found. Defaults to the
@@ -121,6 +121,6 @@ Options
    Specifies a path to a ``named-compilezone`` binary. Used for testing.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dnssec-checkds(8)`, :manpage:`dnssec-dsfromkey(8)`, :manpage:`dnssec-keygen(8)`, :manpage:`dnssec-signzone(8)`.

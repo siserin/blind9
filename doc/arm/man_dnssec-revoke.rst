@@ -1,22 +1,22 @@
 .. highlight: console
 
 dnssec-revoke - set the REVOKED bit on a DNSSEC key
-===================================================
+---------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`dnssec-revoke` [**-hr**] [**-v** level] [**-V**] [**-K** directory] [**-E** engine] [**-f**] [**-R**] {keyfile}
 
 Description
------------
+~~~~~~~~~~~
 
 ``dnssec-revoke`` reads a DNSSEC key file, sets the REVOKED bit on the
 key as defined in RFC 5011, and creates a new pair of key files
 containing the now-revoked key.
 
 Options
--------
+~~~~~~~
 
 **-h**
    Emit usage message and exit.
@@ -53,6 +53,6 @@ Options
    revoke the key.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dnssec-keygen(8)`, BIND 9 Administrator Reference Manual, RFC 5011.

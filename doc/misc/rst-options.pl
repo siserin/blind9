@@ -40,15 +40,15 @@ print <<END;
 .. higlight: console
 
 named.conf - configuration file for **named**
-=============================================
+---------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`named.conf`
 
 Description
------------
+~~~~~~~~~~~
 
 ``named.conf`` is the configuration file for ``named``. Statements are
 enclosed in braces and terminated with a semi-colon. Clauses in the
@@ -92,7 +92,7 @@ while (<FH>) {
 	if (m{^([a-z0-9-]+) }) {
 		my $HEADING = uc $1;
 		my $UNDERLINE = $HEADING;
-		$UNDERLINE =~ s/./~/g;
+		$UNDERLINE =~ s/./^/g;
 		print $HEADING . "\n";
 		print $UNDERLINE . "\n\n";
 		if ($HEADING eq "TRUSTED-KEYS") {
@@ -119,12 +119,13 @@ while (<FH>) {
 
 print <<END;
 Files
------
+~~~~~
 
 ``/etc/named.conf``
 
 See Also
---------
+~~~~~~~~
+
 :manpage:`ddns-confgen(8)`, :manpage:`named(8)`, :manpage:`named-checkconf(8)`, :manpage:`rndc(8)`, :manpage:`rndc-confgen(8), BIND 9 Administrator Reference Manual.
 
 END

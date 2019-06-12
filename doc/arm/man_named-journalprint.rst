@@ -1,15 +1,15 @@
 .. highlight: console
 
 named-journalprint - print zone journal in human-readable form
-==============================================================
+--------------------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`named-journalprint` {journal}
 
 Description
------------
+~~~~~~~~~~~
 
 ``named-journalprint`` prints the contents of a zone journal file in a
 human-readable form.
@@ -28,6 +28,6 @@ to indicate whether the record was added or deleted, and continues with
 the resource record in master-file format.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`named(8)`, :manpage:`nsupdate(1)`, BIND 9 Administrator Reference Manual.

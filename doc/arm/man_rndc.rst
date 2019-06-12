@@ -1,15 +1,15 @@
 .. highlight: console
 
 rndc - name server control utility
-==================================
+----------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`rndc` [**-b** source-address] [**-c** config-file] [**-k** key-file] [**-s** server] [**-p** port] [**-q**] [**-r**] [**-V**] [**-y** key_id] [[**-4**] | [**-6**]] {command}
 
 Description
------------
+~~~~~~~~~~~
 
 ``rndc`` controls the operation of a name server. It supersedes the
 ``ndc`` utility that was provided in old BIND releases. If ``rndc`` is
@@ -31,7 +31,7 @@ the server.
 server and decide what algorithm and key it should use.
 
 Options
--------
+~~~~~~~
 
 **-4**
    Use IPv4 only.
@@ -89,7 +89,7 @@ Options
    not have general read or write access.
 
 Commands
---------
+~~~~~~~~
 
 A list of commands supported by ``rndc`` can be seen by running ``rndc``
 without arguments.
@@ -537,7 +537,7 @@ zone. To specify a redirect zone, use the special zone name
 would specify a zone called "-redirect".)
 
 Limitations
------------
+~~~~~~~~~~~
 
 There is currently no way to provide the shared secret for a ``key_id``
 without using the configuration file.
@@ -545,7 +545,7 @@ without using the configuration file.
 Several error messages could be clearer.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`rndc.conf(5)`, :manpage:`rndc-confgen(8),
 :manpage:`named(8)`, :manpage:`named.conf(5)`, :manpage:`ndc(8), BIND 9 Administrator

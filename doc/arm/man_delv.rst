@@ -1,10 +1,10 @@
 .. highlight: console
 
 delv - DNS lookup and validation utility
-========================================
+----------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`delv` [@server] [ [**-4**] | [**-6**] ] [**-a** anchor-file] [**-b** address] [**-c** class] [**-d** level] [**-i**] [**-m**] [**-p** port#] [**-q** name] [**-t** type] [**-x** addr] [name] [type] [class] [queryopt...]
 
@@ -15,7 +15,7 @@ Synopsis
 :program:`delv` [queryopt...] [query...]
 
 Description
------------
+~~~~~~~~~~~
 
 ``delv`` is a tool for sending DNS queries and validating the results,
 using the same internal resolver and validator logic as ``named``.
@@ -45,7 +45,7 @@ When no command line arguments or options are given, ``delv`` will
 perform an NS query for "." (the root zone).
 
 Simple Usage
-------------
+~~~~~~~~~~~~
 
 A typical invocation of ``delv`` looks like:
 
@@ -80,7 +80,7 @@ where:
    supplied, ``delv`` will perform a lookup for an A record.
 
 Options
--------
+~~~~~~~
 
 **-a** anchor-file
    Specifies a file from which to read DNSSEC trust anchors. The default
@@ -174,7 +174,7 @@ Options
    Forces ``delv`` to only use IPv6.
 
 Query Options
--------------
+~~~~~~~~~~~~~
 
 ``delv`` provides a number of query options which affect the way results
 are displayed, and in some cases the way lookups are performed.
@@ -307,13 +307,13 @@ assign values to options like the timeout interval. They have the form
    presentation format.
 
 Files
------
+~~~~~
 
 ``/etc/bind.keys``
 
 ``/etc/resolv.conf``
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dig(1)`, :manpage:`named(8)`, RFC4034, RFC4035, RFC4431, RFC5074, RFC5155.

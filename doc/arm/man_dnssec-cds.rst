@@ -1,15 +1,15 @@
 .. highlight: console
 
 dnssec-cds - change DS records for a child zone based on CDS/CDNSKEY
-====================================================================
+--------------------------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`dnssec-cds` [**-a** alg...] [**-c** class] [**-D**] {**-d** dsset-file} {**-f** child-file} [**-i** [extension]] [**-s** start-time] [**-T** ttl] [**-u**] [**-v** level] [**-V**] {domain}
 
 Description
------------
+~~~~~~~~~~~
 
 The ``dnssec-cds`` command changes DS records at a delegation point
 based on CDS or CDNSKEY records published in the child zone. If both CDS
@@ -56,7 +56,7 @@ standard output. You can use the ``-u`` and ``-i`` options together to
 maintain a ``dsset-`` file as well as emit an ``nsupdate`` script.
 
 Options
--------
+~~~~~~~
 
 **-a** algorithm
    Specify a digest algorithm to use when converting CDNSKEY records to
@@ -143,7 +143,7 @@ domain
    The name of the delegation point / child zone apex.
 
 Exit Status
------------
+~~~~~~~~~~~
 
 The ``dnssec-cds`` command exits 0 on success, or non-zero if an error
 occurred.
@@ -152,7 +152,7 @@ In the success case, the DS records might or might not need to be
 changed.
 
 Examples
---------
+~~~~~~~~
 
 Before running ``dnssec-signzone``, you can ensure that the delegations
 are up-to-date by running ``dnssec-cds`` on every ``dsset-`` file.
@@ -183,7 +183,7 @@ protection time.
    nsupdate -l
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dig(1)`, :manpage:`dnssec-settime(8)`, :manpage:`dnssec-signzone(8)`, :manpage:`nsupdate(1)`, BIND 9 Administrator
 Reference Manual, RFC 7344.

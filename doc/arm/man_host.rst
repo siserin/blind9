@@ -1,15 +1,15 @@
 .. highlight: console
 
 host - DNS lookup utility
-=========================
+-------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`host` [**-aACdlnrsTUwv**] [**-c** class] [**-N** ndots] [**-R** number] [**-t** type] [**-W** wait] [**-m** flag] [ [**-4**] | [**-6**] ] [**-v**] [**-V**] {name} [server]
 
 Description
------------
+~~~~~~~~~~~
 
 ``host`` is a simple utility for performing DNS lookups. It is normally
 used to convert names to IP addresses and vice versa. When no arguments
@@ -24,7 +24,7 @@ address of the name server that ``host`` should query instead of the
 server or servers listed in ``/etc/resolv.conf``.
 
 Options
--------
+~~~~~~~
 
 **-4**
    Use IPv4 only for query transport. See also the ``-6`` option.
@@ -134,7 +134,7 @@ Options
    See also the ``-w`` option.
 
 IDN Support
------------
+~~~~~~~~~~~
 
 If ``host`` has been built with IDN (internationalized domain name)
 support, it can accept and display non-ASCII domain names. ``host``
@@ -145,11 +145,11 @@ environment variable. The IDN support is disabled if the variable is set
 when ``host`` runs.
 
 Files
------
+~~~~~
 
 ``/etc/resolv.conf``
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dig(1)`, :manpage:`named(8)`.

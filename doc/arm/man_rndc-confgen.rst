@@ -1,15 +1,15 @@
 .. highlight: console
 
 rndc-confgen - rndc key generation tool
-=======================================
+---------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`rndc-confgen` [**-a**] [**-A** algorithm] [**-b** keysize] [**-c** keyfile] [**-h**] [**-k** keyname] [**-p** port] [**-s** address] [**-t** chrootdir] [**-u** user]
 
 Description
------------
+~~~~~~~~~~~
 
 ``rndc-confgen`` generates configuration files for ``rndc``. It can be
 used as a convenient alternative to writing the ``rndc.conf`` file and
@@ -19,7 +19,7 @@ by hand. Alternatively, it can be run with the ``-a`` option to set up a
 ``controls`` statement altogether.
 
 Arguments
----------
+~~~~~~~~~
 
 **-a**
    Do automatic ``rndc`` configuration. This creates a file ``rndc.key``
@@ -80,7 +80,7 @@ Arguments
    area has its owner changed.
 
 Examples
---------
+~~~~~~~~
 
 To allow ``rndc`` to be used with no manual configuration, run
 
@@ -92,6 +92,6 @@ To print a sample ``rndc.conf`` file and corresponding ``controls`` and
 ``rndc-confgen``
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`rndc(8)`, :manpage:`rndc.conf(5)`, :manpage:`named(8)`, BIND 9 Administrator Reference Manual.

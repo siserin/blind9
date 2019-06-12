@@ -1,15 +1,15 @@
 .. highlight: console
 
 dnssec-keygen - DNSSEC key generation tool
-==========================================
+------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`dnssec-keygen` [**-3**] [**-A** date/offset] [**-a** algorithm] [**-b** keysize] [**-C**] [**-c** class] [**-D** date/offset] [**-D** sync date/offset] [**-E** engine] [**-f** flag] [**-G**] [**-g** generator] [**-h**] [**-I** date/offset] [**-i** interval] [**-K** directory] [**-k**] [**-L** ttl] [**-n** nametype] [**-P** date/offset] [**-P** sync date/offset] [**-p** protocol] [**-q**] [**-R** date/offset] [**-S** key] [**-s** strength] [**-t** type] [**-V**] [**-v** level] {name}
 
 Description
------------
+~~~~~~~~~~~
 
 ``dnssec-keygen`` generates keys for DNSSEC (Secure DNS), as defined in
 RFC 2535 and RFC 4034. It can also generate keys for use with TSIG
@@ -26,7 +26,7 @@ defined security policies such as key rollover scheduling. Using
 ``dnssec-keymgr`` may be preferable to direct use of ``dnssec-keygen``.
 
 Options
--------
+~~~~~~~
 
 **-3**
    Use an NSEC3-capable algorithm to generate a DNSSEC key. If this
@@ -169,7 +169,7 @@ Options
    Sets the debugging level.
 
 Timing Options
---------------
+~~~~~~~~~~~~~~
 
 Dates can be expressed in the format YYYYMMDD or YYYYMMDDHHMMSS. If the
 argument begins with a '+' or '-', it is interpreted as an offset from
@@ -235,7 +235,7 @@ explicitly prevent a date from being set, use 'none' or 'never'.
    respectively. Without a suffix, the interval is measured in seconds.
 
 Generated Keys
---------------
+~~~~~~~~~~~~~~
 
 When ``dnssec-keygen`` completes successfully, it prints a string of the
 form ``Knnnn.+aaa+iiiii`` to the standard output. This is an
@@ -260,7 +260,7 @@ The ``.private`` file contains algorithm-specific fields. For obvious
 security reasons, this file does not have general read permission.
 
 Example
--------
+~~~~~~~
 
 To generate an ECDSAP256SHA256 zone-signing key for the zone
 ``example.com``, issue the command:
@@ -279,7 +279,7 @@ To generate a matching key-signing key, issue the command:
 ``dnssec-keygen -a ECDSAP256SHA256 -f KSK example.com``
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual, RFC 2539, RFC
 2845, RFC 4034.

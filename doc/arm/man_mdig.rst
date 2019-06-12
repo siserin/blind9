@@ -1,10 +1,10 @@
 .. highlight: console
 
 mdig - DNS pipelined lookup utility
-===================================
+-----------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`mdig` {@server} [**-f** filename] [**-h**] [**-v**] [ [**-4**] | [**-6**] ] [**-m**] [**-b** address] [**-p** port#] [**-c** class] [**-t** type] [**-i**] [**-x** addr] [plusopt...]
 
@@ -13,7 +13,7 @@ Synopsis
 :program:`mdig` [@server] {global-opt...} { {local-opt...} {query} ...}
 
 Description
------------
+~~~~~~~~~~~
 
 ``mdig`` is a multiple/pipelined query version of ``dig``: instead of
 waiting for a response after sending each query, it begins by sending
@@ -45,7 +45,7 @@ assign values to options like the timeout interval. They have the form
 ``+keyword=value``.
 
 Anywhere Options
-----------------
+~~~~~~~~~~~~~~~~
 
 The ``-f`` option makes ``mdig`` operate in batch mode by reading a list
 of lookup requests to process from the file ``filename``. The file
@@ -59,7 +59,7 @@ of options and exit.
 The ``-v`` causes ``mdig`` to print the version number and exit.
 
 Global Options
---------------
+~~~~~~~~~~~~~~
 
 The ``-4`` option forces ``mdig`` to only use IPv4 query transport.
 
@@ -166,7 +166,7 @@ The global query options are:
    "vc" stands for "virtual circuit".
 
 Local Options
--------------
+~~~~~~~~~~~~~
 
 The ``-c`` option sets the query class to ``class``. It can be any valid
 query class which is supported in BIND 9. The default query class is
@@ -287,6 +287,6 @@ The local query options are:
    This flag is off by default.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dig(1)`, RFC1035.

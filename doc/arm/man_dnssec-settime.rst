@@ -1,15 +1,15 @@
 .. highlight: console
 
 dnssec-settime - set the key timing metadata for a DNSSEC key
-=============================================================
+-------------------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`dnssec-settime` [**-f**] [**-K** directory] [**-L** ttl] [**-P** date/offset] [**-P** sync date/offset] [**-A** date/offset] [**-R** date/offset] [**-I** date/offset] [**-D** date/offset] [**-D** sync date/offset] [**-S** key] [**-i** interval] [**-h**] [**-V**] [**-v** level] [**-E** engine] {keyfile}
 
 Description
------------
+~~~~~~~~~~~
 
 ``dnssec-settime`` reads a DNSSEC private key file and sets the key
 timing metadata as specified by the ``-P``, ``-A``, ``-R``, ``-I``, and
@@ -29,7 +29,7 @@ the key file. The private file's permissions are always set to be
 inaccessible to anyone other than the owner (mode 0600).
 
 Options
--------
+~~~~~~~
 
 **-f**
    Force an update of an old-format key with no metadata fields. Without
@@ -72,7 +72,7 @@ Options
    "--with-pkcs11".
 
 Timing Options
---------------
+~~~~~~~~~~~~~~
 
 Dates can be expressed in the format YYYYMMDD or YYYYMMDDHHMMSS. If the
 argument begins with a '+' or '-', it is interpreted as an offset from
@@ -142,7 +142,7 @@ unset a date, use 'none' or 'never'.
    respectively. Without a suffix, the interval is measured in seconds.
 
 Printing Options
-----------------
+~~~~~~~~~~~~~~~~
 
 ``dnssec-settime`` can also be used to print the timing metadata
 associated with a key.
@@ -161,7 +161,7 @@ associated with a key.
    date To print all of the metadata, use ``-p all``.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dnssec-keygen(8)`, :manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual,
 RFC 5011.

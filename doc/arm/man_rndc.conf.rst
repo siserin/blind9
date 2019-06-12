@@ -3,12 +3,12 @@
 rndc.conf - rndc configuration file
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`rndc.conf`
 
 Description
------------
+~~~~~~~~~~~
 
 ``rndc.conf`` is the configuration file for ``rndc``, the BIND 9 name
 server control utility. This file has a similar structure and syntax to
@@ -67,7 +67,7 @@ not ship with BIND 9 but is available on many systems. See the EXAMPLE
 section for sample command lines for each.
 
 Example
--------
+~~~~~~~
 
 ::
 
@@ -128,7 +128,7 @@ To generate a base-64 secret with ``mmencode``:
 ``echo "known plaintext for a secret" | mmencode``
 
 Name Server Configuration
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The name server must be configured to accept rndc connections and to
 recognize the key specified in the ``rndc.conf`` file, using the
@@ -137,6 +137,6 @@ controls statement in ``named.conf``. See the sections on the
 details.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`rndc(8)`, :manpage:`rndc-confgen(8)`, :manpage:`mmencode(1)`, BIND 9 Administrator Reference Manual.

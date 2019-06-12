@@ -1,10 +1,10 @@
 .. highlight: console
 
 dig - DNS lookup utility
-==================================
+----------------------------------
 
 Synopsis
---------
+~~~~~~~~
 :program:`dig` [@server] [**-b** address] [**-c** class] [**-f** filename] [**-k** filename] [**-m**] [**-p** port#] [**-q** name] [**-t** type] [**-v**] [**-x** addr] [**-y** [hmac:]name:key] [ [**-4**] | [**-6**] ] [name] [type] [class] [queryopt...]
 
 :program:`dig` [**-h**]
@@ -12,7 +12,7 @@ Synopsis
 :program:`dig` [global-queryopt...] [query...]
 
 Description
------------
+~~~~~~~~~~~
 
 ``dig`` is a flexible tool for interrogating DNS name servers. It
 performs DNS lookups and displays the answers that are returned from the
@@ -46,7 +46,7 @@ class, use the ``-q`` the specify the domain name, or use "IN." and
 "CH." when looking up these top level domains.
 
 Simple Usage
-------------
+~~~~~~~~~~~~
 
 A typical invocation of ``dig`` looks like:
 
@@ -80,7 +80,7 @@ where:
    supplied, ``dig`` will perform a lookup for an A record.
 
 Options
--------
+~~~~~~~
 
 **-4**
    Use IPv4 only.
@@ -174,7 +174,7 @@ Options
    in a history file maintained by the user's shell.
 
 Query Options
--------------
+~~~~~~~~~~~~~
 
 ``dig`` provides a number of query options which affect the way in which
 lookups are made and the results displayed. Some of these set or reset
@@ -535,7 +535,7 @@ abbreviation is unambiguous; for example, ``+cd`` is equivalent to
    This flag is off by default.
 
 Multiple Queries
-----------------
+~~~~~~~~~~~~~~~~
 
 The BIND 9 implementation of ``dig`` supports specifying multiple
 queries on the command line (in addition to supporting the ``-f`` batch
@@ -568,7 +568,7 @@ means that ``dig`` will not print the initial query when it looks up the
 NS records for ``isc.org``.
 
 IDN Support
------------
+~~~~~~~~~~~
 
 If ``dig`` has been built with IDN (internationalized domain name)
 support, it can accept and display non-ASCII domain names. ``dig``
@@ -579,18 +579,18 @@ like to turn off the IDN support for some reason, use parameters
 variable.
 
 Files
------
+~~~~~
 
 ``/etc/resolv.conf``
 
 ``${HOME}/.digrc``
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`delv(1)`, :manpage:`host(1)`, :manpage:`named(8)`, :manpage:`dnssec-keygen(8)`, RFC 1035.
 
 Bugs
-----
+~~~~
 
 There are probably too many query options.

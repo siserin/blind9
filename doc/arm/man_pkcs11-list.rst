@@ -1,12 +1,12 @@
 .. highlight: console
 
 pkcs11-list - list PKCS#11 objects
-==================================
+----------------------------------
 
 :program:`pkcs11-list` [**-P**] [**-m** module] [**-s** slot] [**-i** ID **] [-l** label] [**-p** PIN]
 
 Description
------------
+~~~~~~~~~~~
 
 ``pkcs11-list`` lists the PKCS#11 objects with ``ID`` or ``label`` or by
 default all objects. The object class, label, and ID are displayed for
@@ -14,7 +14,7 @@ all keys. For private or secret keys, the extractability attribute is
 also displayed, as either ``true``, ``false``, or ``never``.
 
 Arguments
----------
+~~~~~~~~~
 
 **-P**
    List only the public objects. (Note that on some PKCS#11 devices, all
@@ -38,6 +38,6 @@ Arguments
    line, ``pkcs11-list`` will prompt for it.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`pkcs11-destroy(8)`, :manpage:`pkcs11-keygen(8)`, :manpage:`pkcs11-tokens(8)`

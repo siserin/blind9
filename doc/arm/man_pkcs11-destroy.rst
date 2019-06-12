@@ -3,12 +3,12 @@
 pkcs11-destroy - destroy PKCS#11 objects
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`pkcs11-destroy` [**-m** module] [**-s** slot] [**-i** ID] [**-l** label] [**-p** PIN] [**-w** seconds]
 
 Description
------------
+~~~~~~~~~~~
 
 ``pkcs11-destroy`` destroys keys stored in a PKCS#11 device, identified
 by their ``ID`` or ``label``.
@@ -18,7 +18,7 @@ a five second delay to allow the user to interrupt the process before
 the destruction takes place.
 
 Arguments
----------
+~~~~~~~~~
 
 **-m** module
    Specify the PKCS#11 provider module. This must be the full path to a
@@ -43,6 +43,6 @@ Arguments
    immediate.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`pkcs11-keygen(8)`, :manpage:`pkcs11-list(8)`, :manpage:`pkcs11-tokens(8)`

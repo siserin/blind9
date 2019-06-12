@@ -1,22 +1,22 @@
 .. highlight: console
 
 dnssec-verify - DNSSEC zone verification tool
-=============================================
+---------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`dnssec-verify` [**-c** class] [**-E** engine] [**-I** input-format] [**-o** origin] [**-v** level] [**-V**] [**-x**] [**-z**] {zonefile}
 
 Description
------------
+~~~~~~~~~~~
 
 ``dnssec-verify`` verifies that a zone is fully signed for each
 algorithm found in the DNSKEY RRset for the zone, and that the NSEC /
 NSEC3 chains are complete.
 
 Options
--------
+~~~~~~~
 
 **-c** class
    Specifies the DNS class of the zone.
@@ -73,6 +73,6 @@ Options
    The file containing the zone to be signed.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual, RFC 4033.

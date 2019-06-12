@@ -1,15 +1,15 @@
 .. highlight: console
 
 named-rrchecker - syntax checker for individual DNS resource records
-====================================================================
+--------------------------------------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 
 :program:`named-rrchecker` [**-h**] [**-o** origin] [**-p**] [**-u**] [**-C**] [**-T**] [**-P**]
 
 Description
------------
+~~~~~~~~~~~
 
 ``named-rrchecker`` read a individual DNS resource record from standard
 input and checks if it is syntactically correct.
@@ -29,6 +29,6 @@ The ``-C``, ``-T`` and ``-P`` print out the known class, standard type
 and private type mnemonics respectively.
 
 See Also
---------
+~~~~~~~~
 
 RFC 1034, RFC 1035, :manpage:`named(8)`.

@@ -1,16 +1,16 @@
 .. highlight: console
 
 ddns-confgen - ddns key generation tool
-=======================================
+---------------------------------------
 
 Synopsis
---------
+~~~~~~~~
 :program:`tsig-keygen` [**-a** algorithm] [**-h**] [**-r** randomfile] [**-s** name]
 
 :program:`ddns-confgen` [**-a** algorithm] [**-h**] [**-k** keyname] [**-q**] [**-r** randomfile] [**-s** name] [**-z** zone]
 
 Description
------------
+~~~~~~~~~~~
 
 ``tsig-keygen`` and ``ddns-confgen`` are invocation methods for a
 utility that generates keys for use in TSIG signing. The resulting keys
@@ -34,7 +34,7 @@ elaborate configuration is required: for instance, if ``nsupdate`` is to
 be used from a remote system.
 
 Options
--------
+~~~~~~~
 
 **-a** algorithm
    Specifies the algorithm to use for the TSIG key. Available choices
@@ -75,6 +75,6 @@ Options
    This option cannot be used with the ``-s`` option.
 
 See Also
---------
+~~~~~~~~
 
 :manpage:`nsupdate(1)`, :manpage:`named.conf(5)`, :manpage:`named(8)`, BIND 9 Administrator Reference Manual.
