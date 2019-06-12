@@ -3,12 +3,12 @@
 named.conf - configuration file for **named**
 =============================================
 
-SYNOPSIS
+Synopsis
 --------
 
 :program:`named.conf`
 
-DESCRIPTION
+Description
 -----------
 
 ``named.conf`` is the configuration file for ``named``. Statements are
@@ -23,16 +23,16 @@ C style: /\* \*/
 Unix style: # to end of line
 
 ACL
-===
+^^^
 
-.. code-block::
+::
 
   acl string { address_match_element; ... };
 
 CONTROLS
-========
+^^^^^^^^
 
-.. code-block::
+::
 
   controls {
   	inet ( ipv4_address | ipv6_address |
@@ -47,9 +47,9 @@ CONTROLS
   };
 
 DLZ
-===
+^^^
 
-.. code-block::
+::
 
   dlz string {
   	database string;
@@ -57,26 +57,26 @@ DLZ
   };
 
 DNSSEC-KEYS
-===========
+^^^^^^^^^^^
 
-.. code-block::
+::
 
   dnssec-keys { string ( static-key |
       initial-key ) integer integer integer
       quoted_string; ... };
 
 DYNDB
-=====
+^^^^^
 
-.. code-block::
+::
 
   dyndb string quoted_string {
       unspecified-text };
 
 KEY
-===
+^^^
 
-.. code-block::
+::
 
   key string {
   	algorithm string;
@@ -84,9 +84,9 @@ KEY
   };
 
 LOGGING
-=======
+^^^^^^^
 
-.. code-block::
+::
 
   logging {
   	category string { string; ... };
@@ -105,11 +105,11 @@ LOGGING
   };
 
 MANAGED-KEYS
-============
+^^^^^^^^^^^^
 
 See DNSSEC-KEYS.
 
-.. code-block::
+::
 
   managed-keys { string ( static-key
       | initial-key ) integer
@@ -117,9 +117,9 @@ See DNSSEC-KEYS.
       quoted_string; ... };, deprecated
 
 MASTERS
-=======
+^^^^^^^
 
-.. code-block::
+::
 
   masters string [ port integer ] [ dscp
       integer ] { ( masters | ipv4_address [
@@ -127,9 +127,9 @@ MASTERS
       integer ] ) [ key string ]; ... };
 
 OPTIONS
-=======
+^^^^^^^
 
-.. code-block::
+::
 
   options {
   	allow-new-zones boolean;
@@ -428,17 +428,17 @@ OPTIONS
   };
 
 PLUGIN
-======
+^^^^^^
 
-.. code-block::
+::
 
   plugin ( query ) string [ { unspecified-text
       } ];
 
 SERVER
-======
+^^^^^^
 
-.. code-block::
+::
 
   server netprefix {
   	bogus boolean;
@@ -474,9 +474,9 @@ SERVER
   };
 
 STATISTICS-CHANNELS
-===================
+^^^^^^^^^^^^^^^^^^^
 
-.. code-block::
+::
 
   statistics-channels {
   	inet ( ipv4_address | ipv6_address |
@@ -486,20 +486,20 @@ STATISTICS-CHANNELS
   };
 
 TRUSTED-KEYS
-============
+^^^^^^^^^^^^
 
 Deprecated - see DNSSEC-KEYS.
 
-.. code-block::
+::
 
   trusted-keys { string integer
       integer integer
       quoted_string; ... };, deprecated
 
 VIEW
-====
+^^^^
 
-.. code-block::
+::
 
   view string [ class ] {
   	allow-new-zones boolean;
@@ -877,9 +877,9 @@ VIEW
   };
 
 ZONE
-====
+^^^^
 
-.. code-block::
+::
 
   zone string [ class ] {
   	allow-notify { address_match_element; ... };
@@ -975,8 +975,8 @@ ZONE
   	zone-statistics ( full | terse | none | boolean );
   };
 
-FILES
-=====
+Files
+-----
 
 ``/etc/named.conf``
 

@@ -1,4 +1,4 @@
-.. code-block::
+::
 
   <command>trusted-keys</command> { <replaceable>string</replaceable> <replaceable>integer</replaceable>
       <replaceable>integer</replaceable> <replaceable>integer</replaceable>

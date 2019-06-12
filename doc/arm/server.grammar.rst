@@ -1,4 +1,4 @@
-.. code-block::
+::
 
   <command>server</command> <replaceable>netprefix</replaceable> {
   	<command>bogus</command> <replaceable>boolean</replaceable>;

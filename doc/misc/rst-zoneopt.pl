@@ -30,7 +30,7 @@ chomp $year;
 
 open (FH, "<", $FILE) or die "Can't open $FILE";
 
-print ".. code-block::\n\n";
+print "::\n\n";
 
 while (<FH>) {
 	if (m{// not.*implemented} || m{// obsolete} ||

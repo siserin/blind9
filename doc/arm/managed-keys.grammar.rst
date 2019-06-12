@@ -1,4 +1,4 @@
-.. code-block::
+::
 
   <command>managed-keys</command> { <replaceable>string</replaceable> ( static-key
       | initial-key ) <replaceable>integer</replaceable>

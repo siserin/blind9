@@ -94,4 +94,4 @@ To print a sample ``rndc.conf`` file and corresponding ``controls`` and
 See Also
 --------
 
-:manpage:`rndc(8)`, :manpage:`rndc.conf(5)`, :manapge:`named(8)`, BIND 9 Administrator Reference Manual.
+:manpage:`rndc(8)`, :manpage:`rndc.conf(5)`, :manpage:`named(8)`, BIND 9 Administrator Reference Manual.

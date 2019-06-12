@@ -29,7 +29,7 @@ open (FH, "<", $FILE) or die "Can't open $FILE";
 my $t = Time::Piece->new();
 my $year = $t->year;
 
-print ".. code-block::\n\n";
+print "::\n\n";
 
 # skip preamble
 my $preamble = 0;

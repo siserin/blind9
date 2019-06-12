@@ -101,7 +101,7 @@ while (<FH>) {
 		if ($HEADING eq "MANAGED-KEYS") {
 		    print "See DNSSEC-KEYS.\n\n" ;
 		}
-		print ".. code-block::\n\n";
+		print "::\n\n";
 	}
 
 	if (m{^\s*$}) {

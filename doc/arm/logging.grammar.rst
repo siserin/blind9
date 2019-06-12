@@ -1,4 +1,4 @@
-.. code-block::
+::
 
   <command>logging</command> {
   	<command>category</command> <replaceable>string</replaceable> { <replaceable>string</replaceable>; ... };

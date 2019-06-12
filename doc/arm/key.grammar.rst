@@ -1,4 +1,4 @@
-.. code-block::
+::
 
   <command>key</command> <replaceable>string</replaceable> {
   	<command>algorithm</command> <replaceable>string</replaceable>;

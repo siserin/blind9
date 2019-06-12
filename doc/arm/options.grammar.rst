@@ -1,4 +1,4 @@
-.. code-block::
+::
 
   <command>options</command> {
   	<command>allow-new-zones</command> <replaceable>boolean</replaceable>;

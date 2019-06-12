@@ -1,4 +1,4 @@
-.. code-block::
+::
 
   <command>statistics-channels</command> {
   	<command>inet</command> ( <replaceable>ipv4_address</replaceable> | <replaceable>ipv6_address</replaceable> |
