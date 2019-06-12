@@ -945,6 +945,22 @@ check_options(const cfg_obj_t *options, isc_log_t *logctx, isc_mem_t *mctx,
 		}
 	}
 
+	/*
+	 * Check dnssec-policy at the view/options level
+	 */
+	obj = NULL;
+	(void)cfg_map_get(options, "dnssec-policy", &obj);
+	if (obj != NULL) {
+		if (optlevel != optlevel_zone) {
+			cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
+				    "dnssec-policy may only be activated at "
+				    "the zone level");
+			if (result == ISC_R_SUCCESS) {
+				result = ISC_R_FAILURE;
+			}
+		}
+	}
+
 	obj = NULL;
 	cfg_map_get(options, "max-rsa-exponent-size", &obj);
 	if (obj != NULL) {
@@ -1008,7 +1024,6 @@ check_options(const cfg_obj_t *options, isc_log_t *logctx, isc_mem_t *mctx,
 				    keyvalidity);
 			result = ISC_R_RANGE;
 		}
-
 	}
 
 	obj = NULL;
@@ -1191,8 +1206,9 @@ check_options(const cfg_obj_t *options, isc_log_t *logctx, isc_mem_t *mctx,
 			cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
 				    "auto-dnssec may only be activated at the "
 				    "zone level");
-			if (result == ISC_R_SUCCESS)
+			if (result == ISC_R_SUCCESS) {
 				result = ISC_R_FAILURE;
+			}
 		}
 	}
 
@@ -1965,6 +1981,7 @@ check_zoneconf(const cfg_obj_t *zconfig, const cfg_obj_t *voptions,
 	bool dlz;
 	dns_masterformat_t masterformat;
 	bool ddns = false;
+	bool has_dnssecpolicy = false;
 	const void *clauses = NULL;
 	const char *option = NULL;
 	static const char *acls[] = {
@@ -2181,6 +2198,15 @@ check_zoneconf(const cfg_obj_t *zconfig, const cfg_obj_t *voptions,
 		result = ISC_R_FAILURE;
 
 	/*
+	 * Check if a dnssec-policy is set.
+	 */
+	obj = NULL;
+	(void)cfg_map_get(zoptions, "dnssec-policy", &obj);
+	if (obj != NULL) {
+		has_dnssecpolicy = true;
+	}
+
+	/*
 	 * Check validity of the zone options.
 	 */
 	option = cfg_map_firstclause(&cfg_type_zoneopts, &clauses, &i);
@@ -2366,19 +2392,36 @@ check_zoneconf(const cfg_obj_t *zconfig, const cfg_obj_t *voptions,
 		if (res1 == ISC_R_SUCCESS)
 			signing = cfg_obj_asboolean(obj);
 
+		if (signing && has_dnssecpolicy) {
+			cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
+				    "inline-signing: cannot be configured if "
+				    "dnssec-policy is also set");
+			result = ISC_R_FAILURE;
+		}
+
 		obj = NULL;
 		arg = "off";
 		res3 = cfg_map_get(zoptions, "auto-dnssec", &obj);
 		if (res3 == ISC_R_SUCCESS)
 			arg = cfg_obj_asstring(obj);
-		if (strcasecmp(arg, "off") != 0 && !ddns && !signing) {
-			cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
-				    "'auto-dnssec %s;' requires%s "
-				    "inline-signing to be configured for "
-				    "the zone", arg,
-				    (ztype == CFG_ZONE_MASTER) ?
-					 " dynamic DNS or" : "");
-			result = ISC_R_FAILURE;
+		if (strcasecmp(arg, "off") != 0) {
+			if (!ddns && !signing) {
+				cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
+					    "'auto-dnssec %s;' requires%s "
+					    "inline-signing to be configured "
+					    "for the zone", arg,
+					    (ztype == CFG_ZONE_MASTER) ?
+						 " dynamic DNS or" : "");
+				result = ISC_R_FAILURE;
+			}
+
+			if (has_dnssecpolicy) {
+				cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
+					    "'auto-dnssec %s;' cannot be "
+					    "configured if dnssec-policy is "
+					    "also set", arg);
+				result = ISC_R_FAILURE;
+			}
 		}
 
 		obj = NULL;
@@ -2403,6 +2446,21 @@ check_zoneconf(const cfg_obj_t *zconfig, const cfg_obj_t *voptions,
 				    "inline-signing when used in slave zone");
 			result = ISC_R_FAILURE;
 		}
+		if (res1 == ISC_R_SUCCESS && has_dnssecpolicy) {
+			cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
+				    "dnssec-dnskey-kskonly: cannot be "
+				    "configured if dnssec-policy is also set");
+			result = ISC_R_FAILURE;
+		}
+
+		obj = NULL;
+		res1 = cfg_map_get(zoptions, "dnssec-secure-to-insecure", &obj);
+		if (res1 == ISC_R_SUCCESS && has_dnssecpolicy) {
+			cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
+				    "dnssec-secure-to-insecure: cannot be "
+				    "configured if dnssec-policy is also set");
+			result = ISC_R_FAILURE;
+		}
 
 		obj = NULL;
 		res1 = cfg_map_get(zoptions, "dnssec-loadkeys-interval", &obj);
@@ -2425,6 +2483,15 @@ check_zoneconf(const cfg_obj_t *zconfig, const cfg_obj_t *voptions,
 				    "inline-signing when used in slave zone");
 			result = ISC_R_FAILURE;
 		}
+		if (res1 == ISC_R_SUCCESS && has_dnssecpolicy) {
+			cfg_obj_log(obj, logctx, ISC_LOG_ERROR,
+				    "update-check-ksk: cannot be "
+				    "configured if dnssec-policy is also set");
+			if (result == ISC_R_SUCCESS) {
+				result = ISC_R_FAILURE;
+			}
+		}
+
 	}
 
 	/*

@@ -47,6 +47,7 @@ do
     echo_i "checking that named-checkconf detects error in $bad ($n)"
     ret=0
     $CHECKCONF $bad > checkconf.out 2>&1
+    $CHECKCONF $bad > checkconf.$bad.out 2>&1
     if [ $? != 1 ]; then ret=1; fi
     grep "^$bad:[0-9]*: " checkconf.out > /dev/null || ret=1
     case $bad in
