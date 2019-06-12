@@ -55,9 +55,9 @@ is set for a zone.
    need to be updated.
 
 1. `dnssec-secure-to-insecure`: This option allows a dynamic zone to
-   transition from secure to insecure.  This option will be removed and to
-   transition to insecure with a DNSSEC policy you will just remove the
-   `dnssec-policy` option from the zone configuration.
+   transition from secure to insecure.  This seems to be a safety check
+   when named is not responsible for signing.  This will likely stay but
+   should not be used if named has a DNSSEC policy configured for the zone.
 
 1. `dnssec-update-mode`: This option determines how DNSSEC signed dynamic
    zones are updated. Default is `maintain` and it is unclear how it is
