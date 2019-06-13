@@ -53,7 +53,7 @@ _teardown(void **state) {
 }
 
 static void
-set_typestats(dns_stats_t *stats, dns_rdatatype_t type, bool stale) {
+set_typestats(dns_stats_t *stats, dns_rdatatype_t type, bool increment, bool stale) {
 	dns_rdatastatstype_t which;
 	unsigned int attributes;
 
@@ -62,18 +62,25 @@ set_typestats(dns_stats_t *stats, dns_rdatatype_t type, bool stale) {
 		attributes |= DNS_RDATASTATSTYPE_ATTR_STALE;
 	}
 	which = DNS_RDATASTATSTYPE_VALUE(type, attributes);
-	dns_rdatasetstats_increment(stats, which);
-
+	if (increment) {
+		dns_rdatasetstats_increment(stats, which);
+	} else {
+		dns_rdatasetstats_decrement(stats, which);
+	}
 	attributes = DNS_RDATASTATSTYPE_ATTR_NXRRSET;
 	if (stale) {
 		attributes |= DNS_RDATASTATSTYPE_ATTR_STALE;
 	}
 	which = DNS_RDATASTATSTYPE_VALUE(type, attributes);
-	dns_rdatasetstats_increment(stats, which);
+	if (increment) {
+		dns_rdatasetstats_increment(stats, which);
+	} else {
+		dns_rdatasetstats_decrement(stats, which);
+	}
 }
 
 static void
-set_nxdomainstats(dns_stats_t *stats, bool stale) {
+set_nxdomainstats(dns_stats_t *stats, bool increment, bool stale) {
 	dns_rdatastatstype_t which;
 	unsigned int attributes;
 
@@ -82,7 +89,11 @@ set_nxdomainstats(dns_stats_t *stats, bool stale) {
 		attributes |= DNS_RDATASTATSTYPE_ATTR_STALE;
 	}
 	which = DNS_RDATASTATSTYPE_VALUE(0, attributes);
-	dns_rdatasetstats_increment(stats, which);
+	if (increment) {
+		dns_rdatasetstats_increment(stats, which);
+	} else {
+		dns_rdatasetstats_decrement(stats, which);
+	}
 }
 
 #define ATTRIBUTE_SET(y) ((attributes & (y)) != 0)
@@ -116,6 +127,30 @@ checkit1(dns_rdatastatstype_t which, uint64_t value, void *arg) {
 
 static void
 checkit2(dns_rdatastatstype_t which, uint64_t value, void *arg) {
+#if debug
+	unsigned int attributes;
+	unsigned int type;
+#endif
+
+	UNUSED(which);
+	UNUSED(arg);
+
+#if debug
+	attributes = DNS_RDATASTATSTYPE_ATTR(which);
+	type = DNS_RDATASTATSTYPE_BASE(which);
+
+	fprintf(stderr, "%s%s%s%s/%u, %u\n",
+		ATTRIBUTE_SET(DNS_RDATASTATSTYPE_ATTR_OTHERTYPE) ? "O" : " ",
+		ATTRIBUTE_SET(DNS_RDATASTATSTYPE_ATTR_NXRRSET) ? "!" : " ",
+		ATTRIBUTE_SET(DNS_RDATASTATSTYPE_ATTR_STALE) ? "#" : " ",
+		ATTRIBUTE_SET(DNS_RDATASTATSTYPE_ATTR_NXDOMAIN) ? "X" : " ",
+		type, (unsigned)value);
+#endif
+	assert_int_equal(value, 0);
+}
+
+static void
+checkit3(dns_rdatastatstype_t which, uint64_t value, void *arg) {
 	unsigned int attributes;
 #if debug
 	unsigned int type;
@@ -158,12 +193,13 @@ rdatasetstats(void **state) {
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	/* First 256 types. */
-	for (i = 0; i <= 255; i++)
-		set_typestats(stats, (dns_rdatatype_t)i, false);
+	for (i = 0; i <= 255; i++) {
+		set_typestats(stats, (dns_rdatatype_t)i, true, false);
+	}
 	/* Specials */
-	set_typestats(stats, dns_rdatatype_dlv, false);
-	set_typestats(stats, (dns_rdatatype_t)1000, false);
-	set_nxdomainstats(stats, false);
+	set_typestats(stats, dns_rdatatype_dlv, true, false);
+	set_typestats(stats, (dns_rdatatype_t)1000, true, false);
+	set_nxdomainstats(stats, true, false);
 
 	/*
 	 * Check that all counters are set to appropriately.
@@ -171,17 +207,32 @@ rdatasetstats(void **state) {
 	dns_rdatasetstats_dump(stats, checkit1, NULL, 1);
 
 	/* First 256 types. */
-	for (i = 0; i <= 255; i++)
-		set_typestats(stats, (dns_rdatatype_t)i, true);
+	for (i = 0; i <= 255; i++) {
+		set_typestats(stats, (dns_rdatatype_t)i, false, false);
+	}
 	/* Specials */
-	set_typestats(stats, dns_rdatatype_dlv, true);
-	set_typestats(stats, (dns_rdatatype_t)1000, true);
-	set_nxdomainstats(stats, true);
+	set_typestats(stats, dns_rdatatype_dlv, false, false);
+	set_typestats(stats, (dns_rdatatype_t)1000, false, false);
+	set_nxdomainstats(stats, false, false);
 
 	/*
 	 * Check that all counters are set to appropriately.
 	 */
 	dns_rdatasetstats_dump(stats, checkit2, NULL, 1);
+
+	/* First 256 types. */
+	for (i = 0; i <= 255; i++) {
+		set_typestats(stats, (dns_rdatatype_t)i, true, true);
+	}
+	/* Specials */
+	set_typestats(stats, dns_rdatatype_dlv, true, true);
+	set_typestats(stats, (dns_rdatatype_t)1000, true, true);
+	set_nxdomainstats(stats, true, true);
+
+	/*
+	 * Check that all counters are set to appropriately.
+	 */
+	dns_rdatasetstats_dump(stats, checkit3, NULL, 1);
 
 	dns_stats_detach(&stats);
 }

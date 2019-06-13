@@ -1518,24 +1518,28 @@ rollback_node(dns_rbtnode_t *node, rbtdb_serial_t serial) {
 
 static inline void
 mark_header_ancient(dns_rbtdb_t *rbtdb, rdatasetheader_t *header) {
-
+	/*
+	 * If we've been counted we need to decrement the old
+	 * statistic and increment the new one.
+	 */
+	bool stats = ((header->attributes & RDATASET_ATTR_STATCOUNT) != 0) &&
+		     EXISTS(header);
 	/*
 	 * If we are already ancient there is nothing to do.
 	 */
-	if (ANCIENT(header))
+	if (ANCIENT(header)) {
 		return;
+	}
+	if (stats) {
+		update_rrsetstats(rbtdb, header, false);
+	}
 
 	header->attributes |= RDATASET_ATTR_ANCIENT;
 	header->node->dirty = 1;
 
-	/*
-	 * If we have not been counted then there is nothing to do.
-	 */
-	if ((header->attributes & RDATASET_ATTR_STATCOUNT) == 0)
-		return;
-
-	if (EXISTS(header))
+	if (stats) {
 		update_rrsetstats(rbtdb, header, true);
+	}
 }
 
 static inline void
@@ -4331,7 +4335,9 @@ check_stale_header(dns_rbtnode_t *node, rdatasetheader_t *header,
 		 * skip this record.
 		 */
 		if (KEEPSTALE(search->rbtdb) && stale > search->now) {
+			update_rrsetstats(search->rbtdb, header, false);
 			header->attributes |= RDATASET_ATTR_STALE;
+			update_rrsetstats(search->rbtdb, header, true);
 			*header_prev = header;
 			return ((search->options & DNS_DBFIND_STALEOK) == 0);
 		}

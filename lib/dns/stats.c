@@ -246,17 +246,14 @@ update_rdatasetstats(dns_stats_t *stats, dns_rdatastatstype_t rrsettype,
 			counter += rdtypecounter_max;
 	}
 
+	if ((DNS_RDATASTATSTYPE_ATTR(rrsettype) &
+	     DNS_RDATASTATSTYPE_ATTR_STALE) != 0) {
+		counter += rdtypecounter_stale;
+	}
+
 	if (increment) {
-		if ((DNS_RDATASTATSTYPE_ATTR(rrsettype) &
-		     DNS_RDATASTATSTYPE_ATTR_STALE) != 0) {
-			isc_stats_decrement(stats->counters, counter);
-			counter += rdtypecounter_stale;
-		}
 		isc_stats_increment(stats->counters, counter);
 	} else {
-		if ((DNS_RDATASTATSTYPE_ATTR(rrsettype) &
-		     DNS_RDATASTATSTYPE_ATTR_STALE) != 0)
-			counter += rdtypecounter_stale;
 		isc_stats_decrement(stats->counters, counter);
 	}
 }
