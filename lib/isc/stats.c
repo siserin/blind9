@@ -109,9 +109,13 @@ void
 isc_stats_decrement(isc_stats_t *stats, isc_statscounter_t counter) {
 	REQUIRE(ISC_STATS_VALID(stats));
 	REQUIRE(counter < stats->ncounters);
-
+#ifdef ISC_STATS_STRICT
+	REQUIRE(atomic_fetch_sub_explicit(&stats->counters[counter], 1,
+					  memory_order_relaxed) > 0);
+#else
 	atomic_fetch_sub_explicit(&stats->counters[counter], 1,
 				  memory_order_relaxed);
+#endif
 }
 
 void
