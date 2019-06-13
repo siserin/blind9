@@ -201,8 +201,8 @@ docs:sid:amd64:
   stage: build
   script:
     - ./configure || cat config.log
-    - make -C doc/misc docbook # Needs fixing up
-    - make -C doc/arm latexpdf html dirhtml
+    - make -C doc/misc rst
+    - make -C doc/arm doc
   dependencies:
     - autoreconf:sid:amd64
   artifacts:
