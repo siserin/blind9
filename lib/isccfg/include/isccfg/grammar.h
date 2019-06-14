@@ -158,7 +158,7 @@ struct cfg_netprefix {
 };
 
 /*%
- * A configration object to store ISO 8601 durations.
+ * A configuration object to store ISO 8601 durations.
  */
 struct cfg_duration {
 	time_t parts[7];

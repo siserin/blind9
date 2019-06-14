@@ -36,6 +36,7 @@ cfg_map_get
 cfg_map_getname
 cfg_map_nextclause
 cfg_obj_asboolean
+cfg_obj_asduration
 cfg_obj_asfixedpoint
 cfg_obj_asnetprefix
 cfg_obj_aspercentage

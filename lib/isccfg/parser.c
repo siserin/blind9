@@ -1062,6 +1062,21 @@ cfg_print_duration(cfg_printer_t *pctx, const cfg_obj_t *obj) {
 	cfg_print_chars(pctx, buf, strlen(buf));
 }
 
+time_t
+cfg_obj_asduration(const cfg_obj_t *obj) {
+	REQUIRE(obj != NULL && obj->type->rep == &cfg_rep_duration);
+	time_t duration = 0;
+	duration += obj->value.duration.parts[6];
+	duration += obj->value.duration.parts[5]*60;
+	duration += obj->value.duration.parts[4]*3600;
+	duration += obj->value.duration.parts[3]*86400;
+	duration += obj->value.duration.parts[2]*86400*7;
+	// The below additions are not entirely correct because days may very
+	// per month and per year.
+	duration += obj->value.duration.parts[3]*86400*31;
+	duration += obj->value.duration.parts[3]*86400*365;
+	return (obj->value.uint32);
+}
 
 /*
  * qstring (quoted string), ustring (unquoted string), astring
