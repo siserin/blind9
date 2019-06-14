@@ -742,7 +742,7 @@ ns_test_qctx_create(const ns_test_qctx_create_params_t *params,
 	result = attach_query_msg_to_client(client, params->qname,
 					    params->qtype, params->qflags);
 	if (result != ISC_R_SUCCESS) {
-		goto detach_client;
+		goto detach_view;
 	}
 
 	/*
@@ -771,6 +771,8 @@ ns_test_qctx_create(const ns_test_qctx_create_params_t *params,
 
 destroy_query:
 	dns_message_destroy(&client->message);
+detach_view:
+	dns_view_detach(&client->view);
 detach_client:
 	ns_client_detach(&client);
 
@@ -786,6 +788,7 @@ ns_test_qctx_destroy(query_ctx_t **qctxp) {
 
 	qctx = *qctxp;
 
+	dns_view_detach(&qctx->view);
 	ns_client_detach(&qctx->client);
 
 	if (qctx->zone != NULL) {

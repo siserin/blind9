@@ -138,6 +138,7 @@ notify_start(void **state) {
 	 */
 	ns_test_cleanup_zone();
 
+	dns_view_detach(&client->view);
 	ns_client_detach(&client);
 }
 
