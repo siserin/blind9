@@ -1,8 +1,8 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "NAMED.CONF" "5" "2019-06-11" "9.15.0" "BIND 9"
+.TH "NAMED.CONF" "5" "2019-06-13" "9.15.0" "BIND 9"
 .SH NAME
-named.conf \- 
+named.conf \- configuration file for **named**
 .
 .nr rst2man-indent-level 0
 .
@@ -48,6 +48,7 @@ C++ style: // to end of line
 .UNINDENT
 .sp
 Unix style: # to end of line
+.SS ACL
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -58,6 +59,7 @@ acl string { address_match_element; ... };
 .fi
 .UNINDENT
 .UNINDENT
+.SS CONTROLS
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -78,6 +80,7 @@ controls {
 .fi
 .UNINDENT
 .UNINDENT
+.SS DLZ
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -91,6 +94,7 @@ dlz string {
 .fi
 .UNINDENT
 .UNINDENT
+.SS DNSSEC\-KEYS
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -103,6 +107,7 @@ dnssec\-keys { string ( static\-key |
 .fi
 .UNINDENT
 .UNINDENT
+.SS DYNDB
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -114,6 +119,7 @@ dyndb string quoted_string {
 .fi
 .UNINDENT
 .UNINDENT
+.SS KEY
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -127,6 +133,7 @@ key string {
 .fi
 .UNINDENT
 .UNINDENT
+.SS LOGGING
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -151,6 +158,7 @@ logging {
 .fi
 .UNINDENT
 .UNINDENT
+.SS MANAGED\-KEYS
 .sp
 See DNSSEC\-KEYS.
 .INDENT 0.0
@@ -166,6 +174,7 @@ managed\-keys { string ( static\-key
 .fi
 .UNINDENT
 .UNINDENT
+.SS MASTERS
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -179,6 +188,7 @@ masters string [ port integer ] [ dscp
 .fi
 .UNINDENT
 .UNINDENT
+.SS OPTIONS
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -483,6 +493,7 @@ options {
 .fi
 .UNINDENT
 .UNINDENT
+.SS PLUGIN
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -494,6 +505,7 @@ plugin ( query ) string [ { unspecified\-text
 .fi
 .UNINDENT
 .UNINDENT
+.SS SERVER
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -535,6 +547,7 @@ server netprefix {
 .fi
 .UNINDENT
 .UNINDENT
+.SS STATISTICS\-CHANNELS
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -550,6 +563,7 @@ statistics\-channels {
 .fi
 .UNINDENT
 .UNINDENT
+.SS TRUSTED\-KEYS
 .sp
 Deprecated \- see DNSSEC\-KEYS.
 .INDENT 0.0
@@ -564,6 +578,7 @@ trusted\-keys { string integer
 .fi
 .UNINDENT
 .UNINDENT
+.SS VIEW
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -947,6 +962,7 @@ view string [ class ] {
 .fi
 .UNINDENT
 .UNINDENT
+.SS ZONE
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -1049,6 +1065,7 @@ zone string [ class ] {
 .fi
 .UNINDENT
 .UNINDENT
+.SH FILES
 .sp
 \fB/etc/named.conf\fP
 .SH SEE ALSO

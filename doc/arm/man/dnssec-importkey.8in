@@ -1,8 +1,8 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "DNSSEC-IMPORTKEY" "8" "2019-06-11" "9.15.0" "BIND 9"
+.TH "DNSSEC-IMPORTKEY" "8" "2019-06-13" "9.15.0" "BIND 9"
 .SH NAME
-dnssec-importkey \- 
+dnssec-importkey \- import DNSKEY records from external systems so they can be managed
 .
 .nr rst2man-indent-level 0
 .

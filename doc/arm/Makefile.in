@@ -24,11 +24,7 @@ man1_MANS =				\
 	man/mdig.1			\
 	man/named-rrchecker.1		\
 	man/nslookup.1			\
-	man/nsupdate.1			\
-	man/pkcs11-destroy.1		\
-	man/pkcs11-keygen.1		\
-	man/pkcs11-list.1		\
-	man/pkcs11-tokens.1
+	man/nsupdate.1
 
 man5_MANS =				\
 	man/named.conf.5		\
@@ -89,10 +85,6 @@ MANPAGES_RST =				\
 	man_nsec3hash.rst		\
 	man_nslookup.rst		\
 	man_nsupdate.rst		\
-	man_pkcs11-destroy.rst		\
-	man_pkcs11-keygen.rst		\
-	man_pkcs11-list.rst		\
-	man_pkcs11-tokens.rst		\
 	man_rndc-confgen.rst		\
 	man_rndc.conf.rst		\
 	man_rndc.rst
@@ -128,10 +120,6 @@ MANPAGES_IN = \
 	man/nsec3hash.8in		\
 	man/nslookup.1in		\
 	man/nsupdate.1in		\
-	man/pkcs11-destroy.1in		\
-	man/pkcs11-keygen.1in		\
-	man/pkcs11-list.1in		\
-	man/pkcs11-tokens.1in		\
 	man/rndc-confgen.8in		\
 	man/rndc.conf.5in		\
 	man/rndc.8in
@@ -201,7 +189,7 @@ pdf:
 	cp "$(SPHINXBUILDDIR)"/latex/notes.pdf "${builddir}"
 
 $(MANPAGES_IN): $(MANPAGES_RST)
-	$(SPHINXBUILD) -M man $(ALLSPHINXOPTS) "$(SPHINXBUILDDIR)"/man
+	$(SPHINXBUILD) -b man $(ALLSPHINXOPTS) "$(SPHINXBUILDDIR)"/man
 	$(MKDIR_P) -- ${builddir}/man
 	for man in "$(SPHINXBUILDDIR)"/man/*; do \
 	  cp "$$man" "man/$$(basename $$man)in"; \

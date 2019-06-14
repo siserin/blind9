@@ -1,8 +1,8 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "RNDC.CONF" "5" "2019-06-11" "9.15.0" "BIND 9"
+.TH "RNDC.CONF" "5" "2019-06-13" "9.15.0" "BIND 9"
 .SH NAME
-rndc.conf \- 
+rndc.conf \- rndc configuration file
 .
 .nr rst2man-indent-level 0
 .
@@ -30,28 +30,9 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-ISC
-Internet Systems Consortium, Inc.
-rndc.conf
-5
-BIND9
-rndc.conf
-rndc configuration file
-2000
-2001
-2004
-2005
-2007
-2013
-2014
-2015
-2016
-2018
-2019
-Internet Systems Consortium, Inc. ("ISC")
-rndc.conf
-DESCRIPTION
-===========
+rndc.conf \- rndc configuration file
+.sp
+\fBrndc.conf\fP
 .sp
 \fBrndc.conf\fP is the configuration file for \fBrndc\fP, the BIND 9 name
 server control utility. This file has a similar structure and syntax to
@@ -202,7 +183,7 @@ controls statement in \fBnamed.conf\fP\&. See the sections on the
 \fBcontrols\fP statement in the BIND 9 Administrator Reference Manual for
 details.
 .sp
-rndc8, rndc\-confgen8, mmencode1, BIND 9 Administrator Reference Manual.
+\fBrndc(8)\fP, \fBrndc\-confgen(8)\fP, \fBmmencode(1)\fP, BIND 9 Administrator Reference Manual.
 .SH AUTHOR
 Internet Systems Consortium
 .SH COPYRIGHT
