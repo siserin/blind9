@@ -4983,18 +4983,16 @@ qctx_init(ns_client_t *client, dns_fetchevent_t *event,
 
 	memset(qctx, 0, sizeof(*qctx));
 
-	/* Set client first so CCTRACE will work */
+	/* Set this first so CCTRACE will work */
 	qctx->client = client;
+	dns_view_attach(client->view, &qctx->view);
+
+	CCTRACE(ISC_LOG_DEBUG(3), "qctx_init");
+
 	qctx->event = event;
 	qctx->qtype = qctx->type = qtype;
 	qctx->result = ISC_R_SUCCESS;
-
-	if (client->view != NULL) {
-		dns_view_attach(client->view, &qctx->view);
-		qctx->findcoveringnsec = qctx->view->synthfromdnssec;
-	}
-
-	CCTRACE(ISC_LOG_DEBUG(3), "qctx_init");
+	qctx->findcoveringnsec = qctx->view->synthfromdnssec;
 
 	CALL_HOOK_NORETURN(NS_QUERY_QCTX_INITIALIZED, qctx);
 }
@@ -5063,9 +5061,7 @@ static void
 qctx_destroy(query_ctx_t *qctx) {
 	CALL_HOOK_NORETURN(NS_QUERY_QCTX_DESTROYED, qctx);
 
-	if (qctx->view != NULL) {
-		dns_view_detach(&qctx->view);
-	}
+	dns_view_detach(&qctx->view);
 	if (qctx->detach_client) {
 		ns_client_detach(&qctx->client);
 	}

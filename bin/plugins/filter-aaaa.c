@@ -113,7 +113,7 @@ typedef struct filter_instance {
 				  NS_QUERYATTR_RECURSIONOK) != 0)
 
 /*
- * Forward declarations.
+ * Forward declarations of functions referenced in install_hooks().
  */
 static ns_hookresult_t
 filter_qctx_initialize(void *arg, void *cbdata, isc_result_t *resp);
