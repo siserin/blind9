@@ -150,7 +150,7 @@ dnssecpolicy "nsec3" {
     nsec3-resalt P100D;
 
     // Keys
-    dnskey-ttl PT3600S;
+    dnskey-ttl 3600;
     dnskey-publish-safety PT3600S;
     dnskey-retire-safety PT3600S;
     share-keys no;
