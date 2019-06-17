@@ -2046,23 +2046,30 @@ esac
 #
 
 #
-# Look for sphinx-build
-#
-AC_PATH_PROGS([SPHINX_BUILD], [sphinx-build], [])
-
-#
 # Pull release date from CHANGES file last modification date
 # for reproducible builds
 #
 release_date=`date -r CHANGES +%Y-%m-%d`
 AC_SUBST([RELEASE_DATE], $release_date)
 
-ARMDIR=arm
-AS_IF([test -z "$SPHINX_BUILD"],[
-	  # Don't build the documentation if the sphinx-build is not present
-	  ARMDIR=
+#
+# Look for sphinx-build
+#
+AC_PATH_PROGS([SPHINX_BUILD], [sphinx-build], [:])
+
+# Don't build the documentation if the sphinx-build is not present
+ARMDIR=
+PDFTARGET=
+AS_IF([test -n "$SPHINX_BUILD"],[
+	  ARMDIR=arm
+	  AC_PATH_PROGS([PDFLATEX], [pdflatex], [])
+	  AC_PATH_PROGS([LATEXMK], [latexmk], [])
+	  AS_IF([test -n "$PDFLATEX" && test -n "$LATEXMK"],[
+		    PDFTARGET=pdf
+		])
       ])
 AC_SUBST([ARMDIR])
+AC_SUBST([PDFTARGET])
 
 #
 # Look for Doxygen
@@ -2075,83 +2082,6 @@ AC_PATH_PROGS([DOXYGEN], [doxygen])
 
 AC_PATH_PROG(CURL, curl, curl)
 AC_SUBST(CURL)
-
-#
-# Subroutine for searching for an ordinary file (e.g., a stylesheet)
-# in a number of directories:
-#
-#   NOM_PATH_FILE(VARIABLE, FILENAME, DIRECTORIES)
-#
-# If the file FILENAME is found in one of the DIRECTORIES, the shell
-# variable VARIABLE is defined to its absolute pathname.  Otherwise,
-# it is set to FILENAME, with no directory prefix (that's not terribly
-# useful, but looks less confusing in substitutions than leaving it
-# empty).  The variable VARIABLE will be substituted into output files.
-#
-
-AC_DEFUN([NOM_PATH_FILE], [
-$1=""
-AC_MSG_CHECKING(for $2)
-for d in $3
-do
-	f=$d/$2
-	if test -f $f
-	then
-		$1=$f
-		AC_MSG_RESULT($f)
-		break
-	fi
-done
-if test "X[$]$1" = "X"
-then
-	AC_MSG_RESULT("not found");
-	$1=$2
-fi
-AC_SUBST($1)
-])
-
-#
-# Look for Docbook-XSL stylesheets.  Location probably varies by system.
-# If it's not explicitly specified, guess where it might be found, based on
-# where SGML stuff lives on some systems (FreeBSD is the only one we're sure
-# of at the moment).
-#
-AC_MSG_CHECKING(for Docbook-XSL path)
-AC_ARG_WITH(docbook-xsl,
-	    AS_HELP_STRING([--with-docbook-xsl[=PATH]],
-			   [specify path for Docbook-XSL stylesheets]),
-   docbook_path="$withval", docbook_path="auto")
-case "$docbook_path" in
-auto)
-	AC_MSG_RESULT(auto)
-	docbook_xsl_trees="/usr/pkg/share/xsl/docbook /usr/local/share/xsl/docbook-ns /usr/local/share/xsl/docbook /usr/share/xsl/docbook /opt/local/share/xsl/docbook-xsl /opt/local/share/xsl/docbook-xsl-nons /usr/share/xml/docbook/stylesheet/docbook-xsl"
-	;;
-*)
-	docbook_xsl_trees="$withval"
-	AC_MSG_RESULT($docbook_xsl_trees)
-	;;
-esac
-
-#
-# Look for stylesheets we need.
-#
-
-NOM_PATH_FILE(XSLT_DOCBOOK_STYLE_HTML, html/docbook.xsl, $docbook_xsl_trees)
-NOM_PATH_FILE(XSLT_DOCBOOK_STYLE_XHTML, xhtml/docbook.xsl, $docbook_xsl_trees)
-NOM_PATH_FILE(XSLT_DOCBOOK_STYLE_MAN, manpages/docbook.xsl, $docbook_xsl_trees)
-NOM_PATH_FILE(XSLT_DOCBOOK_CHUNK_HTML, html/chunk.xsl, $docbook_xsl_trees)
-NOM_PATH_FILE(XSLT_DOCBOOK_CHUNK_XHTML, xhtml/chunk.xsl, $docbook_xsl_trees)
-NOM_PATH_FILE(XSLT_DOCBOOK_CHUNKTOC_HTML, html/chunktoc.xsl, $docbook_xsl_trees)
-NOM_PATH_FILE(XSLT_DOCBOOK_CHUNKTOC_XHTML, xhtml/chunktoc.xsl, $docbook_xsl_trees)
-NOM_PATH_FILE(XSLT_DOCBOOK_MAKETOC_HTML, html/maketoc.xsl, $docbook_xsl_trees)
-NOM_PATH_FILE(XSLT_DOCBOOK_MAKETOC_XHTML, xhtml/maketoc.xsl, $docbook_xsl_trees)
-
-#
-# Same dance for dblatex
-#
-dblatex_xsl_trees="/usr/local/share/xml/docbook/stylesheet/dblatex /usr/pkg/share/xml/docbook/stylesheet/dblatex /usr/share/xml/docbook/stylesheet/dblatex"
-NOM_PATH_FILE(XSLT_DBLATEX_STYLE, xsl/docbook.xsl, $dblatex_xsl_trees)
-NOM_PATH_FILE(XSLT_DBLATEX_FASTBOOK, xsl/latex_book_fast.xsl, $dblatex_xsl_trees)
 
 #
 # IDN support using libidn2

@@ -179,7 +179,7 @@ man_SPHINXOPTS =				\
 all:
 	@:
 
-doc:: html dirhtml pdf
+doc:: html dirhtml @PDFTARGET@
 
 html dirhtml:
 	$(SPHINXBUILD) -b $@ $(ALLSPHINXOPTS) "$(SPHINXBUILDDIR)"/$@
