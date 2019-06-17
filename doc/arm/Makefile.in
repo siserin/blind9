@@ -143,8 +143,6 @@ pkcs11_man8_MANS =			\
 	man/pkcs11-list.8		\
 	man/pkcs11-tokens.8
 
-pkcs11_man8_MANS = @PKCS11_MANS@
-
 MKDIR_P=@MKDIR_P@
 
 BIND9_VERSION=@BIND9_VERSION@
