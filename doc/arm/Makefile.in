@@ -10,6 +10,7 @@
 srcdir =	@srcdir@
 VPATH =		@srcdir@
 top_srcdir =	@top_srcdir@
+abs_srcdir =	@abs_srcdir@
 builddir =	@builddir@
 top_builddir =	@top_builddir@
 
@@ -154,9 +155,10 @@ BIND9_VERSIONSTRING=@BIND9_VERSIONSTRING@
 SPHINXBUILD = @SPHINX_BUILD@
 SPHINXBUILDDIR = ${builddir}/_build
 
-common_SPHINXOPTS =				\
-	-a					\
-	-v
+common_SPHINXOPTS =	\
+	-a		\
+	-v		\
+	-c "${abs_srcdir}"
 
 ALLSPHINXOPTS =				\
 	$(common_SPHINXOPTS)			\
