@@ -49,7 +49,7 @@ typical IPv6 address might look like:
 
 IPv6 address specifications often contain long strings of zeros, so the
 architects have included a shorthand for specifying them. The double
-colon (`::') indicates the longest possible string of zeros that can
+colon (``::``) indicates the longest possible string of zeros that can
 fit, and can be used only once in an address.
 
 .. _bibliography:

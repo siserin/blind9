@@ -30,167 +30,168 @@ Configuration File Elements
 Following is a list of elements used throughout the BIND configuration
 file documentation:
 
-+----------------------+-----------------------------------------------+
-| ``acl_name``         | The name of an ``address_match_list`` as      |
-|                      | defined by the ``acl`` statement.             |
-+----------------------+-----------------------------------------------+
-| ``address_match_list | A list of one or more ``ip_addr``,            |
-| ``                   | ``ip_prefix``, ``key_id``, or ``acl_name``    |
-|                      | elements, see `Address Match                  |
-|                      | Lists <#address_match_lists>`__.              |
-+----------------------+-----------------------------------------------+
-| ``masters_list``     | A named list of one or more ``ip_addr`` with  |
-|                      | optional ``key_id`` and/or ``ip_port``. A     |
-|                      | ``masters_list`` may include other            |
-|                      | ``masters_lists``.                            |
-+----------------------+-----------------------------------------------+
-| ``domain_name``      | A quoted string which will be used as a DNS   |
-|                      | name, for example "``my.test.domain``".       |
-+----------------------+-----------------------------------------------+
-| ``namelist``         | A list of one or more ``domain_name``         |
-|                      | elements.                                     |
-+----------------------+-----------------------------------------------+
-| ``dotted_decimal``   | One to four integers valued 0 through 255     |
-|                      | separated by dots (`.'), such as ``123``,     |
-|                      | ``45.67`` or ``89.123.45.67``.                |
-+----------------------+-----------------------------------------------+
-| ``ip4_addr``         | An IPv4 address with exactly four elements in |
-|                      | ``dotted_decimal`` notation.                  |
-+----------------------+-----------------------------------------------+
-| ``ip6_addr``         | An IPv6 address, such as ``2001:db8::1234``.  |
-|                      | IPv6 scoped addresses that have ambiguity on  |
-|                      | their scope zones must be disambiguated by an |
-|                      | appropriate zone ID with the percent          |
-|                      | character (`%') as delimiter. It is strongly  |
-|                      | recommended to use string zone names rather   |
-|                      | than numeric identifiers, in order to be      |
-|                      | robust against system configuration changes.  |
-|                      | However, since there is no standard mapping   |
-|                      | for such names and identifier values,         |
-|                      | currently only interface names as link        |
-|                      | identifiers are supported, assuming           |
-|                      | one-to-one mapping between interfaces and     |
-|                      | links. For example, a link-local address      |
-|                      | ``fe80::1`` on the link attached to the       |
-|                      | interface ``ne0`` can be specified as         |
-|                      | ``fe80::1%ne0``. Note that on most systems    |
-|                      | link-local addresses always have the          |
-|                      | ambiguity, and need to be disambiguated.      |
-+----------------------+-----------------------------------------------+
-| ``ip_addr``          | An ``ip4_addr`` or ``ip6_addr``.              |
-+----------------------+-----------------------------------------------+
-| ``ip_dscp``          | A ``number`` between 0 and 63, used to select |
-|                      | a differentiated services code point (DSCP)   |
-|                      | value for use with outgoing traffic on        |
-|                      | operating systems that support DSCP.          |
-+----------------------+-----------------------------------------------+
-| ``ip_port``          | An IP port ``number``. The ``number`` is      |
-|                      | limited to 0 through 65535, with values below |
-|                      | 1024 typically restricted to use by processes |
-|                      | running as root. In some cases, an asterisk   |
-|                      | (`*') character can be used as a placeholder  |
-|                      | to select a random high-numbered port.        |
-+----------------------+-----------------------------------------------+
-| ``ip_prefix``        | An IP network specified as an ``ip_addr``,    |
-|                      | followed by a slash (`/') and then the number |
-|                      | of bits in the netmask. Trailing zeros in a   |
-|                      | ``ip_addr`` may omitted. For example,         |
-|                      | ``127/8`` is the network ``127.0.0.0`` with   |
-|                      | netmask ``255.0.0.0`` and ``1.2.3.0/28`` is   |
-|                      | network ``1.2.3.0`` with netmask              |
-|                      | ``255.255.255.240``.                          |
-|                      |                                               |
-|                      | When specifying a prefix involving a IPv6     |
-|                      | scoped address the scope may be omitted. In   |
-|                      | that case the prefix will match packets from  |
-|                      | any scope.                                    |
-+----------------------+-----------------------------------------------+
-| ``key_id``           | A ``domain_name`` representing the name of a  |
-|                      | shared key, to be used for transaction        |
-|                      | security.                                     |
-+----------------------+-----------------------------------------------+
-| ``key_list``         | A list of one or more ``key_id``\ s,          |
-|                      | separated by semicolons and ending with a     |
-|                      | semicolon.                                    |
-+----------------------+-----------------------------------------------+
-| ``number``           | A non-negative 32-bit integer (i.e., a number |
-|                      | between 0 and 4294967295, inclusive). Its     |
-|                      | acceptable value might be further limited by  |
-|                      | the context in which it is used.              |
-+----------------------+-----------------------------------------------+
-| ``fixedpoint``       | A non-negative real number that can be        |
-|                      | specified to the nearest one hundredth. Up to |
-|                      | five digits can be specified before a decimal |
-|                      | point, and up to two digits after, so the     |
-|                      | maximum value is 99999.99. Acceptable values  |
-|                      | might be further limited by the context in    |
-|                      | which it is used.                             |
-+----------------------+-----------------------------------------------+
-| ``path_name``        | A quoted string which will be used as a       |
-|                      | pathname, such as                             |
-|                      | ``zones/master/my.test.domain``.              |
-+----------------------+-----------------------------------------------+
-| ``port_list``        | A list of an ``ip_port`` or a port range. A   |
-|                      | port range is specified in the form of        |
-|                      | ``range`` followed by two ``ip_port``\ s,     |
-|                      | ``port_low`` and ``port_high``, which         |
-|                      | represents port numbers from ``port_low``     |
-|                      | through ``port_high``, inclusive.             |
-|                      | ``port_low`` must not be larger than          |
-|                      | ``port_high``. For example,                   |
-|                      | ``range 1024 65535`` represents ports from    |
-|                      | 1024 through 65535. In either case an         |
-|                      | asterisk (`*') character is not allowed as a  |
-|                      | valid ``ip_port``.                            |
-+----------------------+-----------------------------------------------+
-| ``size_spec``        | A 64-bit unsigned integer, or the keywords    |
-|                      | ``unlimited`` or ``default``.                 |
-|                      |                                               |
-|                      | Integers may take values 0 <= value <=        |
-|                      | 18446744073709551615, though certain          |
-|                      | parameters (such as ``max-journal-size``) may |
-|                      | use a more limited range within these         |
-|                      | extremes. In most cases, setting a value to 0 |
-|                      | does not literally mean zero; it means        |
-|                      | "undefined" or "as big as possible",          |
-|                      | depending on the context. See the             |
-|                      | explanations of particular parameters that    |
-|                      | use ``size_spec`` for details on how they     |
-|                      | interpret its use.                            |
-|                      |                                               |
-|                      | Numeric values can optionally be followed by  |
-|                      | a scaling factor: ``K`` or ``k`` for          |
-|                      | kilobytes, ``M`` or ``m`` for megabytes, and  |
-|                      | ``G`` or ``g`` for gigabytes, which scale by  |
-|                      | 1024, 1024*1024, and 1024*1024*1024           |
-|                      | respectively.                                 |
-|                      |                                               |
-|                      | ``unlimited`` generally means "as big as      |
-|                      | possible", and is usually the best way to     |
-|                      | safely set a very large number.               |
-|                      |                                               |
-|                      | ``default`` uses the limit that was in force  |
-|                      | when the server was started.                  |
-+----------------------+-----------------------------------------------+
-| ``size_or_percent``  | ``size_spec`` or integer value followed by    |
-|                      | '%' to represent percents.                    |
-|                      |                                               |
-|                      | The behavior is exactly the same as           |
-|                      | ``size_spec``, but ``size_or_percent`` allows |
-|                      | also to specify a positive integer value      |
-|                      | followed by '%' sign to represent percents.   |
-+----------------------+-----------------------------------------------+
-| ``yes_or_no``        | Either ``yes`` or ``no``. The words ``true``  |
-|                      | and ``false`` are also accepted, as are the   |
-|                      | numbers ``1`` and ``0``.                      |
-+----------------------+-----------------------------------------------+
-| ``dialup_option``    | One of ``yes``, ``no``, ``notify``,           |
-|                      | ``notify-passive``, ``refresh`` or            |
-|                      | ``passive``. When used in a zone,             |
-|                      | ``notify-passive``, ``refresh``, and          |
-|                      | ``passive`` are restricted to slave and stub  |
-|                      | zones.                                        |
-+----------------------+-----------------------------------------------+
++------------------------+-----------------------------------------------+
+| ``acl_name``           | The name of an ``address_match_list`` as      |
+|                        | defined by the ``acl`` statement.             |
++------------------------+-----------------------------------------------+
+| ``address_match_list`` | A list of one or more ``ip_addr``,            |
+|                        | ``ip_prefix``, ``key_id``, or ``acl_name``    |
+|                        | elements, see `Address Match                  |
+|                        | Lists <#address_match_lists>`__.              |
++------------------------+-----------------------------------------------+
+| ``masters_list``       | A named list of one or more ``ip_addr`` with  |
+|                        | optional ``key_id`` and/or ``ip_port``. A     |
+|                        | ``masters_list`` may include other            |
+|                        | ``masters_lists``.                            |
++------------------------+-----------------------------------------------+
+| ``domain_name``        | A quoted string which will be used as a DNS   |
+|                        | name, for example "``my.test.domain``".       |
++------------------------+-----------------------------------------------+
+| ``namelist``           | A list of one or more ``domain_name``         |
+|                        | elements.                                     |
++------------------------+-----------------------------------------------+
+| ``dotted_decimal``     | One to four integers valued 0 through 255     |
+|                        | separated by dots (`.'), such as ``123``,     |
+|                        | ``45.67`` or ``89.123.45.67``.                |
++------------------------+-----------------------------------------------+
+| ``ip4_addr``           | An IPv4 address with exactly four elements in |
+|                        | ``dotted_decimal`` notation.                  |
++------------------------+-----------------------------------------------+
+| ``ip6_addr``           | An IPv6 address, such as ``2001:db8::1234``.  |
+|                        | IPv6 scoped addresses that have ambiguity on  |
+|                        | their scope zones must be disambiguated by an |
+|                        | appropriate zone ID with the percent          |
+|                        | character (`%') as delimiter. It is strongly  |
+|                        | recommended to use string zone names rather   |
+|                        | than numeric identifiers, in order to be      |
+|                        | robust against system configuration changes.  |
+|                        | However, since there is no standard mapping   |
+|                        | for such names and identifier values,         |
+|                        | currently only interface names as link        |
+|                        | identifiers are supported, assuming           |
+|                        | one-to-one mapping between interfaces and     |
+|                        | links. For example, a link-local address      |
+|                        | ``fe80::1`` on the link attached to the       |
+|                        | interface ``ne0`` can be specified as         |
+|                        | ``fe80::1%ne0``. Note that on most systems    |
+|                        | link-local addresses always have the          |
+|                        | ambiguity, and need to be disambiguated.      |
++------------------------+-----------------------------------------------+
+| ``ip_addr``            | An ``ip4_addr`` or ``ip6_addr``.              |
++------------------------+-----------------------------------------------+
+| ``ip_dscp``            | A ``number`` between 0 and 63, used to select |
+|                        | a differentiated services code point (DSCP)   |
+|                        | value for use with outgoing traffic on        |
+|                        | operating systems that support DSCP.          |
++------------------------+-----------------------------------------------+
+| ``ip_port``            | An IP port ``number``. The ``number`` is      |
+|                        | limited to 0 through 65535, with values below |
+|                        | 1024 typically restricted to use by processes |
+|                        | running as root. In some cases, an asterisk   |
+|                        | (``*``) character can be used as a            |
+|                        | placeholder to select a random high-numbered  |
+|                        | port.                                         |
++------------------------+-----------------------------------------------+
+| ``ip_prefix``          | An IP network specified as an ``ip_addr``,    |
+|                        | followed by a slash (`/') and then the number |
+|                        | of bits in the netmask. Trailing zeros in a   |
+|                        | ``ip_addr`` may omitted. For example,         |
+|                        | ``127/8`` is the network ``127.0.0.0`` with   |
+|                        | netmask ``255.0.0.0`` and ``1.2.3.0/28`` is   |
+|                        | network ``1.2.3.0`` with netmask              |
+|                        | ``255.255.255.240``.                          |
+|                        |                                               |
+|                        | When specifying a prefix involving a IPv6     |
+|                        | scoped address the scope may be omitted. In   |
+|                        | that case the prefix will match packets from  |
+|                        | any scope.                                    |
++------------------------+-----------------------------------------------+
+| ``key_id``             | A ``domain_name`` representing the name of a  |
+|                        | shared key, to be used for transaction        |
+|                        | security.                                     |
++------------------------+-----------------------------------------------+
+| ``key_list``           | A list of one or more ``key_id``\ s,          |
+|                        | separated by semicolons and ending with a     |
+|                        | semicolon.                                    |
++------------------------+-----------------------------------------------+
+| ``number``             | A non-negative 32-bit integer (i.e., a number |
+|                        | between 0 and 4294967295, inclusive). Its     |
+|                        | acceptable value might be further limited by  |
+|                        | the context in which it is used.              |
++------------------------+-----------------------------------------------+
+| ``fixedpoint``         | A non-negative real number that can be        |
+|                        | specified to the nearest one hundredth. Up to |
+|                        | five digits can be specified before a decimal |
+|                        | point, and up to two digits after, so the     |
+|                        | maximum value is 99999.99. Acceptable values  |
+|                        | might be further limited by the context in    |
+|                        | which it is used.                             |
++------------------------+-----------------------------------------------+
+| ``path_name``          | A quoted string which will be used as a       |
+|                        | pathname, such as                             |
+|                        | ``zones/master/my.test.domain``.              |
++------------------------+-----------------------------------------------+
+| ``port_list``          | A list of an ``ip_port`` or a port range. A   |
+|                        | port range is specified in the form of        |
+|                        | ``range`` followed by two ``ip_port``\ s,     |
+|                        | ``port_low`` and ``port_high``, which         |
+|                        | represents port numbers from ``port_low``     |
+|                        | through ``port_high``, inclusive.             |
+|                        | ``port_low`` must not be larger than          |
+|                        | ``port_high``. For example,                   |
+|                        | ``range 1024 65535`` represents ports from    |
+|                        | 1024 through 65535. In either case an         |
+|                        | asterisk (`*') character is not allowed as a  |
+|                        | valid ``ip_port``.                            |
++------------------------+-----------------------------------------------+
+| ``size_spec``          | A 64-bit unsigned integer, or the keywords    |
+|                        | ``unlimited`` or ``default``.                 |
+|                        |                                               |
+|                        | Integers may take values 0 <= value <=        |
+|                        | 18446744073709551615, though certain          |
+|                        | parameters (such as ``max-journal-size``) may |
+|                        | use a more limited range within these         |
+|                        | extremes. In most cases, setting a value to 0 |
+|                        | does not literally mean zero; it means        |
+|                        | "undefined" or "as big as possible",          |
+|                        | depending on the context. See the             |
+|                        | explanations of particular parameters that    |
+|                        | use ``size_spec`` for details on how they     |
+|                        | interpret its use.                            |
+|                        |                                               |
+|                        | Numeric values can optionally be followed by  |
+|                        | a scaling factor: ``K`` or ``k`` for          |
+|                        | kilobytes, ``M`` or ``m`` for megabytes, and  |
+|                        | ``G`` or ``g`` for gigabytes, which scale by  |
+|                        | 1024, 1024*1024, and 1024*1024*1024           |
+|                        | respectively.                                 |
+|                        |                                               |
+|                        | ``unlimited`` generally means "as big as      |
+|                        | possible", and is usually the best way to     |
+|                        | safely set a very large number.               |
+|                        |                                               |
+|                        | ``default`` uses the limit that was in force  |
+|                        | when the server was started.                  |
++------------------------+-----------------------------------------------+
+| ``size_or_percent``    | ``size_spec`` or integer value followed by    |
+|                        | '%' to represent percents.                    |
+|                        |                                               |
+|                        | The behavior is exactly the same as           |
+|                        | ``size_spec``, but ``size_or_percent`` allows |
+|                        | also to specify a positive integer value      |
+|                        | followed by '%' sign to represent percents.   |
++------------------------+-----------------------------------------------+
+| ``yes_or_no``          | Either ``yes`` or ``no``. The words ``true``  |
+|                        | and ``false`` are also accepted, as are the   |
+|                        | numbers ``1`` and ``0``.                      |
++------------------------+-----------------------------------------------+
+| ``dialup_option``      | One of ``yes``, ``no``, ``notify``,           |
+|                        | ``notify-passive``, ``refresh`` or            |
+|                        | ``passive``. When used in a zone,             |
+|                        | ``notify-passive``, ``refresh``, and          |
+|                        | ``passive`` are restricted to slave and stub  |
+|                        | zones.                                        |
++------------------------+-----------------------------------------------+
 
 .. _address_match_lists:
 
@@ -225,7 +226,7 @@ list can be any of the following:
 
 -  a nested address match list enclosed in braces
 
-Elements can be negated with a leading exclamation mark (`!'), and the
+Elements can be negated with a leading exclamation mark (``!``), and the
 match list names "any", "none", "localhost", and "localnets" are
 predefined. More information on those names can be found in the
 description of the acl statement.
@@ -337,7 +338,7 @@ line, as in C++ comments. For example:
 
    **Warning**
 
-   You cannot use the semicolon (`;') character to start a comment such
+   You cannot use the semicolon (``;``) character to start a comment such
    as you would in a zone file. The semicolon indicates the end of a
    configuration statement.
 
@@ -353,53 +354,53 @@ sub-statements, which are also terminated with a semicolon.
 
 The following statements are supported:
 
-+-----------------+----------------------------------------------------+
-| ``acl``         | defines a named IP address matching list, for      |
-|                 | access control and other uses.                     |
-+-----------------+----------------------------------------------------+
-| ``controls``    | declares control channels to be used by the        |
-|                 | ``rndc`` utility.                                  |
-+-----------------+----------------------------------------------------+
-| ``include``     | includes a file.                                   |
-+-----------------+----------------------------------------------------+
-| ``key``         | specifies key information for use in               |
-|                 | authentication and authorization using TSIG.       |
-+-----------------+----------------------------------------------------+
-| ``logging``     | specifies what the server logs, and where the log  |
-|                 | messages are sent.                                 |
-+-----------------+----------------------------------------------------+
-| ``masters``     | defines a named masters list for inclusion in stub |
-|                 | and slave zones' ``masters`` or ``also-notify``    |
-|                 | lists.                                             |
-+-----------------+----------------------------------------------------+
-| ``options``     | controls global server configuration options and   |
-|                 | sets defaults for other statements.                |
-+-----------------+----------------------------------------------------+
-| ``server``      | sets certain configuration options on a per-server |
-|                 | basis.                                             |
-+-----------------+----------------------------------------------------+
-| ``statistics-ch | declares communication channels to get access to   |
-| annels``        | ``named`` statistics.                              |
-+-----------------+----------------------------------------------------+
-| ``dnssec-keys`` | defines DNSSEC keys: if used with the              |
-|                 | ``initial-key`` keyword, keys are kept up to date  |
-|                 | using RFC 5011 trust anchor maintenance, and if    |
-|                 | used with ``static-key``, keys are permanent.      |
-|                 | Identical to ``managed-keys``, but has been added  |
-|                 | for improved clarity.                              |
-+-----------------+----------------------------------------------------+
-| ``managed-keys` | is identical to ``dnssec-keys``, and is retained   |
-| `               | for backward compatibility.                        |
-+-----------------+----------------------------------------------------+
-| ``trusted-keys` | defines permanent trusted DNSSEC keys; this option |
-| `               | is deprecated in favor of ``dnssec-keys`` with the |
-|                 | ``static-key`` keyword, and may be removed in a    |
-|                 | future release.                                    |
-+-----------------+----------------------------------------------------+
-| ``view``        | defines a view.                                    |
-+-----------------+----------------------------------------------------+
-| ``zone``        | defines a zone.                                    |
-+-----------------+----------------------------------------------------+
++-------------------------+----------------------------------------------------+
+| ``acl``                 | defines a named IP address matching list, for      |
+|                         | access control and other uses.                     |
++-------------------------+----------------------------------------------------+
+| ``controls``            | declares control channels to be used by the        |
+|                         | ``rndc`` utility.                                  |
++-------------------------+----------------------------------------------------+
+| ``include``             | includes a file.                                   |
++-------------------------+----------------------------------------------------+
+| ``key``                 | specifies key information for use in               |
+|                         | authentication and authorization using TSIG.       |
++-------------------------+----------------------------------------------------+
+| ``logging``             | specifies what the server logs, and where the log  |
+|                         | messages are sent.                                 |
++-------------------------+----------------------------------------------------+
+| ``masters``             | defines a named masters list for inclusion in stub |
+|                         | and slave zones' ``masters`` or ``also-notify``    |
+|                         | lists.                                             |
++-------------------------+----------------------------------------------------+
+| ``options``             | controls global server configuration options and   |
+|                         | sets defaults for other statements.                |
++-------------------------+----------------------------------------------------+
+| ``server``              | sets certain configuration options on a per-server |
+|                         | basis.                                             |
++-------------------------+----------------------------------------------------+
+| ``statistics-channels`` | declares communication channels to get access to   |
+|                         | ``named`` statistics.                              |
++-------------------------+----------------------------------------------------+
+| ``dnssec-keys``         | defines DNSSEC keys: if used with the              |
+|                         | ``initial-key`` keyword, keys are kept up to date  |
+|                         | using RFC 5011 trust anchor maintenance, and if    |
+|                         | used with ``static-key``, keys are permanent.      |
+|                         | Identical to ``managed-keys``, but has been added  |
+|                         | for improved clarity.                              |
++-------------------------+----------------------------------------------------+
+| ``managed-keys``        | is identical to ``dnssec-keys``, and is retained   |
+|                         | for backward compatibility.                        |
++-------------------------+----------------------------------------------------+
+| ``trusted-keys``        | defines permanent trusted DNSSEC keys; this option |
+|                         | is deprecated in favor of ``dnssec-keys`` with the |
+|                         | ``static-key`` keyword, and may be removed in a    |
+|                         | future release.                                    |
++-------------------------+----------------------------------------------------+
+| ``view``                | defines a view.                                    |
++-------------------------+----------------------------------------------------+
+| ``zone``                | defines a zone.                                    |
++-------------------------+----------------------------------------------------+
 
 The ``logging`` and ``options`` statements may only occur once per
 configuration.
@@ -422,24 +423,24 @@ Control Lists (ACLs).
 
 The following ACLs are built-in:
 
-+--------------+-------------------------------------------------------+
-| ``any``      | Matches all hosts.                                    |
-+--------------+-------------------------------------------------------+
-| ``none``     | Matches no hosts.                                     |
-+--------------+-------------------------------------------------------+
-| ``localhost` | Matches the IPv4 and IPv6 addresses of all network    |
-| `            | interfaces on the system. When addresses are added or |
-|              | removed, the ``localhost`` ACL element is updated to  |
-|              | reflect the changes.                                  |
-+--------------+-------------------------------------------------------+
-| ``localnets` | Matches any host on an IPv4 or IPv6 network for which |
-| `            | the system has an interface. When addresses are added |
-|              | or removed, the ``localnets`` ACL element is updated  |
-|              | to reflect the changes. Some systems do not provide a |
-|              | way to determine the prefix lengths of local IPv6     |
-|              | addresses. In such a case, ``localnets`` only matches |
-|              | the local IPv6 addresses, just like ``localhost``.    |
-+--------------+-------------------------------------------------------+
++---------------+-------------------------------------------------------+
+| ``any``       | Matches all hosts.                                    |
++---------------+-------------------------------------------------------+
+| ``none``      | Matches no hosts.                                     |
++---------------+-------------------------------------------------------+
+| ``localhost`` | Matches the IPv4 and IPv6 addresses of all network    |
+|               | interfaces on the system. When addresses are added or |
+|               | removed, the ``localhost`` ACL element is updated to  |
+|               | reflect the changes.                                  |
++---------------+-------------------------------------------------------+
+| ``localnets`` | Matches any host on an IPv4 or IPv6 network for which |
+|               | the system has an interface. When addresses are added |
+|               | or removed, the ``localnets`` ACL element is updated  |
+|               | to reflect the changes. Some systems do not provide a |
+|               | way to determine the prefix lengths of local IPv6     |
+|               | addresses. In such a case, ``localnets`` only matches |
+|               | the local IPv6 addresses, just like ``localhost``.    |
++---------------+-------------------------------------------------------+
 
 .. _controls_grammar:
 
@@ -1297,8 +1298,8 @@ default will be used.
    ``TKEY``. When a client requests a ``TKEY`` exchange, it may or may
    not specify the desired name for the key. If present, the name of the
    shared key will be ``client specified part`` + ``tkey-domain``.
-   Otherwise, the name of the shared key will be ``random hex
-           digits`` + ``tkey-domain``. In most cases, the ``domainname``
+   Otherwise, the name of the shared key will be ``random hex digits``
+   + ``tkey-domain``. In most cases, the ``domainname``
    should be the server's domain name, or an otherwise non-existent
    subdomain like "_tkey.``domainname``". If you are using GSS-TSIG,
    this variable must be defined, unless you specify a specific keytab
@@ -1561,13 +1562,13 @@ default will be used.
           };
 
 ``dnssec-loadkeys-interval``
-   When a zone is configured with ``auto-dnssec
-             maintain;`` its key repository must be checked periodically
-   to see if any new keys have been added or any existing keys' timing
-   metadata has been updated (see `??? <#man.dnssec-keygen>`__ and
-   `??? <#man.dnssec-settime>`__). The ``dnssec-loadkeys-interval``
-   option sets the frequency of automatic repository checks, in minutes.
-   The default is ``60`` (1 hour), the minimum is ``1`` (1 minute), and
+   When a zone is configured with ``auto-dnssec maintain;`` its key
+   repository must be checked periodically to see if any new keys have
+   been added or any existing keys' timing metadata has been updated
+   (see `??? <#man.dnssec-keygen>`__ and `???
+   <#man.dnssec-settime>`__). The ``dnssec-loadkeys-interval`` option
+   sets the frequency of automatic repository checks, in minutes.  The
+   default is ``60`` (1 hour), the minimum is ``1`` (1 minute), and
    the maximum is ``1440`` (24 hours); any higher value is silently
    reduced.
 
@@ -2098,23 +2099,20 @@ Boolean Options
    settings:
 
    ``auto-dnssec allow;`` permits keys to be updated and the zone fully
-   re-signed whenever the user issues the command ``rndc sign
-             zonename``.
+   re-signed whenever the user issues the command ``rndc sign zonename``.
 
-   ``auto-dnssec maintain;`` includes the above, but also automatically
-   adjusts the zone's DNSSEC keys on schedule, according to the keys'
-   timing metadata (see `??? <#man.dnssec-keygen>`__ and
-   `??? <#man.dnssec-settime>`__). The command ``rndc sign
-             zonename`` causes ``named`` to load keys from the key
-   repository and sign the zone with all keys that are active.
-   ``rndc loadkeys
-             zonename`` causes ``named`` to load keys from the key
-   repository and schedule key maintenance events to occur in the
-   future, but it does not sign the full zone immediately. Note: once
-   keys have been loaded for a zone the first time, the repository will
-   be searched for changes periodically, regardless of whether
-   ``rndc loadkeys`` is used. The recheck interval is defined by
-   ``dnssec-loadkeys-interval``.)
+   ``auto-dnssec maintain;`` includes the above, but also
+   automatically adjusts the zone's DNSSEC keys on schedule, according
+   to the keys' timing metadata (see `??? <#man.dnssec-keygen>`__ and
+   `??? <#man.dnssec-settime>`__). The command ``rndc sign zonename``
+   causes ``named`` to load keys from the key repository and sign the
+   zone with all keys that are active.  ``rndc loadkeys zonename``
+   causes ``named`` to load keys from the key repository and schedule
+   key maintenance events to occur in the future, but it does not sign
+   the full zone immediately. Note: once keys have been loaded for a
+   zone the first time, the repository will be searched for changes
+   periodically, regardless of whether ``rndc loadkeys`` is used. The
+   recheck interval is defined by ``dnssec-loadkeys-interval``.)
 
    The default setting is ``auto-dnssec off``.
 
@@ -3334,28 +3332,28 @@ is "``*``" (asterisk).
 
 The legal values for ``ordering`` are:
 
-+-----------+-----------------------------------------------------------+
-| ``fixed`` | Records are returned in the order they are defined in the |
-|           | zone file. This option is only available if BIND is       |
-|           | configured with "--enable-fixed-rrset" at compile time.   |
-+-----------+-----------------------------------------------------------+
-| ``random` | Records are returned in some random order.                |
-| `         |                                                           |
-+-----------+-----------------------------------------------------------+
-| ``cyclic` | Records are returned in a cyclic round-robin order,       |
-| `         | rotating by one record per query.                         |
-|           |                                                           |
-|           | If BIND is configured with "--enable-fixed-rrset" at      |
-|           | compile time, then the initial ordering of the RRset will |
-|           | match the one specified in the zone file; otherwise the   |
-|           | initial ordering is indeterminate.                        |
-+-----------+-----------------------------------------------------------+
-| ``none``  | Records are returned in whatever order they were          |
-|           | retrieved from the database. This order is indeterminate, |
-|           | but will be consistent as long as the database is not     |
-|           | modified. When no ordering is specified, this is the      |
-|           | default.                                                  |
-+-----------+-----------------------------------------------------------+
++------------+-----------------------------------------------------------+
+| ``fixed``  | Records are returned in the order they are defined in the |
+|            | zone file. This option is only available if BIND is       |
+|            | configured with "--enable-fixed-rrset" at compile time.   |
++------------+-----------------------------------------------------------+
+| ``random`` | Records are returned in some random order.                |
+|            |                                                           |
++------------+-----------------------------------------------------------+
+| ``cyclic`` | Records are returned in a cyclic round-robin order,       |
+|            | rotating by one record per query.                         |
+|            |                                                           |
+|            | If BIND is configured with "--enable-fixed-rrset" at      |
+|            | compile time, then the initial ordering of the RRset will |
+|            | match the one specified in the zone file; otherwise the   |
+|            | initial ordering is indeterminate.                        |
++------------+-----------------------------------------------------------+
+| ``none``   | Records are returned in whatever order they were          |
+|            | retrieved from the database. This order is indeterminate, |
+|            | but will be consistent as long as the database is not     |
+|            | modified. When no ordering is specified, this is the      |
+|            | default.                                                  |
++------------+-----------------------------------------------------------+
 
 For example:
 
@@ -4100,7 +4098,7 @@ with owner names in a zone.
 
 ``NODATA``
    The empty set of resource records is specified by CNAME whose target
-   is the wildcard top-level domain (*.). It rewrites the response to
+   is the wildcard top-level domain (``*.``). It rewrites the response to
    NODATA or ANCOUNT=0.
 
 ``Local Data``
@@ -4457,12 +4455,12 @@ to replace the NXDOMAIN is held in a single zone which is not part of
 the normal namespace. All the redirect information is contained in the
 zone; there are no delegations.
 
-With a redirect namespace (``option { nxdomain-redirect
-        <suffix> };``) the data used to replace the NXDOMAIN is part of
-the normal namespace and is looked up by appending the specified suffix
-to the original query name. This roughly doubles the cache required to
-process NXDOMAIN responses as you have the original NXDOMAIN response
-and the replacement data or a NXDOMAIN indicating that there is no
+With a redirect namespace (``option { nxdomain-redirect <suffix> };``)
+the data used to replace the NXDOMAIN is part of the normal namespace
+and is looked up by appending the specified suffix to the original
+query name. This roughly doubles the cache required to process
+NXDOMAIN responses as you have the original NXDOMAIN response and the
+replacement data or a NXDOMAIN indicating that there is no
 replacement.
 
 If both a redirect zone and a redirect namespace are configured, the
@@ -5032,7 +5030,7 @@ it is an ``in-view`` configuration. Its acceptable values include:
                    
                     To redirect all NXDOMAIN responses to 100.100.100.2 and 2001:ffff:ffff::100.100.100.2, one would configure a type redirect zone named ".", with the zone file containing wildcard records that point to the desired addresses: ``"*. IN A 100.100.100.2"`` and ``"*. IN AAAA 2001:ffff:ffff::100.100.100.2"``.
                    
-                    To redirect all Spanish names (under .ES) one would use similar entries but with the names "*.ES." instead of "*.". To redirect all commercial Spanish names (under COM.ES) one would use wildcard entries called "*.COM.ES.".
+                    To redirect all Spanish names (under .ES) one would use similar entries but with the names ``*.ES.`` instead of ``*.``. To redirect all commercial Spanish names (under COM.ES) one would use wildcard entries called ``*.COM.ES.``.
                    
                     Note that the redirect zone supports all possible types; it is not limited to A and AAAA records.
                    
@@ -5478,184 +5476,184 @@ The ruletype field has 16 values: ``name``, ``subdomain``, ``wildcard``,
 ``krb5-selfsub``, ``ms-selfsub``, ``krb5-subdomain``, ``ms-subdomain``,
 ``tcp-self``, ``6to4-self``, ``zonesub``, and ``external``.
 
-+------------+---------------------------------------------------------+
-| ``name``   | Exact-match semantics. This rule matches when the name  |
-|            | being updated is identical to the contents of the name  |
-|            | field.                                                  |
-+------------+---------------------------------------------------------+
-| ``subdomai | This rule matches when the name being updated is a      |
-| n``        | subdomain of, or identical to, the contents of the name |
-|            | field.                                                  |
-+------------+---------------------------------------------------------+
-| ``zonesub` | This rule is similar to subdomain, except that it       |
-| `          | matches when the name being updated is a subdomain of   |
-|            | the zone in which the ``update-policy`` statement       |
-|            | appears. This obviates the need to type the zone name   |
-|            | twice, and enables the use of a standard                |
-|            | ``update-policy`` statement in multiple zones without   |
-|            | modification.                                           |
-|            |                                                         |
-|            | When this rule is used, the name field is omitted.      |
-+------------+---------------------------------------------------------+
-| ``wildcard | The name field is subject to DNS wildcard expansion,    |
-| ``         | and this rule matches when the name being updated is a  |
-|            | valid expansion of the wildcard.                        |
-+------------+---------------------------------------------------------+
-| ``self``   | This rule matches when the name of the record being     |
-|            | updated matches the contents of the identity field. The |
-|            | name field is ignored. To avoid confusion, it is        |
-|            | recommended that this field be set to the same value as |
-|            | the identity field or to "."                            |
-|            |                                                         |
-|            | The ``self`` rule type is most useful when allowing one |
-|            | key per name to update, where the key has the same name |
-|            | as the record to be updated. In this case, the identity |
-|            | field can be specified as ``*`` (an asterisk).          |
-+------------+---------------------------------------------------------+
-| ``selfsub` | This rule is similar to ``self`` except that subdomains |
-| `          | of ``self`` can also be updated.                        |
-+------------+---------------------------------------------------------+
-| ``selfwild | This rule is similar to ``self`` except that only       |
-| ``         | subdomains of ``self`` can be updated.                  |
-+------------+---------------------------------------------------------+
-| ``ms-self` | When a client sends an UPDATE using a Windows machine   |
-| `          | principal (for example, 'machine$@REALM'), this rule    |
-|            | allows records with the absolute name of                |
-|            | 'machine.REALM' to be updated.                          |
-|            |                                                         |
-|            | The realm to be matched is specified in the identity    |
-|            | field.                                                  |
-|            |                                                         |
-|            | The name field has no effect on this rule; it should be |
-|            | set to "." as a placeholder.                            |
-|            |                                                         |
-|            | For example, ``grant EXAMPLE.COM ms-self . A AAAA``     |
-|            | allows any machine with a valid principal in the realm  |
-|            | ``EXAMPLE.COM`` to update its own address records.      |
-+------------+---------------------------------------------------------+
-| ``ms-selfs | This is similar to ``ms-self`` except it also allows    |
-| ub``       | updates to any subdomain of the name specified in the   |
-|            | Windows machine principal, not just to the name itself. |
-+------------+---------------------------------------------------------+
-| ``ms-subdo | When a client sends an UPDATE using a Windows machine   |
-| main``     | principal (for example, 'machine$@REALM'), this rule    |
-|            | allows any machine in the specified realm to update any |
-|            | record in the zone or in a specified subdomain of the   |
-|            | zone.                                                   |
-|            |                                                         |
-|            | The realm to be matched is specified in the identity    |
-|            | field.                                                  |
-|            |                                                         |
-|            | The name field specifies the subdomain that may be      |
-|            | updated. If set to "." (or any other name at or above   |
-|            | the zone apex), any name in the zone can be updated.    |
-|            |                                                         |
-|            | For example, if ``update-policy`` for the zone          |
-|            | "example.com" includes                                  |
-|            | ``grant EXAMPLE.COM ms-subdomain hosts.example.com. A A |
-|            | AAA``,                                                  |
-|            | any machine with a valid principal in the realm         |
-|            | ``EXAMPLE.COM`` will be able to update address records  |
-|            | at or below "hosts.example.com".                        |
-+------------+---------------------------------------------------------+
-| ``krb5-sel | When a client sends an UPDATE using a Kerberos machine  |
-| f``        | principal (for example, 'host/machine@REALM'), this     |
-|            | rule allows records with the absolute name of 'machine' |
-|            | to be updated provided it has been authenticated by     |
-|            | REALM. This is similar but not identical to ``ms-self`` |
-|            | due to the 'machine' part of the Kerberos principal     |
-|            | being an absolute name instead of a unqualified name.   |
-|            |                                                         |
-|            | The realm to be matched is specified in the identity    |
-|            | field.                                                  |
-|            |                                                         |
-|            | The name field has no effect on this rule; it should be |
-|            | set to "." as a placeholder.                            |
-|            |                                                         |
-|            | For example, ``grant EXAMPLE.COM krb5-self . A AAAA``   |
-|            | allows any machine with a valid principal in the realm  |
-|            | ``EXAMPLE.COM`` to update its own address records.      |
-+------------+---------------------------------------------------------+
-| ``krb5-sel | This is similar to ``krb5-self`` except it also allows  |
-| fsub``     | updates to any subdomain of the name specified in the   |
-|            | 'machine' part of the Kerberos principal, not just to   |
-|            | the name itself.                                        |
-+------------+---------------------------------------------------------+
-| ``krb5-sub | This rule is identical to ``ms-subdomain``, except that |
-| domain``   | it works with Kerberos machine principals (i.e.,        |
-|            | 'host/machine@REALM') rather than Windows machine       |
-|            | principals.                                             |
-+------------+---------------------------------------------------------+
-| ``tcp-self | This rule allows updates that have been sent via TCP    |
-| ``         | and for which the standard mapping from the client's IP |
-|            | address into the ``in-addr.arpa`` and ``ip6.arpa``      |
-|            | namespaces match the name to be updated. The            |
-|            | ``identity`` field must match that name. The ``name``   |
-|            | field should be set to ".". Note that, since identity   |
-|            | is based on the client's IP address, it is not          |
-|            | necessary for update request messages to be signed.     |
-|            |                                                         |
-|            |    **Note**                                             |
-|            |                                                         |
-|            |    It is theoretically possible to spoof these TCP      |
-|            |    sessions.                                            |
-+------------+---------------------------------------------------------+
-| ``6to4-sel | This allows the name matching a 6to4 IPv6 prefix, as    |
-| f``        | specified in RFC 3056, to be updated by any TCP         |
-|            | connection from either the 6to4 network or from the     |
-|            | corresponding IPv4 address. This is intended to allow   |
-|            | NS or DNAME RRsets to be added to the ``ip6.arpa``      |
-|            | reverse tree.                                           |
-|            |                                                         |
-|            | The ``identity`` field must match the 6to4 prefix in    |
-|            | ``ip6.arpa``. The ``name`` field should be set to ".".  |
-|            | Note that, since identity is based on the client's IP   |
-|            | address, it is not necessary for update request         |
-|            | messages to be signed.                                  |
-|            |                                                         |
-|            | In addition, if specified for an ``ip6.arpa`` name      |
-|            | outside of the ``2.0.0.2.ip6.arpa`` namespace, the      |
-|            | corresponding /48 reverse name can be updated. For      |
-|            | example, TCP/IPv6 connections from 2001:DB8:ED0C::/48   |
-|            | can update records at                                   |
-|            | ``C.0.D.E.8.B.D.0.1.0.0.2.ip6.arpa``.                   |
-|            |                                                         |
-|            |    **Note**                                             |
-|            |                                                         |
-|            |    It is theoretically possible to spoof these TCP      |
-|            |    sessions.                                            |
-+------------+---------------------------------------------------------+
-| ``external | This rule allows ``named`` to defer the decision of     |
-| ``         | whether to allow a given update to an external daemon.  |
-|            |                                                         |
-|            | The method of communicating with the daemon is          |
-|            | specified in the identity field, the format of which is |
-|            | "``local:``\ path", where path is the location of a     |
-|            | UNIX-domain socket. (Currently, "local" is the only     |
-|            | supported mechanism.)                                   |
-|            |                                                         |
-|            | Requests to the external daemon are sent over the       |
-|            | UNIX-domain socket as datagrams with the following      |
-|            | format:                                                 |
-|            |                                                         |
-|            | ::                                                      |
-|            |                                                         |
-|            |       Protocol version number (4 bytes, network byte or |
-|            | der, currently 1)                                       |
-|            |       Request length (4 bytes, network byte order)      |
-|            |       Signer (null-terminated string)                   |
-|            |       Name (null-terminated string)                     |
-|            |       TCP source address (null-terminated string)       |
-|            |       Rdata type (null-terminated string)               |
-|            |       Key (null-terminated string)                      |
-|            |       TKEY token length (4 bytes, network byte order)   |
-|            |       TKEY token (remainder of packet)                  |
-|            |                                                         |
-|            | The daemon replies with a four-byte value in network    |
-|            | byte order, containing either 0 or 1; 0 indicates that  |
-|            | the specified update is not permitted, and 1 indicates  |
-|            | that it is.                                             |
-+------------+---------------------------------------------------------+
++--------------------+---------------------------------------------------------+
+| ``name``           | Exact-match semantics. This rule matches when the name  |
+|                    | being updated is identical to the contents of the name  |
+|                    | field.                                                  |
++--------------------+---------------------------------------------------------+
+| ``subdomain``      | This rule matches when the name being updated is a      |
+|                    | subdomain of, or identical to, the contents of the name |
+|                    | field.                                                  |
++--------------------+---------------------------------------------------------+
+| ``zonesub``        | This rule is similar to subdomain, except that it       |
+|                    | matches when the name being updated is a subdomain of   |
+|                    | the zone in which the ``update-policy`` statement       |
+|                    | appears. This obviates the need to type the zone name   |
+|                    | twice, and enables the use of a standard                |
+|                    | ``update-policy`` statement in multiple zones without   |
+|                    | modification.                                           |
+|                    |                                                         |
+|                    | When this rule is used, the name field is omitted.      |
++--------------------+---------------------------------------------------------+
+| ``wildcard``       | The name field is subject to DNS wildcard expansion,    |
+| ``                 | and this rule matches when the name being updated is a  |
+|                    | valid expansion of the wildcard.                        |
++--------------------+---------------------------------------------------------+
+| ``self``           | This rule matches when the name of the record being     |
+|                    | updated matches the contents of the identity field. The |
+|                    | name field is ignored. To avoid confusion, it is        |
+|                    | recommended that this field be set to the same value as |
+|                    | the identity field or to "."                            |
+|                    |                                                         |
+|                    | The ``self`` rule type is most useful when allowing one |
+|                    | key per name to update, where the key has the same name |
+|                    | as the record to be updated. In this case, the identity |
+|                    | field can be specified as ``*`` (an asterisk).          |
++--------------------+---------------------------------------------------------+
+| ``selfsub``        | This rule is similar to ``self`` except that subdomains |
+|                    | of ``self`` can also be updated.                        |
++--------------------+---------------------------------------------------------+
+| ``selfwild``       | This rule is similar to ``self`` except that only       |
+|                    | subdomains of ``self`` can be updated.                  |
++--------------------+---------------------------------------------------------+
+| ``ms-self``        | When a client sends an UPDATE using a Windows machine   |
+|                    | principal (for example, 'machine$@REALM'), this rule    |
+|                    | allows records with the absolute name of                |
+|                    | 'machine.REALM' to be updated.                          |
+|                    |                                                         |
+|                    | The realm to be matched is specified in the identity    |
+|                    | field.                                                  |
+|                    |                                                         |
+|                    | The name field has no effect on this rule; it should be |
+|                    | set to "." as a placeholder.                            |
+|                    |                                                         |
+|                    | For example, ``grant EXAMPLE.COM ms-self . A AAAA``     |
+|                    | allows any machine with a valid principal in the realm  |
+|                    | ``EXAMPLE.COM`` to update its own address records.      |
++--------------------+---------------------------------------------------------+
+| ``ms-selfsub``     | This is similar to ``ms-self`` except it also allows    |
+|                    | updates to any subdomain of the name specified in the   |
+|                    | Windows machine principal, not just to the name itself. |
++--------------------+---------------------------------------------------------+
+| ``ms-subdomain``   | When a client sends an UPDATE using a Windows machine   |
+|                    | principal (for example, 'machine$@REALM'), this rule    |
+|                    | allows any machine in the specified realm to update any |
+|                    | record in the zone or in a specified subdomain of the   |
+|                    | zone.                                                   |
+|                    |                                                         |
+|                    | The realm to be matched is specified in the identity    |
+|                    | field.                                                  |
+|                    |                                                         |
+|                    | The name field specifies the subdomain that may be      |
+|                    | updated. If set to "." (or any other name at or above   |
+|                    | the zone apex), any name in the zone can be updated.    |
+|                    |                                                         |
+|                    | For example, if ``update-policy`` for the zone          |
+|                    | "example.com" includes                                  |
+|                    | ``grant EXAMPLE.COM ms-subdomain hosts.example.com. A A |
+|                    | AAA``,                                                  |
+|                    | any machine with a valid principal in the realm         |
+|                    | ``EXAMPLE.COM`` will be able to update address records  |
+|                    | at or below "hosts.example.com".                        |
++--------------------+---------------------------------------------------------+
+| ``krb5-self``      | When a client sends an UPDATE using a Kerberos machine  |
+|                    | principal (for example, 'host/machine@REALM'), this     |
+|                    | rule allows records with the absolute name of 'machine' |
+|                    | to be updated provided it has been authenticated by     |
+|                    | REALM. This is similar but not identical to ``ms-self`` |
+|                    | due to the 'machine' part of the Kerberos principal     |
+|                    | being an absolute name instead of a unqualified name.   |
+|                    |                                                         |
+|                    | The realm to be matched is specified in the identity    |
+|                    | field.                                                  |
+|                    |                                                         |
+|                    | The name field has no effect on this rule; it should be |
+|                    | set to "." as a placeholder.                            |
+|                    |                                                         |
+|                    | For example, ``grant EXAMPLE.COM krb5-self . A AAAA``   |
+|                    | allows any machine with a valid principal in the realm  |
+|                    | ``EXAMPLE.COM`` to update its own address records.      |
++--------------------+---------------------------------------------------------+
+| ``krb5-selfsub``   | This is similar to ``krb5-self`` except it also allows  |
+|                    | updates to any subdomain of the name specified in the   |
+|                    | 'machine' part of the Kerberos principal, not just to   |
+|                    | the name itself.                                        |
++--------------------+---------------------------------------------------------+
+| ``krb5-subdomain`` | This rule is identical to ``ms-subdomain``, except that |
+|                    | it works with Kerberos machine principals (i.e.,        |
+|                    | 'host/machine@REALM') rather than Windows machine       |
+|                    | principals.                                             |
++--------------------+---------------------------------------------------------+
+| ``tcp-self``       | This rule allows updates that have been sent via TCP    |
+|                    | and for which the standard mapping from the client's IP |
+|                    | address into the ``in-addr.arpa`` and ``ip6.arpa``      |
+|                    | namespaces match the name to be updated. The            |
+|                    | ``identity`` field must match that name. The ``name``   |
+|                    | field should be set to ".". Note that, since identity   |
+|                    | is based on the client's IP address, it is not          |
+|                    | necessary for update request messages to be signed.     |
+|                    |                                                         |
+|                    |    **Note**                                             |
+|                    |                                                         |
+|                    |    It is theoretically possible to spoof these TCP      |
+|                    |    sessions.                                            |
++--------------------+---------------------------------------------------------+
+| ``6to4-self``      | This allows the name matching a 6to4 IPv6 prefix, as    |
+|                    | specified in RFC 3056, to be updated by any TCP         |
+|                    | connection from either the 6to4 network or from the     |
+|                    | corresponding IPv4 address. This is intended to allow   |
+|                    | NS or DNAME RRsets to be added to the ``ip6.arpa``      |
+|                    | reverse tree.                                           |
+|                    |                                                         |
+|                    | The ``identity`` field must match the 6to4 prefix in    |
+|                    | ``ip6.arpa``. The ``name`` field should be set to ".".  |
+|                    | Note that, since identity is based on the client's IP   |
+|                    | address, it is not necessary for update request         |
+|                    | messages to be signed.                                  |
+|                    |                                                         |
+|                    | In addition, if specified for an ``ip6.arpa`` name      |
+|                    | outside of the ``2.0.0.2.ip6.arpa`` namespace, the      |
+|                    | corresponding /48 reverse name can be updated. For      |
+|                    | example, TCP/IPv6 connections from 2001:DB8:ED0C::/48   |
+|                    | can update records at                                   |
+|                    | ``C.0.D.E.8.B.D.0.1.0.0.2.ip6.arpa``.                   |
+|                    |                                                         |
+|                    |    **Note**                                             |
+|                    |                                                         |
+|                    |    It is theoretically possible to spoof these TCP      |
+|                    |    sessions.                                            |
++--------------------+---------------------------------------------------------+
+| ``external``       | This rule allows ``named`` to defer the decision of     |
+|                    | whether to allow a given update to an external daemon.  |
+|                    |                                                         |
+|                    | The method of communicating with the daemon is          |
+|                    | specified in the identity field, the format of which is |
+|                    | "``local:``\ path", where path is the location of a     |
+|                    | UNIX-domain socket. (Currently, "local" is the only     |
+|                    | supported mechanism.)                                   |
+|                    |                                                         |
+|                    | Requests to the external daemon are sent over the       |
+|                    | UNIX-domain socket as datagrams with the following      |
+|                    | format:                                                 |
+|                    |                                                         |
+|                    | ::                                                      |
+|                    |                                                         |
+|                    |       Protocol version number (4 bytes, network byte or |
+|                    | der, currently 1)                                       |
+|                    |       Request length (4 bytes, network byte order)      |
+|                    |       Signer (null-terminated string)                   |
+|                    |       Name (null-terminated string)                     |
+|                    |       TCP source address (null-terminated string)       |
+|                    |       Rdata type (null-terminated string)               |
+|                    |       Key (null-terminated string)                      |
+|                    |       TKEY token length (4 bytes, network byte order)   |
+|                    |       TKEY token (remainder of packet)                  |
+|                    |                                                         |
+|                    | The daemon replies with a four-byte value in network    |
+|                    | byte order, containing either 0 or 1; 0 indicates that  |
+|                    | the specified update is not permitted, and 1 indicates  |
+|                    | that it is.                                             |
++--------------------+---------------------------------------------------------+
 
 .. _multiple_views:
 
@@ -6115,22 +6113,17 @@ the MX record is in error, and will be ignored. Instead, the mail will
 be delivered to the server specified in the MX record pointed to by the
 CNAME. For example:
 
-+----------------------+-----+-----+------------+--------------------+
-| ``example.com.``     | ``I | ``M | ``10``     | ``mail.example.com |
-|                      | N`` | X`` |            | .``                |
-+----------------------+-----+-----+------------+--------------------+
-|                      | ``I | ``M | ``10``     | ``mail2.example.co |
-|                      | N`` | X`` |            | m.``               |
-+----------------------+-----+-----+------------+--------------------+
-|                      | ``I | ``M | ``20``     | ``mail.backup.org. |
-|                      | N`` | X`` |            | ``                 |
-+----------------------+-----+-----+------------+--------------------+
-| ``mail.example.com.` | ``I | ``A | ``10.0.0.1 |                    |
-| `                    | N`` | ``  | ``         |                    |
-+----------------------+-----+-----+------------+--------------------+
-| ``mail2.example.com. | ``I | ``A | ``10.0.0.2 |                    |
-| ``                   | N`` | ``  | ``         |                    |
-+----------------------+-----+-----+------------+--------------------+
++------------------------+--------+--------+--------------+------------------------+
+| ``example.com.``       | ``IN`` | ``MX`` | ``10``       | ``mail.example.com.``  |
++------------------------+--------+--------+--------------+------------------------+
+|                        | ``IN`` | ``MX`` | ``10``       | ``mail2.example.com.`` |
++------------------------+--------+--------+--------------+------------------------+
+|                        | ``IN`` | ``MX`` | ``20``       | ``mail.backup.org.``   |
++------------------------+--------+--------+--------------+------------------------+
+| ``mail.example.com.``  | ``IN`` | ``A``  | ``10.0.0.1`` |                        |
++------------------------+--------+--------+--------------+------------------------+
+| ``mail2.example.com.`` | ``IN`` | ``A``  | ``10.0.0.2`` |                        |
++------------------------+--------+--------+--------------+------------------------+
 
 Mail delivery will be attempted to ``mail.example.com`` and
 ``mail2.example.com`` (in any order), and if neither of those succeed,

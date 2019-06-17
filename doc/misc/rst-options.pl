@@ -126,6 +126,6 @@ Files
 See Also
 ~~~~~~~~
 
-:manpage:`ddns-confgen(8)`, :manpage:`named(8)`, :manpage:`named-checkconf(8)`, :manpage:`rndc(8)`, :manpage:`rndc-confgen(8), BIND 9 Administrator Reference Manual.
+:manpage:`ddns-confgen(8)`, :manpage:`named(8)`, :manpage:`named-checkconf(8)`, :manpage:`rndc(8)`, :manpage:`rndc-confgen(8)`, BIND 9 Administrator Reference Manual.
 
 END

@@ -196,7 +196,7 @@ servers (``www.example.com`` and ``ftp.example.com``), and mail exchange
 (MX) records (``a.mx.example.com`` and ``b.mx.example.com``).
 
 In addition, the public ``site1`` and ``site2.example.com`` zones should
-have special MX records that contain wildcard (`*') records pointing to
+have special MX records that contain wildcard (``*``) records pointing to
 the bastion hosts. This is needed because external mail servers do not
 have any other way of looking up how to deliver mail to those internal
 hosts. With the wildcard records, the mail will be delivered to the

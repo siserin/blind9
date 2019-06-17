@@ -153,12 +153,12 @@ Usage: sample-async [-s server_address] [-t RR_type] input_file
 
 Options and Arguments:
 
--s server_address
+``-s server_address``
    an IPv4 address of the recursive server to which queries are sent.
    (IPv6 addresses are not supported in this implementation)
--t RR_type
+``-t RR_type``
    specify the RR type of the queries. The default is the A RR.
-input_file
+``input_file``
    a list of domain names to be resolved. each line consists of a single
    domain name. Example:
    ::

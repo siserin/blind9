@@ -167,10 +167,10 @@ Options
    SIG(0).
 
 **-t** type
-   Indicates the use of the key, for use with ``-T
-           KEY``. ``type`` must be one of AUTHCONF, NOAUTHCONF, NOAUTH,
-   or NOCONF. The default is AUTHCONF. AUTH refers to the ability to
-   authenticate data, and CONF the ability to encrypt data.
+   Indicates the use of the key, for use with ``-T  KEY``. ``type``
+   must be one of AUTHCONF, NOAUTHCONF, NOAUTH, or NOCONF. The default
+   is AUTHCONF. AUTH refers to the ability to authenticate data, and
+   CONF the ability to encrypt data.
 
 **-V**
    Prints version information.

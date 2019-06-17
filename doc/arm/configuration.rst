@@ -222,7 +222,7 @@ output format.
    server
    Interactive mode is entered when no arguments are given (the default
    name server will be used) or when the first argument is a hyphen
-   (`-') and the second argument is the host name or Internet address of
+   (``-``) and the second argument is the host name or Internet address of
    a name server.
 
    Non-interactive mode is used when the name or Internet address of the

@@ -67,8 +67,7 @@ Interactive Commands
    To look up a host not in the current domain, append a period to the
    name.
 
-``server`` domain
-``lserver`` domain
+``server`` domain | ``lserver`` domain
    Change the default server to domain; ``lserver`` uses the initial
    server to look up information about domain, while ``server`` uses the
    current default server. If an authoritative answer can't be found,
@@ -150,8 +149,7 @@ Interactive Commands
 
       (Default = 53; abbreviation = po)
 
-   ``querytype=``\ value
-   ``type=``\ value
+   ``querytype=``\ value | ``type=``\ value
       Change the type of the information query.
 
       (Default = A; abbreviations = q, ty)

@@ -384,7 +384,7 @@ Currently supported commands are:
 
    See also ``rndc managed-keys``.
 
-``serve-stale (**on** | **off** | **reset** | **status**) [*class* [*view*]]
+``serve-stale`` (**on** | **off** | **reset** | **status**) [*class* [*view*]]
    Enable, disable, reset, or report the current status of the serving
    of stale answers as configured in ``named.conf``.
 
@@ -524,7 +524,7 @@ Currently supported commands are:
    :manpage:`named(8)` in each view. The list both statically configured keys and
    dynamic TKEY-negotiated keys.
 
-``validation (**on** | **off** | **status**) [*view* ...]
+``validation`` (**on** | **off** | **status**) [*view* ...]``
    Enable, disable, or check the current status of DNSSEC validation. By
    default, validation is enabled.
 
@@ -557,6 +557,6 @@ Several error messages could be clearer.
 See Also
 ~~~~~~~~
 
-:manpage:`rndc.conf(5)`, :manpage:`rndc-confgen(8),
-:manpage:`named(8)`, :manpage:`named.conf(5)`, :manpage:`ndc(8), BIND 9 Administrator
+:manpage:`rndc.conf(5)`, :manpage:`rndc-confgen(8)`,
+:manpage:`named(8)`, :manpage:`named.conf(5)`, :manpage:`ndc(8)`, BIND 9 Administrator
 Reference Manual.
