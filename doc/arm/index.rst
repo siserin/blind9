@@ -14,6 +14,7 @@ BIND 9 Administrator Reference Manual
 
 .. toctree::
    :maxdepth: 2
+   :numbered:
 
    introduction
    requirements
