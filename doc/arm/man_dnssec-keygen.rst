@@ -8,9 +8,9 @@
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
-.. highlight: console
 
-dnssec-keygen - DNSSEC key generation tool
+
+.. _dnssec-keygen: DNSSEC key generation tool
 ------------------------------------------
 
 Synopsis
