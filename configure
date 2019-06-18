@@ -679,8 +679,9 @@ LIBIDN2_LIBS
 LIBIDN2_CFLAGS
 CURL
 DOXYGEN
+MANSRCS
 PDFTARGET
-ARMDIR
+HTMLTARGET
 LATEXMK
 PDFLATEX
 SPHINX_BUILD
@@ -20026,15 +20027,16 @@ fi
 
   test -n "$SPHINX_BUILD" && break
 done
-test -n "$SPHINX_BUILD" || SPHINX_BUILD=":"
 
 
 # Don't build the documentation if the sphinx-build is not present
-ARMDIR=
 PDFTARGET=
+HTMLTARGET=
+MANSRCS=
 if test -n "$SPHINX_BUILD"; then :
 
-	  ARMDIR=arm
+	  MANSRCS='$(MANPAGES_IN)'
+	  HTMLTARGET='html dirhtml'
 	  for ac_prog in pdflatex
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -20127,11 +20129,12 @@ done
 
 	  if test -n "$PDFLATEX" && test -n "$LATEXMK"; then :
 
-		    PDFTARGET=pdf
+		    PDFTARGET='pdf'
 
 fi
 
 fi
+
 
 
 

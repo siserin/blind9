@@ -88,7 +88,11 @@ MANPAGES_RST =				\
 	man_nsupdate.rst		\
 	man_rndc-confgen.rst		\
 	man_rndc.conf.rst		\
-	man_rndc.rst
+	man_rndc.rst			\
+	man_pkcs11-destroy.rst		\
+	man_pkcs11-keygen.rst		\
+	man_pkcs11-list.rst		\
+	man_pkcs11-tokens.rst
 
 MANPAGES_IN = \
 	man/arpaname.1in		\
@@ -123,15 +127,7 @@ MANPAGES_IN = \
 	man/nsupdate.1in		\
 	man/rndc-confgen.8in		\
 	man/rndc.conf.5in		\
-	man/rndc.8in
-
-PKCS11_MANPAGES_IN =			\
-	man_pkcs11-destroy.rst		\
-	man_pkcs11-keygen.rst		\
-	man_pkcs11-list.rst		\
-	man_pkcs11-tokens.rst
-
-PKCS11_MANPAGES_IN =			\
+	man/rndc.8in			\
 	man/pkcs11-destroy.8in		\
 	man/pkcs11-keygen.8in		\
 	man/pkcs11-list.8in		\
@@ -167,17 +163,20 @@ ALLSPHINXOPTS =				\
 	${srcdir}
 
 man_SPHINXOPTS =				\
+	$(common_SPHINXOPTS)			\
 	-D version="@""BIND9_VERSION""@"	\
 	-D today="@""RELEASE_DATE""@"		\
 	-D release="@""BIND9_VERSIONSTRING""@"	\
 	$(SPHINXOPTS)				\
 	${srcdir}
 
-# Put it first so that "make" without argument does nothing
-all:
+# Put it first so that "make" without argument just builds manpages
+all: man
 	@:
 
-doc:: html dirhtml @PDFTARGET@
+man:: $(man1_MANS) $(man5_MANS) $(man8_MANS) @PKCS11_MANS@
+
+doc:: @HTMLTARGET@ @PDFTARGET@
 
 html dirhtml:
 	$(SPHINXBUILD) -b $@ $(ALLSPHINXOPTS) "$(SPHINXBUILDDIR)"/$@
@@ -189,13 +188,11 @@ pdf:
 	cp "$(SPHINXBUILDDIR)"/latex/notes.pdf "${builddir}"
 
 $(MANPAGES_IN): $(MANPAGES_RST)
-	$(SPHINXBUILD) -b man $(ALLSPHINXOPTS) "$(SPHINXBUILDDIR)"/man
+	$(SPHINXBUILD) -b man $(man_SPHINXOPTS) "$(SPHINXBUILDDIR)"/man
 	$(MKDIR_P) -- ${builddir}/man
 	for man in "$(SPHINXBUILDDIR)"/man/*; do \
 	  cp "$$man" "man/$$(basename $$man)in"; \
 	done
-
-man:: $(man1_MANS) $(man5_MANS) $(man8_MANS) @PKCS11_MANS@
 
 man_SUBST = sed							\
 	-e 's,[@]BIND9_VERSION[@],$(BIND9_VERSION),'			\
@@ -204,22 +201,22 @@ man_SUBST = sed							\
 	-e 's,[@]sysconfdir[@],$(sysconfdir),'				\
 	-e 's,[@]plugindir[@],$(plugindir),'
 
-$(man1_MANS): $(MANPAGES_IN)
+$(man1_MANS): @MANSRCS@
 	for m in $(man1_MANS); do \
 		$(man_SUBST) $${m}in > $$m; \
 	done
 
-$(man5_MANS): $(MANPAGES_IN)
+$(man5_MANS): @MANSRCS@
 	for m in $(man5_MANS); do \
 		$(man_SUBST) $${m}in > $$m; \
 	done
 
-$(man8_MANS): $(MANPAGES_IN)
+$(man8_MANS): @MANSRCS@
 	for m in $(man8_MANS); do \
 		$(man_SUBST) $${m}in > $$m; \
 	done
 
-$(pkcs11_man8_MANS): $(MANPAGES_IN)
+$(pkcs11_man8_MANS): @MANSRCS@
 	for m in $(pkcs11_man8_MANS); do \
 		$(man_SUBST) $${m}in > $$m; \
 	done

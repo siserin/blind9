@@ -2055,21 +2055,24 @@ AC_SUBST([RELEASE_DATE], $release_date)
 #
 # Look for sphinx-build
 #
-AC_PATH_PROGS([SPHINX_BUILD], [sphinx-build], [:])
+AC_PATH_PROGS([SPHINX_BUILD], [sphinx-build], [])
 
 # Don't build the documentation if the sphinx-build is not present
-ARMDIR=
 PDFTARGET=
+HTMLTARGET=
+MANSRCS=
 AS_IF([test -n "$SPHINX_BUILD"],[
-	  ARMDIR=arm
+	  MANSRCS='$(MANPAGES_IN)'
+	  HTMLTARGET='html dirhtml'
 	  AC_PATH_PROGS([PDFLATEX], [pdflatex], [])
 	  AC_PATH_PROGS([LATEXMK], [latexmk], [])
 	  AS_IF([test -n "$PDFLATEX" && test -n "$LATEXMK"],[
-		    PDFTARGET=pdf
+		    PDFTARGET='pdf'
 		])
       ])
-AC_SUBST([ARMDIR])
+AC_SUBST([HTMLTARGET])
 AC_SUBST([PDFTARGET])
+AC_SUBST([MANSRCS])
 
 #
 # Look for Doxygen

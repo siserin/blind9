@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "NSLOOKUP" "1" "2019-06-13" "9.15.0" "BIND 9"
+.TH "NSLOOKUP" "1" "@RELEASE_DATE@" "@BIND9_VERSION@" "BIND 9"
 .SH NAME
 nslookup \- query Internet name servers interactively
 .
@@ -85,19 +85,12 @@ to qualify the name.
 .sp
 To look up a host not in the current domain, append a period to the
 name.
-.UNINDENT
-.sp
-\fBserver\fP domain
-\fBlserver\fP domain
-.INDENT 0.0
-.INDENT 3.5
+.TP
+.B \fBserver\fP domain | \fBlserver\fP domain
 Change the default server to domain; \fBlserver\fP uses the initial
 server to look up information about domain, while \fBserver\fP uses the
 current default server. If an authoritative answer can\(aqt be found,
 the names of servers that might have the answer are returned.
-.UNINDENT
-.UNINDENT
-.INDENT 0.0
 .TP
 .B \fBroot\fP
 not implemented
@@ -177,18 +170,11 @@ search list to the request until an answer is received.
 Change the default TCP/UDP name server port to value.
 .sp
 (Default = 53; abbreviation = po)
-.UNINDENT
-.sp
-\fBquerytype=\fPvalue
-\fBtype=\fPvalue
-.INDENT 7.0
-.INDENT 3.5
+.TP
+.B \fBquerytype=\fPvalue | \fBtype=\fPvalue
 Change the type of the information query.
 .sp
 (Default = A; abbreviations = q, ty)
-.UNINDENT
-.UNINDENT
-.INDENT 7.0
 .TP
 .B \fBnorecurse\fP
 Tell the name server to query other servers if it does not have

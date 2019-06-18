@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "DNSSEC-KEYGEN" "8" "2019-06-13" "9.15.0" "BIND 9"
+.TH "DNSSEC-KEYGEN" "8" "@RELEASE_DATE@" "@BIND9_VERSION@" "BIND 9"
 .SH NAME
 dnssec-keygen \- DNSSEC key generation tool
 .
@@ -180,18 +180,10 @@ DNSSEC algorithm, but it can be overridden to KEY for use with
 SIG(0).
 .TP
 \fB\-t\fP type
-.INDENT 7.0
-.TP
-.B Indicates the use of the key, for use with 
-.nf
-\(ga\(ga
-.fi
-\-T
-KEY\(ga\(ga. \fBtype\fP must be one of AUTHCONF, NOAUTHCONF, NOAUTH,
-.UNINDENT
-.sp
-or NOCONF. The default is AUTHCONF. AUTH refers to the ability to
-authenticate data, and CONF the ability to encrypt data.
+Indicates the use of the key, for use with \fB\-T  KEY\fP\&. \fBtype\fP
+must be one of AUTHCONF, NOAUTHCONF, NOAUTH, or NOCONF. The default
+is AUTHCONF. AUTH refers to the ability to authenticate data, and
+CONF the ability to encrypt data.
 .TP
 \fB\-V\fP
 Prints version information.

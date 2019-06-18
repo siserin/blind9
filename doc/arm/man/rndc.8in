@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "RNDC" "8" "2019-06-13" "9.15.0" "BIND 9"
+.TH "RNDC" "8" "@RELEASE_DATE@" "@BIND9_VERSION@" "BIND 9"
 .SH NAME
 rndc \- name server control utility
 .
@@ -399,11 +399,7 @@ option in \fBnamed.conf\fP\&.
 .sp
 See also \fBrndc managed\-keys\fP\&.
 .TP
-
-.nf
-\(ga\(ga
-.fi
-serve\-stale (\fBon\fP | \fBoff\fP | \fBreset\fP | \fBstatus\fP) [\fIclass\fP [\fIview\fP]]
+\fBserve\-stale\fP (\fBon\fP | \fBoff\fP | \fBreset\fP | \fBstatus\fP) [\fIclass\fP [\fIview\fP]]
 Enable, disable, reset, or report the current status of the serving
 of stale answers as configured in \fBnamed.conf\fP\&.
 .sp
@@ -543,11 +539,7 @@ List the names of all TSIG keys currently configured for use by
 \fBnamed(8)\fP in each view. The list both statically configured keys and
 dynamic TKEY\-negotiated keys.
 .TP
-
-.nf
-\(ga\(ga
-.fi
-validation (\fBon\fP | \fBoff\fP | \fBstatus\fP) [\fIview\fP ...]
+\fBvalidation\fP (\fBon\fP | \fBoff\fP | \fBstatus\fP) [\fIview\fP ...]\(ga\(ga
 Enable, disable, or check the current status of DNSSEC validation. By
 default, validation is enabled.
 .TP
@@ -577,12 +569,8 @@ without using the configuration file.
 Several error messages could be clearer.
 .SH SEE ALSO
 .sp
-\fBrndc.conf(5)\fP, \fBrndc\-confgen(8),
-:manpage:\(ganamed(8)\fP, \fBnamed.conf(5)\fP, :manpage:
-.nf
-\(ga
-.fi
-ndc(8), BIND 9 Administrator
+\fBrndc.conf(5)\fP, \fBrndc\-confgen(8)\fP,
+\fBnamed(8)\fP, \fBnamed.conf(5)\fP, \fBndc(8)\fP, BIND 9 Administrator
 Reference Manual.
 .SH AUTHOR
 Internet Systems Consortium
