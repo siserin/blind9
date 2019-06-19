@@ -59,3 +59,12 @@ view "default" {
 		file "root.hint";
 	};
 };
+
+key rndc_key {
+        secret "1234abcd8765";
+        algorithm hmac-sha256;
+};
+
+controls {
+        inet 10.53.0.1 port @CONTROLPORT@ allow { any; } keys { rndc_key; };
+};
