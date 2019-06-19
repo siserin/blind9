@@ -584,7 +584,7 @@ query_send(ns_client_t *client) {
 		counter = ns_statscounter_failure;
 
 	if ((client->sctx->options & NS_SERVER_LOGRESPONSES) != 0) {
-                log_response(client, client->message->rcode);
+		log_response(client, client->message->rcode);
 	}
 
 	inc_stats(client, counter);
@@ -617,7 +617,7 @@ query_error(ns_client_t *client, isc_result_t result, int line) {
 
 	if (client->query.origqname != NULL &&
 	    (client->sctx->options & NS_SERVER_LOGRESPONSES) != 0) {
-                log_response(client, rcode);
+		log_response(client, rcode);
 	}
 
 	ns_client_error(client, result);
