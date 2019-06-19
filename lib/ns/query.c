@@ -553,7 +553,7 @@ log_response(ns_client_t *client) {
 	dns_rcode_totext(client->message->rcode, &b);
 
 	ns_client_log(client, NS_LOGCATEGORY_QUERIES, NS_LOGMODULE_QUERY,
-		      level, "response: %s %s %s %*s",
+		      level, "response: %s %s %s %.*s",
 		      namebuf, classbuf, typebuf,
 		      (int)isc_buffer_usedlength(&b), rcodebuf);
 }
