@@ -86,11 +86,13 @@ options {\n\
 #	pid-file \"" NAMED_LOCALSTATEDIR "/run/named/named.pid\"; \n\
 	port 53;\n\
 	prefetch 2 9;\n\
+#	querylog <boolean>;\n\
 	recursing-file \"named.recursing\";\n\
 	recursive-clients 1000;\n\
 	request-nsid false;\n\
 	reserved-sockets 512;\n\
 	resolver-query-timeout 10;\n\
+#	responselog <boolean>;\n\
 	rrset-order { order random; };\n\
 	secroots-file \"named.secroots\";\n\
 	send-cookie true;\n\

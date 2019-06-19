@@ -47,6 +47,7 @@
 #define NS_SERVER_EDNSFORMERR	0x00001000U	/*%< -T ednsformerr (STD13) */
 #define NS_SERVER_EDNSNOTIMP	0x00002000U	/*%< -T ednsnotimp */
 #define NS_SERVER_EDNSREFUSED	0x00004000U	/*%< -T ednsrefused */
+#define NS_SERVER_LOGRESPONSES	0x00008000U	/*%< log responses */
 
 /*%
  * Type for callback function to get hostname.

@@ -304,6 +304,16 @@
       </row>
       <row rowsep="0">
 	<entry colname="1">
+	  <para><command>responses</command></para>
+	</entry>
+	<entry colname="2">
+	  <para>
+	    Specify where responses should be logged to.
+	  </para>
+	</entry>
+      </row>
+      <row rowsep="0">
+	<entry colname="1">
 	  <para><command>rpz</command></para>
 	</entry>
 	<entry colname="2">

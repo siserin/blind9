@@ -25,7 +25,7 @@ do
 	done
 	if test $ok = no
 	then
-		echo "$i missing from documentation."
+		echo "$i missing from doc/arm/logging-categories.xml."
 	fi
 done
 for i in $list2
@@ -40,6 +40,6 @@ do
 	done
 	if test $ok = no
 	then
-		echo "$i not in code."
+		echo "documented logging category '$i' not in code."
 	fi
 done

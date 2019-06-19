@@ -1107,6 +1107,7 @@ options_clauses[] = {
 	{ "recursing-file", &cfg_type_qstring, 0 },
 	{ "recursive-clients", &cfg_type_uint32, 0 },
 	{ "reserved-sockets", &cfg_type_uint32, 0 },
+	{ "responselog", &cfg_type_boolean, 0 },
 	{ "secroots-file", &cfg_type_qstring, 0 },
 	{ "serial-queries", &cfg_type_uint32, CFG_CLAUSEFLAG_ANCIENT },
 	{ "serial-query-rate", &cfg_type_uint32, 0 },

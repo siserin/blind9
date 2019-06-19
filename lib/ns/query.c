@@ -42,6 +42,7 @@
 #include <dns/nsec.h>
 #include <dns/nsec3.h>
 #include <dns/order.h>
+#include <dns/rcode.h>
 #include <dns/rdata.h>
 #include <dns/rdataclass.h>
 #include <dns/rdatalist.h>
@@ -532,6 +533,31 @@ inc_stats(ns_client_t *client, isc_statscounter_t counter) {
 	}
 }
 
+static inline void
+log_response(ns_client_t *client) {
+	char namebuf[DNS_NAME_FORMATSIZE];
+	char typebuf[DNS_RDATATYPE_FORMATSIZE];
+	char classbuf[DNS_RDATACLASS_FORMATSIZE];
+	char rcodebuf[20];
+	isc_buffer_t b;
+	int level = ISC_LOG_INFO;
+
+	if (! isc_log_wouldlog(ns_lctx, level))
+		return;
+
+	dns_name_format(client->query.origqname, namebuf, sizeof(namebuf));
+	dns_rdataclass_format(client->message->rdclass, classbuf,
+			      sizeof(classbuf));
+	dns_rdatatype_format(client->query.qtype, typebuf, sizeof(typebuf));
+	isc_buffer_init(&b, rcodebuf, sizeof(rcodebuf));
+	dns_rcode_totext(client->message->rcode, &b);
+
+	ns_client_log(client, NS_LOGCATEGORY_QUERIES, NS_LOGMODULE_QUERY,
+		      level, "response: %s %s %s %*s",
+		      namebuf, classbuf, typebuf,
+		      (int)isc_buffer_usedlength(&b), rcodebuf);
+}
+
 static void
 query_send(ns_client_t *client) {
 	isc_statscounter_t counter;
@@ -556,6 +582,10 @@ query_send(ns_client_t *client) {
 		counter = ns_statscounter_badcookie;
 	else /* We end up here in case of YXDOMAIN, and maybe others */
 		counter = ns_statscounter_failure;
+
+	if ((client->sctx->options & NS_SERVER_LOGRESPONSES) != 0) {
+                log_response(client);
+	}
 
 	inc_stats(client, counter);
 	ns_client_send(client);

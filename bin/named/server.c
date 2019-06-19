@@ -9013,9 +9013,10 @@ load_configuration(const char *filename, named_server_t *server,
 		} else {
 
 			(void)cfg_map_get(config, "logging", &logobj);
-			if (logobj != NULL)
+			if (logobj != NULL) {
 				(void)cfg_map_get(logobj, "category",
 						  &categories);
+			}
 			if (categories != NULL) {
 				for (element = cfg_list_first(categories);
 				     element != NULL;
@@ -9027,13 +9028,21 @@ load_configuration(const char *filename, named_server_t *server,
 					obj = cfg_listelt_value(element);
 					catobj = cfg_tuple_get(obj, "name");
 					str = cfg_obj_asstring(catobj);
-					if (strcasecmp(str, "queries") == 0)
+					if (strcasecmp(str, "queries") == 0) {
 						ns_server_setoption(
 						    server->sctx,
 						    NS_SERVER_LOGQUERIES,
 						    true);
+					}
 				}
 			}
+		}
+		obj = NULL;
+		result = named_config_get(maps, "responselog", &obj);
+		if (result == ISC_R_SUCCESS) {
+			ns_server_setoption(server->sctx,
+					    NS_SERVER_LOGRESPONSES,
+					    cfg_obj_asboolean(obj));
 		}
 	}
 
@@ -10516,6 +10525,42 @@ named_server_togglequerylog(named_server_t *server, isc_lex_t *lex) {
 	return (ISC_R_SUCCESS);
 }
 
+isc_result_t
+named_server_toggleresponselog(named_server_t *server, isc_lex_t *lex) {
+	bool prev, value;
+	char *ptr;
+
+	/* Skip the command name. */
+	ptr = next_token(lex, NULL);
+	if (ptr == NULL)
+		return (ISC_R_UNEXPECTEDEND);
+
+	prev = ns_server_getoption(server->sctx, NS_SERVER_LOGRESPONSES);
+
+	ptr = next_token(lex, NULL);
+	if (ptr == NULL) {
+		value = !prev;
+	} else if (!strcasecmp(ptr, "on") || !strcasecmp(ptr, "yes") ||
+		   !strcasecmp(ptr, "enable") || !strcasecmp(ptr, "true")) {
+		value = true;
+	} else if (!strcasecmp(ptr, "off") || !strcasecmp(ptr, "no") ||
+		   !strcasecmp(ptr, "disable") || !strcasecmp(ptr, "false")) {
+		value = false;
+	} else {
+		return (DNS_R_SYNTAX);
+	}
+
+	if (value == prev)
+		return (ISC_R_SUCCESS);
+
+	ns_server_setoption(server->sctx, NS_SERVER_LOGRESPONSES, value);
+
+	isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
+		      NAMED_LOGMODULE_SERVER, ISC_LOG_INFO,
+		      "response logging is now %s", value ? "on" : "off");
+	return (ISC_R_SUCCESS);
+}
+
 static isc_result_t
 ns_listenlist_fromconfig(const cfg_obj_t *listenlist, const cfg_obj_t *config,
 			 cfg_aclconfctx_t *actx, isc_mem_t *mctx,
@@ -11525,6 +11570,11 @@ named_server_status(named_server_t *server, isc_buffer_t **text) {
 
 	snprintf(line, sizeof(line), "query logging is %s\n",
 		 ns_server_getoption(server->sctx, NS_SERVER_LOGQUERIES)
+		   ? "ON" : "OFF");
+	CHECK(putstr(text, line));
+
+	snprintf(line, sizeof(line), "response logging is %s\n",
+		 ns_server_getoption(server->sctx, NS_SERVER_LOGRESPONSES)
 		   ? "ON" : "OFF");
 	CHECK(putstr(text, line));
 
