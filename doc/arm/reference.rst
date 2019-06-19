@@ -51,7 +51,7 @@ file documentation:
 |                        | elements.                                     |
 +------------------------+-----------------------------------------------+
 | ``dotted_decimal``     | One to four integers valued 0 through 255     |
-|                        | separated by dots (`.'), such as ``123``,     |
+|                        | separated by dots ('.'), such as ``123``,     |
 |                        | ``45.67`` or ``89.123.45.67``.                |
 +------------------------+-----------------------------------------------+
 | ``ip4_addr``           | An IPv4 address with exactly four elements in |
@@ -61,7 +61,7 @@ file documentation:
 |                        | IPv6 scoped addresses that have ambiguity on  |
 |                        | their scope zones must be disambiguated by an |
 |                        | appropriate zone ID with the percent          |
-|                        | character (`%') as delimiter. It is strongly  |
+|                        | character ('%') as delimiter. It is strongly  |
 |                        | recommended to use string zone names rather   |
 |                        | than numeric identifiers, in order to be      |
 |                        | robust against system configuration changes.  |
@@ -93,7 +93,7 @@ file documentation:
 |                        | port.                                         |
 +------------------------+-----------------------------------------------+
 | ``ip_prefix``          | An IP network specified as an ``ip_addr``,    |
-|                        | followed by a slash (`/') and then the number |
+|                        | followed by a slash ('/') and then the number |
 |                        | of bits in the netmask. Trailing zeros in a   |
 |                        | ``ip_addr`` may omitted. For example,         |
 |                        | ``127/8`` is the network ``127.0.0.0`` with   |
@@ -141,7 +141,7 @@ file documentation:
 |                        | ``port_high``. For example,                   |
 |                        | ``range 1024 65535`` represents ports from    |
 |                        | 1024 through 65535. In either case an         |
-|                        | asterisk (`*') character is not allowed as a  |
+|                        | asterisk ('\*') character is not allowed as a  |
 |                        | valid ``ip_port``.                            |
 +------------------------+-----------------------------------------------+
 | ``size_spec``          | A 64-bit unsigned integer, or the keywords    |
@@ -1770,24 +1770,23 @@ Boolean Options
    ``heartbeat-interval`` expires, and ``passive`` which just disables
    normal refresh processing.
 
-   +-----------------+-----------------+-----------------+-----------------+
-   | dialup mode     | normal refresh  | heart-beat      | heart-beat      |
-   |                 |                 | refresh         | notify          |
-   +-----------------+-----------------+-----------------+-----------------+
-   | ``no``          | yes             | no              | no              |
-   | (default)       |                 |                 |                 |
-   +-----------------+-----------------+-----------------+-----------------+
-   | ``yes``         | no              | yes             | yes             |
-   +-----------------+-----------------+-----------------+-----------------+
-   | ``notify``      | yes             | no              | yes             |
-   +-----------------+-----------------+-----------------+-----------------+
-   | ``refresh``     | no              | yes             | no              |
-   +-----------------+-----------------+-----------------+-----------------+
-   | ``passive``     | no              | no              | no              |
-   +-----------------+-----------------+-----------------+-----------------+
-   | ``notify-passiv | no              | no              | yes             |
-   | e``             |                 |                 |                 |
-   +-----------------+-----------------+-----------------+-----------------+
+   +--------------------+-----------------+-----------------+-----------------+
+   | dialup mode        | normal refresh  | heart-beat      | heart-beat      |
+   |                    |                 | refresh         | notify          |
+   +--------------------+-----------------+-----------------+-----------------+
+   | ``no``             | yes             | no              | no              |
+   | (default)          |                 |                 |                 |
+   +--------------------+-----------------+-----------------+-----------------+
+   | ``yes``            | no              | yes             | yes             |
+   +--------------------+-----------------+-----------------+-----------------+
+   | ``notify``         | yes             | no              | yes             |
+   +--------------------+-----------------+-----------------+-----------------+
+   | ``refresh``        | no              | yes             | no              |
+   +--------------------+-----------------+-----------------+-----------------+
+   | ``passive``        | no              | no              | no              |
+   +--------------------+-----------------+-----------------+-----------------+
+   | ``notify-passive`` | no              | no              | yes             |
+   +--------------------+-----------------+-----------------+-----------------+
 
    Note that normal NOTIFY processing is not affected by ``dialup``.
 
@@ -3331,29 +3330,28 @@ specified, the default is ``ANY``. If no name is specified, the default
 is "``*``" (asterisk).
 
 The legal values for ``ordering`` are:
-
-+------------+-----------------------------------------------------------+
-| ``fixed``  | Records are returned in the order they are defined in the |
-|            | zone file. This option is only available if BIND is       |
-|            | configured with "--enable-fixed-rrset" at compile time.   |
-+------------+-----------------------------------------------------------+
-| ``random`` | Records are returned in some random order.                |
-|            |                                                           |
-+------------+-----------------------------------------------------------+
-| ``cyclic`` | Records are returned in a cyclic round-robin order,       |
-|            | rotating by one record per query.                         |
-|            |                                                           |
-|            | If BIND is configured with "--enable-fixed-rrset" at      |
-|            | compile time, then the initial ordering of the RRset will |
-|            | match the one specified in the zone file; otherwise the   |
-|            | initial ordering is indeterminate.                        |
-+------------+-----------------------------------------------------------+
-| ``none``   | Records are returned in whatever order they were          |
-|            | retrieved from the database. This order is indeterminate, |
-|            | but will be consistent as long as the database is not     |
-|            | modified. When no ordering is specified, this is the      |
-|            | default.                                                  |
-+------------+-----------------------------------------------------------+
+ +------------+-----------------------------------------------------------+
+ | ``fixed``  | Records are returned in the order they are defined in the |
+ |            | zone file. This option is only available if BIND is       |
+ |            | configured with "--enable-fixed-rrset" at compile time.   |
+ +------------+-----------------------------------------------------------+
+ | ``random`` | Records are returned in some random order.                |
+ |            |                                                           |
+ +------------+-----------------------------------------------------------+
+ | ``cyclic`` | Records are returned in a cyclic round-robin order,       |
+ |            | rotating by one record per query.                         |
+ |            |                                                           |
+ |            | If BIND is configured with "--enable-fixed-rrset" at      |
+ |            | compile time, then the initial ordering of the RRset will |
+ |            | match the one specified in the zone file; otherwise the   |
+ |            | initial ordering is indeterminate.                        |
+ +------------+-----------------------------------------------------------+
+ | ``none``   | Records are returned in whatever order they were          |
+ |            | retrieved from the database. This order is indeterminate, |
+ |            | but will be consistent as long as the database is not     |
+ |            | modified. When no ordering is specified, this is the      |
+ |            | default.                                                  |
+ +------------+-----------------------------------------------------------+
 
 For example:
 
@@ -4107,7 +4105,7 @@ with owner names in a zone.
 
    A special form of local data is a CNAME whose target is a wildcard
    such as \*.example.com. It is used as if were an ordinary CNAME after
-   the asterisk (*) has been replaced with the query name. The purpose
+   the asterisk (\*) has been replaced with the query name. The purpose
    for this special form is query logging in the walled garden's
    authority DNS server.
 
@@ -4976,73 +4974,81 @@ it is an ``in-view`` configuration. Its acceptable values include:
 ``delegation-only``, ``forward``, ``hint``, ``redirect``,
 ``static-stub``, and ``stub``.
 
-=================== =======================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
-``master``          The server has a master copy of the data for the zone and will be able to provide authoritative answers for it. Type ``primary`` is a synonym for ``master``.
-``slave``           A slave zone is a replica of a master zone. Type ``secondary`` is a synonym for ``slave``. The ``masters`` list specifies one or more IP addresses of master servers that the slave contacts to update its copy of the zone. Masters list elements can also be names of other masters lists. By default, transfers are made from port 53 on the servers; this can be changed for all servers by specifying a port number before the list of IP addresses, or on a per-server basis after the IP address. Authentication to the master can also be done with per-server TSIG keys. If a file is specified, then the replica will be written to this file whenever the zone is changed, and reloaded from this file on a server restart. Use of a file is recommended, since it often speeds server startup and eliminates a needless waste of bandwidth. Note that for large numbers (in the tens or hundreds of thousands) of zones per server, it is best to use a two-level naming scheme for zone filenames. For example, a slave server for the zone ``example.com`` might place the zone contents into a file called ``ex/example.com`` where ``ex/`` is just the first two letters of the zone name. (Most operating systems behave very slowly if you put 100000 files into a single directory.)
-``stub``            A stub zone is similar to a slave zone, except that it replicates only the NS records of a master zone instead of the entire zone. Stub zones are not a standard part of the DNS; they are a feature specific to the BIND implementation.
+ 
+``master``  The server has a master copy of the data for the zone and will be able to provide authoritative answers for it. Type ``primary`` is a synonym for ``master``.
+
+ ``slave``  A slave zone is a replica of a master zone. Type ``secondary`` is a synonym for ``slave``. The ``masters`` list specifies one or more IP addresses of master servers that the slave contacts to update its copy of the zone. Masters list elements can also be names of other masters lists. By default, transfers are made from port 53 on the servers; this can be changed for all servers by specifying a port number before the list of IP addresses, or on a per-server basis after the IP address. Authentication to the master can also be done with per-server TSIG keys. If a file is specified, then the replica will be written to this file whenever the zone is changed, and reloaded from this file on a server restart. Use of a file is recommended, since it often speeds server startup and eliminates a needless waste of bandwidth. Note that for large numbers (in the tens or hundreds of thousands) of zones per server, it is best to use a two-level naming scheme for zone filenames. For example, a slave server for the zone ``example.com`` might place the zone contents into a file called ``ex/example.com`` where ``ex/`` is just the first two letters of the zone name. (Most operating systems behave very slowly if you put 100000 files into a single directory.)
+
+``stub``    A stub zone is similar to a slave zone, except that it replicates only the NS records of a master zone instead of the entire zone. Stub zones are not a standard part of the DNS; they are a feature specific to the BIND implementation.
+
+Stub zones can be used to eliminate the need for glue NS record in a parent zone at the expense of maintaining a stub zone entry and a set of name server addresses in ``named.conf``. This usage is not recommended for new configurations, and BIND 9 supports it only in a limited way. In BIND 4/8, zone transfers of a parent zone included the NS records from stub children of that zone. This meant that, in some cases, users could get away with configuring child stubs only in the master server for the parent zone. BIND 9 never mixes together zone data from different zones in this way. Therefore, if a BIND 9 master serving a parent zone has child stub zones configured, all the slave servers for the parent zone also need to have the same child stub zones configured.
                    
-                    Stub zones can be used to eliminate the need for glue NS record in a parent zone at the expense of maintaining a stub zone entry and a set of name server addresses in ``named.conf``. This usage is not recommended for new configurations, and BIND 9 supports it only in a limited way. In BIND 4/8, zone transfers of a parent zone included the NS records from stub children of that zone. This meant that, in some cases, users could get away with configuring child stubs only in the master server for the parent zone. BIND 9 never mixes together zone data from different zones in this way. Therefore, if a BIND 9 master serving a parent zone has child stub zones configured, all the slave servers for the parent zone also need to have the same child stub zones configured.
+Stub zones can also be used as a way of forcing the resolution of a given domain to use a particular set of authoritative servers. For example, the caching name servers on a private network using RFC1918 addressing may be configured with stub zones for ``10.in-addr.arpa`` to use a set of internal name servers as the authoritative servers for that domain.
+
+``mirror`` **Note:** using this zone type with any zone other than the root zone should be considered *experimental* and may cause performance issues, especially for zones which are large and/or frequently updated.
                    
-                    Stub zones can also be used as a way of forcing the resolution of a given domain to use a particular set of authoritative servers. For example, the caching name servers on a private network using RFC1918 addressing may be configured with stub zones for ``10.in-addr.arpa`` to use a set of internal name servers as the authoritative servers for that domain.
-``mirror``          **Note:** using this zone type with any zone other than the root zone should be considered *experimental* and may cause performance issues, especially for zones which are large and/or frequently updated.
+A mirror zone acts like a zone of type ``secondary`` whose data is subject to DNSSEC validation before being used in answers. Validation is performed during the zone transfer process (for both AXFR and IXFR), and again when the zone file is loaded from disk when ``named`` is restarted. If validation of a new version of a mirror zone fails, a retransfer is scheduled and the most recent correctly validated version of that zone is used until it expires; if a newer version of that zone is later correctly validated, it replaces the previously used version. If no usable zone data is available for a mirror zone (either because it was never loaded from disk and has not yet been transferred from a primary server or because its most recent correctly validated version expired), traditional DNS recursion will be used to look up the answers instead.
                    
-                    A mirror zone acts like a zone of type ``secondary`` whose data is subject to DNSSEC validation before being used in answers. Validation is performed during the zone transfer process (for both AXFR and IXFR), and again when the zone file is loaded from disk when ``named`` is restarted. If validation of a new version of a mirror zone fails, a retransfer is scheduled and the most recent correctly validated version of that zone is used until it expires; if a newer version of that zone is later correctly validated, it replaces the previously used version. If no usable zone data is available for a mirror zone (either because it was never loaded from disk and has not yet been transferred from a primary server or because its most recent correctly validated version expired), traditional DNS recursion will be used to look up the answers instead.
+While any zone may be configured with this type, it is intended to be used to set up a fast local copy of the root zone, similar to the one described in RFC 7706. Note, however, that mirror zones are not supposed to augment the example configuration provided by RFC 7706 but rather to replace it altogether.
                    
-                    While any zone may be configured with this type, it is intended to be used to set up a fast local copy of the root zone, similar to the one described in RFC 7706. Note, however, that mirror zones are not supposed to augment the example configuration provided by RFC 7706 but rather to replace it altogether.
+A default list of primary servers for the IANA root zone is built into ``named`` and thus its mirroring can be enabled using the following configuration:
                    
-                    A default list of primary servers for the IANA root zone is built into ``named`` and thus its mirroring can be enabled using the following configuration:
+    ::
                    
-                    ::
+    zone "." {
+    type mirror;
+    };
                    
-                       zone "." {
-                           type mirror;
-                       };
+In order to set up mirroring of any other zone, an explicit list of primary servers needs to be provided using the ``masters`` option (see `Statement Grammar <#masters_grammar>`__ for details).
                    
-                    In order to set up mirroring of any other zone, an explicit list of primary servers needs to be provided using the ``masters`` option (see `Statement Grammar <#masters_grammar>`__ for details).
+To make mirror zone contents persist between ``named`` restarts, use the ` <#file_option>`__ option.
                    
-                    To make mirror zone contents persist between ``named`` restarts, use the ` <#file_option>`__ option.
+Mirror zone validation always happens for the entire zone contents, i.e. no "incremental validation" takes place, even for IXFRs. This is required to ensure that each version of the zone used by the resolver is fully self-consistent with respect to DNSSEC. Other, more efficient zone verification methods may be added in the future.
                    
-                    Mirror zone validation always happens for the entire zone contents, i.e. no "incremental validation" takes place, even for IXFRs. This is required to ensure that each version of the zone used by the resolver is fully self-consistent with respect to DNSSEC. Other, more efficient zone verification methods may be added in the future.
+For validation to succeed, a key-signing key (KSK) for the zone must be configured as a trust anchor in ``named.conf``: that is, a key for the zone must either be specified in ``managed-keys`` or ``trusted-keys``. In the case of the root zone, you may also rely on the built-in root trust anchor, which is enabled when ` <#dnssec_validation>`__ is set to the default value ``auto``.
                    
-                    For validation to succeed, a key-signing key (KSK) for the zone must be configured as a trust anchor in ``named.conf``: that is, a key for the zone must either be specified in ``managed-keys`` or ``trusted-keys``. In the case of the root zone, you may also rely on the built-in root trust anchor, which is enabled when ` <#dnssec_validation>`__ is set to the default value ``auto``.
+Answers coming from a mirror zone look almost exactly like answers from a zone of type ``secondary``, with the notable exceptions that the AA bit ("authoritative answer") is not set, and the AD bit ("authenticated data") is.
                    
-                    Answers coming from a mirror zone look almost exactly like answers from a zone of type ``secondary``, with the notable exceptions that the AA bit ("authoritative answer") is not set, and the AD bit ("authenticated data") is.
+Since mirror zones are intended to be used by recursive resolvers, adding one to a view with recursion disabled is considered to be a configuration error.
                    
-                    Since mirror zones are intended to be used by recursive resolvers, adding one to a view with recursion disabled is considered to be a configuration error.
+When configuring NOTIFY for a mirror zone, only ``notify no;`` and ``notify explicit;`` can be used. Using any other ``notify`` setting at the zone level is a configuration error. Using any other ``notify`` setting at the ``options`` or ``view`` level will cause that setting to be overridden with ``notify explicit;`` for the mirror zone in question. Since the global default for the ``notify`` option is ``yes``, mirror zones are by default configured with ``notify explicit;``.
                    
-                    When configuring NOTIFY for a mirror zone, only ``notify no;`` and ``notify explicit;`` can be used. Using any other ``notify`` setting at the zone level is a configuration error. Using any other ``notify`` setting at the ``options`` or ``view`` level will cause that setting to be overridden with ``notify explicit;`` for the mirror zone in question. Since the global default for the ``notify`` option is ``yes``, mirror zones are by default configured with ``notify explicit;``.
-                   
-                    Outgoing transfers of mirror zones are disabled by default but may be enabled using ` <#allow_transfer>`__.
+Outgoing transfers of mirror zones are disabled by default but may be enabled using ` <#allow_transfer>`__.
+
 ``static-stub``     A static-stub zone is similar to a stub zone with the following exceptions: the zone data is statically configured, rather than transferred from a master server; when recursion is necessary for a query that matches a static-stub zone, the locally configured data (nameserver names and glue addresses) is always used even if different authoritative information is cached.
                    
-                    Zone data is configured via the ``server-addresses`` and ``server-names`` zone options.
+Zone data is configured via the ``server-addresses`` and ``server-names`` zone options.
                    
-                    The zone data is maintained in the form of NS and (if necessary) glue A or AAAA RRs internally, which can be seen by dumping zone databases by ``rndc dumpdb -all``. The configured RRs are considered local configuration parameters rather than public data. Non recursive queries (i.e., those with the RD bit off) to a static-stub zone are therefore prohibited and will be responded with REFUSED.
+The zone data is maintained in the form of NS and (if necessary) glue A or AAAA RRs internally, which can be seen by dumping zone databases by ``rndc dumpdb -all``. The configured RRs are considered local configuration parameters rather than public data. Non recursive queries (i.e., those with the RD bit off) to a static-stub zone are therefore prohibited and will be responded with REFUSED.
                    
-                    Since the data is statically configured, no zone maintenance action takes place for a static-stub zone. For example, there is no periodic refresh attempt, and an incoming notify message will be rejected with an rcode of NOTAUTH.
+ Since the data is statically configured, no zone maintenance action takes place for a static-stub zone. For example, there is no periodic refresh attempt, and an incoming notify message will be rejected with an rcode of NOTAUTH.
                    
-                    Each static-stub zone is configured with internally generated NS and (if necessary) glue A or AAAA RRs
+Each static-stub zone is configured with internally generated NS and (if necessary) glue A or AAAA RRs
+
 ``forward``         A "forward zone" is a way to configure forwarding on a per-domain basis. A ``zone`` statement of type ``forward`` can contain a ``forward`` and/or ``forwarders`` statement, which will apply to queries within the domain given by the zone name. If no ``forwarders`` statement is present or an empty list for ``forwarders`` is given, then no forwarding will be done for the domain, canceling the effects of any forwarders in the ``options`` statement. Thus if you want to use this type of zone to change the behavior of the global ``forward`` option (that is, "forward first" to, then "forward only", or vice versa, but want to use the same servers as set globally) you need to re-specify the global forwarders.
+
 ``hint``            The initial set of root name servers is specified using a "hint zone". When the server starts up, it uses the root hints to find a root name server and get the most recent list of root name servers. If no hint zone is specified for class IN, the server uses a compiled-in default set of root servers hints. Classes other than IN have no built-in defaults hints.
+
 ``redirect``        Redirect zones are used to provide answers to queries when normal resolution would result in NXDOMAIN being returned. Only one redirect zone is supported per view. ``allow-query`` can be used to restrict which clients see these answers.
                    
-                    If the client has requested DNSSEC records (DO=1) and the NXDOMAIN response is signed then no substitution will occur.
+If the client has requested DNSSEC records (DO=1) and the NXDOMAIN response is signed then no substitution will occur.
+
+To redirect all NXDOMAIN responses to 100.100.100.2 and 2001:ffff:ffff::100.100.100.2, one would configure a type redirect zone named ".", with the zone file containing wildcard records that point to the desired addresses: ``"*. IN A 100.100.100.2"`` and ``"*. IN AAAA 2001:ffff:ffff::100.100.100.2"``.
                    
-                    To redirect all NXDOMAIN responses to 100.100.100.2 and 2001:ffff:ffff::100.100.100.2, one would configure a type redirect zone named ".", with the zone file containing wildcard records that point to the desired addresses: ``"*. IN A 100.100.100.2"`` and ``"*. IN AAAA 2001:ffff:ffff::100.100.100.2"``.
+To redirect all Spanish names (under .ES) one would use similar entries but with the names ``*.ES.`` instead of ``*.``. To redirect all commercial Spanish names (under COM.ES) one would use wildcard entries called ``*.COM.ES.``.
                    
-                    To redirect all Spanish names (under .ES) one would use similar entries but with the names ``*.ES.`` instead of ``*.``. To redirect all commercial Spanish names (under COM.ES) one would use wildcard entries called ``*.COM.ES.``.
+Note that the redirect zone supports all possible types; it is not limited to A and AAAA records.
                    
-                    Note that the redirect zone supports all possible types; it is not limited to A and AAAA records.
+If a redirect zone is configured with a ``masters`` option, then it is transfered in as if it were a slave zone. Otherwise, it is loaded from a file as if it were a master zone.
                    
-                    If a redirect zone is configured with a ``masters`` option, then it is transfered in as if it were a slave zone. Otherwise, it is loaded from a file as if it were a master zone.
-                   
-                    Because redirect zones are not referenced directly by name, they are not kept in the zone lookup table with normal master and slave zones. To reload a redirect zone, use ``rndc reload -redirect``, and to retransfer a redirect zone configured as slave, use ``rndc retransfer -redirect``. When using ``rndc reload`` without specifying a zone name, redirect zones will be reloaded along with other zones.
+Because redirect zones are not referenced directly by name, they are not kept in the zone lookup table with normal master and slave zones. To reload a redirect zone, use ``rndc reload -redirect``, and to retransfer a redirect zone configured as slave, use ``rndc retransfer -redirect``. When using ``rndc reload`` without specifying a zone name, redirect zones will be reloaded along with other zones.
+
 ``delegation-only`` This is used to enforce the delegation-only status of infrastructure zones (e.g. COM, NET, ORG). Any answer that is received without an explicit or implicit delegation in the authority section will be treated as NXDOMAIN. This does not apply to the zone apex. This should not be applied to leaf zones.
                    
-                    ``delegation-only`` has no effect on answers received from forwarders.
+``delegation-only`` has no effect on answers received from forwarders.
                    
-                    See caveats in `varlistentry_title <#root_delegation_only>`__.
-=================== =======================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
+See caveats in `varlistentry_title <#root_delegation_only>`__.
+
 
 Class
 ^^^^^
@@ -5476,184 +5482,184 @@ The ruletype field has 16 values: ``name``, ``subdomain``, ``wildcard``,
 ``krb5-selfsub``, ``ms-selfsub``, ``krb5-subdomain``, ``ms-subdomain``,
 ``tcp-self``, ``6to4-self``, ``zonesub``, and ``external``.
 
-+--------------------+---------------------------------------------------------+
-| ``name``           | Exact-match semantics. This rule matches when the name  |
-|                    | being updated is identical to the contents of the name  |
-|                    | field.                                                  |
-+--------------------+---------------------------------------------------------+
-| ``subdomain``      | This rule matches when the name being updated is a      |
-|                    | subdomain of, or identical to, the contents of the name |
-|                    | field.                                                  |
-+--------------------+---------------------------------------------------------+
-| ``zonesub``        | This rule is similar to subdomain, except that it       |
-|                    | matches when the name being updated is a subdomain of   |
-|                    | the zone in which the ``update-policy`` statement       |
-|                    | appears. This obviates the need to type the zone name   |
-|                    | twice, and enables the use of a standard                |
-|                    | ``update-policy`` statement in multiple zones without   |
-|                    | modification.                                           |
-|                    |                                                         |
-|                    | When this rule is used, the name field is omitted.      |
-+--------------------+---------------------------------------------------------+
-| ``wildcard``       | The name field is subject to DNS wildcard expansion,    |
-| ``                 | and this rule matches when the name being updated is a  |
-|                    | valid expansion of the wildcard.                        |
-+--------------------+---------------------------------------------------------+
-| ``self``           | This rule matches when the name of the record being     |
-|                    | updated matches the contents of the identity field. The |
-|                    | name field is ignored. To avoid confusion, it is        |
-|                    | recommended that this field be set to the same value as |
-|                    | the identity field or to "."                            |
-|                    |                                                         |
-|                    | The ``self`` rule type is most useful when allowing one |
-|                    | key per name to update, where the key has the same name |
-|                    | as the record to be updated. In this case, the identity |
-|                    | field can be specified as ``*`` (an asterisk).          |
-+--------------------+---------------------------------------------------------+
-| ``selfsub``        | This rule is similar to ``self`` except that subdomains |
-|                    | of ``self`` can also be updated.                        |
-+--------------------+---------------------------------------------------------+
-| ``selfwild``       | This rule is similar to ``self`` except that only       |
-|                    | subdomains of ``self`` can be updated.                  |
-+--------------------+---------------------------------------------------------+
-| ``ms-self``        | When a client sends an UPDATE using a Windows machine   |
-|                    | principal (for example, 'machine$@REALM'), this rule    |
-|                    | allows records with the absolute name of                |
-|                    | 'machine.REALM' to be updated.                          |
-|                    |                                                         |
-|                    | The realm to be matched is specified in the identity    |
-|                    | field.                                                  |
-|                    |                                                         |
-|                    | The name field has no effect on this rule; it should be |
-|                    | set to "." as a placeholder.                            |
-|                    |                                                         |
-|                    | For example, ``grant EXAMPLE.COM ms-self . A AAAA``     |
-|                    | allows any machine with a valid principal in the realm  |
-|                    | ``EXAMPLE.COM`` to update its own address records.      |
-+--------------------+---------------------------------------------------------+
-| ``ms-selfsub``     | This is similar to ``ms-self`` except it also allows    |
-|                    | updates to any subdomain of the name specified in the   |
-|                    | Windows machine principal, not just to the name itself. |
-+--------------------+---------------------------------------------------------+
-| ``ms-subdomain``   | When a client sends an UPDATE using a Windows machine   |
-|                    | principal (for example, 'machine$@REALM'), this rule    |
-|                    | allows any machine in the specified realm to update any |
-|                    | record in the zone or in a specified subdomain of the   |
-|                    | zone.                                                   |
-|                    |                                                         |
-|                    | The realm to be matched is specified in the identity    |
-|                    | field.                                                  |
-|                    |                                                         |
-|                    | The name field specifies the subdomain that may be      |
-|                    | updated. If set to "." (or any other name at or above   |
-|                    | the zone apex), any name in the zone can be updated.    |
-|                    |                                                         |
-|                    | For example, if ``update-policy`` for the zone          |
-|                    | "example.com" includes                                  |
-|                    | ``grant EXAMPLE.COM ms-subdomain hosts.example.com. A A |
-|                    | AAA``,                                                  |
-|                    | any machine with a valid principal in the realm         |
-|                    | ``EXAMPLE.COM`` will be able to update address records  |
-|                    | at or below "hosts.example.com".                        |
-+--------------------+---------------------------------------------------------+
-| ``krb5-self``      | When a client sends an UPDATE using a Kerberos machine  |
-|                    | principal (for example, 'host/machine@REALM'), this     |
-|                    | rule allows records with the absolute name of 'machine' |
-|                    | to be updated provided it has been authenticated by     |
-|                    | REALM. This is similar but not identical to ``ms-self`` |
-|                    | due to the 'machine' part of the Kerberos principal     |
-|                    | being an absolute name instead of a unqualified name.   |
-|                    |                                                         |
-|                    | The realm to be matched is specified in the identity    |
-|                    | field.                                                  |
-|                    |                                                         |
-|                    | The name field has no effect on this rule; it should be |
-|                    | set to "." as a placeholder.                            |
-|                    |                                                         |
-|                    | For example, ``grant EXAMPLE.COM krb5-self . A AAAA``   |
-|                    | allows any machine with a valid principal in the realm  |
-|                    | ``EXAMPLE.COM`` to update its own address records.      |
-+--------------------+---------------------------------------------------------+
-| ``krb5-selfsub``   | This is similar to ``krb5-self`` except it also allows  |
-|                    | updates to any subdomain of the name specified in the   |
-|                    | 'machine' part of the Kerberos principal, not just to   |
-|                    | the name itself.                                        |
-+--------------------+---------------------------------------------------------+
-| ``krb5-subdomain`` | This rule is identical to ``ms-subdomain``, except that |
-|                    | it works with Kerberos machine principals (i.e.,        |
-|                    | 'host/machine@REALM') rather than Windows machine       |
-|                    | principals.                                             |
-+--------------------+---------------------------------------------------------+
-| ``tcp-self``       | This rule allows updates that have been sent via TCP    |
-|                    | and for which the standard mapping from the client's IP |
-|                    | address into the ``in-addr.arpa`` and ``ip6.arpa``      |
-|                    | namespaces match the name to be updated. The            |
-|                    | ``identity`` field must match that name. The ``name``   |
-|                    | field should be set to ".". Note that, since identity   |
-|                    | is based on the client's IP address, it is not          |
-|                    | necessary for update request messages to be signed.     |
-|                    |                                                         |
-|                    |    **Note**                                             |
-|                    |                                                         |
-|                    |    It is theoretically possible to spoof these TCP      |
-|                    |    sessions.                                            |
-+--------------------+---------------------------------------------------------+
-| ``6to4-self``      | This allows the name matching a 6to4 IPv6 prefix, as    |
-|                    | specified in RFC 3056, to be updated by any TCP         |
-|                    | connection from either the 6to4 network or from the     |
-|                    | corresponding IPv4 address. This is intended to allow   |
-|                    | NS or DNAME RRsets to be added to the ``ip6.arpa``      |
-|                    | reverse tree.                                           |
-|                    |                                                         |
-|                    | The ``identity`` field must match the 6to4 prefix in    |
-|                    | ``ip6.arpa``. The ``name`` field should be set to ".".  |
-|                    | Note that, since identity is based on the client's IP   |
-|                    | address, it is not necessary for update request         |
-|                    | messages to be signed.                                  |
-|                    |                                                         |
-|                    | In addition, if specified for an ``ip6.arpa`` name      |
-|                    | outside of the ``2.0.0.2.ip6.arpa`` namespace, the      |
-|                    | corresponding /48 reverse name can be updated. For      |
-|                    | example, TCP/IPv6 connections from 2001:DB8:ED0C::/48   |
-|                    | can update records at                                   |
-|                    | ``C.0.D.E.8.B.D.0.1.0.0.2.ip6.arpa``.                   |
-|                    |                                                         |
-|                    |    **Note**                                             |
-|                    |                                                         |
-|                    |    It is theoretically possible to spoof these TCP      |
-|                    |    sessions.                                            |
-+--------------------+---------------------------------------------------------+
-| ``external``       | This rule allows ``named`` to defer the decision of     |
-|                    | whether to allow a given update to an external daemon.  |
-|                    |                                                         |
-|                    | The method of communicating with the daemon is          |
-|                    | specified in the identity field, the format of which is |
-|                    | "``local:``\ path", where path is the location of a     |
-|                    | UNIX-domain socket. (Currently, "local" is the only     |
-|                    | supported mechanism.)                                   |
-|                    |                                                         |
-|                    | Requests to the external daemon are sent over the       |
-|                    | UNIX-domain socket as datagrams with the following      |
-|                    | format:                                                 |
-|                    |                                                         |
-|                    | ::                                                      |
-|                    |                                                         |
-|                    |       Protocol version number (4 bytes, network byte or |
-|                    | der, currently 1)                                       |
-|                    |       Request length (4 bytes, network byte order)      |
-|                    |       Signer (null-terminated string)                   |
-|                    |       Name (null-terminated string)                     |
-|                    |       TCP source address (null-terminated string)       |
-|                    |       Rdata type (null-terminated string)               |
-|                    |       Key (null-terminated string)                      |
-|                    |       TKEY token length (4 bytes, network byte order)   |
-|                    |       TKEY token (remainder of packet)                  |
-|                    |                                                         |
-|                    | The daemon replies with a four-byte value in network    |
-|                    | byte order, containing either 0 or 1; 0 indicates that  |
-|                    | the specified update is not permitted, and 1 indicates  |
-|                    | that it is.                                             |
-+--------------------+---------------------------------------------------------+
+ +--------------------+---------------------------------------------------------+
+ | ``name``           | Exact-match semantics. This rule matches when the name  |
+ |                    | being updated is identical to the contents of the name  |
+ |                    | field.                                                  |
+ +--------------------+---------------------------------------------------------+
+ | ``subdomain``      | This rule matches when the name being updated is a      |
+ |                    | subdomain of, or identical to, the contents of the name |
+ |                    | field.                                                  |
+ +--------------------+---------------------------------------------------------+
+ | ``zonesub``        | This rule is similar to subdomain, except that it       |
+ |                    | matches when the name being updated is a subdomain of   |
+ |                    | the zone in which the ``update-policy`` statement       |
+ |                    | appears. This obviates the need to type the zone name   |
+ |                    | twice, and enables the use of a standard                |
+ |                    | ``update-policy`` statement in multiple zones without   |
+ |                    | modification.                                           |
+ |                    |                                                         |
+ |                    | When this rule is used, the name field is omitted.      |
+ +--------------------+---------------------------------------------------------+
+ | ``wildcard``       | The name field is subject to DNS wildcard expansion,    |
+ |                    | and this rule matches when the name being updated is a  |
+ |                    | valid expansion of the wildcard.                        |
+ +--------------------+---------------------------------------------------------+
+ | ``self``           | This rule matches when the name of the record being     |
+ |                    | updated matches the contents of the identity field. The |
+ |                    | name field is ignored. To avoid confusion, it is        |
+ |                    | recommended that this field be set to the same value as |
+ |                    | the identity field or to "."                            |
+ |                    |                                                         |
+ |                    | The ``self`` rule type is most useful when allowing one |
+ |                    | key per name to update, where the key has the same name |
+ |                    | as the record to be updated. In this case, the identity |
+ |                    | field can be specified as ``*`` (an asterisk).          |
+ +--------------------+---------------------------------------------------------+
+ | ``selfsub``        | This rule is similar to ``self`` except that subdomains |
+ |                    | of ``self`` can also be updated.                        |
+ +--------------------+---------------------------------------------------------+
+ | ``selfwild``       | This rule is similar to ``self`` except that only       |
+ |                    | subdomains of ``self`` can be updated.                  |
+ +--------------------+---------------------------------------------------------+
+ | ``ms-self``        | When a client sends an UPDATE using a Windows machine   |
+ |                    | principal (for example, 'machine$@REALM'), this rule    |
+ |                    | allows records with the absolute name of                |
+ |                    | 'machine.REALM' to be updated.                          |
+ |                    |                                                         |
+ |                    | The realm to be matched is specified in the identity    |
+ |                    | field.                                                  |
+ |                    |                                                         |
+ |                    | The name field has no effect on this rule; it should be |
+ |                    | set to "." as a placeholder.                            |
+ |                    |                                                         |
+ |                    | For example, ``grant EXAMPLE.COM ms-self . A AAAA``     |
+ |                    | allows any machine with a valid principal in the realm  |
+ |                    | ``EXAMPLE.COM`` to update its own address records.      |
+ +--------------------+---------------------------------------------------------+
+ | ``ms-selfsub``     | This is similar to ``ms-self`` except it also allows    |
+ |                    | updates to any subdomain of the name specified in the   |
+ |                    | Windows machine principal, not just to the name itself. |
+ +--------------------+---------------------------------------------------------+
+ | ``ms-subdomain``   | When a client sends an UPDATE using a Windows machine   |
+ |                    | principal (for example, 'machine$@REALM'), this rule    |
+ |                    | allows any machine in the specified realm to update any |
+ |                    | record in the zone or in a specified subdomain of the   |
+ |                    | zone.                                                   |
+ |                    |                                                         |
+ |                    | The realm to be matched is specified in the identity    |
+ |                    | field.                                                  |
+ |                    |                                                         |
+ |                    | The name field specifies the subdomain that may be      |
+ |                    | updated. If set to "." (or any other name at or above   |
+ |                    | the zone apex), any name in the zone can be updated.    |
+ |                    |                                                         |
+ |                    | For example, if ``update-policy`` for the zone          |
+ |                    | "example.com" includes                                  |
+ |                    | ``grant EXAMPLE.COM ms-subdomain hosts.example.com. AA  |
+ |                    | AAAA``,                                                 |
+ |                    | any machine with a valid principal in the realm         |
+ |                    | ``EXAMPLE.COM`` will be able to update address records  |
+ |                    | at or below "hosts.example.com".                        |
+ +--------------------+---------------------------------------------------------+
+ | ``krb5-self``      | When a client sends an UPDATE using a Kerberos machine  |
+ |                    | principal (for example, 'host/machine@REALM'), this     |
+ |                    | rule allows records with the absolute name of 'machine' |
+ |                    | to be updated provided it has been authenticated by     |
+ |                    | REALM. This is similar but not identical to ``ms-self`` |
+ |                    | due to the 'machine' part of the Kerberos principal     |
+ |                    | being an absolute name instead of a unqualified name.   |
+ |                    |                                                         |
+ |                    | The realm to be matched is specified in the identity    |
+ |                    | field.                                                  |
+ |                    |                                                         |
+ |                    | The name field has no effect on this rule; it should be |
+ |                    | set to "." as a placeholder.                            |
+ |                    |                                                         |
+ |                    | For example, ``grant EXAMPLE.COM krb5-self . A AAAA``   |
+ |                    | allows any machine with a valid principal in the realm  |
+ |                    | ``EXAMPLE.COM`` to update its own address records.      |
+ +--------------------+---------------------------------------------------------+
+ | ``krb5-selfsub``   | This is similar to ``krb5-self`` except it also allows  |
+ |                    | updates to any subdomain of the name specified in the   |
+ |                    | 'machine' part of the Kerberos principal, not just to   |
+ |                    | the name itself.                                        |
+ +--------------------+---------------------------------------------------------+
+ | ``krb5-subdomain`` | This rule is identical to ``ms-subdomain``, except that |
+ |                    | it works with Kerberos machine principals (i.e.,        |
+ |                    | 'host/machine@REALM') rather than Windows machine       |
+ |                    | principals.                                             |
+ +--------------------+---------------------------------------------------------+
+ | ``tcp-self``       | This rule allows updates that have been sent via TCP    |
+ |                    | and for which the standard mapping from the client's IP |
+ |                    | address into the ``in-addr.arpa`` and ``ip6.arpa``      |
+ |                    | namespaces match the name to be updated. The            |
+ |                    | ``identity`` field must match that name. The ``name``   |
+ |                    | field should be set to ".". Note that, since identity   |
+ |                    | is based on the client's IP address, it is not          |
+ |                    | necessary for update request messages to be signed.     |
+ |                    |                                                         |
+ |                    |    **Note**                                             |
+ |                    |                                                         |
+ |                    |    It is theoretically possible to spoof these TCP      |
+ |                    |    sessions.                                            |
+ +--------------------+---------------------------------------------------------+
+ | ``6to4-self``      | This allows the name matching a 6to4 IPv6 prefix, as    |
+ |                    | specified in RFC 3056, to be updated by any TCP         |
+ |                    | connection from either the 6to4 network or from the     |
+ |                    | corresponding IPv4 address. This is intended to allow   |
+ |                    | NS or DNAME RRsets to be added to the ``ip6.arpa``      |
+ |                    | reverse tree.                                           |
+ |                    |                                                         |
+ |                    | The ``identity`` field must match the 6to4 prefix in    |
+ |                    | ``ip6.arpa``. The ``name`` field should be set to ".".  |
+ |                    | Note that, since identity is based on the client's IP   |
+ |                    | address, it is not necessary for update request         |
+ |                    | messages to be signed.                                  |
+ |                    |                                                         |
+ |                    | In addition, if specified for an ``ip6.arpa`` name      |
+ |                    | outside of the ``2.0.0.2.ip6.arpa`` namespace, the      |
+ |                    | corresponding /48 reverse name can be updated. For      |
+ |                    | example, TCP/IPv6 connections from 2001:DB8:ED0C::/48   |
+ |                    | can update records at                                   |
+ |                    | ``C.0.D.E.8.B.D.0.1.0.0.2.ip6.arpa``.                   |
+ |                    |                                                         |
+ |                    |    **Note**                                             |
+ |                    |                                                         |
+ |                    |    It is theoretically possible to spoof these TCP      |
+ |                    |    sessions.                                            |
+ +--------------------+---------------------------------------------------------+
+ | ``external``       | This rule allows ``named`` to defer the decision of     |
+ |                    | whether to allow a given update to an external daemon.  |
+ |                    |                                                         |
+ |                    | The method of communicating with the daemon is          |
+ |                    | specified in the identity field, the format of which is |
+ |                    | "``local:``\ path", where path is the location of a     |
+ |                    | UNIX-domain socket. (Currently, "local" is the only     |
+ |                    | supported mechanism.)                                   |
+ |                    |                                                         |
+ |                    | Requests to the external daemon are sent over the       |
+ |                    | UNIX-domain socket as datagrams with the following      |
+ |                    | format:                                                 |
+ |                    |                                                         |
+ |                    | ::                                                      |
+ |                    |                                                         |
+ |                    |       Protocol version number (4 bytes, network byte or |
+ |                    | der, currently 1)                                       |
+ |                    |       Request length (4 bytes, network byte order)      |
+ |                    |       Signer (null-terminated string)                   |
+ |                    |       Name (null-terminated string)                     |
+ |                    |       TCP source address (null-terminated string)       |
+ |                    |       Rdata type (null-terminated string)               |
+ |                    |       Key (null-terminated string)                      |
+ |                    |       TKEY token length (4 bytes, network byte order)   |
+ |                    |       TKEY token (remainder of packet)                  |
+ |                    |                                                         |
+ |                    | The daemon replies with a four-byte value in network    |
+ |                    | byte order, containing either 0 or 1; 0 indicates that  |
+ |                    | the specified update is not permitted, and 1 indicates  |
+ |                    | that it is.                                             |
+ +--------------------+---------------------------------------------------------+  
 
 .. _multiple_views:
 
@@ -5735,272 +5741,273 @@ Ordering <#rrset_ordering>`__.
 
 The components of a Resource Record are:
 
-+---------------+-------------------------------------------------------+
-| owner name    | The domain name where the RR is found.                |
-+---------------+-------------------------------------------------------+
-| type          | An encoded 16-bit value that specifies the type of    |
-|               | the resource record.                                  |
-+---------------+-------------------------------------------------------+
-| TTL           | The time-to-live of the RR. This field is a 32-bit    |
-|               | integer in units of seconds, and is primarily used by |
-|               | resolvers when they cache RRs. The TTL describes how  |
-|               | long a RR can be cached before it should be           |
-|               | discarded.                                            |
-+---------------+-------------------------------------------------------+
-| class         | An encoded 16-bit value that identifies a protocol    |
-|               | family or instance of a protocol.                     |
-+---------------+-------------------------------------------------------+
-| RDATA         | The resource data. The format of the data is type     |
-|               | (and sometimes class) specific.                       |
-+---------------+-------------------------------------------------------+
+ +---------------+-------------------------------------------------------+
+ | owner name    | The domain name where the RR is found.                |
+ +---------------+-------------------------------------------------------+
+ | type          | An encoded 16-bit value that specifies the type of    |
+ |               | the resource record.                                  |
+ +---------------+-------------------------------------------------------+
+ | TTL           | The time-to-live of the RR. This field is a 32-bit    |
+ |               | integer in units of seconds, and is primarily used by |
+ |               | resolvers when they cache RRs. The TTL describes how  |
+ |               | long a RR can be cached before it should be           |
+ |               | discarded.                                            |
+ +---------------+-------------------------------------------------------+
+ | class         | An encoded 16-bit value that identifies a protocol    |
+ |               | family or instance of a protocol.                     |
+ +---------------+-------------------------------------------------------+
+ | RDATA         | The resource data. The format of the data is type     |
+ |               | (and sometimes class) specific.                       |
+ +---------------+-------------------------------------------------------+
 
 The following are *types* of valid RRs:
 
-+-------------+---------------------------------------------------------+
-| A           | A host address. In the IN class, this is a 32-bit IP    |
-|             | address. Described in RFC 1035.                         |
-+-------------+---------------------------------------------------------+
-| AAAA        | IPv6 address. Described in RFC 1886.                    |
-+-------------+---------------------------------------------------------+
-| A6          | IPv6 address. This can be a partial address (a suffix)  |
-|             | and an indirection to the name where the rest of the    |
-|             | address (the prefix) can be found. Experimental.        |
-|             | Described in RFC 2874.                                  |
-+-------------+---------------------------------------------------------+
-| AFSDB       | Location of AFS database servers. Experimental.         |
-|             | Described in RFC 1183.                                  |
-+-------------+---------------------------------------------------------+
-| AMTRELAY    | Automatic Multicast Tunneling Relay discovery record.   |
-|             | Work in progress draft-ietf-mboned-driad-amt-discovery. |
-+-------------+---------------------------------------------------------+
-| APL         | Address prefix list. Experimental. Described in RFC     |
-|             | 3123.                                                   |
-+-------------+---------------------------------------------------------+
-| ATMA        | ATM Address.                                            |
-+-------------+---------------------------------------------------------+
-| AVC         | Application Visibility and Control record.              |
-+-------------+---------------------------------------------------------+
-| CAA         | Identifies which Certificate Authorities can issue      |
-|             | certificates for this domain and what rules they need   |
-|             | to follow when doing so. Defined in RFC 6844.           |
-+-------------+---------------------------------------------------------+
-| CDNSKEY     | Identifies which DNSKEY records should be published as  |
-|             | DS records in the parent zone.                          |
-+-------------+---------------------------------------------------------+
-| CDS         | Contains the set of DS records that should be published |
-|             | by the parent zone.                                     |
-+-------------+---------------------------------------------------------+
-| CERT        | Holds a digital certificate. Described in RFC 2538.     |
-+-------------+---------------------------------------------------------+
-| CNAME       | Identifies the canonical name of an alias. Described in |
-|             | RFC 1035.                                               |
-+-------------+---------------------------------------------------------+
-| CSYNC       | Child-to-Parent Synchronization in DNS as described in  |
-|             | RFC 7477.                                               |
-+-------------+---------------------------------------------------------+
-| DHCID       | Is used for identifying which DHCP client is associated |
-|             | with this name. Described in RFC 4701.                  |
-+-------------+---------------------------------------------------------+
-| DLV         | A DNS Look-aside Validation record which contains the   |
-|             | records that are used as trust anchors for zones in a   |
-|             | DLV namespace. Described in RFC 4431.                   |
-+-------------+---------------------------------------------------------+
-| DNAME       | Replaces the domain name specified with another name to |
-|             | be looked up, effectively aliasing an entire subtree of |
-|             | the domain name space rather than a single record as in |
-|             | the case of the CNAME RR. Described in RFC 2672.        |
-+-------------+---------------------------------------------------------+
-| DNSKEY      | Stores a public key associated with a signed DNS zone.  |
-|             | Described in RFC 4034.                                  |
-+-------------+---------------------------------------------------------+
-| DOA         | Implements the Digital Object Architecture over DNS.    |
-|             | Experimental.                                           |
-+-------------+---------------------------------------------------------+
-| DS          | Stores the hash of a public key associated with a       |
-|             | signed DNS zone. Described in RFC 4034.                 |
-+-------------+---------------------------------------------------------+
-| EID         | End Point Identifier.                                   |
-+-------------+---------------------------------------------------------+
-| EUI48       | A 48-bit EUI address. Described in RFC 7043.            |
-+-------------+---------------------------------------------------------+
-| EUI64       | A 64-bit EUI address. Described in RFC 7043.            |
-+-------------+---------------------------------------------------------+
-| GID         | Reserved.                                               |
-+-------------+---------------------------------------------------------+
-| GPOS        | Specifies the global position. Superseded by LOC.       |
-+-------------+---------------------------------------------------------+
-| HINFO       | Identifies the CPU and OS used by a host. Described in  |
-|             | RFC 1035.                                               |
-+-------------+---------------------------------------------------------+
-| HIP         | Host Identity Protocol Address. Described in RFC 5205.  |
-+-------------+---------------------------------------------------------+
-| IPSECKEY    | Provides a method for storing IPsec keying material in  |
-|             | DNS. Described in RFC 4025.                             |
-+-------------+---------------------------------------------------------+
-| ISDN        | Representation of ISDN addresses. Experimental.         |
-|             | Described in RFC 1183.                                  |
-+-------------+---------------------------------------------------------+
-| KEY         | Stores a public key associated with a DNS name. Used in |
-|             | original DNSSEC; replaced by DNSKEY in DNSSECbis, but   |
-|             | still used with SIG(0). Described in RFCs 2535 and      |
-|             | 2931.                                                   |
-+-------------+---------------------------------------------------------+
-| KX          | Identifies a key exchanger for this DNS name. Described |
-|             | in RFC 2230.                                            |
-+-------------+---------------------------------------------------------+
-| L32         | Holds 32-bit Locator values for Identifier-Locator      |
-|             | Network Protocol. Described in RFC 6742.                |
-+-------------+---------------------------------------------------------+
-| L64         | Holds 64-bit Locator values for Identifier-Locator      |
-|             | Network Protocol. Described in RFC 6742.                |
-+-------------+---------------------------------------------------------+
-| LOC         | For storing GPS info. Described in RFC 1876.            |
-|             | Experimental.                                           |
-+-------------+---------------------------------------------------------+
-| LP          | Identifier-Locator Network Protocol. Described in RFC   |
-|             | 6742.                                                   |
-+-------------+---------------------------------------------------------+
-| MB          | Mail Box. Historical.                                   |
-+-------------+---------------------------------------------------------+
-| MD          | Mail Destination. Historical.                           |
-+-------------+---------------------------------------------------------+
-| MF          | Mail Forwarder. Historical.                             |
-+-------------+---------------------------------------------------------+
-| MG          | Mail Group. Historical.                                 |
-+-------------+---------------------------------------------------------+
-| MINFO       | Mail Information.                                       |
-+-------------+---------------------------------------------------------+
-| MR          | Mail Rename. Historical.                                |
-+-------------+---------------------------------------------------------+
-| MX          | Identifies a mail exchange for the domain with a 16-bit |
-|             | preference value (lower is better) followed by the host |
-|             | name of the mail exchange. Described in RFC 974, RFC    |
-|             | 1035.                                                   |
-+-------------+---------------------------------------------------------+
-| NAPTR       | Name authority pointer. Described in RFC 2915.          |
-+-------------+---------------------------------------------------------+
-| NID         | Holds values for Node Identifiers in Identifier-Locator |
-|             | Network Protocol. Described in RFC 6742.                |
-+-------------+---------------------------------------------------------+
-| NINFO       | Contains zone status information.                       |
-+-------------+---------------------------------------------------------+
-| NIMLOC      | Nimrod Locator.                                         |
-+-------------+---------------------------------------------------------+
-| NSAP        | A network service access point. Described in RFC 1706.  |
-+-------------+---------------------------------------------------------+
-| NSAP-PTR    | Historical.                                             |
-+-------------+---------------------------------------------------------+
-| NS          | The authoritative name server for the domain. Described |
-|             | in RFC 1035.                                            |
-+-------------+---------------------------------------------------------+
-| NSEC        | Used in DNSSECbis to securely indicate that RRs with an |
-|             | owner name in a certain name interval do not exist in a |
-|             | zone and indicate what RR types are present for an      |
-|             | existing name. Described in RFC 4034.                   |
-+-------------+---------------------------------------------------------+
-| NSEC3       | Used in DNSSECbis to securely indicate that RRs with an |
-|             | owner name in a certain name interval do not exist in a |
-|             | zone and indicate what RR types are present for an      |
-|             | existing name. NSEC3 differs from NSEC in that it       |
-|             | prevents zone enumeration but is more computationally   |
-|             | expensive on both the server and the client than NSEC.  |
-|             | Described in RFC 5155.                                  |
-+-------------+---------------------------------------------------------+
-| NSEC3PARAM  | Used in DNSSECbis to tell the authoritative server      |
-|             | which NSEC3 chains are available to use. Described in   |
-|             | RFC 5155.                                               |
-+-------------+---------------------------------------------------------+
-| NULL        | This is an opaque container.                            |
-+-------------+---------------------------------------------------------+
-| NXT         | Used in DNSSEC to securely indicate that RRs with an    |
-|             | owner name in a certain name interval do not exist in a |
-|             | zone and indicate what RR types are present for an      |
-|             | existing name. Used in original DNSSEC; replaced by     |
-|             | NSEC in DNSSECbis. Described in RFC 2535.               |
-+-------------+---------------------------------------------------------+
-| OPENPGPKEY  | Used to hold an OPENPGPKEY.                             |
-+-------------+---------------------------------------------------------+
-| PTR         | A pointer to another part of the domain name space.     |
-|             | Described in RFC 1035.                                  |
-+-------------+---------------------------------------------------------+
-| PX          | Provides mappings between RFC 822 and X.400 addresses.  |
-|             | Described in RFC 2163.                                  |
-+-------------+---------------------------------------------------------+
-| RKEY        | Resource key.                                           |
-+-------------+---------------------------------------------------------+
-| RP          | Information on persons responsible for the domain.      |
-|             | Experimental. Described in RFC 1183.                    |
-+-------------+---------------------------------------------------------+
-| RRSIG       | Contains DNSSECbis signature data. Described in RFC     |
-|             | 4034.                                                   |
-+-------------+---------------------------------------------------------+
-| RT          | Route-through binding for hosts that do not have their  |
-|             | own direct wide area network addresses. Experimental.   |
-|             | Described in RFC 1183.                                  |
-+-------------+---------------------------------------------------------+
-| SIG         | Contains DNSSEC signature data. Used in original        |
-|             | DNSSEC; replaced by RRSIG in DNSSECbis, but still used  |
-|             | for SIG(0). Described in RFCs 2535 and 2931.            |
-+-------------+---------------------------------------------------------+
-| SINK        | The kitchen sink record.                                |
-+-------------+---------------------------------------------------------+
-| SMIMEA      | The S/MIME Security Certificate Association.            |
-+-------------+---------------------------------------------------------+
-| SOA         | Identifies the start of a zone of authority. Described  |
-|             | in RFC 1035.                                            |
-+-------------+---------------------------------------------------------+
-| SPF         | Contains the Sender Policy Framework information for a  |
-|             | given email domain. Described in RFC 4408.              |
-+-------------+---------------------------------------------------------+
-| SRV         | Information about well known network services (replaces |
-|             | WKS). Described in RFC 2782.                            |
-+-------------+---------------------------------------------------------+
-| SSHFP       | Provides a way to securely publish a secure shell key's |
-|             | fingerprint. Described in RFC 4255.                     |
-+-------------+---------------------------------------------------------+
-| TA          | Trust Anchor. Experimental.                             |
-+-------------+---------------------------------------------------------+
-| TALINK      | Trust Anchor Link. Experimental.                        |
-+-------------+---------------------------------------------------------+
-| TLSA        | Transport Layer Security Certificate Association.       |
-|             | Described in RFC 6698.                                  |
-+-------------+---------------------------------------------------------+
-| TXT         | Text records. Described in RFC 1035.                    |
-+-------------+---------------------------------------------------------+
-| UID         | Reserved.                                               |
-+-------------+---------------------------------------------------------+
-| UINFO       | Reserved.                                               |
-+-------------+---------------------------------------------------------+
-| UNSPEC      | Reserved. Historical.                                   |
-+-------------+---------------------------------------------------------+
-| URI         | Holds a URI. Described in RFC 7553.                     |
-+-------------+---------------------------------------------------------+
-| WKS         | Information about which well known network services,    |
-|             | such as SMTP, that a domain supports. Historical.       |
-+-------------+---------------------------------------------------------+
-| X25         | Representation of X.25 network addresses. Experimental. |
-|             | Described in RFC 1183.                                  |
-+-------------+---------------------------------------------------------+
-| ZONEMD      | Zone Message Digest. Work in progress                   |
-|             | draft-wessels-dns-zone-digest.                          |
-+-------------+---------------------------------------------------------+
+ +-------------+---------------------------------------------------------+
+ | A           | A host address. In the IN class, this is a 32-bit IP    |
+ |             | address. Described in RFC 1035.                         |
+ +-------------+---------------------------------------------------------+
+ | AAAA        | IPv6 address. Described in RFC 1886.                    |
+ +-------------+---------------------------------------------------------+
+ | A6          | IPv6 address. This can be a partial address (a suffix)  |
+ |             | and an indirection to the name where the rest of the    |
+ |             | address (the prefix) can be found. Experimental.        |
+ |             | Described in RFC 2874.                                  |
+ +-------------+---------------------------------------------------------+
+ | AFSDB       | Location of AFS database servers. Experimental.         |
+ |             | Described in RFC 1183.                                  |
+ +-------------+---------------------------------------------------------+
+ | AMTRELAY    | Automatic Multicast Tunneling Relay discovery record.   |
+ |             | Work in progress draft-ietf-mboned-driad-amt-discovery. |
+ +-------------+---------------------------------------------------------+
+ | APL         | Address prefix list. Experimental. Described in RFC     |
+ |             | 3123.                                                   |
+ +-------------+---------------------------------------------------------+
+ | ATMA        | ATM Address.                                            |
+ +-------------+---------------------------------------------------------+
+ | AVC         | Application Visibility and Control record.              |
+ +-------------+---------------------------------------------------------+
+ | CAA         | Identifies which Certificate Authorities can issue      |
+ |             | certificates for this domain and what rules they need   |
+ |             | to follow when doing so. Defined in RFC 6844.           |
+ +-------------+---------------------------------------------------------+
+ | CDNSKEY     | Identifies which DNSKEY records should be published as  |
+ |             | DS records in the parent zone.                          |
+ +-------------+---------------------------------------------------------+
+ | CDS         | Contains the set of DS records that should be published |
+ |             | by the parent zone.                                     |
+ +-------------+---------------------------------------------------------+
+ | CERT        | Holds a digital certificate. Described in RFC 2538.     |
+ +-------------+---------------------------------------------------------+
+ | CNAME       | Identifies the canonical name of an alias. Described in |
+ |             | RFC 1035.                                               |
+ +-------------+---------------------------------------------------------+
+ | CSYNC       | Child-to-Parent Synchronization in DNS as described in  |
+ |             | RFC 7477.                                               |
+ +-------------+---------------------------------------------------------+
+ | DHCID       | Is used for identifying which DHCP client is associated |
+ |             | with this name. Described in RFC 4701.                  |
+ +-------------+---------------------------------------------------------+
+ | DLV         | A DNS Look-aside Validation record which contains the   |
+ |             | records that are used as trust anchors for zones in a   |
+ |             | DLV namespace. Described in RFC 4431.                   |
+ +-------------+---------------------------------------------------------+
+ | DNAME       | Replaces the domain name specified with another name to |
+ |             | be looked up, effectively aliasing an entire subtree of |
+ |             | the domain name space rather than a single record as in |
+ |             | the case of the CNAME RR. Described in RFC 2672.        |
+ +-------------+---------------------------------------------------------+
+ | DNSKEY      | Stores a public key associated with a signed DNS zone.  |
+ |             | Described in RFC 4034.                                  |
+ +-------------+---------------------------------------------------------+
+ | DOA         | Implements the Digital Object Architecture over DNS.    |
+ |             | Experimental.                                           |
+ +-------------+---------------------------------------------------------+
+ | DS          | Stores the hash of a public key associated with a       |
+ |             | signed DNS zone. Described in RFC 4034.                 |
+ +-------------+---------------------------------------------------------+
+ | EID         | End Point Identifier.                                   |
+ +-------------+---------------------------------------------------------+
+ | EUI48       | A 48-bit EUI address. Described in RFC 7043.            |
+ +-------------+---------------------------------------------------------+
+ | EUI64       | A 64-bit EUI address. Described in RFC 7043.            |
+ +-------------+---------------------------------------------------------+
+ | GID         | Reserved.                                               |
+ +-------------+---------------------------------------------------------+
+ | GPOS        | Specifies the global position. Superseded by LOC.       |
+ +-------------+---------------------------------------------------------+
+ | HINFO       | Identifies the CPU and OS used by a host. Described in  |
+ |             | RFC 1035.                                               |
+ +-------------+---------------------------------------------------------+
+ | HIP         | Host Identity Protocol Address. Described in RFC 5205.  |
+ +-------------+---------------------------------------------------------+
+ | IPSECKEY    | Provides a method for storing IPsec keying material in  |
+ |             | DNS. Described in RFC 4025.                             |
+ +-------------+---------------------------------------------------------+
+ | ISDN        | Representation of ISDN addresses. Experimental.         |
+ |             | Described in RFC 1183.                                  |
+ +-------------+---------------------------------------------------------+
+ | KEY         | Stores a public key associated with a DNS name. Used in |
+ |             | original DNSSEC; replaced by DNSKEY in DNSSECbis, but   |
+ |             | still used with SIG(0). Described in RFCs 2535 and      |
+ |             | 2931.                                                   |
+ +-------------+---------------------------------------------------------+
+ | KX          | Identifies a key exchanger for this DNS name. Described |
+ |             | in RFC 2230.                                            |
+ +-------------+---------------------------------------------------------+
+ | L32         | Holds 32-bit Locator values for Identifier-Locator      |
+ |             | Network Protocol. Described in RFC 6742.                |
+ +-------------+---------------------------------------------------------+
+ | L64         | Holds 64-bit Locator values for Identifier-Locator      |
+ |             | Network Protocol. Described in RFC 6742.                |
+ +-------------+---------------------------------------------------------+
+ | LOC         | For storing GPS info. Described in RFC 1876.            |
+ |             | Experimental.                                           |
+ +-------------+---------------------------------------------------------+
+ | LP          | Identifier-Locator Network Protocol. Described in RFC   |
+ |             | 6742.                                                   |
+ +-------------+---------------------------------------------------------+
+ | MB          | Mail Box. Historical.                                   |
+ +-------------+---------------------------------------------------------+
+ | MD          | Mail Destination. Historical.                           |
+ +-------------+---------------------------------------------------------+
+ | MF          | Mail Forwarder. Historical.                             |
+ +-------------+---------------------------------------------------------+
+ | MG          | Mail Group. Historical.                                 |
+ +-------------+---------------------------------------------------------+
+ | MINFO       | Mail Information.                                       |
+ +-------------+---------------------------------------------------------+
+ | MR          | Mail Rename. Historical.                                |
+ +-------------+---------------------------------------------------------+
+ | MX          | Identifies a mail exchange for the domain with a 16-bit |
+ |             | preference value (lower is better) followed by the host |
+ |             | name of the mail exchange. Described in RFC 974, RFC    |
+ |             | 1035.                                                   |
+ +-------------+---------------------------------------------------------+ 
+ | NAPTR       | Name authority pointer. Described in RFC 2915.           |
+ +-------------+---------------------------------------------------------+
+ | NID         | Holds values for Node Identifiers in Identifier-Locator |
+ |             | Network Protocol. Described in RFC 6742.                |
+ +-------------+---------------------------------------------------------+
+ | NINFO       | Contains zone status information.                       |
+ +-------------+---------------------------------------------------------+
+ | NIMLOC      | Nimrod Locator.                                         |
+ +-------------+---------------------------------------------------------+
+ | NSAP        | A network service access point. Described in RFC 1706.  |
+ +-------------+---------------------------------------------------------+
+ | NSAP-PTR    | Historical.                                             |
+ +-------------+---------------------------------------------------------+
+ | NS          | The authoritative name server for the domain. Described |
+ |             | in RFC 1035.                                            |
+ +-------------+---------------------------------------------------------+
+ | NSEC        | Used in DNSSECbis to securely indicate that RRs with an |
+ |             | owner name in a certain name interval do not exist in a |
+ |             | zone and indicate what RR types are present for an      |
+ |             | existing name. Described in RFC 4034.                   |
+ +-------------+---------------------------------------------------------+
+ | NSEC3       | Used in DNSSECbis to securely indicate that RRs with an |
+ |             | owner name in a certain name interval do not exist in a |
+ |             | zone and indicate what RR types are present for an      |
+ |             | existing name. NSEC3 differs from NSEC in that it       |
+ |             | prevents zone enumeration but is more computationally   |
+ |             | expensive on both the server and the client than NSEC.  |
+ |             | Described in RFC 5155.                                  |
+ +-------------+---------------------------------------------------------+
+ | NSEC3PARAM  | Used in DNSSECbis to tell the authoritative server      |
+ |             | which NSEC3 chains are available to use. Described in   |
+ |             | RFC 5155.                                               |
+ +-------------+---------------------------------------------------------+
+ | NULL        | This is an opaque container.                            |
+ +-------------+---------------------------------------------------------+
+ | NXT         | Used in DNSSEC to securely indicate that RRs with an    |
+ |             | owner name in a certain name interval do not exist in a |
+ |             | zone and indicate what RR types are present for an      |
+ |             | existing name. Used in original DNSSEC; replaced by     |
+ |             | NSEC in DNSSECbis. Described in RFC 2535.               |
+ +-------------+---------------------------------------------------------+
+ | OPENPGPKEY  | Used to hold an OPENPGPKEY.                             |
+ +-------------+---------------------------------------------------------+
+ | PTR         | A pointer to another part of the domain name space.     |
+ |             | Described in RFC 1035.                                  |
+ +-------------+---------------------------------------------------------+
+ | PX          | Provides mappings between RFC 822 and X.400 addresses.  |
+ |             | Described in RFC 2163.                                  |
+ +-------------+---------------------------------------------------------+
+ | RKEY        | Resource key.                                           |
+ +-------------+---------------------------------------------------------+
+ | RP          | Information on persons responsible for the domain.      |
+ |             | Experimental. Described in RFC 1183.                    |
+ +-------------+---------------------------------------------------------+
+ | RRSIG       | Contains DNSSECbis signature data. Described in RFC     |
+ |             | 4034.                                                   |
+ +-------------+---------------------------------------------------------+
+ | RT          | Route-through binding for hosts that do not have their  |
+ |             | own direct wide area network addresses. Experimental.   |
+ |             | Described in RFC 1183.                                  |
+ +-------------+---------------------------------------------------------+
+ | SIG         | Contains DNSSEC signature data. Used in original        |
+ |             | DNSSEC; replaced by RRSIG in DNSSECbis, but still used  |
+ |             | for SIG(0). Described in RFCs 2535 and 2931.            |
+ +-------------+---------------------------------------------------------+
+ | SINK        | The kitchen sink record.                                |
+ +-------------+---------------------------------------------------------+
+ | SMIMEA      | The S/MIME Security Certificate Association.            |
+ +-------------+---------------------------------------------------------+
+ | SOA         | Identifies the start of a zone of authority. Described  |
+ |             | in RFC 1035.                                            |
+ +-------------+---------------------------------------------------------+
+ | SPF         | Contains the Sender Policy Framework information for a  |
+ |             | given email domain. Described in RFC 4408.              |
+ +-------------+---------------------------------------------------------+
+ | SRV         | Information about well known network services (replaces |
+ |             | WKS). Described in RFC 2782.                            |
+ +-------------+---------------------------------------------------------+
+ | SSHFP       | Provides a way to securely publish a secure shell key's |
+ |             | fingerprint. Described in RFC 4255.                     |
+ +-------------+---------------------------------------------------------+
+ | TA          | Trust Anchor. Experimental.                             |
+ +-------------+---------------------------------------------------------+
+ | TALINK      | Trust Anchor Link. Experimental.                        |
+ +-------------+---------------------------------------------------------+
+ | TLSA        | Transport Layer Security Certificate Association.       |
+ |             | Described in RFC 6698.                                  |
+ +-------------+---------------------------------------------------------+
+ | TXT         | Text records. Described in RFC 1035.                    |
+ +-------------+---------------------------------------------------------+
+ | UID         | Reserved.                                               |
+ +-------------+---------------------------------------------------------+
+ | UINFO       | Reserved.                                               |
+ +-------------+---------------------------------------------------------+
+ | UNSPEC      | Reserved. Historical.                                   |
+ +-------------+---------------------------------------------------------+
+ | URI         | Holds a URI. Described in RFC 7553.                     |
+ +-------------+---------------------------------------------------------+
+ | WKS         | Information about which well known network services,    |
+ |             | such as SMTP, that a domain supports. Historical.       |
+ +-------------+---------------------------------------------------------+
+ | X25         | Representation of X.25 network addresses. Experimental. |
+ |             | Described in RFC 1183.                                  |
+ +-------------+---------------------------------------------------------+
+ | ZONEMD      | Zone Message Digest. Work in progress                   |
+ |             | draft-wessels-dns-zone-digest.                          |
+ +-------------+---------------------------------------------------------+ 
 
 The following *classes* of resource records are currently valid in the
 DNS:
 
-+-------------+---------------------------------------------------------+
-| IN          | The Internet.                                           |
-+-------------+---------------------------------------------------------+
-| CH          | Chaosnet, a LAN protocol created at MIT in the          |
-|             | mid-1970s. Rarely used for its historical purpose, but  |
-|             | reused for BIND's built-in server information zones,    |
-|             | e.g., ``version.bind``.                                 |
-+-------------+---------------------------------------------------------+
-| HS          | Hesiod, an information service developed by MIT's       |
-|             | Project Athena. It is used to share information about   |
-|             | various systems databases, such as users, groups,       |
-|             | printers and so on.                                     |
-+-------------+---------------------------------------------------------+
+ +-------------+---------------------------------------------------------+
+ | IN          | The Internet.                                           |
+ +-------------+---------------------------------------------------------+
+ | CH          | Chaosnet, a LAN protocol created at MIT in the          |
+ |             | mid-1970s. Rarely used for its historical purpose, but  |
+ |             | reused for BIND's built-in server information zones,    |
+ |             | e.g., ``version.bind``.                                 |
+ +-------------+---------------------------------------------------------+
+ | HS          | Hesiod, an information service developed by MIT's       |
+ |             | Project Athena. It is used to share information about   |
+ |             | various systems databases, such as users, groups,       |
+ |             | printers and so on.                                     |
+ +-------------+---------------------------------------------------------+ 
+ 
 
 The owner name is often implicit, rather than forming an integral part
 of the RR. For example, many name servers internally form tree or hash
@@ -6052,19 +6059,19 @@ of the typical representation for the data.
 
 For example, we might show the RRs carried in a message as:
 
-+---------------------+---------------+--------------------------------+
-| ``ISI.EDU.``        | ``MX``        | ``10 VENERA.ISI.EDU.``         |
-+---------------------+---------------+--------------------------------+
-|                     | ``MX``        | ``10 VAXA.ISI.EDU``            |
-+---------------------+---------------+--------------------------------+
-| ``VENERA.ISI.EDU``  | ``A``         | ``128.9.0.32``                 |
-+---------------------+---------------+--------------------------------+
-|                     | ``A``         | ``10.1.0.52``                  |
-+---------------------+---------------+--------------------------------+
-| ``VAXA.ISI.EDU``    | ``A``         | ``10.2.0.27``                  |
-+---------------------+---------------+--------------------------------+
-|                     | ``A``         | ``128.9.0.33``                 |
-+---------------------+---------------+--------------------------------+
+ +---------------------+---------------+--------------------------------+
+ | ``ISI.EDU.``        | ``MX``        | ``10 VENERA.ISI.EDU.``         |
+ +---------------------+---------------+--------------------------------+
+ |                     | ``MX``        | ``10 VAXA.ISI.EDU``            |
+ +---------------------+---------------+--------------------------------+
+ | ``VENERA.ISI.EDU``  | ``A``         | ``128.9.0.32``                 |
+ +---------------------+---------------+--------------------------------+
+ |                     | ``A``         | ``10.1.0.52``                  |
+ +---------------------+---------------+--------------------------------+
+ | ``VAXA.ISI.EDU``    | ``A``         | ``10.2.0.27``                  |
+ +---------------------+---------------+--------------------------------+
+ |                     | ``A``         | ``128.9.0.33``                 |
+ +---------------------+---------------+--------------------------------+
 
 The MX RRs have an RDATA section which consists of a 16-bit number
 followed by a domain name. The address RRs use a standard IP address
@@ -6075,11 +6082,11 @@ names.
 
 Similarly we might see:
 
-+----------------------+---------------+-------------------------------+
-| ``XX.LCS.MIT.EDU.``  | ``IN A``      | ``10.0.0.44``                 |
-+----------------------+---------------+-------------------------------+
-|                      | ``CH A``      | ``MIT.EDU. 2420``             |
-+----------------------+---------------+-------------------------------+
+ +----------------------+---------------+-------------------------------+
+ | ``XX.LCS.MIT.EDU.``  | ``IN A``      | ``10.0.0.44``                 |
+ +----------------------+---------------+-------------------------------+
+ |                      | ``CH A``      | ``MIT.EDU. 2420``             |
+ +----------------------+---------------+-------------------------------+
 
 This example shows two addresses for ``XX.LCS.MIT.EDU``, each of a
 different class.
@@ -6113,17 +6120,17 @@ the MX record is in error, and will be ignored. Instead, the mail will
 be delivered to the server specified in the MX record pointed to by the
 CNAME. For example:
 
-+------------------------+--------+--------+--------------+------------------------+
-| ``example.com.``       | ``IN`` | ``MX`` | ``10``       | ``mail.example.com.``  |
-+------------------------+--------+--------+--------------+------------------------+
-|                        | ``IN`` | ``MX`` | ``10``       | ``mail2.example.com.`` |
-+------------------------+--------+--------+--------------+------------------------+
-|                        | ``IN`` | ``MX`` | ``20``       | ``mail.backup.org.``   |
-+------------------------+--------+--------+--------------+------------------------+
-| ``mail.example.com.``  | ``IN`` | ``A``  | ``10.0.0.1`` |                        |
-+------------------------+--------+--------+--------------+------------------------+
-| ``mail2.example.com.`` | ``IN`` | ``A``  | ``10.0.0.2`` |                        |
-+------------------------+--------+--------+--------------+------------------------+
+ +------------------------+--------+--------+--------------+------------------------+
+ | ``example.com.``       | ``IN`` | ``MX`` | ``10``       | ``mail.example.com.``  |
+ +------------------------+--------+--------+--------------+------------------------+
+ |                        | ``IN`` | ``MX`` | ``10``       | ``mail2.example.com.`` |
+ +------------------------+--------+--------+--------------+------------------------+
+ |                        | ``IN`` | ``MX`` | ``20``       | ``mail.backup.org.``   |
+ +------------------------+--------+--------+--------------+------------------------+
+ | ``mail.example.com.``  | ``IN`` | ``A``  | ``10.0.0.1`` |                        |
+ +------------------------+--------+--------+--------------+------------------------+
+ | ``mail2.example.com.`` | ``IN`` | ``A``  | ``10.0.0.2`` |                        |
+ +------------------------+--------+--------+--------------+------------------------+
 
 Mail delivery will be attempted to ``mail.example.com`` and
 ``mail2.example.com`` (in any order), and if neither of those succeed,
@@ -6140,20 +6147,20 @@ RRs. The TTL describes how long a RR can be cached before it should be
 discarded. The following three types of TTL are currently used in a zone
 file.
 
-+---------+------------------------------------------------------------+
-| SOA     | The last field in the SOA is the negative caching TTL.     |
-|         | This controls how long other servers will cache            |
-|         | no-such-domain (NXDOMAIN) responses from you.              |
-|         |                                                            |
-|         | The maximum time for negative caching is 3 hours (3h).     |
-+---------+------------------------------------------------------------+
-| $TTL    | The $TTL directive at the top of the zone file (before the |
-|         | SOA) gives a default TTL for every RR without a specific   |
-|         | TTL set.                                                   |
-+---------+------------------------------------------------------------+
-| RR TTLs | Each RR can have a TTL as the second field in the RR,      |
-|         | which will control how long other servers can cache it.    |
-+---------+------------------------------------------------------------+
+ +---------+------------------------------------------------------------+
+ | SOA     | The last field in the SOA is the negative caching TTL.     |
+ |         | This controls how long other servers will cache            |
+ |         | no-such-domain (NXDOMAIN) responses from you.              |
+ |         |                                                            |
+ |         | The maximum time for negative caching is 3 hours (3h).     |
+ +---------+------------------------------------------------------------+
+ | $TTL    | The $TTL directive at the top of the zone file (before the |
+ |         | SOA) gives a default TTL for every RR without a specific   |
+ |         | TTL set.                                                   |
+ +---------+------------------------------------------------------------+
+ | RR TTLs | Each RR can have a TTL as the second field in the RR,      |
+ |         | which will control how long other servers can cache it.    |
+ +---------+------------------------------------------------------------+
 
 All of these TTLs default to units of seconds, though units can be
 explicitly specified, for example, ``1h30m``.
@@ -6174,11 +6181,11 @@ data field is the name of the machine or, optionally, multiple PTR
 records if the machine has more than one name. For example, in the
 [example.com] domain:
 
-+--------------+-------------------------------------------------------+
-| ``$ORIGIN``  | ``2.1.10.in-addr.arpa``                               |
-+--------------+-------------------------------------------------------+
-| ``3``        | ``IN PTR foo.example.com.``                           |
-+--------------+-------------------------------------------------------+
+ +--------------+-------------------------------------------------------+
+ | ``$ORIGIN``  | ``2.1.10.in-addr.arpa``                               |
+ +--------------+-------------------------------------------------------+
+ | ``3``        | ``IN PTR foo.example.com.``                           |
+ +--------------+-------------------------------------------------------+
 
 ..
 
@@ -6320,55 +6327,55 @@ is equivalent to
    HOST-127.EXAMPLE. A  1.2.3.127
    HOST-127.EXAMPLE. MX 0 .
 
-+-----------+----------------------------------------------------------+
-| ``range`` | This can be one of two forms: start-stop or              |
-|           | start-stop/step. If the first form is used, then step is |
-|           | set to 1. start, stop and step must be positive integers |
-|           | between 0 and (2^31)-1. start must not be larger than    |
-|           | stop.                                                    |
-+-----------+----------------------------------------------------------+
-| ``lhs``   | This describes the owner name of the resource records to |
-|           | be created. Any single ``$`` (dollar sign) symbols       |
-|           | within the ``lhs`` string are replaced by the iterator   |
-|           | value. To get a $ in the output, you need to escape the  |
-|           | ``$`` using a backslash ``\``, e.g. ``\$``. The ``$``    |
-|           | may optionally be followed by modifiers which change the |
-|           | offset from the iterator, field width and base.          |
-|           | Modifiers are introduced by a ``{`` (left brace)         |
-|           | immediately following the ``$`` as                       |
-|           | ``${offset[,width[,base]]}``. For example,               |
-|           | ``${-20,3,d}`` subtracts 20 from the current value,      |
-|           | prints the result as a decimal in a zero-padded field of |
-|           | width 3. Available output forms are decimal (``d``),     |
-|           | octal (``o``), hexadecimal (``x`` or ``X`` for           |
-|           | uppercase) and nibble (``n`` or ``N``\\ for uppercase).  |
-|           | The default modifier is ``${0,0,d}``. If the ``lhs`` is  |
-|           | not absolute, the current ``$ORIGIN`` is appended to the |
-|           | name.                                                    |
-|           |                                                          |
-|           | In nibble mode the value will be treated as if it was a  |
-|           | reversed hexadecimal string with each hexadecimal digit  |
-|           | as a separate label. The width field includes the label  |
-|           | separator.                                               |
-|           |                                                          |
-|           | For compatibility with earlier versions, ``$$`` is still |
-|           | recognized as indicating a literal $ in the output.      |
-+-----------+----------------------------------------------------------+
-| ``ttl``   | Specifies the time-to-live of the generated records. If  |
-|           | not specified this will be inherited using the normal    |
-|           | TTL inheritance rules.                                   |
-|           |                                                          |
-|           | ``class`` and ``ttl`` can be entered in either order.    |
-+-----------+----------------------------------------------------------+
-| ``class`` | Specifies the class of the generated records. This must  |
-|           | match the zone class if it is specified.                 |
-|           |                                                          |
-|           | ``class`` and ``ttl`` can be entered in either order.    |
-+-----------+----------------------------------------------------------+
-| ``type``  | Any valid type.                                          |
-+-----------+----------------------------------------------------------+
-| ``rhs``   | ``rhs``, optionally, quoted string.                      |
-+-----------+----------------------------------------------------------+
+ +-----------+----------------------------------------------------------+
+ | ``range`` | This can be one of two forms: start-stop or              |
+ |           | start-stop/step. If the first form is used, then step is |
+ |           | set to 1. start, stop and step must be positive integers |
+ |           | between 0 and (2^31)-1. start must not be larger than    |
+ |           | stop.                                                    |
+ +-----------+----------------------------------------------------------+
+ | ``lhs``   | This describes the owner name of the resource records to |
+ |           | be created. Any single ``$`` (dollar sign) symbols       |
+ |           | within the ``lhs`` string are replaced by the iterator   |
+ |           | value. To get a $ in the output, you need to escape the  |
+ |           | ``$`` using a backslash ``\``, e.g. ``\$``. The ``$``    |
+ |           | may optionally be followed by modifiers which change the |
+ |           | offset from the iterator, field width and base.          |
+ |           | Modifiers are introduced by a ``{`` (left brace)         |
+ |           | immediately following the ``$`` as                       |
+ |           | ``${offset[,width[,base]]}``. For example,               |
+ |           | ``${-20,3,d}`` subtracts 20 from the current value,      |
+ |           | prints the result as a decimal in a zero-padded field of |
+ |           | width 3. Available output forms are decimal (``d``),     |
+ |           | octal (``o``), hexadecimal (``x`` or ``X`` for           |
+ |           | uppercase) and nibble (``n`` or ``N``\\ for uppercase).  |
+ |           | The default modifier is ``${0,0,d}``. If the ``lhs`` is  |
+ |           | not absolute, the current ``$ORIGIN`` is appended to the |
+ |           | name.                                                    |
+ |           |                                                          |
+ |           | In nibble mode the value will be treated as if it was a  |
+ |           | reversed hexadecimal string with each hexadecimal digit  |
+ |           | as a separate label. The width field includes the label  |
+ |           | separator.                                               |
+ |           |                                                          |
+ |           | For compatibility with earlier versions, ``$$`` is still |
+ |           | recognized as indicating a literal $ in the output.      |
+ +-----------+----------------------------------------------------------+
+ | ``ttl``   | Specifies the time-to-live of the generated records. If  |
+ |           | not specified this will be inherited using the normal    |
+ |           | TTL inheritance rules.                                   |
+ |           |                                                          |
+ |           | ``class`` and ``ttl`` can be entered in either order.    |
+ +-----------+----------------------------------------------------------+
+ | ``class`` | Specifies the class of the generated records. This must  |
+ |           | match the zone class if it is specified.                 |
+ |           |                                                          |
+ |           | ``class`` and ``ttl`` can be entered in either order.    |
+ +-----------+----------------------------------------------------------+
+ | ``type``  | Any valid type.                                          |
+ +-----------+----------------------------------------------------------+
+ | ``rhs``   | ``rhs``, optionally, quoted string.                      |
+ +-----------+----------------------------------------------------------+ 
 
 The ``$GENERATE`` directive is a BIND extension and not part of the
 standard zone file format.
@@ -6426,50 +6433,50 @@ useful.
 
 The statistics information is categorized into the following sections.
 
-+---------------------------------------+------------------------------+
-| Incoming Requests                     | The number of incoming DNS   |
-|                                       | requests for each OPCODE.    |
-+---------------------------------------+------------------------------+
-| Incoming Queries                      | The number of incoming       |
-|                                       | queries for each RR type.    |
-+---------------------------------------+------------------------------+
-| Outgoing Queries                      | The number of outgoing       |
-|                                       | queries for each RR type     |
-|                                       | sent from the internal       |
-|                                       | resolver. Maintained per     |
-|                                       | view.                        |
-+---------------------------------------+------------------------------+
-| Name Server Statistics                | Statistics counters about    |
-|                                       | incoming request processing. |
-+---------------------------------------+------------------------------+
-| Zone Maintenance Statistics           | Statistics counters          |
-|                                       | regarding zone maintenance   |
-|                                       | operations such as zone      |
-|                                       | transfers.                   |
-+---------------------------------------+------------------------------+
-| Resolver Statistics                   | Statistics counters about    |
-|                                       | name resolution performed in |
-|                                       | the internal resolver.       |
-|                                       | Maintained per view.         |
-+---------------------------------------+------------------------------+
-| Cache DB RRsets                       | The number of RRsets per RR  |
-|                                       | type and nonexistent names   |
-|                                       | stored in the cache          |
-|                                       | database. If the exclamation |
-|                                       | mark (!) is printed for a RR |
-|                                       | type, it means that          |
-|                                       | particular type of RRset is  |
-|                                       | known to be nonexistent      |
-|                                       | (this is also known as       |
-|                                       | "NXRRSET"). If a hash mark   |
-|                                       | (#) is present then the      |
-|                                       | RRset is marked for garbage  |
-|                                       | collection. Maintained per   |
-|                                       | view.                        |
-+---------------------------------------+------------------------------+
-| Socket I/O Statistics                 | Statistics counters about    |
-|                                       | network related events.      |
-+---------------------------------------+------------------------------+
+ +---------------------------------------+------------------------------+
+ | Incoming Requests                     | The number of incoming DNS   |
+ |                                       | requests for each OPCODE.    |
+ +---------------------------------------+------------------------------+
+ | Incoming Queries                      | The number of incoming       |
+ |                                       | queries for each RR type.    |
+ +---------------------------------------+------------------------------+
+ | Outgoing Queries                      | The number of outgoing       |
+ |                                       | queries for each RR type     |
+ |                                       | sent from the internal       |
+ |                                       | resolver. Maintained per     |
+ |                                       | view.                        |
+ +---------------------------------------+------------------------------+
+ | Name Server Statistics                | Statistics counters about    |
+ |                                       | incoming request processing. |
+ +---------------------------------------+------------------------------+
+ | Zone Maintenance Statistics           | Statistics counters          |
+ |                                       | regarding zone maintenance   |
+ |                                       | operations such as zone      |
+ |                                       | transfers.                   |
+ +---------------------------------------+------------------------------+
+ | Resolver Statistics                   | Statistics counters about    |
+ |                                       | name resolution performed in |
+ |                                       | the internal resolver.       |
+ |                                       | Maintained per view.         |
+ +---------------------------------------+------------------------------+
+ | Cache DB RRsets                       | The number of RRsets per RR  |
+ |                                       | type and nonexistent names   |
+ |                                       | stored in the cache          |
+ |                                       | database. If the exclamation |
+ |                                       | mark (!) is printed for a RR |
+ |                                       | type, it means that          |
+ |                                       | particular type of RRset is  |
+ |                                       | known to be nonexistent      |
+ |                                       | (this is also known as       |
+ |                                       | "NXRRSET"). If a hash mark   |
+ |                                       | (#) is present then the      |
+ |                                       | RRset is marked for garbage  |
+ |                                       | collection. Maintained per   |
+ |                                       | view.                        |
+ +---------------------------------------+------------------------------+
+ | Socket I/O Statistics                 | Statistics counters about    |
+ |                                       | network related events.      |
+ +---------------------------------------+------------------------------+ 
 
 A subset of Name Server Statistics is collected and shown per zone for
 which the server has the authority when ``zone-statistics`` is set to
@@ -6535,166 +6542,147 @@ statistics, if applicable.
 Name Server Statistics Counters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-+-------------+-------------+-----------------------------------------+
-| *Symbol*    | *BIND8      | *Description*                           |
-|             | Symbol*     |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``Requestv4 | ``RQ``      | IPv4 requests received. Note: this also |
-| ``          |             | counts non query requests.              |
-+-------------+-------------+-----------------------------------------+
-| ``Requestv6 | ``RQ``      | IPv6 requests received. Note: this also |
-| ``          |             | counts non query requests.              |
-+-------------+-------------+-----------------------------------------+
-| ``ReqEdns0` | ````        | Requests with EDNS(0) received.         |
-| `           |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``ReqBadEDN | ````        | Requests with unsupported EDNS version  |
-| SVer``      |             | received.                               |
-+-------------+-------------+-----------------------------------------+
-| ``ReqTSIG`` | ````        | Requests with TSIG received.            |
-+-------------+-------------+-----------------------------------------+
-| ``ReqSIG0`` | ````        | Requests with SIG(0) received.          |
-+-------------+-------------+-----------------------------------------+
-| ``ReqBadSIG | ````        | Requests with invalid (TSIG or SIG(0))  |
-| ``          |             | signature.                              |
-+-------------+-------------+-----------------------------------------+
-| ``ReqTCP``  | ``RTCP``    | TCP requests received.                  |
-+-------------+-------------+-----------------------------------------+
-| ``AuthQryRe | ``RUQ``     | Authoritative (non recursive) queries   |
-| j``         |             | rejected.                               |
-+-------------+-------------+-----------------------------------------+
-| ``RecQryRej | ``RURQ``    | Recursive queries rejected.             |
-| ``          |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``XfrRej``  | ``RUXFR``   | Zone transfer requests rejected.        |
-+-------------+-------------+-----------------------------------------+
-| ``UpdateRej | ``RUUpd``   | Dynamic update requests rejected.       |
-| ``          |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``Response` | ``SAns``    | Responses sent.                         |
-| `           |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``RespTrunc | ````        | Truncated responses sent.               |
-| ated``      |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``RespEDNS0 | ````        | Responses with EDNS(0) sent.            |
-| ``          |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``RespTSIG` | ````        | Responses with TSIG sent.               |
-| `           |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``RespSIG0` | ````        | Responses with SIG(0) sent.             |
-| `           |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``QrySucces | ````        | Queries resulted in a successful        |
-| s``         |             | answer. This means the query which      |
-|             |             | returns a NOERROR response with at      |
-|             |             | least one answer RR. This corresponds   |
-|             |             | to the ``success`` counter of previous  |
-|             |             | versions of BIND 9.                     |
-+-------------+-------------+-----------------------------------------+
-| ``QryAuthAn | ````        | Queries resulted in authoritative       |
-| s``         |             | answer.                                 |
-+-------------+-------------+-----------------------------------------+
-| ``QryNoauth | ``SNaAns``  | Queries resulted in non authoritative   |
-| Ans``       |             | answer.                                 |
-+-------------+-------------+-----------------------------------------+
-| ``QryReferr | ````        | Queries resulted in referral answer.    |
-| al``        |             | This corresponds to the ``referral``    |
-|             |             | counter of previous versions of BIND 9. |
-+-------------+-------------+-----------------------------------------+
-| ``QryNxrrse | ````        | Queries resulted in NOERROR responses   |
-| t``         |             | with no data. This corresponds to the   |
-|             |             | ``nxrrset`` counter of previous         |
-|             |             | versions of BIND 9.                     |
-+-------------+-------------+-----------------------------------------+
-| ``QrySERVFA | ``SFail``   | Queries resulted in SERVFAIL.           |
-| IL``        |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``QryFORMER | ``SFErr``   | Queries resulted in FORMERR.            |
-| R``         |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``QryNXDOMA | ``SNXD``    | Queries resulted in NXDOMAIN. This      |
-| IN``        |             | corresponds to the ``nxdomain`` counter |
-|             |             | of previous versions of BIND 9.         |
-+-------------+-------------+-----------------------------------------+
-| ``QryRecurs | ``RFwdQ``   | Queries which caused the server to      |
-| ion``       |             | perform recursion in order to find the  |
-|             |             | final answer. This corresponds to the   |
-|             |             | ``recursion`` counter of previous       |
-|             |             | versions of BIND 9.                     |
-+-------------+-------------+-----------------------------------------+
-| ``QryDuplic | ``RDupQ``   | Queries which the server attempted to   |
-| ate``       |             | recurse but discovered an existing      |
-|             |             | query with the same IP address, port,   |
-|             |             | query ID, name, type and class already  |
-|             |             | being processed. This corresponds to    |
-|             |             | the ``duplicate`` counter of previous   |
-|             |             | versions of BIND 9.                     |
-+-------------+-------------+-----------------------------------------+
-| ``QryDroppe | ````        | Recursive queries for which the server  |
-| d``         |             | discovered an excessive number of       |
-|             |             | existing recursive queries for the same |
-|             |             | name, type and class and were           |
-|             |             | subsequently dropped. This is the       |
-|             |             | number of dropped queries due to the    |
-|             |             | reason explained with the               |
-|             |             | ``clients-per-query`` and               |
-|             |             | ``max-clients-per-query`` options (see  |
-|             |             | the description about                   |
-|             |             | ` <#clients-per-query>`__.) This        |
-|             |             | corresponds to the ``dropped`` counter  |
-|             |             | of previous versions of BIND 9.         |
-+-------------+-------------+-----------------------------------------+
-| ``QryFailur | ````        | Other query failures. This corresponds  |
-| e``         |             | to the ``failure`` counter of previous  |
-|             |             | versions of BIND 9. Note: this counter  |
-|             |             | is provided mainly for backward         |
-|             |             | compatibility with the previous         |
-|             |             | versions. Normally a more fine-grained  |
-|             |             | counters such as ``AuthQryRej`` and     |
-|             |             | ``RecQryRej`` that would also fall into |
-|             |             | this counter are provided, and so this  |
-|             |             | counter would not be of much interest   |
-|             |             | in practice.                            |
-+-------------+-------------+-----------------------------------------+
-| ``QryNXRedi | ````        | Queries resulted in NXDOMAIN that were  |
-| r``         |             | redirected.                             |
-+-------------+-------------+-----------------------------------------+
-| ``QryNXRedi | ````        | Queries resulted in NXDOMAIN that were  |
-| rRLookup``  |             | redirected and resulted in a successful |
-|             |             | remote lookup.                          |
-+-------------+-------------+-----------------------------------------+
-| ``XfrReqDon | ````        | Requested zone transfers completed.     |
-| e``         |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``UpdateReq | ````        | Update requests forwarded.              |
-| Fwd``       |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``UpdateRes | ````        | Update responses forwarded.             |
-| pFwd``      |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``UpdateFwd | ````        | Dynamic update forward failed.          |
-| Fail``      |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``UpdateDon | ````        | Dynamic updates completed.              |
-| e``         |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``UpdateFai | ````        | Dynamic updates failed.                 |
-| l``         |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``UpdateBad | ````        | Dynamic updates rejected due to         |
-| Prereq``    |             | prerequisite failure.                   |
-+-------------+-------------+-----------------------------------------+
-| ``RateDropp | ````        | Responses dropped by rate limits.       |
-| ed``        |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``RateSlipp | ````        | Responses truncated by rate limits.     |
-| ed``        |             |                                         |
-+-------------+-------------+-----------------------------------------+
-| ``RPZRewrit | ````        | Response policy zone rewrites.          |
-| es``        |             |                                         |
-+-------------+-------------+-----------------------------------------+
+ +------------------------+-------------+-----------------------------------------+
+ | *Symbol*               | *BIND8*     | *Description*                           |
+ |                        | *Symbol*    |                                         |
+  +-----------------------+-------------+-----------------------------------------+
+ | ``Requestv4 ``         | ``RQ``      | IPv4 requests received. Note: this also |
+ |                        |             | counts non query requests.              |
+ +------------------------+-------------+-----------------------------------------+
+ | ``Requestv6``          | ``RQ``      | IPv6 requests received. Note: this also |
+ |                        |             | counts non query requests.              |
+  +-----------------------+-------------+-----------------------------------------+
+ | ``ReqEdns0``           |             | Requests with EDNS(0) received.         |
+ +------------------------+-------------+-----------------------------------------+
+ | ``ReqBadEDN SVer``     |             | Requests with unsupported EDNS version  |
+ |                        |             | received.                               |
+ +------------------------+-------------+-----------------------------------------+
+ | ``ReqTSIG``            |             | Requests with TSIG received.            |
+ +------------------------+-------------+-----------------------------------------+
+ | ``ReqSIG0``            |             | Requests with SIG(0) received.          |
+ +------------------------+-------------+-----------------------------------------+
+ | ``ReqBadSIG``          |             | Requests with invalid (TSIG or SIG(0))  |
+ |                        |             | signature.                              |
+ +------------------------+-------------+-----------------------------------------+
+ | ``ReqTCP``             | ``RTCP``    | TCP requests received.                  |
+ +------------------------+-------------+-----------------------------------------+
+ | ``AuthQryRej``         | ``RUQ``     | Authoritative (non recursive) queries   |
+ |                        |             | rejected.                               |
+ +------------------------+-------------+-----------------------------------------+
+ | ``RecQryRej``          | ``RURQ``    | Recursive queries rejected.             |
+ +------------------------+-------------+-----------------------------------------+
+ | ``XfrRej``             | ``RUXFR``   | Zone transfer requests rejected.        |
+ +------------------------+-------------+-----------------------------------------+
+ | ``UpdateRej``          | ``RUUpd``   | Dynamic update requests rejected.       |
+ +------------------------+-------------+-----------------------------------------+
+ | ``Response``           | ``SAns``    | Responses sent.                         |
+ +------------------------+-------------+-----------------------------------------+
+ | ``RespTruncated``      |             | Truncated responses sent.               |
+ +------------------------+-------------+-----------------------------------------+
+ | ``RespEDNS0``          |             | Responses with EDNS(0) sent.            |
+ +------------------------+-------------+-----------------------------------------+
+ | ``RespTSIG``          |             | Responses with TSIG sent.               |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``RespSIG0``          |             | Responses with SIG(0) sent.             |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QrySuccess``        |             | Queries resulted in a successful        |
+ |                       |             | answer. This means the query which      |
+ |                       |             | returns a NOERROR response with at      |
+ |                       |             | least one answer RR. This corresponds   |
+ |                       |             | to the ``success`` counter of previous  |
+ |                       |             | versions of BIND 9.                     |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QryAuthAns``        |             | Queries resulted in authoritative       |
+ |                       |             | answer.                                 |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QryNoauthAns``      | ``SNaAns``  | Queries resulted in non authoritative   |
+ |                       |             | answer.                                 |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QryReferral``       |             | Queries resulted in referral answer.    |
+ |                       |             | This corresponds to the ``referral``    |
+ |                       |             | counter of previous versions of BIND 9. |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QryNxrrset``        |             | Queries resulted in NOERROR responses   |
+ |                       |             | with no data. This corresponds to the   |
+ |                       |             | ``nxrrset`` counter of previous         |
+ |                       |             | versions of BIND 9.                     |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QrySERVFAIL``       | ``SFail``   | Queries resulted in SERVFAIL.           |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QryFORMERR``        | ``SFErr``   | Queries resulted in FORMERR.            |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QryNXDOMAIN``       | ``SNXD``    | Queries resulted in NXDOMAIN. This      |
+ |                       |             | corresponds to the ``nxdomain`` counter |
+ |                       |             | of previous versions of BIND 9.         |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QryRecursion``      | ``RFwdQ``   | Queries which caused the server to      |
+ |                       |             | perform recursion in order to find the  |
+ |                       |             | final answer. This corresponds to the   |
+ |                       |             | ``recursion`` counter of previous       |
+ |                       |             | versions of BIND 9.                     |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QryDuplicate``      | ``RDupQ``   | Queries which the server attempted to   |
+ |                       |             | recurse but discovered an existing      |
+ |                       |             | query with the same IP address, port,   |
+ |                       |             | query ID, name, type and class already  |
+ |                       |             | being processed. This corresponds to    |
+ |                       |             | the ``duplicate`` counter of previous   |
+ |                       |             | versions of BIND 9.                     |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QryDropped``        |             | Recursive queries for which the server  |
+ |                       |             | discovered an excessive number of       |
+ |                       |             | existing recursive queries for the same |
+ |                       |             | name, type and class and were           |
+ |                       |             | subsequently dropped. This is the       |
+ |                       |             | number of dropped queries due to the    |
+ |                       |             | reason explained with the               |
+ |                       |             | ``clients-per-query`` and               |
+ |                       |             | ``max-clients-per-query`` options (see  |
+ |                       |             | the description about                   |
+ |                       |             | ` <#clients-per-query>`__.) This        |
+ |                       |             | corresponds to the ``dropped`` counter  |
+ |                       |             | of previous versions of BIND 9.         |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QryFailure``        |             | Other query failures. This corresponds  |
+ |                       |             | to the ``failure`` counter of previous  |
+ |                       |             | versions of BIND 9. Note: this counter  |
+ |                       |             | is provided mainly for backward         |
+ |                       |             | compatibility with the previous         |
+ |                       |             | versions. Normally a more fine-grained  |
+ |                       |             | counters such as ``AuthQryRej`` and     |
+ |                       |             | ``RecQryRej`` that would also fall into |
+ |                       |             | this counter are provided, and so this  |
+ |                       |             | counter would not be of much interest   |
+ |                       |             | in practice.                            |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QryNXRedir``        |             | Queries resulted in NXDOMAIN that were  |
+ |                       |             | redirected.                             |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``QryNXRedirRLookup`` |             | Queries resulted in NXDOMAIN that were  |
+ |                       |             | redirected and resulted in a successful |
+ |                       |             | remote lookup.                          |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``XfrReqDone``        |             | Requested zone transfers completed.     |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``UpdateReqFwd``      |             | Update requests forwarded.              |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``UpdateRespFwd``     |             | Update responses forwarded.             |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``UpdateFwdFail``     |             | Dynamic update forward failed.          |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``UpdateDone``        |             | Dynamic updates completed.              |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``UpdateFail``        |             | Dynamic updates failed.                 |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``UpdateBadPrereq``   |             | Dynamic updates rejected due to         |
+ |                       |             | prerequisite failure.                   |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``RateDropped``       |             | Responses dropped by rate limits.       |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``RateSlipped``       |             | Responses truncated by rate limits.     |
+ +-----------------------+-------------+-----------------------------------------+
+ | ``RPZRewrites``       |             | Response policy zone rewrites.          |
+ +-----------------------+-------------+-----------------------------------------+ 
 
 .. _zone_stats:
 
