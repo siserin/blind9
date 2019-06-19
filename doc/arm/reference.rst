@@ -36,8 +36,8 @@ file documentation:
  +------------------------+-----------------------------------------------+
  | ``address_match_list`` | A list of one or more ``ip_addr``,            |
  |                        | ``ip_prefix``, ``key_id``, or ``acl_name``    |
- |                        | elements, see Address Match                  |
- |                        | Lists <#address_match_lists>__.              |
+ |                        | elements, see Address Match                   |
+ |                        | Lists <#address_match_lists>__.               |
  +------------------------+-----------------------------------------------+
  | ``masters_list``       | A named list of one or more ``ip_addr`` with  |
  |                        | optional ``key_id`` and/or ``ip_port``. A     |
@@ -141,7 +141,7 @@ file documentation:
  |                        | ``port_high``. For example,                   |
  |                        | ``range 1024 65535`` represents ports from    |
  |                        | 1024 through 65535. In either case an         |
- |                        | asterisk ('\*') character is not allowed as a  |
+ |                        | asterisk ('\*') character is not allowed as a |
  |                        | valid ``ip_port``.                            |
  +------------------------+-----------------------------------------------+
  | ``size_spec``          | A 64-bit unsigned integer, or the keywords    |
@@ -172,8 +172,8 @@ file documentation:
  |                        |                                               |
  |                        | ``default`` uses the limit that was in force  |
  |                        | when the server was started.                  |
- +------------------------+-----------------------------------------------+ 
- | ``size_or_percent``    | ``size_spec`` or integer value followed by     |
+ +------------------------+-----------------------------------------------+
+ | ``size_or_percent``    | ``size_spec`` or integer value followed by    |
  |                        | '%' to represent percents.                    |
  |                        |                                               |
  |                        | The behavior is exactly the same as           |
@@ -191,7 +191,7 @@ file documentation:
  |                        | ``notify-passive``, ``refresh``, and          |
  |                        | ``passive`` are restricted to slave and stub  |
  |                        | zones.                                        |
- +------------------------+-----------------------------------------------+ 
+ +------------------------+-----------------------------------------------+
 
 .. _address_match_lists:
 
@@ -4990,15 +4990,15 @@ Stub zones can also be used as a way of forcing the resolution of a given domain
 A mirror zone acts like a zone of type ``secondary`` whose data is subject to DNSSEC validation before being used in answers. Validation is performed during the zone transfer process (for both AXFR and IXFR), and again when the zone file is loaded from disk when ``named`` is restarted. If validation of a new version of a mirror zone fails, a retransfer is scheduled and the most recent correctly validated version of that zone is used until it expires; if a newer version of that zone is later correctly validated, it replaces the previously used version. If no usable zone data is available for a mirror zone (either because it was never loaded from disk and has not yet been transferred from a primary server or because its most recent correctly validated version expired), traditional DNS recursion will be used to look up the answers instead.
                    
 While any zone may be configured with this type, it is intended to be used to set up a fast local copy of the root zone, similar to the one described in RFC 7706. Note, however, that mirror zones are not supposed to augment the example configuration provided by RFC 7706 but rather to replace it altogether.
-                   
+
 A default list of primary servers for the IANA root zone is built into ``named`` and thus its mirroring can be enabled using the following configuration:
-                   
-    ::
-                   
-    zone "." {
-    type mirror;
-    };
-                   
+
+::
+
+   zone "." {
+   	type mirror;
+   };
+
 In order to set up mirroring of any other zone, an explicit list of primary servers needs to be provided using the ``masters`` option (see `Statement Grammar <#masters_grammar>`__ for details).
                    
 To make mirror zone contents persist between ``named`` restarts, use the ` <#file_option>`__ option.
@@ -5644,16 +5644,16 @@ The ruletype field has 16 values: ``name``, ``subdomain``, ``wildcard``,
  |                    |                                                         |
  |                    | ::                                                      |
  |                    |                                                         |
- |                    |       Protocol version number (4 bytes, network byte or |
- |                    | der, currently 1)                                       |
- |                    |       Request length (4 bytes, network byte order)      |
- |                    |       Signer (null-terminated string)                   |
- |                    |       Name (null-terminated string)                     |
- |                    |       TCP source address (null-terminated string)       |
- |                    |       Rdata type (null-terminated string)               |
- |                    |       Key (null-terminated string)                      |
- |                    |       TKEY token length (4 bytes, network byte order)   |
- |                    |       TKEY token (remainder of packet)                  |
+ |                    |    Protocol version number (4 bytes, network byte or    |
+ |                    |    der, currently 1)                                    |
+ |                    |    Request length (4 bytes, network byte order)         |
+ |                    |    Signer (null-terminated string)                      |
+ |                    |    Name (null-terminated string)                        |
+ |                    |    TCP source address (null-terminated string)          |
+ |                    |    Rdata type (null-terminated string)                  |
+ |                    |    Key (null-terminated string)                         |
+ |                    |    TKEY token length (4 bytes, network byte order)      |
+ |                    |    TKEY token (remainder of packet)                     |
  |                    |                                                         |
  |                    | The daemon replies with a four-byte value in network    |
  |                    | byte order, containing either 0 or 1; 0 indicates that  |
@@ -5882,8 +5882,8 @@ The following are *types* of valid RRs:
  |             | preference value (lower is better) followed by the host |
  |             | name of the mail exchange. Described in RFC 974, RFC    |
  |             | 1035.                                                   |
- +-------------+---------------------------------------------------------+ 
- | NAPTR       | Name authority pointer. Described in RFC 2915.           |
+ +-------------+---------------------------------------------------------+
+ | NAPTR       | Name authority pointer. Described in RFC 2915.          |
  +-------------+---------------------------------------------------------+
  | NID         | Holds values for Node Identifiers in Identifier-Locator |
  |             | Network Protocol. Described in RFC 6742.                |
@@ -5989,7 +5989,7 @@ The following are *types* of valid RRs:
  +-------------+---------------------------------------------------------+
  | ZONEMD      | Zone Message Digest. Work in progress                   |
  |             | draft-wessels-dns-zone-digest.                          |
- +-------------+---------------------------------------------------------+ 
+ +-------------+---------------------------------------------------------+
 
 The following *classes* of resource records are currently valid in the
 DNS:
@@ -6542,147 +6542,147 @@ statistics, if applicable.
 Name Server Statistics Counters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
- +------------------------+-------------+-----------------------------------------+
- | *Symbol*               | *BIND8*     | *Description*                           |
- |                        | *Symbol*    |                                         |
-  +-----------------------+-------------+-----------------------------------------+
- | ``Requestv4 ``         | ``RQ``      | IPv4 requests received. Note: this also |
- |                        |             | counts non query requests.              |
- +------------------------+-------------+-----------------------------------------+
- | ``Requestv6``          | ``RQ``      | IPv6 requests received. Note: this also |
- |                        |             | counts non query requests.              |
-  +-----------------------+-------------+-----------------------------------------+
- | ``ReqEdns0``           |             | Requests with EDNS(0) received.         |
- +------------------------+-------------+-----------------------------------------+
- | ``ReqBadEDN SVer``     |             | Requests with unsupported EDNS version  |
- |                        |             | received.                               |
- +------------------------+-------------+-----------------------------------------+
- | ``ReqTSIG``            |             | Requests with TSIG received.            |
- +------------------------+-------------+-----------------------------------------+
- | ``ReqSIG0``            |             | Requests with SIG(0) received.          |
- +------------------------+-------------+-----------------------------------------+
- | ``ReqBadSIG``          |             | Requests with invalid (TSIG or SIG(0))  |
- |                        |             | signature.                              |
- +------------------------+-------------+-----------------------------------------+
- | ``ReqTCP``             | ``RTCP``    | TCP requests received.                  |
- +------------------------+-------------+-----------------------------------------+
- | ``AuthQryRej``         | ``RUQ``     | Authoritative (non recursive) queries   |
- |                        |             | rejected.                               |
- +------------------------+-------------+-----------------------------------------+
- | ``RecQryRej``          | ``RURQ``    | Recursive queries rejected.             |
- +------------------------+-------------+-----------------------------------------+
- | ``XfrRej``             | ``RUXFR``   | Zone transfer requests rejected.        |
- +------------------------+-------------+-----------------------------------------+
- | ``UpdateRej``          | ``RUUpd``   | Dynamic update requests rejected.       |
- +------------------------+-------------+-----------------------------------------+
- | ``Response``           | ``SAns``    | Responses sent.                         |
- +------------------------+-------------+-----------------------------------------+
- | ``RespTruncated``      |             | Truncated responses sent.               |
- +------------------------+-------------+-----------------------------------------+
- | ``RespEDNS0``          |             | Responses with EDNS(0) sent.            |
- +------------------------+-------------+-----------------------------------------+
- | ``RespTSIG``          |             | Responses with TSIG sent.               |
- +-----------------------+-------------+-----------------------------------------+
- | ``RespSIG0``          |             | Responses with SIG(0) sent.             |
- +-----------------------+-------------+-----------------------------------------+
- | ``QrySuccess``        |             | Queries resulted in a successful        |
- |                       |             | answer. This means the query which      |
- |                       |             | returns a NOERROR response with at      |
- |                       |             | least one answer RR. This corresponds   |
- |                       |             | to the ``success`` counter of previous  |
- |                       |             | versions of BIND 9.                     |
- +-----------------------+-------------+-----------------------------------------+
- | ``QryAuthAns``        |             | Queries resulted in authoritative       |
- |                       |             | answer.                                 |
- +-----------------------+-------------+-----------------------------------------+
- | ``QryNoauthAns``      | ``SNaAns``  | Queries resulted in non authoritative   |
- |                       |             | answer.                                 |
- +-----------------------+-------------+-----------------------------------------+
- | ``QryReferral``       |             | Queries resulted in referral answer.    |
- |                       |             | This corresponds to the ``referral``    |
- |                       |             | counter of previous versions of BIND 9. |
- +-----------------------+-------------+-----------------------------------------+
- | ``QryNxrrset``        |             | Queries resulted in NOERROR responses   |
- |                       |             | with no data. This corresponds to the   |
- |                       |             | ``nxrrset`` counter of previous         |
- |                       |             | versions of BIND 9.                     |
- +-----------------------+-------------+-----------------------------------------+
- | ``QrySERVFAIL``       | ``SFail``   | Queries resulted in SERVFAIL.           |
- +-----------------------+-------------+-----------------------------------------+
- | ``QryFORMERR``        | ``SFErr``   | Queries resulted in FORMERR.            |
- +-----------------------+-------------+-----------------------------------------+
- | ``QryNXDOMAIN``       | ``SNXD``    | Queries resulted in NXDOMAIN. This      |
- |                       |             | corresponds to the ``nxdomain`` counter |
- |                       |             | of previous versions of BIND 9.         |
- +-----------------------+-------------+-----------------------------------------+
- | ``QryRecursion``      | ``RFwdQ``   | Queries which caused the server to      |
- |                       |             | perform recursion in order to find the  |
- |                       |             | final answer. This corresponds to the   |
- |                       |             | ``recursion`` counter of previous       |
- |                       |             | versions of BIND 9.                     |
- +-----------------------+-------------+-----------------------------------------+
- | ``QryDuplicate``      | ``RDupQ``   | Queries which the server attempted to   |
- |                       |             | recurse but discovered an existing      |
- |                       |             | query with the same IP address, port,   |
- |                       |             | query ID, name, type and class already  |
- |                       |             | being processed. This corresponds to    |
- |                       |             | the ``duplicate`` counter of previous   |
- |                       |             | versions of BIND 9.                     |
- +-----------------------+-------------+-----------------------------------------+
- | ``QryDropped``        |             | Recursive queries for which the server  |
- |                       |             | discovered an excessive number of       |
- |                       |             | existing recursive queries for the same |
- |                       |             | name, type and class and were           |
- |                       |             | subsequently dropped. This is the       |
- |                       |             | number of dropped queries due to the    |
- |                       |             | reason explained with the               |
- |                       |             | ``clients-per-query`` and               |
- |                       |             | ``max-clients-per-query`` options (see  |
- |                       |             | the description about                   |
- |                       |             | ` <#clients-per-query>`__.) This        |
- |                       |             | corresponds to the ``dropped`` counter  |
- |                       |             | of previous versions of BIND 9.         |
- +-----------------------+-------------+-----------------------------------------+
- | ``QryFailure``        |             | Other query failures. This corresponds  |
- |                       |             | to the ``failure`` counter of previous  |
- |                       |             | versions of BIND 9. Note: this counter  |
- |                       |             | is provided mainly for backward         |
- |                       |             | compatibility with the previous         |
- |                       |             | versions. Normally a more fine-grained  |
- |                       |             | counters such as ``AuthQryRej`` and     |
- |                       |             | ``RecQryRej`` that would also fall into |
- |                       |             | this counter are provided, and so this  |
- |                       |             | counter would not be of much interest   |
- |                       |             | in practice.                            |
- +-----------------------+-------------+-----------------------------------------+
- | ``QryNXRedir``        |             | Queries resulted in NXDOMAIN that were  |
- |                       |             | redirected.                             |
- +-----------------------+-------------+-----------------------------------------+
- | ``QryNXRedirRLookup`` |             | Queries resulted in NXDOMAIN that were  |
- |                       |             | redirected and resulted in a successful |
- |                       |             | remote lookup.                          |
- +-----------------------+-------------+-----------------------------------------+
- | ``XfrReqDone``        |             | Requested zone transfers completed.     |
- +-----------------------+-------------+-----------------------------------------+
- | ``UpdateReqFwd``      |             | Update requests forwarded.              |
- +-----------------------+-------------+-----------------------------------------+
- | ``UpdateRespFwd``     |             | Update responses forwarded.             |
- +-----------------------+-------------+-----------------------------------------+
- | ``UpdateFwdFail``     |             | Dynamic update forward failed.          |
- +-----------------------+-------------+-----------------------------------------+
- | ``UpdateDone``        |             | Dynamic updates completed.              |
- +-----------------------+-------------+-----------------------------------------+
- | ``UpdateFail``        |             | Dynamic updates failed.                 |
- +-----------------------+-------------+-----------------------------------------+
- | ``UpdateBadPrereq``   |             | Dynamic updates rejected due to         |
- |                       |             | prerequisite failure.                   |
- +-----------------------+-------------+-----------------------------------------+
- | ``RateDropped``       |             | Responses dropped by rate limits.       |
- +-----------------------+-------------+-----------------------------------------+
- | ``RateSlipped``       |             | Responses truncated by rate limits.     |
- +-----------------------+-------------+-----------------------------------------+
- | ``RPZRewrites``       |             | Response policy zone rewrites.          |
- +-----------------------+-------------+-----------------------------------------+ 
++------------------------+-------------+-----------------------------------------+
+| *Symbol*               | *BIND8*     | *Description*                           |
+|                        | *Symbol*    |                                         |
++------------------------+-------------+-----------------------------------------+
+| ``Requestv4``          | ``RQ``      | IPv4 requests received. Note: this also |
+|                        |             | counts non query requests.              |
++------------------------+-------------+-----------------------------------------+
+| ``Requestv6``          | ``RQ``      | IPv6 requests received. Note: this also |
+|                        |             | counts non query requests.              |
++------------------------+-------------+-----------------------------------------+
+| ``ReqEdns0``           |             | Requests with EDNS(0) received.         |
++------------------------+-------------+-----------------------------------------+
+| ``ReqBadEDN SVer``     |             | Requests with unsupported EDNS version  |
+|                        |             | received.                               |
++------------------------+-------------+-----------------------------------------+
+| ``ReqTSIG``            |             | Requests with TSIG received.            |
++------------------------+-------------+-----------------------------------------+
+| ``ReqSIG0``            |             | Requests with SIG(0) received.          |
++------------------------+-------------+-----------------------------------------+
+| ``ReqBadSIG``          |             | Requests with invalid (TSIG or SIG(0))  |
+|                        |             | signature.                              |
++------------------------+-------------+-----------------------------------------+
+| ``ReqTCP``             | ``RTCP``    | TCP requests received.                  |
++------------------------+-------------+-----------------------------------------+
+| ``AuthQryRej``         | ``RUQ``     | Authoritative (non recursive) queries   |
+|                        |             | rejected.                               |
++------------------------+-------------+-----------------------------------------+
+| ``RecQryRej``          | ``RURQ``    | Recursive queries rejected.             |
++------------------------+-------------+-----------------------------------------+
+| ``XfrRej``             | ``RUXFR``   | Zone transfer requests rejected.        |
++------------------------+-------------+-----------------------------------------+
+| ``UpdateRej``          | ``RUUpd``   | Dynamic update requests rejected.       |
++------------------------+-------------+-----------------------------------------+
+| ``Response``           | ``SAns``    | Responses sent.                         |
++------------------------+-------------+-----------------------------------------+
+| ``RespTruncated``      |             | Truncated responses sent.               |
++------------------------+-------------+-----------------------------------------+
+| ``RespEDNS0``          |             | Responses with EDNS(0) sent.            |
++------------------------+-------------+-----------------------------------------+
+| ``RespTSIG``           |             | Responses with TSIG sent.               |
++------------------------+-------------+-----------------------------------------+
+| ``RespSIG0``           |             | Responses with SIG(0) sent.             |
++------------------------+-------------+-----------------------------------------+
+| ``QrySuccess``         |             | Queries resulted in a successful        |
+|                        |             | answer. This means the query which      |
+|                        |             | returns a NOERROR response with at      |
+|                        |             | least one answer RR. This corresponds   |
+|                        |             | to the ``success`` counter of previous  |
+|                        |             | versions of BIND 9.                     |
++------------------------+-------------+-----------------------------------------+
+| ``QryAuthAns``         |             | Queries resulted in authoritative       |
+|                        |             | answer.                                 |
++------------------------+-------------+-----------------------------------------+
+| ``QryNoauthAns``       | ``SNaAns``  | Queries resulted in non authoritative   |
+|                        |             | answer.                                 |
++------------------------+-------------+-----------------------------------------+
+| ``QryReferral``        |             | Queries resulted in referral answer.    |
+|                        |             | This corresponds to the ``referral``    |
+|                        |             | counter of previous versions of BIND 9. |
++------------------------+-------------+-----------------------------------------+
+| ``QryNxrrset``         |             | Queries resulted in NOERROR responses   |
+|                        |             | with no data. This corresponds to the   |
+|                        |             | ``nxrrset`` counter of previous         |
+|                        |             | versions of BIND 9.                     |
++------------------------+-------------+-----------------------------------------+
+| ``QrySERVFAIL``        | ``SFail``   | Queries resulted in SERVFAIL.           |
++------------------------+-------------+-----------------------------------------+
+| ``QryFORMERR``         | ``SFErr``   | Queries resulted in FORMERR.            |
++------------------------+-------------+-----------------------------------------+
+| ``QryNXDOMAIN``        | ``SNXD``    | Queries resulted in NXDOMAIN. This      |
+|                        |             | corresponds to the ``nxdomain`` counter |
+|                        |             | of previous versions of BIND 9.         |
++------------------------+-------------+-----------------------------------------+
+| ``QryRecursion``       | ``RFwdQ``   | Queries which caused the server to      |
+|                        |             | perform recursion in order to find the  |
+|                        |             | final answer. This corresponds to the   |
+|                        |             | ``recursion`` counter of previous       |
+|                        |             | versions of BIND 9.                     |
++------------------------+-------------+-----------------------------------------+
+| ``QryDuplicate``       | ``RDupQ``   | Queries which the server attempted to   |
+|                        |             | recurse but discovered an existing      |
+|                        |             | query with the same IP address, port,   |
+|                        |             | query ID, name, type and class already  |
+|                        |             | being processed. This corresponds to    |
+|                        |             | the ``duplicate`` counter of previous   |
+|                        |             | versions of BIND 9.                     |
++------------------------+-------------+-----------------------------------------+
+| ``QryDropped``         |             | Recursive queries for which the server  |
+|                        |             | discovered an excessive number of       |
+|                        |             | existing recursive queries for the same |
+|                        |             | name, type and class and were           |
+|                        |             | subsequently dropped. This is the       |
+|                        |             | number of dropped queries due to the    |
+|                        |             | reason explained with the               |
+|                        |             | ``clients-per-query`` and               |
+|                        |             | ``max-clients-per-query`` options (see  |
+|                        |             | the description about                   |
+|                        |             | `<#clients-per-query>`__.) This         |
+|                        |             | corresponds to the ``dropped`` counter  |
+|                        |             | of previous versions of BIND 9.         |
++------------------------+-------------+-----------------------------------------+
+| ``QryFailure``         |             | Other query failures. This corresponds  |
+|                        |             | to the ``failure`` counter of previous  |
+|                        |             | versions of BIND 9. Note: this counter  |
+|                        |             | is provided mainly for backward         |
+|                        |             | compatibility with the previous         |
+|                        |             | versions. Normally a more fine-grained  |
+|                        |             | counters such as ``AuthQryRej`` and     |
+|                        |             | ``RecQryRej`` that would also fall into |
+|                        |             | this counter are provided, and so this  |
+|                        |             | counter would not be of much interest   |
+|                        |             | in practice.                            |
++------------------------+-------------+-----------------------------------------+
+| ``QryNXRedir``         |             | Queries resulted in NXDOMAIN that were  |
+|                        |             | redirected.                             |
++------------------------+-------------+-----------------------------------------+
+| ``QryNXRedirRLookup``  |             | Queries resulted in NXDOMAIN that were  |
+|                        |             | redirected and resulted in a successful |
+|                        |             | remote lookup.                          |
++------------------------+-------------+-----------------------------------------+
+| ``XfrReqDone``         |             | Requested zone transfers completed.     |
++------------------------+-------------+-----------------------------------------+
+| ``UpdateReqFwd``       |             | Update requests forwarded.              |
++------------------------+-------------+-----------------------------------------+
+| ``UpdateRespFwd``      |             | Update responses forwarded.             |
++------------------------+-------------+-----------------------------------------+
+| ``UpdateFwdFail``      |             | Dynamic update forward failed.          |
++------------------------+-------------+-----------------------------------------+
+| ``UpdateDone``         |             | Dynamic updates completed.              |
++------------------------+-------------+-----------------------------------------+
+| ``UpdateFail``         |             | Dynamic updates failed.                 |
++------------------------+-------------+-----------------------------------------+
+| ``UpdateBadPrereq``    |             | Dynamic updates rejected due to         |
+|                        |             | prerequisite failure.                   |
++------------------------+-------------+-----------------------------------------+
+| ``RateDropped``        |             | Responses dropped by rate limits.       |
++------------------------+-------------+-----------------------------------------+
+| ``RateSlipped``        |             | Responses truncated by rate limits.     |
++------------------------+-------------+-----------------------------------------+
+| ``RPZRewrites``        |             | Response policy zone rewrites.          |
++------------------------+-------------+-----------------------------------------+
 
 .. _zone_stats:
 

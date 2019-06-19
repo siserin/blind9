@@ -10,8 +10,8 @@
 
 
 
-.. _dnssec-keygen: DNSSEC key generation tool
-------------------------------------------
+dnssec-keygen: DNSSEC key generation tool
+-----------------------------------------
 
 Synopsis
 ~~~~~~~~

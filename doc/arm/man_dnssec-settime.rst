@@ -10,8 +10,8 @@
 
 .. highlight: console
 
-.. _dnssec-settime: set the key timing metadata for a DNSSEC key
--------------------------------------------------------------
+dnssec-settime: set the key timing metadata for a DNSSEC key
+------------------------------------------------------------
 
 Synopsis
 ~~~~~~~~
