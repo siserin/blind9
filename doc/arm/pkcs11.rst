@@ -11,7 +11,7 @@
 .. _pkcs11:
 
 PKCS#11 (Cryptoki) support
-==========================
+--------------------------
 
 PKCS#11 (Public Key Cryptography Standard #11) defines a
 platform-independent API for the control of hardware security modules
@@ -39,13 +39,13 @@ BIND loads the provider library itself, and uses the PKCS#11 API to
 drive the HSM directly.
 
 Prerequisites
--------------
+~~~~~~~~~~~~~
 
 See the documentation provided by your HSM vendor for information about
 installing, initializing, testing and troubleshooting the HSM.
 
 Native PKCS#11
---------------
+~~~~~~~~~~~~~~
 
 Native PKCS#11 mode will only work with an HSM capable of carrying out
 *every* cryptographic operation BIND 9 may need. The HSM's provider
@@ -73,7 +73,7 @@ be overridden using the ``-E`` in ``named`` and the ``dnssec-*`` tools,
 or the ``-m`` in the ``pkcs11-*`` tools.)
 
 Building SoftHSMv2
-~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
 
 SoftHSMv2, the latest development version of SoftHSM, is available from
 https://github.com/opendnssec/SoftHSMv2. It is a software library
@@ -101,7 +101,7 @@ with BIND.
          
 
 OpenSSL-based PKCS#11
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 OpenSSL-based PKCS#11 mode uses a modified version of the OpenSSL
 library; stock OpenSSL does not fully support PKCS#11. ISC provides a
@@ -145,7 +145,7 @@ build OpenSSL with the patch in place, and configure it with the path to
 your HSM's PKCS#11 provider library.
 
 Patching OpenSSL
-~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^
 
 ::
 
@@ -181,7 +181,7 @@ Later, when building BIND 9, the location of the custom-built OpenSSL
 library will need to be specified via configure.
 
 Building OpenSSL for the AEP Keyper on Linux
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The AEP Keyper is a highly secure key storage device, but does not
 provide hardware cryptographic acceleration. It can carry out
@@ -204,7 +204,7 @@ Keyper software. In this example, we place it /opt/pkcs11/usr/lib:
            --prefix=/opt/pkcs11/usr
 
 Building OpenSSL for the SCA 6000 on Solaris
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The SCA-6000 PKCS#11 provider is installed as a system library,
 libpkcs11. It is a true crypto accelerator, up to 4 times faster than
@@ -225,7 +225,7 @@ In this example, we are building on Solaris x86 on an AMD64 system.
 After configuring, run ``make`` and ``make test``.
 
 Building OpenSSL for SoftHSM
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 SoftHSM (version 1) is a software library developed by the OpenDNSSEC
 project (http://www.opendnssec.org) which provides a PKCS#11 interface
@@ -285,7 +285,7 @@ If the output is correct, run "``make install``" which will install the
 modified OpenSSL suite to ``/opt/pkcs11/usr``.
 
 Configuring BIND 9 for Linux with the AEP Keyper
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -295,7 +295,7 @@ Configuring BIND 9 for Linux with the AEP Keyper
           --with-pkcs11=/opt/pkcs11/usr/lib/libpkcs11.so
 
 Configuring BIND 9 for Solaris with the SCA 6000
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -312,7 +312,7 @@ the path to OpenSSL (it should be the same as the --prefix argument to
 the OpenSSL Configure).
 
 Configuring BIND 9 for SoftHSM
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -328,7 +328,7 @@ After configuring, run "``make``", "``make test``" and
 forgotten to set the SOFTHSM_CONF environment variable.)
 
 PKCS#11 Tools
--------------
+~~~~~~~~~~~~~
 
 BIND 9 includes a minimal set of tools to operate the HSM, including
 ``pkcs11-keygen`` to generate a new key pair within the HSM,
@@ -343,7 +343,7 @@ PKCS11_PROVIDER environment variable to specify the path to the
 provider.)
 
 Using the HSM
--------------
+~~~~~~~~~~~~~
 
 For OpenSSL-based PKCS#11, we must first set up the runtime environment
 so the OpenSSL and PKCS#11 libraries can be loaded:
@@ -447,7 +447,7 @@ Now you can sign the zone. (Note: If not using the -S option to
    example.net.signed
 
 Specifying the engine on the command line
------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When using OpenSSL-based PKCS#11, the "engine" to be used by OpenSSL can
 be specified in ``named`` and all of the BIND ``dnssec-*`` tools by
@@ -472,7 +472,7 @@ meaning: it specifies the path to the PKCS#11 provider library. This may
 be useful when testing a new provider library.
 
 Running named with automatic zone re-signing
---------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you want ``named`` to dynamically re-sign zones using HSM keys,
 and/or to to sign new records inserted via nsupdate, then ``named`` must
