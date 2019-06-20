@@ -19,8 +19,8 @@ BIND 9 Administrator Reference Manual
    introduction
    requirements
    configuration
-   advanced
    reference
+   advanced
    security
    troubleshooting
    notes
