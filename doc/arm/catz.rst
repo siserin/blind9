@@ -11,7 +11,7 @@
 .. _catz-info:
 
 Catalog Zones
-=============
+-------------
 
 A "catalog zone" is a special DNS zone that contains a list of other
 zones to be served, along with their configuration parameters. Zones
@@ -30,7 +30,7 @@ latest revision of the DNS catalog zones draft can be found here:
 https://datatracker.ietf.org/doc/draft-muks-dnsop-dns-catalog-zones/
 
 Principle of Operation
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 Normally, if a zone is to be served by a slave server, the
 ``named.conf`` file on the server must list the zone, or the zone must
@@ -81,7 +81,7 @@ normal way, by editing the configuration file or running
 ``rndc delzone``.)
 
 Configuring Catalog Zones
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Catalog zones are configured with a ``catalog-zones`` statement in the
 ``options`` or ``view`` section of ``named.conf``. For example,
@@ -135,7 +135,7 @@ and ``rndc delzone`` will also work in any view that supports catalog
 zones.)
 
 Catalog Zone format
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 A catalog zone is a regular DNS zone; therefore, it has to have a single
 ``SOA`` and at least one ``NS`` record.
