@@ -322,7 +322,8 @@ bool
 dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
 			const dns_name_t *name, const isc_netaddr_t *addr,
 			bool tcp, const dns_aclenv_t *env,
-			dns_rdatatype_t type, const dst_key_t *key)
+			dns_rdatatype_t type, const dst_key_t *key,
+			const dns_ssurule_t **rulep)
 {
 	dns_ssurule_t *rule;
 	unsigned int i;
@@ -337,9 +338,7 @@ dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
 	REQUIRE(signer == NULL || dns_name_isabsolute(signer));
 	REQUIRE(dns_name_isabsolute(name));
 	REQUIRE(addr == NULL || env != NULL);
-
-	if (signer == NULL && addr == NULL)
-		return (false);
+	REQUIRE(rulep == NULL || *rulep == NULL);
 
 	for (rule = ISC_LIST_HEAD(table->rules);
 	     rule != NULL;
@@ -380,6 +379,7 @@ dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
 			break;
 		case dns_ssumatchtype_external:
 		case dns_ssumatchtype_dlz:
+		case dns_ssumatchtype_addnew:
 			break;
 		}
 
@@ -525,6 +525,19 @@ dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
 					      name, addr, type, key))
 				continue;
 			break;
+		case dns_ssumatchtype_addnew: {
+			dns_name_t suffix;
+			unsigned int labels = dns_name_countlabels(name);
+
+			if (signer != NULL || labels < 2)
+				continue;
+
+			dns_name_init(&suffix, NULL);
+			dns_name_getlabelsequence(name, 1, labels - 1, &suffix);
+			if (!dns_name_equal(rule->identity, &suffix))
+				continue;
+			break;
+			}
 		}
 
 		if (rule->ntypes == 0) {
@@ -544,6 +557,9 @@ dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
 			}
 			if (i == rule->ntypes)
 				continue;
+		}
+		if (rule->grant && rulep != NULL) {
+			*rulep = rule;
 		}
 		return (rule->grant);
 	}
@@ -674,6 +690,8 @@ dns_ssu_mtypefromstring(const char *str, dns_ssumatchtype_t *mtype) {
 		*mtype = dns_ssumatchtype_6to4self;
 	} else if (strcasecmp(str, "zonesub") == 0) {
 		*mtype = dns_ssumatchtype_subdomain;
+	} else if (strcasecmp(str, "add-new") == 0) {
+		*mtype = dns_ssumatchtype_addnew;
 	} else if (strcasecmp(str, "external") == 0) {
 		*mtype = dns_ssumatchtype_external;
 	} else {

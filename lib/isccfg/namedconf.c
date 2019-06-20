@@ -299,7 +299,7 @@ doc_matchname(cfg_printer_t *pctx, const cfg_type_t *type) {
 }
 
 static const char *matchtype_enums[] = {
-	"6to4-self", "external", "krb5-self", "krb5-selfsub",
+	"6to4-self", "add-new", "external", "krb5-self", "krb5-selfsub",
 	"krb5-subdomain", "ms-self", "ms-selfsub", "ms-subdomain",
 	"name", "self", "selfsub", "selfwild", "subdomain", "tcp-self",
 	"wildcard", "zonesub", NULL

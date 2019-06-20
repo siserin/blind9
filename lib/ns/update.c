@@ -195,6 +195,10 @@
 		if (result != ISC_R_SUCCESS) goto failure;	\
 	} while (0)
 
+#define IS_ADD_NEW(rule)	\
+	 (rule != NULL && \
+	  dns_ssurule_matchtype(rule) == dns_ssumatchtype_addnew)
+
 /*
  * Return TRUE if NS_CLIENTATTR_TCP is set in the attributes other FALSE.
  */
@@ -898,6 +902,7 @@ typedef struct {
 static isc_result_t
 ssu_checkrule(void *data, dns_rdataset_t *rrset) {
 	ssu_check_t *ssuinfo = data;
+	const dns_ssurule_t *rule = NULL;
 	bool result;
 
 	/*
@@ -910,7 +915,10 @@ ssu_checkrule(void *data, dns_rdataset_t *rrset) {
 	result = dns_ssutable_checkrules(ssuinfo->table, ssuinfo->signer,
 					 ssuinfo->name, ssuinfo->addr,
 					 ssuinfo->tcp, ssuinfo->aclenv,
-					 rrset->type, ssuinfo->key);
+					 rrset->type, ssuinfo->key, &rule);
+	if (IS_ADD_NEW(rule)) {
+		return (ISC_R_FAILURE);
+	}
 	return (result == true ? ISC_R_SUCCESS : ISC_R_FAILURE);
 }
 
@@ -2524,6 +2532,9 @@ update_action(isc_task_t *task, isc_event_t *event) {
 	uint32_t maxrecords;
 	uint64_t records;
 	dns_aclenv_t *env = ns_interfacemgr_getaclenv(client->interface->mgr);
+	size_t ruleslen = 0;
+	size_t rule;
+	const dns_ssurule_t **rules = NULL;
 
 	INSIST(event->ev_type == DNS_EVENT_UPDATE);
 
@@ -2685,15 +2696,25 @@ update_action(isc_task_t *task, isc_event_t *event) {
 	/*
 	 * Perform the Update Section Prescan.
 	 */
+	if (ssutable != NULL) {
+		ruleslen = request->counts[DNS_SECTION_UPDATE];
+		rules = isc_mem_get(mctx, sizeof(*rules) * ruleslen);
+		memset(rules, 0, sizeof(*rules) * ruleslen);
+	}
 
-	for (result = dns_message_firstname(request, DNS_SECTION_UPDATE);
+	for (rule = 0,
+	     result = dns_message_firstname(request, DNS_SECTION_UPDATE);
 	     result == ISC_R_SUCCESS;
+	     rule++,
 	     result = dns_message_nextname(request, DNS_SECTION_UPDATE))
 	{
 		dns_name_t *name = NULL;
 		dns_rdata_t rdata = DNS_RDATA_INIT;
 		dns_ttl_t ttl;
 		dns_rdataclass_t update_class;
+
+		INSIST(rule < ruleslen);
+
 		get_current_rr(request, DNS_SECTION_UPDATE, zoneclass,
 			       &name, &rdata, &covers, &ttl, &update_class);
 
@@ -2764,7 +2785,14 @@ update_action(isc_task_t *task, isc_event_t *event) {
 				if (!dns_ssutable_checkrules
 				(ssutable, client->signer, name, &netaddr,
 				 TCPCLIENT(client),
-				 env, rdata.type, tsigkey))
+				 env, rdata.type, tsigkey, &rules[rule]))
+				{
+					FAILC(DNS_R_REFUSED,
+					      "rejected by secure update");
+				}
+				/* add-new is addition only */
+				if (update_class == dns_rdataclass_none &&
+				    IS_ADD_NEW(rules[rule]))
 				{
 					FAILC(DNS_R_REFUSED,
 					      "rejected by secure update");
@@ -2793,8 +2821,10 @@ update_action(isc_task_t *task, isc_event_t *event) {
 	 */
 
 	options = dns_zone_getoptions(zone);
-	for (result = dns_message_firstname(request, DNS_SECTION_UPDATE);
+	for (rule = 0,
+	     result = dns_message_firstname(request, DNS_SECTION_UPDATE);
 	     result == ISC_R_SUCCESS;
+	     rule++,
 	     result = dns_message_nextname(request, DNS_SECTION_UPDATE))
 	{
 		dns_name_t *name = NULL;
@@ -2803,10 +2833,30 @@ update_action(isc_task_t *task, isc_event_t *event) {
 		dns_rdataclass_t update_class;
 		bool flag;
 
+		INSIST(rule < ruleslen);
+
 		get_current_rr(request, DNS_SECTION_UPDATE, zoneclass,
 			       &name, &rdata, &covers, &ttl, &update_class);
 
 		if (update_class == zoneclass) {
+
+			/*
+			 * There must be no records at the name except the
+			 * the record to be added.
+			 */
+			if (IS_ADD_NEW(rules[rule])) {
+				result = foreach_rr(db, ver, name, rdata.type,
+						    covers,
+						    rrset_exists_action, NULL);
+				if (result == ISC_R_EXISTS)
+					continue;
+				CHECK(result);
+				CHECK(name_exists(db, ver, name, &flag));
+				if (flag) {
+					FAILC(DNS_R_REFUSED,
+					      "rejected by secure update");
+				}
+			}
 
 			/*
 			 * RFC1123 doesn't allow MF and MD in master zones.
@@ -3351,6 +3401,9 @@ update_action(isc_task_t *task, isc_event_t *event) {
 
 	if (db != NULL)
 		dns_db_detach(&db);
+
+	if (rules != NULL)
+		isc_mem_put(mctx, rules, sizeof(*rules) * ruleslen);
 
 	if (ssutable != NULL)
 		dns_ssutable_detach(&ssutable);
