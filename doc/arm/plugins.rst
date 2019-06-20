@@ -11,7 +11,7 @@
 .. _module-info:
 
 Plugins
-=======
+-------
 
 Plugins are a mechanism to extend the functionality of ``named`` using
 dynamically loadable libraries. By using plugins, core server
@@ -32,7 +32,7 @@ syntax, but linking in the ``filter-aaaa.so`` plugin provides identical
 functionality.
 
 Configuring Plugins
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 A plugin is configured with the ``plugin`` statement in ``named.conf``:
 
@@ -53,7 +53,7 @@ parameters are passed as an opaque string to the plugin's initialization
 routine. Configuration syntax will differ depending on the module.
 
 Developing Plugins
-------------------
+~~~~~~~~~~~~~~~~~~
 
 Each plugin implements four functions:
 
