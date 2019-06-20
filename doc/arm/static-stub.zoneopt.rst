@@ -1,13 +1,13 @@
 ::
 
-  <command>zone</command> <replaceable>string</replaceable> [ <replaceable>class</replaceable> ] {
-  	<command>type</command> static-stub;
-  	<command>allow-query</command> { <replaceable>address_match_element</replaceable>; ... };
-  	<command>allow-query-on</command> { <replaceable>address_match_element</replaceable>; ... };
-  	<command>forward</command> ( first | only );
-  	<command>forwarders</command> [ port <replaceable>integer</replaceable> ] [ dscp <replaceable>integer</replaceable> ] { ( <replaceable>ipv4_address</replaceable> | <replaceable>ipv6_address</replaceable> ) [ port <replaceable>integer</replaceable> ] [ dscp <replaceable>integer</replaceable> ]; ... };
-  	<command>max-records</command> <replaceable>integer</replaceable>;
-  	<command>server-addresses</command> { ( <replaceable>ipv4_address</replaceable> | <replaceable>ipv6_address</replaceable> ); ... };
-  	<command>server-names</command> { <replaceable>string</replaceable>; ... };
-  	<command>zone-statistics</command> ( full | terse | none | <replaceable>boolean</replaceable> );
+  zone <string> [ <class> ] {
+  	type static-stub;
+  	allow-query { <address_match_element>; ... };
+  	allow-query-on { <address_match_element>; ... };
+  	forward ( first | only );
+  	forwarders [ port <integer> ] [ dscp <integer> ] { ( <ipv4_address> | <ipv6_address> ) [ port <integer> ] [ dscp <integer> ]; ... };
+  	max-records <integer>;
+  	server-addresses { ( <ipv4_address> | <ipv6_address> ); ... };
+  	server-names { <string>; ... };
+  	zone-statistics ( full | terse | none | <boolean> );
   };

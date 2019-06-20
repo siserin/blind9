@@ -41,8 +41,6 @@ while (<FH>) {
 
 	s{ // not configured}{};
 	s{ // may occur multiple times}{};
-	s{<([a-z0-9_-]+)>}{<replaceable>$1</replaceable>}g;
-	s{^(\s*)([a-z0-9_-]+)\b}{$1<command>$2</command>};
 	s{[[]}{[}g;
 	s{[]]}{]}g;
 	s{        }{\t}g;

@@ -1,29 +1,29 @@
 ::
 
-  <command>zone</command> <replaceable>string</replaceable> [ <replaceable>class</replaceable> ] {
-  	<command>type</command> stub;
-  	<command>allow-query</command> { <replaceable>address_match_element</replaceable>; ... };
-  	<command>allow-query-on</command> { <replaceable>address_match_element</replaceable>; ... };
-  	<command>check-names</command> ( fail | warn | ignore );
-  	<command>database</command> <replaceable>string</replaceable>;
-  	<command>delegation-only</command> <replaceable>boolean</replaceable>;
-  	<command>dialup</command> ( notify | notify-passive | passive | refresh | <replaceable>boolean</replaceable> );
-  	<command>file</command> <replaceable>quoted_string</replaceable>;
-  	<command>forward</command> ( first | only );
-  	<command>forwarders</command> [ port <replaceable>integer</replaceable> ] [ dscp <replaceable>integer</replaceable> ] { ( <replaceable>ipv4_address</replaceable> | <replaceable>ipv6_address</replaceable> ) [ port <replaceable>integer</replaceable> ] [ dscp <replaceable>integer</replaceable> ]; ... };
-  	<command>masterfile-format</command> ( map | raw | text );
-  	<command>masterfile-style</command> ( full | relative );
-  	<command>masters</command> [ port <replaceable>integer</replaceable> ] [ dscp <replaceable>integer</replaceable> ] { ( <replaceable>masters</replaceable> | <replaceable>ipv4_address</replaceable> [ port <replaceable>integer</replaceable> ] | <replaceable>ipv6_address</replaceable> [ port <replaceable>integer</replaceable> ] ) [ key <replaceable>string</replaceable> ]; ... };
-  	<command>max-records</command> <replaceable>integer</replaceable>;
-  	<command>max-refresh-time</command> <replaceable>integer</replaceable>;
-  	<command>max-retry-time</command> <replaceable>integer</replaceable>;
-  	<command>max-transfer-idle-in</command> <replaceable>integer</replaceable>;
-  	<command>max-transfer-time-in</command> <replaceable>integer</replaceable>;
-  	<command>min-refresh-time</command> <replaceable>integer</replaceable>;
-  	<command>min-retry-time</command> <replaceable>integer</replaceable>;
-  	<command>multi-master</command> <replaceable>boolean</replaceable>;
-  	<command>transfer-source</command> ( <replaceable>ipv4_address</replaceable> | * ) [ port ( <replaceable>integer</replaceable> | * ) ] [ dscp <replaceable>integer</replaceable> ];
-  	<command>transfer-source-v6</command> ( <replaceable>ipv6_address</replaceable> | * ) [ port ( <replaceable>integer</replaceable> | * ) ] [ dscp <replaceable>integer</replaceable> ];
-  	<command>use-alt-transfer-source</command> <replaceable>boolean</replaceable>;
-  	<command>zone-statistics</command> ( full | terse | none | <replaceable>boolean</replaceable> );
+  zone <string> [ <class> ] {
+  	type stub;
+  	allow-query { <address_match_element>; ... };
+  	allow-query-on { <address_match_element>; ... };
+  	check-names ( fail | warn | ignore );
+  	database <string>;
+  	delegation-only <boolean>;
+  	dialup ( notify | notify-passive | passive | refresh | <boolean> );
+  	file <quoted_string>;
+  	forward ( first | only );
+  	forwarders [ port <integer> ] [ dscp <integer> ] { ( <ipv4_address> | <ipv6_address> ) [ port <integer> ] [ dscp <integer> ]; ... };
+  	masterfile-format ( map | raw | text );
+  	masterfile-style ( full | relative );
+  	masters [ port <integer> ] [ dscp <integer> ] { ( <masters> | <ipv4_address> [ port <integer> ] | <ipv6_address> [ port <integer> ] ) [ key <string> ]; ... };
+  	max-records <integer>;
+  	max-refresh-time <integer>;
+  	max-retry-time <integer>;
+  	max-transfer-idle-in <integer>;
+  	max-transfer-time-in <integer>;
+  	min-refresh-time <integer>;
+  	min-retry-time <integer>;
+  	multi-master <boolean>;
+  	transfer-source ( <ipv4_address> | * ) [ port ( <integer> | * ) ] [ dscp <integer> ];
+  	transfer-source-v6 ( <ipv6_address> | * ) [ port ( <integer> | * ) ] [ dscp <integer> ];
+  	use-alt-transfer-source <boolean>;
+  	zone-statistics ( full | terse | none | <boolean> );
   };

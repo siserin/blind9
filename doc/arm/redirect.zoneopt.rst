@@ -1,15 +1,15 @@
 ::
 
-  <command>zone</command> <replaceable>string</replaceable> [ <replaceable>class</replaceable> ] {
-  	<command>type</command> redirect;
-  	<command>allow-query</command> { <replaceable>address_match_element</replaceable>; ... };
-  	<command>allow-query-on</command> { <replaceable>address_match_element</replaceable>; ... };
-  	<command>dlz</command> <replaceable>string</replaceable>;
-  	<command>file</command> <replaceable>quoted_string</replaceable>;
-  	<command>masterfile-format</command> ( map | raw | text );
-  	<command>masterfile-style</command> ( full | relative );
-  	<command>masters</command> [ port <replaceable>integer</replaceable> ] [ dscp <replaceable>integer</replaceable> ] { ( <replaceable>masters</replaceable> | <replaceable>ipv4_address</replaceable> [ port <replaceable>integer</replaceable> ] | <replaceable>ipv6_address</replaceable> [ port <replaceable>integer</replaceable> ] ) [ key <replaceable>string</replaceable> ]; ... };
-  	<command>max-records</command> <replaceable>integer</replaceable>;
-  	<command>max-zone-ttl</command> ( unlimited | <replaceable>ttlval</replaceable> );
-  	<command>zone-statistics</command> ( full | terse | none | <replaceable>boolean</replaceable> );
+  zone <string> [ <class> ] {
+  	type redirect;
+  	allow-query { <address_match_element>; ... };
+  	allow-query-on { <address_match_element>; ... };
+  	dlz <string>;
+  	file <quoted_string>;
+  	masterfile-format ( map | raw | text );
+  	masterfile-style ( full | relative );
+  	masters [ port <integer> ] [ dscp <integer> ] { ( <masters> | <ipv4_address> [ port <integer> ] | <ipv6_address> [ port <integer> ] ) [ key <string> ]; ... };
+  	max-records <integer>;
+  	max-zone-ttl ( unlimited | <ttlval> );
+  	zone-statistics ( full | terse | none | <boolean> );
   };

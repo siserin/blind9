@@ -1,34 +1,34 @@
 ::
 
-  <command>server</command> <replaceable>netprefix</replaceable> {
-  	<command>bogus</command> <replaceable>boolean</replaceable>;
-  	<command>edns</command> <replaceable>boolean</replaceable>;
-  	<command>edns-udp-size</command> <replaceable>integer</replaceable>;
-  	<command>edns-version</command> <replaceable>integer</replaceable>;
-  	<command>keys</command> <replaceable>server_key</replaceable>;
-  	<command>max-udp-size</command> <replaceable>integer</replaceable>;
-  	<command>notify-source</command> ( <replaceable>ipv4_address</replaceable> | * ) [ port ( <replaceable>integer</replaceable> | * ) ] [
-  	    <command>dscp</command> <replaceable>integer</replaceable> ];
-  	<command>notify-source-v6</command> ( <replaceable>ipv6_address</replaceable> | * ) [ port ( <replaceable>integer</replaceable> | * ) ]
-  	    [ dscp <replaceable>integer</replaceable> ];
-  	<command>padding</command> <replaceable>integer</replaceable>;
-  	<command>provide-ixfr</command> <replaceable>boolean</replaceable>;
-  	<command>query-source</command> ( ( [ address ] ( <replaceable>ipv4_address</replaceable> | * ) [ port (
-  	    <replaceable>integer</replaceable> | * ) ] ) | ( [ [ address ] ( <replaceable>ipv4_address</replaceable> | * ) ]
-  	    <command>port</command> ( <replaceable>integer</replaceable> | * ) ) ) [ dscp <replaceable>integer</replaceable> ];
-  	<command>query-source-v6</command> ( ( [ address ] ( <replaceable>ipv6_address</replaceable> | * ) [ port (
-  	    <replaceable>integer</replaceable> | * ) ] ) | ( [ [ address ] ( <replaceable>ipv6_address</replaceable> | * ) ]
-  	    <command>port</command> ( <replaceable>integer</replaceable> | * ) ) ) [ dscp <replaceable>integer</replaceable> ];
-  	<command>request-expire</command> <replaceable>boolean</replaceable>;
-  	<command>request-ixfr</command> <replaceable>boolean</replaceable>;
-  	<command>request-nsid</command> <replaceable>boolean</replaceable>;
-  	<command>send-cookie</command> <replaceable>boolean</replaceable>;
-  	<command>tcp-keepalive</command> <replaceable>boolean</replaceable>;
-  	<command>tcp-only</command> <replaceable>boolean</replaceable>;
-  	<command>transfer-format</command> ( many-answers | one-answer );
-  	<command>transfer-source</command> ( <replaceable>ipv4_address</replaceable> | * ) [ port ( <replaceable>integer</replaceable> | * ) ] [
-  	    <command>dscp</command> <replaceable>integer</replaceable> ];
-  	<command>transfer-source-v6</command> ( <replaceable>ipv6_address</replaceable> | * ) [ port ( <replaceable>integer</replaceable> | * )
-  	    ] [ dscp <replaceable>integer</replaceable> ];
-  	<command>transfers</command> <replaceable>integer</replaceable>;
+  server <netprefix> {
+  	bogus <boolean>;
+  	edns <boolean>;
+  	edns-udp-size <integer>;
+  	edns-version <integer>;
+  	keys <server_key>;
+  	max-udp-size <integer>;
+  	notify-source ( <ipv4_address> | * ) [ port ( <integer> | * ) ] [
+  	    dscp <integer> ];
+  	notify-source-v6 ( <ipv6_address> | * ) [ port ( <integer> | * ) ]
+  	    [ dscp <integer> ];
+  	padding <integer>;
+  	provide-ixfr <boolean>;
+  	query-source ( ( [ address ] ( <ipv4_address> | * ) [ port (
+  	    <integer> | * ) ] ) | ( [ [ address ] ( <ipv4_address> | * ) ]
+  	    port ( <integer> | * ) ) ) [ dscp <integer> ];
+  	query-source-v6 ( ( [ address ] ( <ipv6_address> | * ) [ port (
+  	    <integer> | * ) ] ) | ( [ [ address ] ( <ipv6_address> | * ) ]
+  	    port ( <integer> | * ) ) ) [ dscp <integer> ];
+  	request-expire <boolean>;
+  	request-ixfr <boolean>;
+  	request-nsid <boolean>;
+  	send-cookie <boolean>;
+  	tcp-keepalive <boolean>;
+  	tcp-only <boolean>;
+  	transfer-format ( many-answers | one-answer );
+  	transfer-source ( <ipv4_address> | * ) [ port ( <integer> | * ) ] [
+  	    dscp <integer> ];
+  	transfer-source-v6 ( <ipv6_address> | * ) [ port ( <integer> | * )
+  	    ] [ dscp <integer> ];
+  	transfers <integer>;
   };

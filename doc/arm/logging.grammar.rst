@@ -1,17 +1,17 @@
 ::
 
-  <command>logging</command> {
-  	<command>category</command> <replaceable>string</replaceable> { <replaceable>string</replaceable>; ... };
-  	<command>channel</command> <replaceable>string</replaceable> {
-  		<command>buffered</command> <replaceable>boolean</replaceable>;
-  		<command>file</command> <replaceable>quoted_string</replaceable> [ versions ( unlimited | <replaceable>integer</replaceable> ) ]
-  		    [ size <replaceable>size</replaceable> ] [ suffix ( increment | timestamp ) ];
-  		<command>null</command>;
-  		<command>print-category</command> <replaceable>boolean</replaceable>;
-  		<command>print-severity</command> <replaceable>boolean</replaceable>;
-  		<command>print-time</command> ( iso8601 | iso8601-utc | local | <replaceable>boolean</replaceable> );
-  		<command>severity</command> <replaceable>log_severity</replaceable>;
-  		<command>stderr</command>;
-  		<command>syslog</command> [ <replaceable>syslog_facility</replaceable> ];
+  logging {
+  	category <string> { <string>; ... };
+  	channel <string> {
+  		buffered <boolean>;
+  		file <quoted_string> [ versions ( unlimited | <integer> ) ]
+  		    [ size <size> ] [ suffix ( increment | timestamp ) ];
+  		null;
+  		print-category <boolean>;
+  		print-severity <boolean>;
+  		print-time ( iso8601 | iso8601-utc | local | <boolean> );
+  		severity <log_severity>;
+  		stderr;
+  		syslog [ <syslog_facility> ];
   	};
   };

@@ -1,5 +1,5 @@
 ::
 
-  <command>trusted-keys</command> { <replaceable>string</replaceable> <replaceable>integer</replaceable>
-      <replaceable>integer</replaceable> <replaceable>integer</replaceable>
-      <replaceable>quoted_string</replaceable>; ... };, deprecated
+  trusted-keys { <string> <integer>
+      <integer> <integer>
+      <quoted_string>; ... };, deprecated
