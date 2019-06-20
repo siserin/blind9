@@ -40,12 +40,11 @@ concepts. *Chapter 2* describes resource requirements for running BIND
 in various environments. Information in *Chapter 3* is *task-oriented*
 in its presentation and is organized functionally, to aid in the process
 of installing the BIND 9 software. The task-oriented section is followed
-by *Chapters 4 through 11*, which contain more advanced concepts that the system
-administrator may need for implementing certain options. The contents of
-*Chapter 12* are organized as in a reference manual to aid in the ongoing
-maintenance of the software. *Chapter 13* addresses security
-considerations, and *Chapter 14* contains troubleshooting help. The main
-body of the document is followed by several *appendices* which contain
+by *Chapter 4*, which is organized as a reference manual to aid in the ongoing
+maintenance of the software. *Chapter 5* contains more advanced concepts that 
+the system administrator may need for implementing certain options. *Chapter 6* 
+addresses security considerations, and *Chapter 7* contains troubleshooting help. 
+The main body of the document is followed by several *appendices* which contain
 useful reference information, such as a *bibliography* and historic
 information related to BIND and the Domain Name System.
 
