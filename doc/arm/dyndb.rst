@@ -11,10 +11,10 @@
 .. _dyndb-info:
 
 DynDB (Dynamic Database)
-========================
+------------------------
 
 DynDB is an extension to BIND 9 which, like DLZ (see
-`??? <#dlz-info>`__), allows zone data to be retrieved from an external
+`DLZ (Dynamically Loadable Zones) <#dlz-info>`__), allows zone data to be retrieved from an external
 database. Unlike DLZ, a DynDB module provides a full-featured BIND zone
 database interface. Where DLZ translates DNS queries into real-time
 database lookups, resulting in relatively poor query performance, and is
@@ -31,7 +31,7 @@ with the BIND source code, in the directory
 ``bin/tests/system/dyndb/driver``.
 
 Configuring DynDB
------------------
+~~~~~~~~~~~~~~~~~
 
 A DynDB database is configured with a ``dyndb`` statement in
 ``named.conf``:
@@ -55,7 +55,7 @@ initialization routine. Configuration syntax will differ depending on
 the driver.
 
 Sample DynDB Module
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 For guidance in implementation of DynDB modules, the directory
 ``bin/tests/system/dyndb/driver``. contains a basic DynDB module. The
