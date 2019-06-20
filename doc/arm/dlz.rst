@@ -11,7 +11,7 @@
 .. _dlz-info:
 
 DLZ (Dynamically Loadable Zones)
-================================
+--------------------------------
 
 DLZ (Dynamically Loadable Zones) is an extension to BIND 9 that allows
 zone data to be retrieved directly from an external database. There is
@@ -44,7 +44,7 @@ slaves are not automatically informed of changes to the zones in the
 database.)
 
 Configuring DLZ
----------------
+~~~~~~~~~~~~~~~
 
 A DLZ database is configured with a ``dlz`` statement in ``named.conf``:
 
@@ -88,7 +88,7 @@ back-end storage of redirection rules:
        
 
 Sample DLZ Driver
------------------
+~~~~~~~~~~~~~~~~~
 
 For guidance in implementation of DLZ modules, the directory
 ``contrib/dlz/example`` contains a basic dynamically-linkable DLZ
