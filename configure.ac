@@ -35,8 +35,6 @@ AC_CONFIG_MACRO_DIR([m4])
 #
 AM_MAINTAINER_MODE([enable])
 
-AC_CONFIG_HEADER(config.h)
-
 #
 # Enable system extensions to C and POSIX
 #
