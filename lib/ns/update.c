@@ -2713,7 +2713,7 @@ update_action(isc_task_t *task, isc_event_t *event) {
 		dns_ttl_t ttl;
 		dns_rdataclass_t update_class;
 
-		INSIST(rule < ruleslen);
+		INSIST(ssutable == NULL || rule < ruleslen);
 
 		get_current_rr(request, DNS_SECTION_UPDATE, zoneclass,
 			       &name, &rdata, &covers, &ttl, &update_class);
@@ -2833,7 +2833,7 @@ update_action(isc_task_t *task, isc_event_t *event) {
 		dns_rdataclass_t update_class;
 		bool flag;
 
-		INSIST(rule < ruleslen);
+		INSIST(ssutable == NULL || rule < ruleslen);
 
 		get_current_rr(request, DNS_SECTION_UPDATE, zoneclass,
 			       &name, &rdata, &covers, &ttl, &update_class);
@@ -2844,7 +2844,7 @@ update_action(isc_task_t *task, isc_event_t *event) {
 			 * There must be no records at the name except the
 			 * the record to be added.
 			 */
-			if (IS_ADD_NEW(rules[rule])) {
+			if (ssutable != NULL && IS_ADD_NEW(rules[rule])) {
 				result = foreach_rr(db, ver, name, rdata.type,
 						    covers,
 						    rrset_exists_action, NULL);
