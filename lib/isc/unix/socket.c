@@ -87,6 +87,10 @@
 #include <netinet/tcp.h>
 #endif
 
+#ifdef HAVE_JSON_C
+#include <json_object.h>
+#endif /* HAVE_JSON_C */
+
 /*%
  * Choose the most preferable multiplex method.
  */
@@ -5511,7 +5515,7 @@ isc_socketmgr_renderxml(isc_socketmgr_t *mgr0, xmlTextWriterPtr writer) {
 } while(0)
 
 isc_result_t
-isc_socketmgr_renderjson(isc_socketmgr_t *mgr0, json_object *stats) {
+isc_socketmgr_renderjson(isc_socketmgr_t *mgr0, isc_json_object_t *stats0) {
 	isc_result_t result = ISC_R_SUCCESS;
 	isc__socketmgr_t *mgr = (isc__socketmgr_t *)mgr0;
 	isc__socket_t *sock = NULL;
@@ -5519,6 +5523,7 @@ isc_socketmgr_renderjson(isc_socketmgr_t *mgr0, json_object *stats) {
 	isc_sockaddr_t addr;
 	socklen_t len;
 	json_object *obj, *array = json_object_new_array();
+	json_object *stats = (json_object *)stats0;
 
 	CHECKMEM(array);
 

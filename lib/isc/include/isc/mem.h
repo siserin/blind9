@@ -475,7 +475,7 @@ isc_mem_renderxml(xmlTextWriterPtr writer);
 
 #ifdef HAVE_JSON_C
 isc_result_t
-isc_mem_renderjson(json_object *memobj);
+isc_mem_renderjson(isc_json_object_t *memobj0);
 /*%<
  * Render all contexts' statistics and status in JSON.
  */

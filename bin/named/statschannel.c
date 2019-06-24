@@ -43,6 +43,11 @@
 #include <named/server.h>
 #include <named/statschannel.h>
 
+#ifdef HAVE_JSON_C
+#include <json_object.h>
+#include <linkhash.h>
+#endif /* HAVE_JSON_C */
+
 #include "bind9.xsl.h"
 
 struct named_statschannel {

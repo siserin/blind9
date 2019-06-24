@@ -40,6 +40,10 @@
 #include <dns/result.h>
 #include <dns/stats.h>
 
+#ifdef HAVE_JSON_C
+#include <json_object.h>
+#endif
+
 #include "rbtdb.h"
 
 #define CACHE_MAGIC		ISC_MAGIC('$', '$', '$', '$')
@@ -1401,11 +1405,12 @@ error:
 } while(0)
 
 isc_result_t
-dns_cache_renderjson(dns_cache_t *cache, json_object *cstats) {
+dns_cache_renderjson(dns_cache_t *cache, isc_json_object_t *cstats0) {
 	isc_result_t result = ISC_R_SUCCESS;
 	int indices[dns_cachestatscounter_max];
 	uint64_t values[dns_cachestatscounter_max];
 	json_object *obj;
+	json_object *cstats = (json_object *)cstats0;
 
 	REQUIRE(VALID_CACHE(cache));
 

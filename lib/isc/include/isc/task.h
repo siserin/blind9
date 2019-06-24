@@ -768,7 +768,7 @@ isc_taskmgr_renderxml(isc_taskmgr_t *mgr, xmlTextWriterPtr writer);
 
 #ifdef HAVE_JSON_C
 isc_result_t
-isc_taskmgr_renderjson(isc_taskmgr_t *mgr, json_object *tasksobj);
+isc_taskmgr_renderjson(isc_taskmgr_t *mgr, isc_json_object_t *tasksobj);
 #endif /* HAVE_JSON_C */
 
 ISC_LANG_ENDDECLS

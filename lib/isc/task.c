@@ -36,6 +36,10 @@
 #include <isc/util.h>
 #include <isc/xml.h>
 
+#ifdef HAVE_JSON_C
+#include <json_object.h>
+#endif /* HAVE_JSON_C */
+
 #ifdef OPENSSL_LEAKS
 #include <openssl/err.h>
 #endif
@@ -1772,11 +1776,12 @@ isc_taskmgr_renderxml(isc_taskmgr_t *mgr0, xmlTextWriterPtr writer) {
 } while(0)
 
 isc_result_t
-isc_taskmgr_renderjson(isc_taskmgr_t *mgr0, json_object *tasks) {
+isc_taskmgr_renderjson(isc_taskmgr_t *mgr0, isc_json_object_t *tasks0) {
 	isc_result_t result = ISC_R_SUCCESS;
 	isc__taskmgr_t *mgr = (isc__taskmgr_t *)mgr0;
 	isc__task_t *task = NULL;
 	json_object *obj = NULL, *array = NULL, *taskobj = NULL;
+	json_object *tasks = (json_object *)tasks0;
 
 	LOCK(&mgr->lock);
 

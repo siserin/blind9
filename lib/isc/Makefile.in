@@ -20,7 +20,9 @@ VERSION=@BIND9_VERSION@
 CINCLUDES =	-I${srcdir}/unix/include \
 		-I${srcdir}/pthreads/include \
 		-I./include \
-		-I${srcdir}/include ${DNS_INCLUDES} @OPENSSL_INCLUDES@ @JSON_C_CFLAGS@
+		-I${srcdir}/include ${DNS_INCLUDES} @OPENSSL_INCLUDES@ \
+		@JSON_C_CFLAGS@
+
 CDEFINES =
 CWARNINGS =
 

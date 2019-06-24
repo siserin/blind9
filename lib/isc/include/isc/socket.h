@@ -1025,7 +1025,7 @@ isc_socketmgr_renderxml(isc_socketmgr_t *mgr, xmlTextWriterPtr writer);
 
 #ifdef HAVE_JSON_C
 isc_result_t
-isc_socketmgr_renderjson(isc_socketmgr_t *mgr, json_object *stats);
+isc_socketmgr_renderjson(isc_socketmgr_t *mgr, isc_json_object_t *stats);
 /*%<
  * Render internal statistics and other state into JSON format.
  */

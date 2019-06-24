@@ -329,7 +329,7 @@ dns_cache_renderxml(dns_cache_t *cache, xmlTextWriterPtr writer);
 
 #ifdef HAVE_JSON_C
 isc_result_t
-dns_cache_renderjson(dns_cache_t *cache, json_object *cstats);
+dns_cache_renderjson(dns_cache_t *cache, isc_json_object_t *cstats0);
 /*
  * Render cache statistics and status in JSON
  */
