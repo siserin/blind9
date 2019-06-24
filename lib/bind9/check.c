@@ -1762,6 +1762,7 @@ check_update_policy(const cfg_obj_t *policy, isc_log_t *logctx) {
 		case dns_ssumatchtype_wildcard:
 		case dns_ssumatchtype_external:
 		case dns_ssumatchtype_local:
+		case dns_ssumatchtype_addnew:
 			if (tresult == ISC_R_SUCCESS) {
 				DE_CONST(str, r.base);
 				r.length = strlen(str);
