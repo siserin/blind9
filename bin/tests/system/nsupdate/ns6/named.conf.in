@@ -36,3 +36,12 @@ zone "in-addr.arpa" {
 	file "in-addr.db";
 	update-policy {	grant * tcp-self . PTR; };
 };
+
+zone "add-new.example" {
+	type master;
+	file "add-new-test.db";
+	update-policy {
+		grant * add-new add-new.example KEY;
+		grant * self *;
+	};
+};

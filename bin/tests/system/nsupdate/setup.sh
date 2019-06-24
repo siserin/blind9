@@ -74,6 +74,7 @@ cp -f ns1/maxjournal.db.in ns1/maxjournal.db
 
 cp -f ns5/local.db.in ns5/local.db
 cp -f ns6/in-addr.db.in ns6/in-addr.db
+cp -f ns6/add-new.example.db.in ns6/add-new.example.db
 cp -f ns7/in-addr.db.in ns7/in-addr.db
 cp -f ns7/example.com.db.in ns7/example.com.db
 cp -f ns8/in-addr.db.in ns8/in-addr.db

@@ -8,12 +8,12 @@
 ; information regarding copyright ownership.
 
 $TTL 300	; 5 minutes
-@		IN SOA	ns5.local.nil. hostmaster.local.nil. (
+@		IN SOA	ns6.local.nil. hostmaster.local.nil. (
 				1	   ; serial
 				2000       ; refresh (2000 seconds)
 				2000       ; retry (2000 seconds)
 				1814400    ; expire (3 weeks)
 				3600       ; minimum (1 hour)
 				)
-			NS	ns5
-ns5			A	10.53.0.5
+			NS	ns6
+ns6			A	10.53.0.6
