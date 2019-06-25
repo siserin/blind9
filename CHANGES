@@ -1,3 +1,6 @@
+5260.	[func]		The option 'dnssec-lookaside' is now deprecated.
+			[GL #7]
+
 5259.	[func]		New option '-i' for 'named-checkconf' to ignore
 			warnings about deprecated options. [GL #1101]
 
