@@ -33,32 +33,30 @@ file documentation:
 
 .. list-table:: Configuration File Elements!
    :header-rows: 1
-   :stub-columns: 1
    
-    * - ``acl_name``
-      - The name of an ``address_match_list`` as defined by the ``acl`` statement. 
+   * - ``acl_name``
+     - The name of an ``address_match_list`` as defined by the ``acl`` statement. 
 
-    * - ``address_match_list``
-      - A list of one or more ``ip_addr``, ``ip_prefix``, ``key_id``, or ``acl_name`` elements, see Address Match Lists <#address_match_lists>__. 
+   * - ``address_match_list``
+     - A list of one or more ``ip_addr``, ``ip_prefix``, ``key_id``, or ``acl_name`` elements, see Address Match Lists <#address_match_lists>__. 
 
-    * - ``masters_list``
-      - A named list of one or more ``ip_addr`` with optional ``key_id`` and/or ``ip_port``. A ``masters_list`` may include other ``masters_lists``.  
+   * - ``masters_list``
+     - A named list of one or more ``ip_addr`` with optional ``key_id`` and/or ``ip_port``. A ``masters_list`` may include other ``masters_lists``.  
 
-    * - ``domain_name``
-      - A quoted string which will be used as a DNS name, for example "``my.test.domain``".
+   * - ``domain_name``
+     - A quoted string which will be used as a DNS name, for example "``my.test.domain``".
     
-    * - ``namelist``
-      - A list of one or more ``domain_name`` elements.     
+   * - ``namelist``
+     - A list of one or more ``domain_name`` elements.     
         
-    * - ``dotted_decimal``
-      - One to four integers valued 0 through 255 separated by dots ('.'), such as ``123``, ``45.67`` or ``89.123.45.67``.  
+   * - ``dotted_decimal``
+     - One to four integers valued 0 through 255 separated by dots ('.'), such as ``123``, ``45.67`` or ``89.123.45.67``.  
         
-    * - ``ip4_addr``
-      - An IPv4 address with exactly four elements in `dotted_decimal`` notation.
+   * - ``ip4_addr``
+     - An IPv4 address with exactly four elements in `dotted_decimal`` notation.
         
-        
-    * - ``ip6_addr``
-      -  An IPv6 address, such as ``2001:db8::1234``. IPv6 scoped addresses that have ambiguity on their scope zones must be disambiguated by an appropriate zone ID with the percent character ('%') as delimiter. It is strongly recommended to use string zone names rather than numeric identifiers, in order to be robust against system configuration changes. However, since there is no standard mapping for such names and identifier values, currently only interface names as link identifiers are supported, assuming one-to-one mapping between interfaces and links. For example, a link-local address ``fe80::1`` on the link attached to the interface ``ne0`` can be specified as ``fe80::1%ne0``. Note that on most systems link-local addresses always have the ambiguity, and need to be disambiguated. 
+   * - ``ip6_addr``
+     -  An IPv6 address, such as ``2001:db8::1234``. IPv6 scoped addresses that have ambiguity on their scope zones must be disambiguated by an appropriate zone ID with the percent character ('%') as delimiter. It is strongly recommended to use string zone names rather than numeric identifiers, in order to be robust against system configuration changes. However, since there is no standard mapping for such names and identifier values, currently only interface names as link identifiers are supported, assuming one-to-one mapping between interfaces and links. For example, a link-local address ``fe80::1`` on the link attached to the interface ``ne0`` can be specified as ``fe80::1%ne0``. Note that on most systems link-local addresses always have the ambiguity, and need to be disambiguated. 
         
   
         
