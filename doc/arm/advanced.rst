@@ -27,7 +27,7 @@ description of the zone option ``also-notify`` in `Zone
 Transfers <#zone_transfers>`__. The ``NOTIFY`` protocol is specified in
 RFC 1996.
 
-   **Note**
+.. note::
 
    As a slave zone can also be a master to other slaves, ``named``, by
    default, sends ``NOTIFY`` messages for every zone it loads.
@@ -775,7 +775,7 @@ missing, expired, or invalid signatures, a key which does not match the
 DS RRset in the parent zone, or an insecure response from a zone which,
 according to its parent, should have been secure.
 
-   **Note**
+.. note::
 
    When the validator receives a response from an unsigned zone that has
    a signed parent, it must confirm with the parent that the zone was
@@ -790,6 +790,7 @@ according to its parent, should have been secure.
 
    The logged error reads "insecurity proof failed" and "got insecure
    response; parent indicates it should be secure".
+
 
 .. include:: dnssec.rst
 .. include:: managed-keys.rst
