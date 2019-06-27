@@ -23,8 +23,12 @@ BIND 9 Administrator Reference Manual
    advanced
    security
    troubleshooting
-   notes
-   history
-   general
-   libdns
-   manpages
+   
+Appendices
+================
+* :ref: 'notes'
+* :ref: 'history'
+* :ref: 'general'
+* :ref: 'libdns'
+* :ref: 'manpages'
+
