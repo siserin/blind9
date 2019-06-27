@@ -26,9 +26,9 @@ BIND 9 Administrator Reference Manual
    
 Appendices
 ================
-* :ref: 'notes'
-* :ref: 'history'
-* :ref: 'general'
-* :ref: 'libdns'
-* :ref: 'manpages'
+    notes
+    history
+    general
+    libdns
+    manpages
 
