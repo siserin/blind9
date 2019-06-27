@@ -23,6 +23,12 @@ BIND 9 Administrator Reference Manual
    advanced
    security
    troubleshooting
+   
+.. toctree::
+   :caption: Appendices
+   :name: appendices
+   :maxdepth: 2
+
    notes
    history
    general
