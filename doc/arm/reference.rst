@@ -33,13 +33,11 @@ file documentation:
 ====================    ==================================================
 Element                 Description
 ====================    ==================================================
-
 ``acl_name``            The name of an ``address_match_list`` as defined by the ``acl`` statement.
 
 ``address_match_list``  A list of one or more ``ip_addr``, ``ip_prefix``, ``key_id``, or ``acl_name`` elements, see Address Match Lists <#address_match_lists_>_.
 
 ``ip6_addr``            An IPv6 address, such as ``2001:db8::1234``. IPv6 scoped addresses that have ambiguity on their scope zones must be disambiguated by an appropriate zone ID with the percent character ('%') as delimiter. It is strongly recommended to use string zone names rather than numeric identifiers, in order to be robust against system configuration changes. However, since there is no standard mapping for such names and identifier values, currently only interface names as link identifiers are supported, assuming one-to-one mapping between interfaces and links. For example, a link-local address ``fe80::1`` on the link attached to the interface ``ne0`` can be specified as``fe80::1%ne0``. Note that on most systems link-local addresses always have the ambiguity, and need to be disambiguated.
-    
 ====================    ==================================================
 
 
