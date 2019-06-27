@@ -30,6 +30,9 @@ Configuration File Elements
 Following is a list of elements used throughout the BIND configuration
 file documentation:
 
+.. table:: Configuration File Elements
+.. tabularcolumns:: |\X{1}{5}|\X{4}{5}|
+   
 ====================    ==================================================
 Element                 Description
 ====================    ==================================================
