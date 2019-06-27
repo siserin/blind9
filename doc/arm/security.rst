@@ -195,7 +195,7 @@ change file access and modification times) or the ``chown`` utility (to
 set the user id and/or group id) on files to which you want BIND to
 write.
 
-   **Note**
+.. note::
 
    If the ``named`` daemon is running as an unprivileged user, it will
    not be able to bind to new restricted ports if the server is
@@ -227,4 +227,4 @@ names, not IP addresses or network prefixes. Alternatively, the new
 Some sites choose to keep all dynamically-updated DNS data in a
 subdomain and delegate that subdomain to a separate zone. This way, the
 top-level zone containing critical data such as the IP addresses of
-public web and mail servers need not allow dynamic update at all
+public web and mail servers need not allow dynamic update at all.
