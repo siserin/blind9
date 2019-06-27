@@ -337,8 +337,8 @@ line, as in C++ comments. For example:
 
 ..
 
-   **Warning**
-
+.. Note::
+   
    You cannot use the semicolon (``;``) character to start a comment such
    as you would in a zone file. The semicolon indicates the end of a
    configuration statement.
@@ -1493,7 +1493,7 @@ default will be used.
    If ``dnssec-lookaside`` is set to ``no``, then dnssec-lookaside is
    not used.
 
-   NOTE: The ISC-provided DLV service at ``dlv.isc.org``, has been shut
+.. note:: The ISC-provided DLV service at ``dlv.isc.org``, has been shut
    down. The ``dnssec-lookaside auto;`` configuration option, which set
    ``named`` up to use ISC DLV with minimal configuration, has
    accordingly been removed.
@@ -2001,9 +2001,7 @@ Boolean Options
 
    1. contains an EDNS Padding option,
    2. includes a valid server cookie or uses TCP,
-   3. is
-      not
-      signed using TSIG or SIG(0), and
+   3. is not signed using TSIG or SIG(0), and
    4. is from a client whose address matches the specified ACL,
 
    then the response is padded with an EDNS Padding option to a multiple
@@ -2149,7 +2147,7 @@ Boolean Options
    recommended, however, as it requires ``named`` to be recompiled with
    a new key when the root key expires.)
 
-      **Note**
+.. note:
 
       ``named`` loads *only* the root key from ``bind.keys``. The file
       cannot be used to store keys for other zones. The root key in
@@ -2312,13 +2310,12 @@ Boolean Options
    Synthesize answers from cached NSEC, NSEC3 and other RRsets that have
    been proved to be correct using DNSSEC. The default is ``yes``.
 
-   Note:
-
-   -  DNSSEC validation must be enabled for this option to be effective.
-
-      This initial implementation only covers synthesis of answers from
-      NSEC records. Synthesis from NSEC3 is planned for the future. This
-      will also be controlled by ``synth-from-dnssec``.
+.. note:
+   
+   DNSSEC validation must be enabled for this option to be effective.
+   This initial implementation only covers synthesis of answers from
+   NSEC records. Synthesis from NSEC3 is planned for the future. This
+   will also be controlled by ``synth-from-dnssec``.
 
 Forwarding
 ^^^^^^^^^^
@@ -2393,9 +2390,9 @@ for details on how to specify IP address lists.
    which case it overrides the ``options allow-query`` statement. If not
    specified, the default is to allow queries from all hosts.
 
-      **Note**
-
-      ``allow-query-cache`` is now used to specify access to the cache.
+.. note:
+   
+   ``allow-query-cache`` is now used to specify access to the cache.
 
 ``allow-query-on``
    Specifies which local addresses can accept ordinary DNS questions.
@@ -2412,9 +2409,9 @@ for details on how to specify IP address lists.
 
    If not specified, the default is to allow queries on all addresses.
 
-      **Note**
+.. note:
 
-      ``allow-query-cache`` is used to specify access to the cache.
+   ``allow-query-cache`` is used to specify access to the cache.
 
 ``allow-query-cache``
    Specifies which hosts are allowed to get answers from the cache. If
@@ -2658,24 +2655,26 @@ system default range; otherwise, it will use its own defaults:
    use-v4-udp-ports { range 1024 65535; };
    use-v6-udp-ports { range 1024 65535; };
 
-Note: make sure the ranges be sufficiently large for security. A
-desirable size depends on various parameters, but we generally recommend
-it contain at least 16384 ports (14 bits of entropy). Note also that the
-system's default range when used may be too small for this purpose, and
-that the range may even be changed while ``named`` is running; the new
-range will automatically be applied when ``named`` is reloaded. It is
-encouraged to configure ``use-v4-udp-ports`` and ``use-v6-udp-ports``
-explicitly so that the ranges are sufficiently large and are reasonably
-independent from the ranges used by other applications.
+.. note:
+   make sure the ranges be sufficiently large for security. A
+   desirable size depends on various parameters, but we generally recommend
+   it contain at least 16384 ports (14 bits of entropy). Note also that the
+   system's default range when used may be too small for this purpose, and
+   that the range may even be changed while ``named`` is running; the new
+   range will automatically be applied when ``named`` is reloaded. It is
+   encouraged to configure ``use-v4-udp-ports`` and ``use-v6-udp-ports``
+   explicitly so that the ranges are sufficiently large and are reasonably
+   independent from the ranges used by other applications.
 
-Note: the operational configuration where ``named`` runs may prohibit
-the use of some ports. For example, UNIX systems will not allow
-``named`` running without a root privilege to use ports less than 1024.
-If such ports are included in the specified (or detected) set of query
-ports, the corresponding query attempts will fail, resulting in
-resolution failures or delay. It is therefore important to configure the
-set of ports that can be safely used in the expected operational
-environment.
+.. note:
+   the operational configuration where ``named`` runs may prohibit
+   the use of some ports. For example, UNIX systems will not allow
+   ``named`` running without a root privilege to use ports less than 1024.
+   If such ports are included in the specified (or detected) set of query
+   ports, the corresponding query attempts will fail, resulting in
+   resolution failures or delay. It is therefore important to configure the
+   set of ports that can be safely used in the expected operational
+   environment.
 
 The defaults of the ``avoid-v4-udp-ports`` and ``avoid-v6-udp-ports``
 options are:
@@ -2685,12 +2684,13 @@ options are:
    avoid-v4-udp-ports {};
    avoid-v6-udp-ports {};
 
-Note: BIND 9.5.0 introduced the ``use-queryport-pool`` option to support
-a pool of such random ports, but this option is now obsolete because
-reusing the same ports in the pool may not be sufficiently secure. For
-the same reason, it is generally strongly discouraged to specify a
-particular port for the ``query-source`` or ``query-source-v6`` options;
-it implicitly disables the use of randomized port numbers.
+.. note:
+   BIND 9.5.0 introduced the ``use-queryport-pool`` option to support
+   a pool of such random ports, but this option is now obsolete because
+   reusing the same ports in the pool may not be sufficiently secure. For
+   the same reason, it is generally strongly discouraged to specify a
+   particular port for the ``query-source`` or ``query-source-v6`` options;
+   it implicitly disables the use of randomized port numbers.
 
 ``use-queryport-pool``
    This option is obsolete.
@@ -2703,20 +2703,20 @@ it implicitly disables the use of randomized port numbers.
 
 ..
 
-   **Note**
+.. note:
 
    The address specified in the ``query-source`` option is used for both
    UDP and TCP queries, but the port applies only to UDP queries. TCP
    queries always use a random unprivileged port.
 
-   **Note**
+.. note:
 
    Solaris 2.5.1 and earlier does not support setting the source address
    for TCP sockets.
 
 ..
 
-   **Note**
+.. note:
 
    See also ``transfer-source`` and ``notify-source``.
 
@@ -2856,10 +2856,10 @@ options apply to zone transfers.
    ``transfer-source`` statement within the ``view`` or ``zone`` block
    in the configuration file.
 
-      **Note**
+.. note:
 
-      Solaris 2.5.1 and earlier does not support setting the source
-      address for TCP sockets.
+   Solaris 2.5.1 and earlier does not support setting the source
+   address for TCP sockets.
 
 ``transfer-source-v6``
    The same as ``transfer-source``, except zone transfers are performed
@@ -2869,12 +2869,12 @@ options apply to zone transfers.
    An alternate transfer source if the one listed in ``transfer-source``
    fails and ``use-alt-transfer-source`` is set.
 
-      **Note**
+.. note:
 
-      If you do not wish the alternate transfer source to be used, you
-      should set ``use-alt-transfer-source`` appropriately and you
-      should not depend upon getting an answer back to the first refresh
-      query.
+   If you do not wish the alternate transfer source to be used, you
+   should set ``use-alt-transfer-source`` appropriately and you
+   should not depend upon getting an answer back to the first refresh
+   query.
 
 ``alt-transfer-source-v6``
    An alternate transfer source if the one listed in
@@ -2893,10 +2893,10 @@ options apply to zone transfers.
    or per-view basis by including a ``notify-source`` statement within
    the ``zone`` or ``view`` block in the configuration file.
 
-      **Note**
+.. note:
 
-      Solaris 2.5.1 and earlier does not support setting the source
-      address for TCP sockets.
+   Solaris 2.5.1 and earlier does not support setting the source
+   address for TCP sockets.
 
 ``notify-source-v6``
    Like ``notify-source``, but applies to notify messages sent to IPv6
@@ -3373,7 +3373,7 @@ the last one applies.
 By default, records are returned in indeterminate but consistent order
 (see ``none`` above).
 
-   **Note**
+.. note:
 
    In this release of BIND 9, the ``rrset-order`` statement does not
    support "fixed" ordering by default. Fixed ordering can be enabled at
@@ -3837,7 +3837,7 @@ infrastructure servers for names in these spaces. So many in fact that
 sacrificial servers were needed to be deployed to channel the query load
 away from the infrastructure servers.
 
-   **Note**
+.. note:
 
    The real parent servers for these zones should disable all empty zone
    under the parent zone they serve. For the real root servers, this is
