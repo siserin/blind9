@@ -476,3 +476,25 @@ unit:pkcs11:sid:amd64:
   <<: *unit_test_job
   dependencies:
     - pkcs11:sid:amd64
+
+# Jobs for testing --with-geoip builds on Debian Sid (amd64)
+
+geoip:sid:amd64:
+  variables:
+    CC: gcc
+    CFLAGS: "-Wall -Wextra -O2 -g"
+    EXTRA_CONFIGURE: "--with-geoip"
+  <<: *debian_sid_amd64_image
+  <<: *build_job
+
+system:geoip:sid:amd64:
+  <<: *debian_sid_amd64_image
+  <<: *system_test_job
+  dependencies:
+    - pkcs11:sid:amd64
+
+unit:geoip:sid:amd64:
+  <<: *debian_sid_amd64_image
+  <<: *unit_test_job
+  dependencies:
+    - pkcs11:sid:amd64
