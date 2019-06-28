@@ -82,15 +82,15 @@ zone again.
 
 Where Can I Get Help?
 ---------------------
+The BIND-users mailing list at lists.isc.org is an excellent resource for
+peer user support. In addition, ISC maintains a library of helpful articles
+at kb.isc.org.
 
-The Internet Systems Consortium (ISC) offers a wide range of support and
-service agreements for BIND and DHCP servers. Four levels of premium
-support are available and each level includes support for all ISC
-programs, significant discounts on products and training, and a
-recognized priority on bug fixes and non-funded feature requests. In
-addition, ISC offers a standard support agreement package which includes
-services ranging from bug fix announcements to remote support. It also
-includes training in BIND and DHCP.
+The Internet Systems Consortium (ISC) offers annual support agreements 
+for BIND, ISC DHCP and Kea. Four levels of premium support are available. 
+Each level includes advance security notifications. The higher levels include
+greater service level agreements (SLAs), and increased priority on bug fixes 
+and non-funded feature requests. 
 
 To discuss arrangements for support, contact info@isc.org or visit the
-ISC web page at http://www.isc.org/services/support/ to read more.
+ISC web page at http://www.isc.org/support/ to read more.
