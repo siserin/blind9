@@ -26,6 +26,7 @@
 
 #include <isc/app.h>
 #include <isc/buffer.h>
+#include <isc/refcount.h>
 #include <isc/socket.h>
 #include <isc/task.h>
 #include <isc/timer.h>
@@ -214,7 +215,7 @@ static dns_dispentry_t *dispentry = NULL;
 static bool first = true;
 static isc_mutex_t lock;
 static isc_sockaddr_t local;
-static unsigned int responses = 0;
+static isc_refcount_t responses;
 
 static void
 response(isc_task_t *task, isc_event_t *event) {
@@ -227,8 +228,8 @@ response(isc_task_t *task, isc_event_t *event) {
 	LOCK(&lock);
 	wasfirst = first;
 	first = false;
-	responses++;
 	UNLOCK(&lock);
+	isc_refcount_increment(&responses);
 
 	if (wasfirst) {
 		result = dns_dispatch_getnext(dispentry, &devent);
@@ -267,6 +268,8 @@ dispatch_getnext(void **state) {
 	UNUSED(state);
 
 	isc_mutex_init(&lock);
+
+	isc_refcount_init(&responses, 0);
 
 	result = isc_task_create(taskmgr, 0, &task);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -319,7 +322,7 @@ dispatch_getnext(void **state) {
 	result = isc_app_run();
 	assert_int_equal(result, ISC_R_SUCCESS);
 
-	assert_int_equal(responses, 2);
+	assert_int_equal(isc_refcount_current(&responses), 2);
 
 	/*
 	 * Shutdown nameserver.
