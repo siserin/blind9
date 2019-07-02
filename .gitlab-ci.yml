@@ -483,7 +483,7 @@ geoip:sid:amd64:
   variables:
     CC: gcc
     CFLAGS: "-Wall -Wextra -O2 -g"
-    EXTRA_CONFIGURE: "--with-geoip"
+    EXTRA_CONFIGURE: "--without-geoip2 --with-geoip"
   <<: *debian_sid_amd64_image
   <<: *build_job
 
