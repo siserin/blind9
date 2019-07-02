@@ -1,15 +1,14 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
 .. _dnssec.dynamic.zones:
-
 
 DNSSEC, Dynamic Zones, and Automatic Signing
 --------------------------------------------
@@ -95,8 +94,8 @@ the zone. It will do so only when it receives an
 
 ``auto-dnssec maintain`` includes the above functionality, but will also
 automatically adjust the zone's DNSKEY records on schedule according to
-the keys' timing metadata. (See `??? <#man.dnssec-keygen>`__ and
-`??? <#man.dnssec-settime>`__ for more information.)
+the keys' timing metadata. (See :ref:`man_dnssec-keygen` and
+:ref:`man_dnssec-settime` for more information.)
 
 ``named`` will periodically search the key directory for keys matching
 the zone, and if the keys' metadata indicates that any change should be

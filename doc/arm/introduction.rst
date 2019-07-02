@@ -1,10 +1,10 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
@@ -41,9 +41,9 @@ in various environments. Information in *Chapter 3* is *task-oriented*
 in its presentation and is organized functionally, to aid in the process
 of installing the BIND 9 software. The task-oriented section is followed
 by *Chapter 4*, which is organized as a reference manual to aid in the ongoing
-maintenance of the software. *Chapter 5* contains more advanced concepts that 
-the system administrator may need for implementing certain options. *Chapter 6* 
-addresses security considerations, and *Chapter 7* contains troubleshooting help. 
+maintenance of the software. *Chapter 5* contains more advanced concepts that
+the system administrator may need for implementing certain options. *Chapter 6*
+addresses security considerations, and *Chapter 7* contains troubleshooting help.
 The main body of the document is followed by several *appendices* which contain
 useful reference information, such as a *bibliography* and historic
 information related to BIND and the Domain Name System.
@@ -132,12 +132,10 @@ the *DNS protocol*.
 
 The data associated with each domain name is stored in the form of
 *resource records* (RRs). Some of the supported resource record types
-are described in `Types of Resource Records and When to Use
-Them <#types_of_resource_records_and_when_to_use_them>`__.
+are described in :ref:`types_of_resource_records_and_when_to_use_them`.
 
 For more detailed information about the design of the DNS and the DNS
-protocol, please refer to the standards documents listed in `Request for
-Comments (RFCs) <#rfcs>`__.
+protocol, please refer to the standards documents listed in :ref:`rfcs`.
 
 Zones
 ~~~~~
@@ -184,7 +182,7 @@ servers, on different networks.
 Responses from authoritative servers have the "authoritative answer"
 (AA) bit set in the response packets. This makes them easy to identify
 when debugging DNS configurations using tools like ``dig`` (`Diagnostic
-Tools <#diagnostic_tools>`__).
+Tools :ref:`diagnostic_tools`).
 
 .. _primary_master:
 

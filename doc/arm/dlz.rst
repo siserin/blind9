@@ -1,10 +1,10 @@
 .. 
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
@@ -54,7 +54,7 @@ A DLZ database is configured with a ``dlz`` statement in ``named.conf``:
        database "dlopen driver.so args";
        search yes;
        };
-       
+
 
 This specifies a DLZ module to search when answering queries; the module
 is implemented in ``driver.so`` and is loaded at runtime by the dlopen
@@ -85,7 +85,7 @@ back-end storage of redirection rules:
        type redirect;
        dlz other;
        };
-       
+
 
 Sample DLZ Driver
 ~~~~~~~~~~~~~~~~~
@@ -101,7 +101,7 @@ module as an argument in the ``dlz`` statement:
        dlz other {
        database "dlopen driver.so example.nil";
        };
-       
+
 
 In the above example, the module is configured to create a zone
 "example.nil", which can answer queries and AXFR requests, and accept
@@ -115,7 +115,7 @@ SOA, NS, and a single A record at the apex:
                           )
     example.nil.  3600    IN      NS      example.nil.
     example.nil.  1800    IN      A       10.53.0.1
-       
+
 
 The sample driver is capable of retrieving information about the
 querying client, and altering its response on the basis of this

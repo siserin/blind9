@@ -1,10 +1,10 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
@@ -31,17 +31,6 @@ Following is a list of elements used throughout the BIND configuration
 file documentation:
 
 .. table:: Configuration File Elements
-.. tabularcolumns:: |\X{1}{5}|\X{4}{5}|
-   
-====================    ==================================================
-Element                 Description
-====================    ==================================================
-acl_name                The name of an ``address_match_list`` as defined by the ``acl`` statement.
-address_match_list      A list of one or more ``ip_addr``, ``ip_prefix``, ``key_id``, or ``acl_name`` elements, see Address Match Lists <#address_match_lists_>_.
-ip6_addr                An IPv6 address, such as ``2001:db8::1234``. IPv6 scoped addresses that have ambiguity on their scope zones must be disambiguated by an appropriate zone ID with the percent character ('%') as delimiter. It is strongly recommended to use string zone names rather than numeric identifiers, in order to be robust against system configuration changes. However, since there is no standard mapping for such names and identifier values, currently only interface names as link identifiers are supported, assuming one-to-one mapping between interfaces and links. For example, a link-local address ``fe80::1`` on the link attached to the interface ``ne0`` can be specified as``fe80::1%ne0``. Note that on most systems link-local addresses always have the ambiguity, and need to be disambiguated.
-====================    ==================================================
-
-
 
  +------------------------+-----------------------------------------------+
  | ``acl_name``           | The name of an ``address_match_list`` as      |
@@ -49,8 +38,7 @@ ip6_addr                An IPv6 address, such as ``2001:db8::1234``. IPv6 scoped
  +------------------------+-----------------------------------------------+
  | ``address_match_list`` | A list of one or more ``ip_addr``,            |
  |                        | ``ip_prefix``, ``key_id``, or ``acl_name``    |
- |                        | elements, see Address Match                   |
- |                        | Lists <#address_match_lists>__.               |
+ |                        | elements, see :ref:`address_match_lists`.     |
  +------------------------+-----------------------------------------------+
  | ``masters_list``       | A named list of one or more ``ip_addr`` with  |
  |                        | optional ``key_id`` and/or ``ip_port``. A     |
@@ -142,7 +130,7 @@ ip6_addr                An IPv6 address, such as ``2001:db8::1234``. IPv6 scoped
  +------------------------+-----------------------------------------------+
  | ``path_name``          | A quoted string which will be used as a       |
  |                        | pathname, such as                             |
- |                        | ``zones/master/my.test.domain``.              | 
+ |                        | ``zones/master/my.test.domain``.              |
  +------------------------+-----------------------------------------------+
  | ``port_list``          | A list of an ``ip_port`` or a port range. A   |
  |                        | port range is specified in the form of        |
@@ -231,7 +219,7 @@ list can be any of the following:
 
 -  an IP address (IPv4 or IPv6)
 
--  an IP prefix (in \`/' notation)
+-  an IP prefix (in '/' notation)
 
 -  a key ID, as defined by the ``key`` statement
 
@@ -349,8 +337,8 @@ line, as in C++ comments. For example:
 
 ..
 
-.. Note::
-   
+.. warning::
+
    You cannot use the semicolon (``;``) character to start a comment such
    as you would in a zone file. The semicolon indicates the end of a
    configuration statement.
@@ -413,7 +401,7 @@ The following statements are supported:
  | ``view``                | defines a view.                                    |
  +-------------------------+----------------------------------------------------+
  | ``zone``                | defines a zone.                                    |
- +-------------------------+----------------------------------------------------+ 
+ +-------------------------+----------------------------------------------------+
 
 The ``logging`` and ``options`` statements may only occur once per
 configuration.
@@ -453,7 +441,7 @@ The following ACLs are built-in:
  |               | way to determine the prefix lengths of local IPv6     |
  |               | addresses. In such a case, ``localnets`` only matches |
  |               | the local IPv6 addresses, just like ``localhost``.    |
- +---------------+-------------------------------------------------------+ 
+ +---------------+-------------------------------------------------------+
 
 .. _controls_grammar:
 
@@ -499,8 +487,7 @@ directory as the permissions on the socket itself are ignored.
 The primary authorization mechanism of the command channel is the
 ``key_list``, which contains a list of ``key_id``\ s. Each ``key_id`` in
 the ``key_list`` is authorized to execute commands over the control
-channel. See `Remote Name Daemon Control application <#rndc>`__ in
-`Administrative Tools <#admin_tools>`__) for information about
+channel. See :ref:`admin_tools`) for information about
 configuring keys in ``rndc``.
 
 If the ``read-only`` clause is enabled, the control channel is limited
@@ -574,15 +561,13 @@ server.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``key`` statement defines a shared secret key for use with TSIG (see
-`TSIG <#tsig>`__) or the command channel (see `Statement Definition and
-Usage <#controls_statement_definition_and_usage>`__).
+:ref:`tsig`) or the command channel (see :ref:`controls_statement_definition_and_usage`).
 
 The ``key`` statement can occur at the top level of the configuration
 file or inside a ``view`` statement. Keys defined in top-level ``key``
 statements can be used in all views. Keys intended for use in a
-``controls`` statement (see `Statement Definition and
-Usage <#controls_statement_definition_and_usage>`__) must be defined at
-the top level.
+``controls`` statement (see :ref:`controls_statement_definition_and_usage`)
+must be defined at the top level.
 
 The key_id, also known as the key name, is a domain name uniquely
 identifying the key. It can be used in a ``server`` statement to cause
@@ -788,7 +773,7 @@ flushed after each log entry. By default all log messages are flushed.
 There are four predefined channels that are used for ``named``'s default
 logging as follows. If ``named`` is started with the ``-L`` then a fifth
 channel ``default_logfile`` is added. How they are used is described in
-`The Phrase <#the_category_phrase>`__.
+:ref:`the_category_phrase`.
 
 ::
 
@@ -925,7 +910,7 @@ message will look like as follows:
    in 30.000183: timed out/success [domain:example.com,
    referral:2,restart:7,qrysent:8,timeout:5,lame:0,neterr:0,
    badresp:1,adberr:0,findfail:0,valfail:0]
-           
+
 
 The first part before the colon shows that a recursive resolution for
 AAAA records of www.example.com completed in 30.000183 seconds and the
@@ -1115,7 +1100,7 @@ default will be used.
    https://github.com/farsightsec/fstrm) to send event payloads which
    are encoded using Protocol Buffers (``libprotobuf-c``, a mechanism
    for serializing structured data developed by Google, Inc.; see
-   `https://developers.google.com/protocol-buffers <https://developers.google.com/protocol-buffers/>`__).
+   https://developers.google.com/protocol-buffers/).
 
    To enable ``dnstap`` at compile time, the ``fstrm`` and
    ``protobuf-c`` libraries must be available, and BIND must be
@@ -1143,7 +1128,7 @@ default will be used.
       };
 
    Logged ``dnstap`` messages can be parsed using the ``dnstap-read``
-   utility (see `??? <#man.dnstap-read>`__ for details).
+   utility (see :ref:`man_dnstap-read` for details).
 
    For more information on ``dnstap``, see http://dnstap.info.
 
@@ -1228,7 +1213,7 @@ default will be used.
    Specifies the directory containing GeoIP ``.dat`` database files for
    GeoIP initialization. By default, this option is unset and the GeoIP
    support will use libGeoIP's built-in directory. (For details, see
-   `Statement Definition and Usage <#acl>`__ about the ``geoip`` ACL.)
+   :ref:`acl` about the ``geoip`` ACL.)
 
 ``key-directory``
    When performing dynamic update of secure zones, the directory where
@@ -1368,8 +1353,7 @@ default will be used.
    The pathname of the file the server appends statistics to when
    instructed to do so using ``rndc stats``. If not specified, the
    default is ``named.stats`` in the server's current directory. The
-   format of the file is described in `The Statistics
-   File <#statsfile>`__.
+   format of the file is described in :ref:`statsfile`.
 
 ``bindkeys-file``
    The pathname of a file to override the built-in trusted keys provided
@@ -1384,10 +1368,9 @@ default will be used.
 ``session-keyfile``
    The pathname of the file into which to write a TSIG session key
    generated by ``named`` for use by ``nsupdate -l``. If not specified,
-   the default is ``/var/run/named/session.key``. (See `Dynamic Update
-   Policies <#dynamic_update_policies>`__, and in particular the
-   discussion of the ``update-policy`` statement's ``local`` option for
-   more information about this feature.)
+   the default is ``/var/run/named/session.key``. (See :ref:`dynamic_update_policies`,
+   and in particular the discussion of the ``update-policy`` statement's
+   ``local`` option for more information about this feature.)
 
 ``session-keyname``
    The key name to use for the TSIG session key. If not specified, the
@@ -1578,8 +1561,8 @@ default will be used.
    When a zone is configured with ``auto-dnssec maintain;`` its key
    repository must be checked periodically to see if any new keys have
    been added or any existing keys' timing metadata has been updated
-   (see `??? <#man.dnssec-keygen>`__ and `???
-   <#man.dnssec-settime>`__). The ``dnssec-loadkeys-interval`` option
+   (see :ref:`man_dnssec-keygen` and `man_dnssec-settime`).
+   The ``dnssec-loadkeys-interval`` option
    sets the frequency of automatic repository checks, in minutes.  The
    default is ``60`` (1 hour), the minimum is ``1`` (1 minute), and
    the maximum is ``1440`` (24 hours); any higher value is silently
@@ -1588,8 +1571,7 @@ default will be used.
 ``dnssec-update-mode``
    If this option is set to its default value of ``maintain`` in a zone
    of type ``master`` which is DNSSEC-signed and configured to allow
-   dynamic updates (see `Dynamic Update
-   Policies <#dynamic_update_policies>`__), and if ``named`` has access
+   dynamic updates (see :ref:`dynamic_update_policies`), and if ``named`` has access
    to the private signing key(s) for the zone, then ``named`` will
    automatically sign all new or changed records and maintain signatures
    for the zone by regenerating RRSIG records whenever they approach
@@ -1697,7 +1679,7 @@ default will be used.
 
    These statistics may be accessed via the ``statistics-channel`` or
    using ``rndc stats``, which will dump them to the file listed in the
-   ``statistics-file``. See also `The Statistics File <#statsfile>`__.
+   ``statistics-file``. See also :ref:`statsfile`.
 
    For backward compatibility with earlier versions of BIND 9, the
    ``zone-statistics`` option can also accept ``yes`` or ``no``; ``yes``
@@ -1733,7 +1715,7 @@ Boolean Options
    Zones added at runtime will have their configuration stored either in
    a new-zone file (NZF) or a new-zone database (NZD) depending on
    whether ``named`` was linked with liblmdb at compile time. See
-   `??? <#man.rndc>`__ for further details about ``rndc addzone``.
+   :ref:`man_rndc` for further details about ``rndc addzone``.
 
 ``auth-nxdomain``
    If ``yes``, then the ``AA`` bit is always set on NXDOMAIN responses,
@@ -1835,25 +1817,18 @@ Boolean Options
    database lookups, causing extra latency when marshalling responses.
    ``minimal-responses`` takes one of four values:
 
-   -  no
-      : the server will be as complete as possible when generating
+   -  ``no``: the server will be as complete as possible when generating
       responses.
-   -  yes
-      : the server will only add records to the authority and additional
+   -  ``yes``: the server will only add records to the authority and additional
       sections when such records are required by the DNS protocol (for
       example, when returning delegations or negative responses). This
       provides the best server performance but may result in more client
       queries.
-   -  no-auth
-      : the server will omit records from the authority section except
+   -  ``no-auth``: the server will omit records from the authority section except
       when they are required, but it may still add records to the
       additional section.
-   -  no-auth-recursive
-      : the same as
-      no-auth
-      when recursion is requested in the query (RD=1), or the same as
-      no
-      if recursion is not requested.
+   -  ``no-auth-recursive``: the same as ``no-auth`` when recursion is requested
+      in the query (RD=1), or the same as ``no`` if recursion is not requested.
 
    ``no-auth`` and ``no-auth-recursive`` are useful when answering stub
    clients, which usually ignore the authority section.
@@ -1888,7 +1863,7 @@ Boolean Options
 
 ``notify``
    If ``yes`` (the default), DNS NOTIFY messages are sent when a zone
-   the server is authoritative for changes, see `Notify <#notify>`__.
+   the server is authoritative for changes, see :ref:`notify`.
    The messages are sent to the servers listed in the zone's NS records
    (except the master server identified in the SOA MNAME field), and to
    any servers listed in the ``also-notify`` option.
@@ -2046,21 +2021,17 @@ Boolean Options
 ``use-ixfr``
    *This option is obsolete*. If you need to disable IXFR to a
    particular server or servers, see the information on the
-   ``provide-ixfr`` option in `Statement Definition and
-   Usage <#server_statement_definition_and_usage>`__. See also
-   `Incremental Zone Transfers (IXFR) <#incremental_zone_transfers>`__.
+   ``provide-ixfr`` option in :ref:`server_statement_definition_and_usage`.
+   See also `incremental_zone_transfers`.
 
 ``provide-ixfr``
-   See the description of ``provide-ixfr`` in `Statement Definition and
-   Usage <#server_statement_definition_and_usage>`__.
+   See the description of ``provide-ixfr`` in :ref:`server_statement_definition_and_usage`.
 
 ``request-ixfr``
-   See the description of ``request-ixfr`` in `Statement Definition and
-   Usage <#server_statement_definition_and_usage>`__.
+   See the description of ``request-ixfr`` in :ref:`server_statement_definition_and_usage`.
 
 ``request-expire``
-   See the description of ``request-expire`` in `Statement Definition
-   and Usage <#server_statement_definition_and_usage>`__.
+   See the description of ``request-expire`` in :ref:`server_statement_definition_and_usage`.
 
 ``match-mapped-addresses``
    If ``yes``, then an IPv4-mapped IPv6 address will match any address
@@ -2113,8 +2084,8 @@ Boolean Options
 
    ``auto-dnssec maintain;`` includes the above, but also
    automatically adjusts the zone's DNSSEC keys on schedule, according
-   to the keys' timing metadata (see `??? <#man.dnssec-keygen>`__ and
-   `??? <#man.dnssec-settime>`__). The command ``rndc sign zonename``
+   to the keys' timing metadata (see :ref:`man_dnssec-keygen` and
+   :ref:`man_dnssec-settime`). The command ``rndc sign zonename``
    causes ``named`` to load keys from the key repository and sign the
    zone with all keys that are active.  ``rndc loadkeys zonename``
    causes ``named`` to load keys from the key repository and schedule
@@ -2159,9 +2130,7 @@ Boolean Options
    recommended, however, as it requires ``named`` to be recompiled with
    a new key when the root key expires.)
 
-.. note:
-
-      ``named`` loads *only* the root key from ``bind.keys``. The file
+.. note:: ``named`` loads *only* the root key from ``bind.keys``. The file
       cannot be used to store keys for other zones. The root key in
       ``bind.keys`` is ignored if ``dnssec-validation auto`` is not in
       use.
@@ -2322,9 +2291,7 @@ Boolean Options
    Synthesize answers from cached NSEC, NSEC3 and other RRsets that have
    been proved to be correct using DNSSEC. The default is ``yes``.
 
-.. note:
-   
-   DNSSEC validation must be enabled for this option to be effective.
+.. note:: DNSSEC validation must be enabled for this option to be effective.
    This initial implementation only covers synthesis of answers from
    NSEC records. Synthesis from NSEC3 is planned for the future. This
    will also be controlled by ``synth-from-dnssec``.
@@ -2354,7 +2321,7 @@ Forwarding can also be configured on a per-domain basis, allowing for
 the global forwarding options to be overridden in a variety of ways. You
 can set particular domains to use different forwarders, or have a
 different ``forward only/first`` behavior, or not forward at all, see
-`Statement Grammar <#zone_statement_grammar>`__.
+:ref:`zone_statement_grammar`.
 
 .. _dual_stack:
 
@@ -2379,7 +2346,7 @@ Access Control
 ^^^^^^^^^^^^^^
 
 Access to the server can be restricted based on the IP address of the
-requesting system. See `Address Match Lists <#address_match_lists>`__
+requesting system. See :ref:`address_match_lists`
 for details on how to specify IP address lists.
 
 ``allow-notify``
@@ -2402,9 +2369,7 @@ for details on how to specify IP address lists.
    which case it overrides the ``options allow-query`` statement. If not
    specified, the default is to allow queries from all hosts.
 
-.. note:
-   
-   ``allow-query-cache`` is now used to specify access to the cache.
+.. note:: ``allow-query-cache`` is now used to specify access to the cache.
 
 ``allow-query-on``
    Specifies which local addresses can accept ordinary DNS questions.
@@ -2421,9 +2386,7 @@ for details on how to specify IP address lists.
 
    If not specified, the default is to allow queries on all addresses.
 
-.. note:
-
-   ``allow-query-cache`` is used to specify access to the cache.
+.. note:: ``allow-query-cache`` is used to specify access to the cache.
 
 ``allow-query-cache``
    Specifies which hosts are allowed to get answers from the cache. If
@@ -2464,8 +2427,7 @@ for details on how to specify IP address lists.
    default is to deny updates from all hosts.
 
    Note that allowing updates based on the requestor's IP address is
-   insecure; see `Dynamic Update Security <#dynamic_update_security>`__
-   for details.
+   insecure; see :ref:`dynamic_update_security` for details.
 
    In general this option should only be set at the ``zone`` level.
    While a default value can be set at the ``options`` or ``view`` level
@@ -2486,8 +2448,7 @@ for details on how to specify IP address lists.
 
    Note that enabling the update forwarding feature on a slave server
    may expose master servers to attacks if they rely on insecure
-   IP-address-based access control; see `Dynamic Update
-   Security <#dynamic_update_security>`__ for more details.
+   IP-address-based access control; see :ref:`dynamic_update_security` for more details.
 
    In general this option should only be set at the ``zone`` level.
    While a default value can be set at the ``options`` or ``view`` level
@@ -2667,8 +2628,7 @@ system default range; otherwise, it will use its own defaults:
    use-v4-udp-ports { range 1024 65535; };
    use-v6-udp-ports { range 1024 65535; };
 
-.. note:
-   make sure the ranges be sufficiently large for security. A
+.. note:: Make sure the ranges be sufficiently large for security. A
    desirable size depends on various parameters, but we generally recommend
    it contain at least 16384 ports (14 bits of entropy). Note also that the
    system's default range when used may be too small for this purpose, and
@@ -2678,8 +2638,7 @@ system default range; otherwise, it will use its own defaults:
    explicitly so that the ranges are sufficiently large and are reasonably
    independent from the ranges used by other applications.
 
-.. note:
-   the operational configuration where ``named`` runs may prohibit
+.. note:: The operational configuration where ``named`` runs may prohibit
    the use of some ports. For example, UNIX systems will not allow
    ``named`` running without a root privilege to use ports less than 1024.
    If such ports are included in the specified (or detected) set of query
@@ -2696,8 +2655,7 @@ options are:
    avoid-v4-udp-ports {};
    avoid-v6-udp-ports {};
 
-.. note:
-   BIND 9.5.0 introduced the ``use-queryport-pool`` option to support
+.. note:: BIND 9.5.0 introduced the ``use-queryport-pool`` option to support
    a pool of such random ports, but this option is now obsolete because
    reusing the same ports in the pool may not be sufficiently secure. For
    the same reason, it is generally strongly discouraged to specify a
@@ -2713,24 +2671,14 @@ options are:
 ``queryport-pool-updateinterval``
    This option is obsolete.
 
-..
-
-.. note:
-
-   The address specified in the ``query-source`` option is used for both
+.. note:: The address specified in the ``query-source`` option is used for both
    UDP and TCP queries, but the port applies only to UDP queries. TCP
    queries always use a random unprivileged port.
 
-.. note:
-
-   Solaris 2.5.1 and earlier does not support setting the source address
+.. note:: Solaris 2.5.1 and earlier does not support setting the source address
    for TCP sockets.
 
-..
-
-.. note:
-
-   See also ``transfer-source`` and ``notify-source``.
+.. note:: See also ``transfer-source`` and ``notify-source``.
 
 .. _zone_transfers:
 
@@ -2868,9 +2816,7 @@ options apply to zone transfers.
    ``transfer-source`` statement within the ``view`` or ``zone`` block
    in the configuration file.
 
-.. note:
-
-   Solaris 2.5.1 and earlier does not support setting the source
+.. note:: Solaris 2.5.1 and earlier does not support setting the source
    address for TCP sockets.
 
 ``transfer-source-v6``
@@ -2881,9 +2827,7 @@ options apply to zone transfers.
    An alternate transfer source if the one listed in ``transfer-source``
    fails and ``use-alt-transfer-source`` is set.
 
-.. note:
-
-   If you do not wish the alternate transfer source to be used, you
+.. note:: If you do not wish the alternate transfer source to be used, you
    should set ``use-alt-transfer-source`` appropriately and you
    should not depend upon getting an answer back to the first refresh
    query.
@@ -2905,9 +2849,7 @@ options apply to zone transfers.
    or per-view basis by including a ``notify-source`` statement within
    the ``zone`` or ``view`` block in the configuration file.
 
-.. note:
-
-   Solaris 2.5.1 and earlier does not support setting the source
+.. note:: Solaris 2.5.1 and earlier does not support setting the source
    address for TCP sockets.
 
 ``notify-source-v6``
@@ -3385,7 +3327,7 @@ the last one applies.
 By default, records are returned in indeterminate but consistent order
 (see ``none`` above).
 
-.. note:
+.. note::
 
    In this release of BIND 9, the ``rrset-order`` statement does not
    support "fixed" ordering by default. Fixed ordering can be enabled at
@@ -3849,7 +3791,7 @@ infrastructure servers for names in these spaces. So many in fact that
 sacrificial servers were needed to be deployed to channel the query load
 away from the infrastructure servers.
 
-.. note:
+.. note::
 
    The real parent servers for these zones should disable all empty zone
    under the parent zone they serve. For the real root servers, this is
@@ -4987,7 +4929,7 @@ it is an ``in-view`` configuration. Its acceptable values include:
 ``delegation-only``, ``forward``, ``hint``, ``redirect``,
 ``static-stub``, and ``stub``.
 
- 
+
 ``master``  The server has a master copy of the data for the zone and will be able to provide authoritative answers for it. Type ``primary`` is a synonym for ``master``.
 
  ``slave``  A slave zone is a replica of a master zone. Type ``secondary`` is a synonym for ``slave``. The ``masters`` list specifies one or more IP addresses of master servers that the slave contacts to update its copy of the zone. Masters list elements can also be names of other masters lists. By default, transfers are made from port 53 on the servers; this can be changed for all servers by specifying a port number before the list of IP addresses, or on a per-server basis after the IP address. Authentication to the master can also be done with per-server TSIG keys. If a file is specified, then the replica will be written to this file whenever the zone is changed, and reloaded from this file on a server restart. Use of a file is recommended, since it often speeds server startup and eliminates a needless waste of bandwidth. Note that for large numbers (in the tens or hundreds of thousands) of zones per server, it is best to use a two-level naming scheme for zone filenames. For example, a slave server for the zone ``example.com`` might place the zone contents into a file called ``ex/example.com`` where ``ex/`` is just the first two letters of the zone name. (Most operating systems behave very slowly if you put 100000 files into a single directory.)
@@ -4995,13 +4937,13 @@ it is an ``in-view`` configuration. Its acceptable values include:
 ``stub``    A stub zone is similar to a slave zone, except that it replicates only the NS records of a master zone instead of the entire zone. Stub zones are not a standard part of the DNS; they are a feature specific to the BIND implementation.
 
 Stub zones can be used to eliminate the need for glue NS record in a parent zone at the expense of maintaining a stub zone entry and a set of name server addresses in ``named.conf``. This usage is not recommended for new configurations, and BIND 9 supports it only in a limited way. In BIND 4/8, zone transfers of a parent zone included the NS records from stub children of that zone. This meant that, in some cases, users could get away with configuring child stubs only in the master server for the parent zone. BIND 9 never mixes together zone data from different zones in this way. Therefore, if a BIND 9 master serving a parent zone has child stub zones configured, all the slave servers for the parent zone also need to have the same child stub zones configured.
-                   
+
 Stub zones can also be used as a way of forcing the resolution of a given domain to use a particular set of authoritative servers. For example, the caching name servers on a private network using RFC1918 addressing may be configured with stub zones for ``10.in-addr.arpa`` to use a set of internal name servers as the authoritative servers for that domain.
 
 ``mirror`` **Note:** using this zone type with any zone other than the root zone should be considered *experimental* and may cause performance issues, especially for zones which are large and/or frequently updated.
-                   
+
 A mirror zone acts like a zone of type ``secondary`` whose data is subject to DNSSEC validation before being used in answers. Validation is performed during the zone transfer process (for both AXFR and IXFR), and again when the zone file is loaded from disk when ``named`` is restarted. If validation of a new version of a mirror zone fails, a retransfer is scheduled and the most recent correctly validated version of that zone is used until it expires; if a newer version of that zone is later correctly validated, it replaces the previously used version. If no usable zone data is available for a mirror zone (either because it was never loaded from disk and has not yet been transferred from a primary server or because its most recent correctly validated version expired), traditional DNS recursion will be used to look up the answers instead.
-                   
+
 While any zone may be configured with this type, it is intended to be used to set up a fast local copy of the root zone, similar to the one described in RFC 7706. Note, however, that mirror zones are not supposed to augment the example configuration provided by RFC 7706 but rather to replace it altogether.
 
 A default list of primary servers for the IANA root zone is built into ``named`` and thus its mirroring can be enabled using the following configuration:
@@ -5013,29 +4955,29 @@ A default list of primary servers for the IANA root zone is built into ``named``
    };
 
 In order to set up mirroring of any other zone, an explicit list of primary servers needs to be provided using the ``masters`` option (see `Statement Grammar <#masters_grammar>`__ for details).
-                   
+
 To make mirror zone contents persist between ``named`` restarts, use the ` <#file_option>`__ option.
-                   
+
 Mirror zone validation always happens for the entire zone contents, i.e. no "incremental validation" takes place, even for IXFRs. This is required to ensure that each version of the zone used by the resolver is fully self-consistent with respect to DNSSEC. Other, more efficient zone verification methods may be added in the future.
-                   
+
 For validation to succeed, a key-signing key (KSK) for the zone must be configured as a trust anchor in ``named.conf``: that is, a key for the zone must either be specified in ``managed-keys`` or ``trusted-keys``. In the case of the root zone, you may also rely on the built-in root trust anchor, which is enabled when ` <#dnssec_validation>`__ is set to the default value ``auto``.
-                   
+
 Answers coming from a mirror zone look almost exactly like answers from a zone of type ``secondary``, with the notable exceptions that the AA bit ("authoritative answer") is not set, and the AD bit ("authenticated data") is.
-                   
+
 Since mirror zones are intended to be used by recursive resolvers, adding one to a view with recursion disabled is considered to be a configuration error.
-                   
+
 When configuring NOTIFY for a mirror zone, only ``notify no;`` and ``notify explicit;`` can be used. Using any other ``notify`` setting at the zone level is a configuration error. Using any other ``notify`` setting at the ``options`` or ``view`` level will cause that setting to be overridden with ``notify explicit;`` for the mirror zone in question. Since the global default for the ``notify`` option is ``yes``, mirror zones are by default configured with ``notify explicit;``.
-                   
+
 Outgoing transfers of mirror zones are disabled by default but may be enabled using ` <#allow_transfer>`__.
 
 ``static-stub``     A static-stub zone is similar to a stub zone with the following exceptions: the zone data is statically configured, rather than transferred from a master server; when recursion is necessary for a query that matches a static-stub zone, the locally configured data (nameserver names and glue addresses) is always used even if different authoritative information is cached.
-                   
+
 Zone data is configured via the ``server-addresses`` and ``server-names`` zone options.
-                   
+
 The zone data is maintained in the form of NS and (if necessary) glue A or AAAA RRs internally, which can be seen by dumping zone databases by ``rndc dumpdb -all``. The configured RRs are considered local configuration parameters rather than public data. Non recursive queries (i.e., those with the RD bit off) to a static-stub zone are therefore prohibited and will be responded with REFUSED.
-                   
+
  Since the data is statically configured, no zone maintenance action takes place for a static-stub zone. For example, there is no periodic refresh attempt, and an incoming notify message will be rejected with an rcode of NOTAUTH.
-                   
+
 Each static-stub zone is configured with internally generated NS and (if necessary) glue A or AAAA RRs
 
 ``forward``         A "forward zone" is a way to configure forwarding on a per-domain basis. A ``zone`` statement of type ``forward`` can contain a ``forward`` and/or ``forwarders`` statement, which will apply to queries within the domain given by the zone name. If no ``forwarders`` statement is present or an empty list for ``forwarders`` is given, then no forwarding will be done for the domain, canceling the effects of any forwarders in the ``options`` statement. Thus if you want to use this type of zone to change the behavior of the global ``forward`` option (that is, "forward first" to, then "forward only", or vice versa, but want to use the same servers as set globally) you need to re-specify the global forwarders.
@@ -5043,23 +4985,23 @@ Each static-stub zone is configured with internally generated NS and (if necessa
 ``hint``            The initial set of root name servers is specified using a "hint zone". When the server starts up, it uses the root hints to find a root name server and get the most recent list of root name servers. If no hint zone is specified for class IN, the server uses a compiled-in default set of root servers hints. Classes other than IN have no built-in defaults hints.
 
 ``redirect``        Redirect zones are used to provide answers to queries when normal resolution would result in NXDOMAIN being returned. Only one redirect zone is supported per view. ``allow-query`` can be used to restrict which clients see these answers.
-                   
+
 If the client has requested DNSSEC records (DO=1) and the NXDOMAIN response is signed then no substitution will occur.
 
 To redirect all NXDOMAIN responses to 100.100.100.2 and 2001:ffff:ffff::100.100.100.2, one would configure a type redirect zone named ".", with the zone file containing wildcard records that point to the desired addresses: ``"*. IN A 100.100.100.2"`` and ``"*. IN AAAA 2001:ffff:ffff::100.100.100.2"``.
-                   
+
 To redirect all Spanish names (under .ES) one would use similar entries but with the names ``*.ES.`` instead of ``*.``. To redirect all commercial Spanish names (under COM.ES) one would use wildcard entries called ``*.COM.ES.``.
-                   
+
 Note that the redirect zone supports all possible types; it is not limited to A and AAAA records.
-                   
+
 If a redirect zone is configured with a ``masters`` option, then it is transfered in as if it were a slave zone. Otherwise, it is loaded from a file as if it were a master zone.
-                   
+
 Because redirect zones are not referenced directly by name, they are not kept in the zone lookup table with normal master and slave zones. To reload a redirect zone, use ``rndc reload -redirect``, and to retransfer a redirect zone configured as slave, use ``rndc retransfer -redirect``. When using ``rndc reload`` without specifying a zone name, redirect zones will be reloaded along with other zones.
 
 ``delegation-only`` This is used to enforce the delegation-only status of infrastructure zones (e.g. COM, NET, ORG). Any answer that is received without an explicit or implicit delegation in the authority section will be treated as NXDOMAIN. This does not apply to the zone apex. This should not be applied to leaf zones.
-                   
+
 ``delegation-only`` has no effect on answers received from forwarders.
-                   
+
 See caveats in `varlistentry_title <#root_delegation_only>`__.
 
 
@@ -5438,7 +5380,7 @@ name is "local-ddns", this policy is equivalent to:
 ::
 
    update-policy { grant local-ddns zonesub any; };
-           
+
 
 ...with the additional restriction that only clients connecting from the
 local system will be permitted to send updates.
@@ -5454,7 +5396,7 @@ Other rule definitions look like this:
 
 ::
 
-   ( grant | deny ) identity ruletype  name   types 
+   ( grant | deny ) identity ruletype  name   types
 
 Each rule grants or denies privileges. Rules are checked in the order in
 which they are specified in the ``update-policy`` statement. Once a
@@ -5672,7 +5614,7 @@ The ruletype field has 16 values: ``name``, ``subdomain``, ``wildcard``,
  |                    | byte order, containing either 0 or 1; 0 indicates that  |
  |                    | the specified update is not permitted, and 1 indicates  |
  |                    | that it is.                                             |
- +--------------------+---------------------------------------------------------+  
+ +--------------------+---------------------------------------------------------+
 
 .. _multiple_views:
 
@@ -5705,7 +5647,7 @@ defined in a previously configured view. Example:
        in-view internal;
        };
    };
-           
+
 
 An ``in-view`` option cannot refer to a view that is configured later in
 the configuration file.
@@ -6019,8 +5961,8 @@ DNS:
  |             | Project Athena. It is used to share information about   |
  |             | various systems databases, such as users, groups,       |
  |             | printers and so on.                                     |
- +-------------+---------------------------------------------------------+ 
- 
+ +-------------+---------------------------------------------------------+
+
 
 The owner name is often implicit, rather than forming an integral part
 of the RR. For example, many name servers internally form tree or hash
@@ -6388,7 +6330,7 @@ is equivalent to
  | ``type``  | Any valid type.                                          |
  +-----------+----------------------------------------------------------+
  | ``rhs``   | ``rhs``, optionally, quoted string.                      |
- +-----------+----------------------------------------------------------+ 
+ +-----------+----------------------------------------------------------+
 
 The ``$GENERATE`` directive is a BIND extension and not part of the
 standard zone file format.
@@ -6489,7 +6431,7 @@ The statistics information is categorized into the following sections.
  +---------------------------------------+------------------------------+
  | Socket I/O Statistics                 | Statistics counters about    |
  |                                       | network related events.      |
- +---------------------------------------+------------------------------+ 
+ +---------------------------------------+------------------------------+
 
 A subset of Name Server Statistics is collected and shown per zone for
 which the server has the authority when ``zone-statistics`` is set to
@@ -6730,7 +6672,7 @@ Zone Maintenance Statistics Counters
  | ``XfrSuccess``  | Zone transfer requests succeeded.                  |
  +-----------------+----------------------------------------------------+
  | ``XfrFail``     | Zone transfer requests failed.                     |
- +-----------------+----------------------------------------------------+ 
+ +-----------------+----------------------------------------------------+
 
 .. _resolver_stats:
 
@@ -6749,7 +6691,7 @@ Resolver Statistics Counters
  +---------------------+-------------+-----------------------------------------+
  | ``Responsev6``      | ``RR``      | IPv6 responses received.                |
  +---------------------+-------------+-----------------------------------------+
- | ``NXDOMAIN``        | ``RNXD``    | NXDOMAIN received.                      | 
+ | ``NXDOMAIN``        | ``RNXD``    | NXDOMAIN received.                      |
  +---------------------+-------------+-----------------------------------------+
  | ``SERVFAIL``        | ``RFail``   | SERVFAIL received.                      |
  +---------------------+-------------+-----------------------------------------+
@@ -6813,7 +6755,7 @@ Resolver Statistics Counters
  |                     |             | means the number of queries whose RTTs  |
  |                     |             | are equal to or over ``nn_m``           |
  |                     |             | milliseconds.                           |
- +---------------------+-------------+-----------------------------------------+ 
+ +---------------------+-------------+-----------------------------------------+
 
 .. _socket_stats:
 
@@ -6858,7 +6800,7 @@ exceptions are noted in the description field.
  | ``<TYPE>RecvErr``    | Errors in socket receive operations. This includes |
  |                      | errors of send operations on a connected UDP       |
  |                      | socket notified by an ICMP error message.          |
- +----------------------+----------------------------------------------------+  
+ +----------------------+----------------------------------------------------+
 
 .. _bind8_compatibility:
 

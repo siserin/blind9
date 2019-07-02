@@ -1,10 +1,10 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
@@ -64,7 +64,7 @@ To build BIND with native PKCS#11, configure as follows:
    $ cd bind9
    $ ./configure --enable-native-pkcs11 \
        --with-pkcs11=provider-library-path
-       
+
 
 This will cause all BIND tools, including ``named`` and the ``dnssec-*``
 and ``pkcs11-*`` tools, to use the PKCS#11 provider library specified in
@@ -93,12 +93,12 @@ with BIND.
 
 ::
 
-   $  cd SoftHSMv2 
-   $  configure --with-crypto-backend=openssl --prefix=/opt/pkcs11/usr 
-   $  make 
-   $  make install 
-   $  /opt/pkcs11/usr/bin/softhsm-util --init-token 0 --slot 0 --label softhsmv2 
-         
+   $  cd SoftHSMv2
+   $  configure --with-crypto-backend=openssl --prefix=/opt/pkcs11/usr
+   $  make
+   $  make install
+   $  /opt/pkcs11/usr/bin/softhsm-util --init-token 0 --slot 0 --label softhsmv2
+
 
 OpenSSL-based PKCS#11
 ~~~~~~~~~~~~~~~~~~~~~
@@ -133,7 +133,7 @@ of a context diff against the latest versions of OpenSSL. OpenSSL 0.9.8,
 version. In the examples to follow, we use OpenSSL 0.9.8, but the same
 methods work with OpenSSL 1.0.0 through 1.0.2.
 
-   **Note**
+.. note::
 
    The OpenSSL patches as of this writing (January 2016) support
    versions 0.9.8zh, 1.0.0t, 1.0.1q and 1.0.2f. ISC will provide updated
@@ -150,7 +150,7 @@ Patching OpenSSL
 ::
 
    $ wget http://www.openssl.org/source/openssl-0.9.8zc.tar.gz
-     
+
 
 Extract the tarball:
 
@@ -167,7 +167,7 @@ Apply the patch from the BIND 9 release:
 
 ..
 
-   **Note**
+.. note::
 
    The patch file may not be compatible with the "patch" utility on all
    operating systems. You may need to install GNU patch.
@@ -240,13 +240,13 @@ always point to the SoftHSM configuration file:
 
 ::
 
-   $  cd softhsm-1.3.7 
-   $  configure --prefix=/opt/pkcs11/usr 
-   $  make 
-   $  make install 
-   $  export SOFTHSM_CONF=/opt/pkcs11/softhsm.conf 
-   $  echo "0:/opt/pkcs11/softhsm.db" > $SOFTHSM_CONF 
-   $  /opt/pkcs11/usr/bin/softhsm --init-token 0 --slot 0 --label softhsm 
+   $  cd softhsm-1.3.7
+   $  configure --prefix=/opt/pkcs11/usr
+   $  make
+   $  make install
+   $  export SOFTHSM_CONF=/opt/pkcs11/softhsm.conf
+   $  echo "0:/opt/pkcs11/softhsm.db" > $SOFTHSM_CONF
+   $  /opt/pkcs11/usr/bin/softhsm --init-token 0 --slot 0 --label softhsm
 
 SoftHSM can perform all cryptographic operations, but since it only uses
 your system CPU, there is no advantage to using it for anything but
@@ -410,7 +410,7 @@ dnssec-keyfromlabel arguments:
 (Note: When using OpenSSL-based PKCS#11 the label is an arbitrary string
 which identifies the key. With native PKCS#11, the label is a PKCS#11
 URI string which may include other details about the key and the HSM,
-including its PIN. See `??? <#man.dnssec-keyfromlabel>`__ for details.)
+including its PIN. See :ref:`man_dnssec-keyfromlabel` for details.)
 
 ::
 
@@ -504,7 +504,7 @@ an attribute of the key's label. For example, if a key had the label
 ``pkcs11:object=local-zsk;pin-source=/etc/hsmpin``, then the PIN would
 be read from the file ``/etc/hsmpin``.
 
-   **Warning**
+.. warning::
 
    Placing the HSM's PIN in a text file in this manner may reduce the
    security advantage of using an HSM. Be sure this is what you want to
