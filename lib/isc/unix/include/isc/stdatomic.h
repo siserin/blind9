@@ -74,6 +74,8 @@ enum memory_order {
 
 typedef enum memory_order memory_order;
 
+typedef int		atomic_int;
+typedef unsigned int	atomic_uint;
 typedef int_fast32_t	atomic_int_fast32_t;
 typedef uint_fast32_t	atomic_uint_fast32_t;
 typedef int_fast64_t	atomic_int_fast64_t;

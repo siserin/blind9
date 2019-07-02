@@ -64,6 +64,8 @@ typedef enum memory_order memory_order;
  */
 
 typedef bool volatile		atomic_bool;
+typedef int volatile		atomic_int;
+typedef unsigned int volatile	atomic_uint;
 typedef int_fast8_t volatile	atomic_int_fast8_t;
 typedef uint_fast8_t volatile	atomic_uint_fast8_t;
 typedef int_fast32_t volatile	atomic_int_fast32_t;
