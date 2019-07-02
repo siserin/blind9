@@ -39,7 +39,7 @@ is set for a zone.
    behavior will be as if `auto-dnssec` was set to `maintain`.
 
 1. `dnskey-sig-validity`: This option will be replaced in favor of the KASP
-   configuration value `signature-validity-dnskey`.
+   configuration value `signatures-validity-dnskey`.
 
 1. `dnssec-dnskey-kskonly`: This option will be removed and the key
    configuration from the policy will be used to determine what RRsets will be
@@ -56,8 +56,9 @@ is set for a zone.
 
 1. `dnssec-secure-to-insecure`: This option allows a dynamic zone to
    transition from secure to insecure.  This seems to be a safety check
-   when named is not responsible for signing.  This will likely stay but
-   should not be used if named has a DNSSEC policy configured for the zone.
+   when named is not responsible for signing.  This will likely go away
+   because explicitly removing the dnssec-policy will be the same signal
+   to (safely) make the zone insecure.
 
 1. `dnssec-update-mode`: This option determines how DNSSEC signed dynamic
    zones are updated. Default is `maintain` and it is unclear how it is
@@ -88,8 +89,8 @@ is set for a zone.
 
 1. `sig-validity-interval`: Specifies the number of days a signature is valid.
    The second optional value is the refresh interval. Thos option will
-   be replaced by KASP configuration values "signature-validity-default" and
-   "signature-refresh".
+   be replaced by KASP configuration values "signatures-validity" and
+   "signatures-refresh".
 
 1. `update-check-ksk`: When set to "no", KSK will also sign non-DNSKEY RRsets.
    This option will go away and key roles will be used to determine what

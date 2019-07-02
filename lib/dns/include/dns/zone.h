@@ -686,6 +686,26 @@ dns_zone_getoptions(dns_zone_t *zone);
  */
 
 void
+dns_zone_setkasp(dns_zone_t *zone, dns_kasp_t* kasp);
+/*%<
+ *	Set kasp for zone.
+ *
+ * Requires:
+ *\li	'zone' to be a valid zone.
+ *
+ *\li	'zone->kasp' to be NULL.
+ */
+
+dns_kasp_t*
+dns_zone_getkasp(dns_zone_t *zone);
+/*%<
+ *	Returns the current kasp.
+ *
+ * Require:
+ *\li	'zone' to be a valid zone.
+ */
+
+void
 dns_zone_setkeyopt(dns_zone_t *zone, unsigned int option, bool value);
 /*%<
  *	Set key options on ('value' == true) or off ('value' ==

@@ -109,6 +109,13 @@ warnings=`$CHECKCONF notify.conf 2>&1 | grep "'notify' is disabled" | wc -l`
 if [ $ret != 0 ]; then echo_i "failed"; fi
 status=`expr $status + $ret`
 
+#n=`expr $n + 1`
+#echo_i "checking named-checkconf auth-nxdomain default changed warning ($n)"
+#ret=0
+#$CHECKCONF auth-nxdomain-missing.conf 2>&1 | grep "'auth-nxdomain default changed" > /dev/null || ret=1
+#if [ $ret != 0 ]; then echo_i "failed"; fi
+#status=`expr $status + $ret`
+
 n=`expr $n + 1`
 echo_i "checking named-checkconf dnssec warnings ($n)"
 ret=0

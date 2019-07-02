@@ -44,6 +44,7 @@
 #include <dns/dnssec.h>
 #include <dns/events.h>
 #include <dns/journal.h>
+#include <dns/kasp.h>
 #include <dns/keydata.h>
 #include <dns/keytable.h>
 #include <dns/keyvalues.h>
@@ -302,6 +303,7 @@ struct dns_zone {
 	uint32_t		sigresigninginterval;
 	dns_view_t		*view;
 	dns_view_t		*prev_view;
+	dns_kasp_t		*kasp;
 	dns_checkmxfunc_t	checkmx;
 	dns_checksrvfunc_t	checksrv;
 	dns_checknsfunc_t	checkns;
@@ -1010,6 +1012,7 @@ dns_zone_create(dns_zone_t **zonep, isc_mem_t *mctx) {
 	zone->sigvalidityinterval = 30 * 24 * 3600;
 	zone->keyvalidityinterval = 0;
 	zone->sigresigninginterval = 7 * 24 * 3600;
+	zone->kasp = NULL;
 	zone->view = NULL;
 	zone->prev_view = NULL;
 	zone->checkmx = NULL;
@@ -1228,6 +1231,9 @@ zone_free(dns_zone_t *zone) {
 	}
 	if (zone->xfr_acl != NULL) {
 		dns_acl_detach(&zone->xfr_acl);
+	}
+	if (zone->kasp != NULL) {
+		dns_kasp_detach(&zone->kasp);
 	}
 	if (dns_name_dynamic(&zone->origin)) {
 		dns_name_free(&zone->origin, zone->mctx);
@@ -5588,6 +5594,30 @@ dns_zone_getkeyopts(dns_zone_t *zone) {
 	REQUIRE(DNS_ZONE_VALID(zone));
 
 	return (zone->keyopts);
+}
+
+void
+dns_zone_setkasp(dns_zone_t *zone, dns_kasp_t* kasp)
+{
+	REQUIRE(DNS_ZONE_VALID(zone));
+
+	LOCK_ZONE(zone);
+	if (zone->kasp != NULL) {
+		dns_kasp_t* oldkasp = zone->kasp;
+		zone->kasp = NULL;
+		dns_kasp_detach(&oldkasp);
+
+	}
+	zone->kasp = kasp;
+	UNLOCK_ZONE(zone);
+}
+
+dns_kasp_t*
+dns_zone_getkasp(dns_zone_t *zone)
+{
+	REQUIRE(DNS_ZONE_VALID(zone));
+
+	return zone->kasp;
 }
 
 isc_result_t
@@ -18372,7 +18402,9 @@ zone_rekey(dns_zone_t *zone) {
 	/* Get the SOA record's TTL */
 	CHECK(dns_db_findrdataset(db, node, ver, dns_rdatatype_soa,
 				  dns_rdatatype_none, 0, &soaset, &soasigs));
+
 	ttl = soaset.ttl;
+	dnssec_log(zone, ISC_LOG_INFO, "found SOA RRset, ttl %u", ttl);
 	dns_rdataset_disassociate(&soaset);
 
 	/* Get the DNSKEY rdataset */
@@ -18380,12 +18412,15 @@ zone_rekey(dns_zone_t *zone) {
 				     dns_rdatatype_none, 0, &keyset, &keysigs);
 	if (result == ISC_R_SUCCESS) {
 		ttl = keyset.ttl;
+		dnssec_log(zone, ISC_LOG_INFO, "found DNSKEY RRset, ttl %u",
+			   ttl);
 		CHECK(dns_dnssec_keylistfromrdataset(&zone->origin, dir,
 						     mctx, &keyset,
 						     &keysigs, &soasigs,
 						     false, false,
 						     &dnskeys));
 	} else if (result != ISC_R_NOTFOUND) {
+		dnssec_log(zone, ISC_LOG_INFO, "DNSKEY RRset not found");
 		goto failure;
 	}
 
@@ -18408,11 +18443,15 @@ zone_rekey(dns_zone_t *zone) {
 	 * fully signed now.
 	 */
 	fullsign = DNS_ZONEKEY_OPTION(zone, DNS_ZONEKEY_FULLSIGN);
+	dnssec_log(zone, ISC_LOG_INFO, "full sign %s", fullsign ? "yes" : "no");
 
 	result = dns_dnssec_findmatchingkeys(&zone->origin, dir, now, mctx,
 					     &keys);
 	if (result == ISC_R_SUCCESS) {
 		bool check_ksk;
+
+		dnssec_log(zone, ISC_LOG_INFO, "found signing keys");
+
 		check_ksk = DNS_ZONE_OPTION(zone, DNS_ZONEOPT_UPDATECHECKKSK);
 		result = dns_dnssec_updatekeys(&dnskeys, &keys, &rmkeys,
 					       &zone->origin, ttl, &diff,
@@ -18493,6 +18532,8 @@ zone_rekey(dns_zone_t *zone) {
 					   "zone_rekey"));
 			commit = true;
 		}
+	} else {
+		dnssec_log(zone, ISC_LOG_INFO, "no matching keys found");
 	}
 
 	dns_db_closeversion(db, &ver, true);

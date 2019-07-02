@@ -11,6 +11,13 @@
 
 // NS3
 
+// include "kasp.conf";
+
+dnssecpolicy "kasp" {
+        signatures-validity P14D;
+        signatures-validity-dnskey P21D;
+};
+
 options {
 	query-source address 10.53.0.3;
 	notify-source 10.53.0.3;
@@ -44,6 +51,12 @@ zone "example" {
 	type slave;
 	masters { 10.53.0.2; };
 	file "example.bk";
+};
+
+zone "kasp.example" {
+	type master;
+	file "kasp.example.db";
+	dnssec-policy "kasp";
 };
 
 zone "secure.example" {
