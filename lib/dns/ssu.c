@@ -316,7 +316,8 @@ bool
 dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
 			const dns_name_t *name, const isc_netaddr_t *addr,
 			bool tcp, const dns_aclenv_t *env,
-			dns_rdatatype_t type, const dst_key_t *key)
+			dns_rdatatype_t type, const dst_key_t *key,
+			const dns_ssurule_t **rulep)
 {
 	dns_ssurule_t *rule;
 	unsigned int i;
@@ -539,6 +540,9 @@ dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
 			}
 			if (i == rule->ntypes)
 				continue;
+		}
+		if (rule->grant && rulep != NULL) {
+			*rulep = rule;
 		}
 		return (rule->grant);
 	}
