@@ -26,7 +26,8 @@ ISC_LANG_BEGINDECLS
 
 isc_result_t
 named_zone_configure(const cfg_obj_t *config, const cfg_obj_t *vconfig,
-		     const cfg_obj_t *zconfig, cfg_aclconfctx_t *ac,
+		     const cfg_obj_t *zconfig,
+		     cfg_aclconfctx_t *ac, dns_kasplist_t* kasplist,
 		     dns_zone_t *zone, dns_zone_t *raw);
 /*%<
  * Configure or reconfigure a zone according to the named.conf
@@ -36,11 +37,13 @@ named_zone_configure(const cfg_obj_t *config, const cfg_obj_t *vconfig,
  * at zone creation time.
  *
  * Require:
- * \li	'lctx' to be initialized or NULL.
- * \li	'cctx' to be initialized or NULL.
+ * \li	'config' to be initialized or NULL.
+ * \li	'vconfig' to be initialized or NULL.
+ * \li	'zconfig' to be initialized or NULL.
  * \li	'ac' to point to an initialized cfg_aclconfctx_t.
- * \li	'czone' to be initialized.
+ * \li  'kasplist' a list of DNSSEC policies.
  * \li	'zone' to be initialized.
+ * \li	'raw' to be initialized.
  */
 
 bool
