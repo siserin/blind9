@@ -1,14 +1,16 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
 .. highlight: console
+
+.. _man_rndc.conf:
 
 rndc.conf - rndc configuration file
 
@@ -112,7 +114,7 @@ Example
            algorithm   hmac-sha256;
            secret      "R3HI8P6BKw9ZwXwN3VZKuQ==";
          };
-       
+
 
 In the above example, ``rndc`` will by default use the server at
 localhost (127.0.0.1) and the key called samplekey. Commands to the

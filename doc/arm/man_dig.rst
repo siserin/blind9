@@ -180,7 +180,7 @@ Options
    not specified, the default is ``hmac-md5`` or if MD5 was disabled
    ``hmac-sha256``.
 
-   NOTE: You should use the ``-k`` option and avoid the ``-y`` option,
+.. note:: You should use the ``-k`` option and avoid the ``-y`` option,
    because with ``-y`` the shared secret is supplied as a command line
    argument in clear text. This may be visible in the output from ps1 or
    in a history file maintained by the user's shell.

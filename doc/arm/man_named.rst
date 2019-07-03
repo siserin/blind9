@@ -1,14 +1,16 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
 .. highlight: console
+
+.. _man_named:
 
 named - Internet domain name server
 -----------------------------------
@@ -102,7 +104,7 @@ Options
 **-s**
    Write memory usage statistics to ``stdout`` on exit.
 
-      **Note**
+.. note::
 
       This option is mainly of interest to BIND 9 developers and may be
       removed or changed in a future release.
@@ -112,7 +114,7 @@ Options
    4096 on systems built with default configuration options, and 21000
    on systems built with "configure --with-tuning=large".
 
-      **Warning**
+.. warning::
 
       This option should be unnecessary for the vast majority of users.
       The use of this option could even be harmful because the specified
@@ -128,7 +130,7 @@ Options
    Chroot to directory after processing the command line arguments, but
    before reading the configuration file.
 
-      **Warning**
+.. warning::
 
       This option should be used in conjunction with the ``-u`` option,
       as chrooting a process running as root doesn't enhance security on
@@ -150,7 +152,7 @@ Options
    Setuid to user after completing privileged operations, such as
    creating sockets that listen on privileged ports.
 
-      **Note**
+.. note::
 
       On Linux, ``named`` uses the kernel's capability mechanism to drop
       all root privileges except the ability to ``bind(2)`` to a
@@ -175,7 +177,7 @@ Options
 **-x** cache-file
    Load data from cache-file into the cache of the default view.
 
-      **Warning**
+.. warning::
 
       This option must not be used. It is only of interest to BIND 9
       developers and may be removed or changed in a future release.

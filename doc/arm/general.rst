@@ -1,10 +1,10 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
@@ -78,272 +78,272 @@ http://www.ietf.org/rfc/.
 Standards
 ---------
 
-RFC974 PartridgeC. Mail Routing and the Domain System January 1986
+[RFC974] C. Partridge. *Mail Routing and the Domain System.* January 1986.
 
-RFC1034 MockapetrisP.V. Domain Names — Concepts and Facilities November
-1987
+[RFC1034] P.V. Mockapetris. *Domain Names — Concepts and Facilities.* November
+1987.
 
-RFC1035 MockapetrisP. V. Domain Names — Implementation and Specification
-November 1987
+[RFC1035] P. V. Mockapetris. *Domain Names — Implementation and Specification.*
+November 1987.
 
 .. _proposed_standards:
 
 Proposed Standards
 ------------------
 
-RFC2181 ElzR., R. Bush Clarifications to the DNS Specification July 1997
+[RFC2181] R. Elz and R. Bush. *Clarifications to the DNS Specification.* July 1997.
 
-RFC2308 AndrewsM. Negative Caching of DNS Queries March 1998
+[RFC2308] M. Andrews. *Negative Caching of DNS Queries.* March 1998.
 
-RFC1995 OhtaM. Incremental Zone Transfer in DNS August 1996
+[RFC1995] M. Ohta. *Incremental Zone Transfer in DNS.* August 1996.
 
-RFC1996 VixieP. A Mechanism for Prompt Notification of Zone Changes
-August 1996
+[RFC1996] P. Vixie. *A Mechanism for Prompt Notification of Zone Changes.*
+August 1996.
 
-RFC2136 VixieP. S.Thomson Y.Rekhter J.Bound Dynamic Updates in the
-Domain Name System April 1997
+[RFC2136] P. Vixie, S. Thomson, Y. Rekhter, and J. Bound. *Dynamic Updates in the
+Domain Name System.* April 1997.
 
-RFC2671 P.Vixie Extension Mechanisms for DNS (EDNS0) August 1997
+[RFC2671] P. Vixie. *Extension Mechanisms for DNS (EDNS0).* August 1997.
 
-RFC2672 M.Crawford Non-Terminal DNS Name Redirection August 1999
+[RFC2672] M. Crawford. *Non-Terminal DNS Name Redirection.* August 1999.
 
-RFC2845 VixieP. O.Gudmundsson D.Eastlake3rd B.Wellington Secret Key
-Transaction Authentication for DNS (TSIG) May 2000
+[RFC2845] P. Vixie, O. Gudmundsson, D. Eastlake, 3rd, and B. Wellington. *Secret Key
+Transaction Authentication for DNS (TSIG).* May 2000.
 
-RFC2930 D.Eastlake3rd Secret Key Establishment for DNS (TKEY RR)
-September 2000
+[RFC2930] D. Eastlake, 3rd. *Secret Key Establishment for DNS (TKEY RR).*
+September 2000.
 
-RFC2931 D.Eastlake3rd DNS Request and Transaction Signatures (SIG(0)s)
-September 2000
+[RFC2931] D. Eastlake, 3rd. *DNS Request and Transaction Signatures (SIG(0)s).*
+September 2000.
 
-RFC3007 B.Wellington Secure Domain Name System (DNS) Dynamic Update
-November 2000
+[RFC3007] B. Wellington. *Secure Domain Name System (DNS) Dynamic Update.*
+November 2000.
 
-RFC3645 S.Kwan P.Garg J.Gilroy L.Esibov J.Westhead R.Hall Generic
+[RFC3645] S. Kwan, P. Garg, J. Gilroy, L. Esibov, J. Westhead, and R. Hall. *Generic
 Security Service Algorithm for Secret Key Transaction Authentication for
-DNS (GSS-TSIG) October 2003
+DNS (GSS-TSIG).* October 2003.
 
 DNS Security Proposed Standards
 -------------------------------
 
-RFC3225 D.Conrad Indicating Resolver Support of DNSSEC December 2001
+[RFC3225] D. Conrad. *Indicating Resolver Support of DNSSEC.* December 2001.
 
-RFC3833 D.Atkins R.Austein Threat Analysis of the Domain Name System
-(DNS) August 2004
+[RFC3833] D. Atkins and R. Austein. *Threat Analysis of the Domain Name System
+(DNS).* August 2004.
 
-RFC4033 R.Arends R.Austein M.Larson D.Massey S.Rose DNS Security
-Introduction and Requirements March 2005
+[RFC4033] R. Arends, R. Austein, M. Larson, D. Massey, and S. Rose. *DNS Security
+Introduction and Requirements.* March 2005.
 
-RFC4034 R.Arends R.Austein M.Larson D.Massey S.Rose Resource Records for
-the DNS Security Extensions March 2005
+[RFC4034] R. Arends, R. Austein, M. Larson, D. Massey, and S. Rose. *Resource Records for
+the DNS Security Extensions.* March 2005.
 
-RFC4035 R.Arends R.Austein M.Larson D.Massey S.Rose Protocol
-Modifications for the DNS Security Extensions March 2005
+[RFC4035] R. Arends, R. Austein, M. Larson, D. Massey, and S. Rose. *Protocol
+Modifications for the DNS Security Extensions.* March 2005.
 
 Other Important RFCs About DNS Implementation
 ---------------------------------------------
 
-RFC1535 GavronE. A Security Problem and Proposed Correction With Widely
-Deployed DNS Software October 1993
+[RFC1535] E. Gavron. *A Security Problem and Proposed Correction With Widely
+Deployed DNS Software.* October 1993.
 
-RFC1536 KumarA. J.Postel C.Neuman P.Danzig S.Miller Common DNS
-Implementation Errors and Suggested Fixes October 1993
+[RFC1536] A. Kumar, J. Postel, C. Neuman, P. Danzig, and S. Miller. *Common DNS
+Implementation Errors and Suggested Fixes.* October 1993.
 
-RFC1982 ElzR. R.Bush Serial Number Arithmetic August 1996
+[RFC1982] R. Elz and R. Bush. *Serial Number Arithmetic.* August 1996.
 
-RFC4074 MorishitaY. T.Jinmei Common Misbehaviour Against DNS Queries for
-IPv6 Addresses May 2005
+[RFC4074] Y. Morishita and T. Jinmei. *Common Misbehaviour Against DNS Queries for
+IPv6 Addresses.* May 2005.
 
 Resource Record Types
 ---------------------
 
-RFC1183 EverhartC.F. L. A.Mamakos R.Ullmann P.Mockapetris New DNS RR
-Definitions October 1990
+[RFC1183] C. F. Everhart, L. A. Mamakos, R. Ullmann, P. Mockapetris. *New DNS RR
+Definitions.* October 1990.
 
-RFC1706 ManningB. R.Colella DNS NSAP Resource Records October 1994
+[RFC1706] B. Manning and R. Colella. *DNS NSAP Resource Records.* October 1994.
 
-RFC2168 DanielR. M.Mealling Resolution of Uniform Resource Identifiers
-using the Domain Name System June 1997
+[RFC2168] R. Daniel and M. Mealling. *Resolution of Uniform Resource Identifiers
+using the Domain Name System.* June 1997.
 
-RFC1876 DavisC. P.Vixie T.Goodwin I.Dickinson A Means for Expressing
-Location Information in the Domain Name System January 1996
+[RFC1876] C. Davis, P. Vixie, T. Goodwin, and I. Dickinson. *A Means for Expressing
+Location Information in the Domain Name System.* January 1996.
 
-RFC2052 GulbrandsenA. P.Vixie A DNS RR for Specifying the Location of
-Services October 1996
+[RFC2052] A. Gulbrandsen and P. Vixie. *A DNS RR for Specifying the Location of
+Services.* October 1996.
 
-RFC2163 AllocchioA. Using the Internet DNS to Distribute MIXER
-Conformant Global Address Mapping January 1998
+[RFC2163] A. Allocchio. *Using the Internet DNS to Distribute MIXER
+Conformant Global Address Mapping.* January 1998.
 
-RFC2230 AtkinsonR. Key Exchange Delegation Record for the DNS October
-1997
+[RFC2230] R. Atkinson. *Key Exchange Delegation Record for the DNS.* October
+1997.
 
-RFC2536 EastlakeD.3rd DSA KEYs and SIGs in the Domain Name System (DNS)
-March 1999
+[RFC2536] D. Eastlake, 3rd. *DSA KEYs and SIGs in the Domain Name System (DNS).*
+March 1999.
 
-RFC2537 EastlakeD.3rd RSA/MD5 KEYs and SIGs in the Domain Name System
-(DNS) March 1999
+[RFC2537] D. Eastlake, 3rd. *RSA/MD5 KEYs and SIGs in the Domain Name System
+(DNS).* March 1999.
 
-RFC2538 EastlakeD.3rd GudmundssonO. Storing Certificates in the Domain
-Name System (DNS) March 1999
+[RFC2538] D. Eastlake, 3rd and O. Gudmundsson. *Storing Certificates in the Domain
+Name System (DNS).* March 1999.
 
-RFC2539 EastlakeD.3rd Storage of Diffie-Hellman Keys in the Domain Name
-System (DNS) March 1999
+[RFC2539] D. Eastlake, 3rd. *Storage of Diffie-Hellman Keys in the Domain Name
+System (DNS).* March 1999.
 
-RFC2540 EastlakeD.3rd Detached Domain Name System (DNS) Information
-March 1999
+[RFC2540] D. Eastlake, 3rd. *Detached Domain Name System (DNS) Information.*
+March 1999.
 
-RFC2782 GulbrandsenA. VixieP. EsibovL. A DNS RR for specifying the
-location of services (DNS SRV) February 2000
+[RFC2782] A. Gulbrandsen, P. Vixie, and L. Esibov. *A DNS RR for specifying the
+location of services (DNS SRV).* February 2000.
 
-RFC2915 MeallingM. DanielR. The Naming Authority Pointer (NAPTR) DNS
-Resource Record September 2000
+[RFC2915] M. Mealling and R. Daniel. *The Naming Authority Pointer (NAPTR) DNS
+Resource Record.* September 2000.
 
-RFC3110 EastlakeD.3rd RSA/SHA-1 SIGs and RSA KEYs in the Domain Name
-System (DNS) May 2001
+[RFC3110] D. Eastlake, 3rd. *RSA/SHA-1 SIGs and RSA KEYs in the Domain Name
+System (DNS).* May 2001.
 
-RFC3123 KochP. A DNS RR Type for Lists of Address Prefixes (APL RR) June
-2001
+[RFC3123] P. Koch. *A DNS RR Type for Lists of Address Prefixes (APL RR).* June
+2001.
 
-RFC3596 ThomsonS. C.Huitema V.Ksinant M.Souissi DNS Extensions to
-support IP version 6 October 2003
+[RFC3596] S. Thomson, C. Huitema, V. Ksinant, and M. Souissi. *DNS Extensions to
+support IP version 6.* October 2003.
 
-RFC3597 GustafssonA. Handling of Unknown DNS Resource Record (RR) Types
-September 2003
+[RFC3597] A. Gustafsson. *Handling of Unknown DNS Resource Record (RR) Types.*
+September 2003.
 
 DNS and the Internet
 --------------------
 
-RFC1101 MockapetrisP. V. DNS Encoding of Network Names and Other Types
-April 1989
+[RFC1101] P. V. Mockapetris. *DNS Encoding of Network Names and Other Types.*
+April 1989.
 
-RFC1123 BradenR. Requirements for Internet Hosts - Application and
-Support October 1989
+[RFC1123] R. Braden. *Requirements for Internet Hosts - Application and
+Support.* October 1989.
 
-RFC1591 PostelJ. Domain Name System Structure and Delegation March 1994
+[RFC1591] J. Postel. *Domain Name System Structure and Delegation.* March 1994.
 
-RFC2317 EidnesH. G.de Groot P.Vixie Classless IN-ADDR.ARPA Delegation
-March 1998
+[RFC2317] H. Eidnes, G. de Groot, and P. Vixie. *Classless IN-ADDR.ARPA Delegation.*
+March 1998.
 
-RFC2826 Internet Architecture Board IAB Technical Comment on the Unique
-DNS Root May 2000
+[RFC2826] Internet Architecture Board. *IAB Technical Comment on the Unique
+DNS Root.* May 2000.
 
-RFC2929 EastlakeD.3rd Brunner-WilliamsE. ManningB. Domain Name System
-(DNS) IANA Considerations September 2000
+[RFC2929] D. Eastlake, 3rd, E. Brunner-Williams, and B. Manning. *Domain Name System
+(DNS) IANA Considerations.* September 2000.
 
 DNS Operations
 --------------
 
-RFC1033 LottorM. Domain administrators operations guide November 1987
+[RFC1033] M. Lottor. *Domain administrators operations guide.* November 1987.
 
-RFC1537 BeertemaP. Common DNS Data File Configuration Errors October
-1993
+[RFC1537] P. Beertema. *Common DNS Data File Configuration Errors.* October
+1993.
 
-RFC1912 BarrD. Common DNS Operational and Configuration Errors February
-1996
+[RFC1912] D. Barr. *Common DNS Operational and Configuration Errors.* February
+1996.
 
-RFC2010 ManningB. P.Vixie Operational Criteria for Root Name Servers
-October 1996
+[RFC2010] B. Manning and P.Vixie. *Operational Criteria for Root Name Servers.*
+October 1996.
 
-RFC2219 HamiltonM. R.Wright Use of DNS Aliases for Network Services
-October 1997
+[RFC2219] M. Hamilton and R. Wright. *Use of DNS Aliases for Network Services.*
+October 1997.
 
 Internationalized Domain Names
 ------------------------------
 
-RFC2825 IAB DaigleR. A Tangled Web: Issues of I18N, Domain Names, and
-the Other Internet protocols May 2000
+[RFC2825] IAB and R. Daigle. *A Tangled Web: Issues of I18N, Domain Names, and
+the Other Internet protocols.* May 2000.
 
-RFC3490 FaltstromP. HoffmanP. CostelloA. Internationalizing Domain Names
-in Applications (IDNA) March 2003
+[RFC3490] P. Faltstrom, P. Hoffman, and A. Costello. *Internationalizing Domain Names
+in Applications (IDNA).* March 2003.
 
-RFC3491 HoffmanP. BlanchetM. Nameprep: A Stringprep Profile for
-Internationalized Domain Names March 2003
+[RFC3491] P. Hoffman and M. Blanchet. *Nameprep: A Stringprep Profile for
+Internationalized Domain Names.* March 2003.
 
-RFC3492 CostelloA. Punycode: A Bootstring encoding of Unicode for
-Internationalized Domain Names in Applications (IDNA) March 2003
+[RFC3492] A. Costello. *Punycode: A Bootstring encoding of Unicode for
+Internationalized Domain Names in Applications (IDNA).* March 2003.
 
 Other DNS-related RFCs
 ----------------------
 
-   **Note**
+.. note::
 
    Note: the following list of RFCs, although DNS-related, are not
    concerned with implementing software.
 
-RFC1464 RosenbaumR. Using the Domain Name System To Store Arbitrary
-String Attributes May 1993
+[RFC1464] R. Rosenbaum. *Using the Domain Name System To Store Arbitrary
+String Attributes.* May 1993.
 
-RFC1713 RomaoA. Tools for DNS Debugging November 1994
+[RFC1713] A. Romao. *Tools for DNS Debugging.* November 1994.
 
-RFC1794 BriscoT. DNS Support for Load Balancing April 1995
+[RFC1794] T. Brisco. *DNS Support for Load Balancing.* April 1995.
 
-RFC2240 VaughanO. A Legal Basis for Domain Name Allocation November 1997
+[RFC2240] O. Vaughan. *A Legal Basis for Domain Name Allocation.* November 1997.
 
-RFC2345 KlensinJ. T.Wolf G.Oglesby Domain Names and Company Name
-Retrieval May 1998
+[RFC2345] J. Klensin, T. Wolf, and G. Oglesby. *Domain Names and Company Name
+Retrieval.* May 1998.
 
-RFC2352 VaughanO. A Convention For Using Legal Names as Domain Names May
-1998
+[RFC2352] O. Vaughan. *A Convention For Using Legal Names as Domain Names.* May
+1998.
 
-RFC3071 KlensinJ. Reflections on the DNS, RFC 1591, and Categories of
-Domains February 2001
+[RFC3071] J. Klensin. *Reflections on the DNS, RFC 1591, and Categories of
+Domains.* February 2001.
 
-RFC3258 HardieT. Distributing Authoritative Name Servers via Shared
-Unicast Addresses April 2002
+[RFC3258] T. Hardie. *Distributing Authoritative Name Servers via Shared
+Unicast Addresses.* April 2002.
 
-RFC3901 DurandA. J.Ihren DNS IPv6 Transport Operational Guidelines
-September 2004
+[RFC3901] A. Durand and J. Ihren. *DNS IPv6 Transport Operational Guidelines.*
+September 2004.
 
 Obsolete and Unimplemented Experimental RFC
 -------------------------------------------
 
-RFC1712 FarrellC. M.Schulze S.Pleitner D.Baldoni DNS Encoding of
-Geographical Location November 1994
+[RFC1712] C. Farrell, M. Schulze, S. Pleitner, and D. Baldoni. *DNS Encoding of
+Geographical Location.* November 1994.
 
-RFC2673 CrawfordM. Binary Labels in the Domain Name System August 1999
+[RFC2673] M. Crawford. *Binary Labels in the Domain Name System.* August 1999.
 
-RFC2874 CrawfordM. HuitemaC. DNS Extensions to Support IPv6 Address
-Aggregation and Renumbering July 2000
+[RFC2874] M. Crawford and C. Huitema. *DNS Extensions to Support IPv6 Address
+Aggregation and Renumbering.* July 2000.
 
 Obsoleted DNS Security RFCs
 ---------------------------
 
-   **Note**
+.. note::
 
    Most of these have been consolidated into RFC4033, RFC4034 and
    RFC4035 which collectively describe DNSSECbis.
 
-RFC2065 Eastlake3rdD. C.Kaufman Domain Name System Security Extensions
-January 1997
+[RFC2065] D. Eastlake, 3rd and C. Kaufman. *Domain Name System Security Extensions.*
+January 1997.
 
-RFC2137 Eastlake3rdD. Secure Domain Name System Dynamic Update April
-1997
+[RFC2137] D. Eastlake, 3rd. *Secure Domain Name System Dynamic Update.* April
+1997.
 
-RFC2535 Eastlake3rdD. Domain Name System Security Extensions March 1999
+[RFC2535] D. Eastlake, 3rd. *Domain Name System Security Extensions.* March 1999.
 
-RFC3008 WellingtonB. Domain Name System Security (DNSSEC) Signing
-Authority November 2000
+[RFC3008] B. Wellington. *Domain Name System Security (DNSSEC) Signing
+Authority.* November 2000.
 
-RFC3090 LewisE. DNS Security Extension Clarification on Zone Status
-March 2001
+[RFC3090] E. Lewis. *DNS Security Extension Clarification on Zone Status.*
+March 2001.
 
-RFC3445 MasseyD. RoseS. Limiting the Scope of the KEY Resource Record
-(RR) December 2002
+[RFC3445] D. Massey and S. Rose. *Limiting the Scope of the KEY Resource Record
+(RR).* December 2002.
 
-RFC3655 WellingtonB. GudmundssonO. Redefinition of DNS Authenticated
-Data (AD) bit November 2003
+[RFC3655] B. Wellington and O. Gudmundsson. *Redefinition of DNS Authenticated
+Data (AD) bit.* November 2003.
 
-RFC3658 GudmundssonO. Delegation Signer (DS) Resource Record (RR)
-December 2003
+[RFC3658] O. Gudmundsson. *Delegation Signer (DS) Resource Record (RR).*
+December 2003.
 
-RFC3755 WeilerS. Legacy Resolver Compatibility for Delegation Signer
-(DS) May 2004
+[RFC3755] S. Weiler. *Legacy Resolver Compatibility for Delegation Signer
+(DS).* May 2004.
 
-RFC3757 KolkmanO. SchlyterJ. LewisE. Domain Name System KEY (DNSKEY)
-Resource Record (RR) Secure Entry Point (SEP) Flag April 2004
+[RFC3757] O. Kolkman, J. Schlyter, and E. Lewis. *Domain Name System KEY (DNSKEY)
+Resource Record (RR) Secure Entry Point (SEP) Flag.* April 2004.
 
-RFC3845 SchlyterJ. DNS Security (DNSSEC) NextSECure (NSEC) RDATA Format
-August 2004
+[RFC3845] J. Schlyter. *DNS Security (DNSSEC) NextSECure (NSEC) RDATA Format.*
+August 2004.
 
 .. _internet_drafts:
 
@@ -363,5 +363,5 @@ updated by their authors.
 Other Documents About BIND
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AlbitzPaul CricketLiu DNS and BIND 1998 Sebastopol, CA: O'Reilly and
-Associates
+Paul Albitz and Cricket Liu. *DNS and BIND.* Copyright 1998 Sebastopol, CA: O'Reilly and
+Associates.

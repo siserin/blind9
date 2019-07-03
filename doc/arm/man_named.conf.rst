@@ -1,4 +1,16 @@
-.. higlight: console
+..
+   Copyright (C) Internet Systems Consortium, Inc. ("ISC")
+
+   This Source Code Form is subject to the terms of the Mozilla Public
+   License, v. 2.0. If a copy of the MPL was not distributed with this
+   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+   See the COPYRIGHT file distributed with this work for additional
+   information regarding copyright ownership.
+
+.. highlight: console
+
+.. _man_named.conf:
 
 named.conf - configuration file for **named**
 ---------------------------------------------
@@ -984,4 +996,3 @@ See Also
 ~~~~~~~~
 
 :manpage:`ddns-confgen(8)`, :manpage:`named(8)`, :manpage:`named-checkconf(8)`, :manpage:`rndc(8)`, :manpage:`rndc-confgen(8)`, BIND 9 Administrator Reference Manual.
-

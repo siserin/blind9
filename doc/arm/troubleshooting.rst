@@ -47,7 +47,7 @@ to send queries to the authoritative servers for the broken domain:
            dig soa <zone> @<server> +dnssec
            dig soa <zone> @<server> +dnssec +nocookie
            dig soa <zone> @<server> +noedns
-     
+
 
 If the first command fails but the second succeeds, the server most
 likely needs ``send-cookie no``. If the first two fail but the third
@@ -86,11 +86,11 @@ The BIND-users mailing list at lists.isc.org is an excellent resource for
 peer user support. In addition, ISC maintains a library of helpful articles
 at kb.isc.org.
 
-The Internet Systems Consortium (ISC) offers annual support agreements 
-for BIND, ISC DHCP and Kea. Four levels of premium support are available. 
+The Internet Systems Consortium (ISC) offers annual support agreements
+for BIND, ISC DHCP and Kea. Four levels of premium support are available.
 Each level includes advance security notifications. The higher levels include
-greater service level agreements (SLAs), and increased priority on bug fixes 
-and non-funded feature requests. 
+greater service level agreements (SLAs), and increased priority on bug fixes
+and non-funded feature requests.
 
 To discuss arrangements for support, contact info@isc.org or visit the
 ISC web page at http://www.isc.org/support/ to read more.

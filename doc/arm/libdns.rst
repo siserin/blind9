@@ -1,10 +1,10 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
@@ -50,7 +50,7 @@ Installation
 ::
 
    $ make install
-       
+
 
 Normal installation of BIND will also install library object and header
 files. Root privilege is normally required.
@@ -95,7 +95,7 @@ this configuration file is ``/etc/dns.conf``. This module is very
 experimental and the configuration syntax or library interfaces may
 change in future versions. Currently, only the ``trusted-keys``
 statement is supported, whose syntax is the same as the same statement
-in ``named.conf``. (See `??? <#trusted-keys>`__ for details.)
+in ``named.conf``. (See :ref:`trusted-keys` for details.)
 
 Sample Applications
 -------------------
@@ -115,10 +115,10 @@ Usage: sample [options] server_address hostname
 
 Options and Arguments:
 
--t RRtype
+``-t RRtype``
    specify the RR type of the query. The default is the A RR.
 
-[-a algorithm] [-e] -k keyname -K keystring
+``[-a algorithm] [-e] -k keyname -K keystring``
    specify a command-line DNS key to validate the answer. For example,
    to specify the following DNSKEY of example.com: example.com. 3600 IN
    DNSKEY 257 3 5 xxx specify the options as follows:
@@ -126,21 +126,21 @@ Options and Arguments:
    ::
 
       -e -k example.com -K "xxx"
-                
+
 
    -e means that this key is a zone's "key signing key" (also known as
    "secure entry point"). When -a is omitted rsasha1 will be used by
    default.
 
--s domain:alt_server_address
+``-s domain:alt_server_address``
    specify a separate recursive server address for the specific
    "domain". Example: -s example.com:2001:db8::1234
 
-server_address
+``server_address``
    an IP(v4/v6) address of the recursive server to which queries are
    sent.
 
-hostname
+``hostname``
    the domain name for the query
 
 sample-async: a simple stub resolver, working asynchronously
@@ -166,7 +166,7 @@ Options and Arguments:
             www.example.com
             mx.example.net
             ns.xxx.example
-            
+
 
 sample-request: a simple DNS transaction client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -182,14 +182,14 @@ Usage: sample-request [-t RRtype] server_address hostname
 
 Options and Arguments:
 
--t RRtype
+``-t RRtype``
    specify the RR type of the queries. The default is the A RR.
 
-server_address
+``server_address``
    an IP(v4/v6) address of the recursive server to which the query is
    sent.
 
-hostname
+``hostname``
    the domain name for the query
 
 sample-gai: getaddrinfo() and getnameinfo() test code
@@ -217,41 +217,39 @@ Usage: sample-update [options] (add|delete) "update data"
 
 Options and Arguments:
 
--a auth_server
+``-a auth_server``
    An IP address of the authoritative server that has authority for the
    zone containing the update name. This should normally be the primary
    authoritative server that accepts dynamic updates. It can also be a
    secondary server that is configured to forward update requests to the
    primary server.
 
--k keyfile
+``-k keyfile``
    A TSIG key file to secure the update transaction. The keyfile format
    is the same as that for the nsupdate utility.
 
--p prerequisite
+``-p prerequisite``
    A prerequisite for the update (only one prerequisite can be
    specified). The prerequisite format is the same as that is accepted
    by the nsupdate utility.
 
--r recursive_server
+``-r recursive_server``
    An IP address of a recursive server that this utility will use. A
    recursive server may be necessary to identify the authoritative
    server address to which the update request is sent.
 
--z zonename
+``-z zonename``
    The domain name of the zone that contains
 
-(add|delete)
+``(add|delete)``
    Specify the type of update operation. Either "add" or "delete" must
    be specified.
 
-"update data"
+``update data``
    Specify the data to be updated. A typical example of the data would
    look like "name TTL RRtype RDATA".
 
-..
-
-   **Note**
+.. note::
 
    In practice, either -a or -r must be specified. Others can be
    optional; the underlying library routine tries to identify the
@@ -290,20 +288,20 @@ Usage: nsprobe [-d] [-v [-v...]] [-c cache_address] [input_file]
 
 Options
 
--d
+``-d``
    Run in "debug" mode. With this option nsprobe will dump every RRs it
    receives.
 
--v
+``-v``
    Increase verbosity of other normal log messages. This can be
    specified multiple times.
 
--c cache_address
+``-c cache_address``
    Specify an IP address of a recursive (caching) name server. nsprobe
    uses this server to get the NS RRset of each domain and the A and/or
    AAAA RRsets for the name servers. The default value is 127.0.0.1.
 
-input_file
+``input_file``
    A file name containing a list of domain (zone) names to be probed.
    when omitted the standard input will be used. Each line of the input
    file specifies a single domain name such as "example.com". In general
