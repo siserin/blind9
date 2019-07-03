@@ -82,6 +82,9 @@ typedef struct cfg_printer cfg_printer_t;
 typedef ISC_LIST(cfg_listelt_t) cfg_list_t;
 typedef struct cfg_map cfg_map_t;
 typedef struct cfg_rep cfg_rep_t;
+typedef struct cfg_duration cfg_duration_t;
+
+#define CFG_DURATION_MAXLEN 64
 
 /*
  * Function types for configuration object methods
@@ -155,6 +158,13 @@ struct cfg_netprefix {
 };
 
 /*%
+ * A configuration object to store ISO 8601 durations.
+ */
+struct cfg_duration {
+	time_t parts[7];
+};
+
+/*%
  * A configuration data representation.
  */
 struct cfg_rep {
@@ -183,6 +193,7 @@ struct cfg_obj {
 			isc_dscp_t	dscp;
 		} sockaddrdscp;
 		cfg_netprefix_t netprefix;
+		cfg_duration_t  duration;
 	}               value;
 	isc_refcount_t  references;     /*%< reference counter */
 	const char *	file;
@@ -290,6 +301,7 @@ LIBISCCFG_EXTERNAL_DATA extern cfg_rep_t cfg_rep_netprefix;
 LIBISCCFG_EXTERNAL_DATA extern cfg_rep_t cfg_rep_void;
 LIBISCCFG_EXTERNAL_DATA extern cfg_rep_t cfg_rep_fixedpoint;
 LIBISCCFG_EXTERNAL_DATA extern cfg_rep_t cfg_rep_percentage;
+LIBISCCFG_EXTERNAL_DATA extern cfg_rep_t cfg_rep_duration;
 /*@}*/
 
 /*@{*/
@@ -347,6 +359,9 @@ cfg_print_uint32(cfg_printer_t *pctx, const cfg_obj_t *obj);
 
 void
 cfg_print_uint64(cfg_printer_t *pctx, const cfg_obj_t *obj);
+
+void
+cfg_print_duration(cfg_printer_t *pctx, const cfg_obj_t *obj);
 
 isc_result_t
 cfg_parse_qstring(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret);
@@ -521,7 +536,7 @@ void
 cfg_doc_terminal(cfg_printer_t *pctx, const cfg_type_t *type);
 /*%<
  * Document the type 'type' as a terminal by printing its
- * name in angle brackets, e.g., &lt;uint32>.
+ * name in angle brackets, e.g., <uint32>.
  */
 
 void

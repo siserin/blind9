@@ -27,6 +27,7 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include <isc/formatcheck.h>
 #include <isc/lang.h>
@@ -329,6 +330,18 @@ cfg_obj_aspercentage(const cfg_obj_t *obj);
  *
  * Returns:
  * \li     A 32-bit unsigned integer.
+ */
+
+time_t
+cfg_obj_asduration(const cfg_obj_t *obj);
+/*%<
+ * Returns the value of a configuration object of duration
+ *
+ * Requires:
+ * \li     'obj' points to a valid configuration object of duration type.
+ *
+ * Returns:
+ * \li     A time.
  */
 
 bool
