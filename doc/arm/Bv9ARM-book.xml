@@ -3122,6 +3122,18 @@ $ORIGIN 0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa.
 	    </row>
 	    <row rowsep="0">
 	      <entry colname="1">
+		<para><command>dnssec-policy</command></para>
+	      </entry>
+	      <entry colname="2">
+		<para>
+		  describes a DNSSEC key and signing policy for zones.
+		  Experimental, meaning not all policy options may be
+		  functional yet.
+		</para>
+	      </entry>
+	    </row>
+	    <row rowsep="0">
+	      <entry colname="1">
 		<para><command>include</command></para>
 	      </entry>
 	      <entry colname="2">
@@ -11010,6 +11022,470 @@ example.com                 CNAME   rpz-tcp-only.
 	  </para>
 	</section>
 
+	<section xml:id="dnssec_policy_grammar"><info><title><command>dnssec-policy</command> Statement Grammar</title></info>
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="dnssec-policy.grammar.xml"/>
+	</section>
+
+	<section xml:id="dnssec_policy"><info><title><command>dnssec-policy</command> Statement Definition
+	    and Usage</title></info>
+
+	  <para>
+	    The <command>dnssec-policy</command> statement defines a key and
+	    signing policy (KASP) for zones. Experimental.
+	  </para>
+	  <para>
+	    KASP is used to determine how one or more zones need to be signed
+	    with DNSSEC.  For example, how often RRSIG records need to be
+	    updated, what type of denial of existence to use (NSEC or NSEC3),
+	    what algorithms to use, and what type of key rollover to use. 
+	  </para>
+	  <para>
+	    You can configure multiple policies.  To attach a policy to a zone
+	    simply add <userinput>dnssec-policy "policy_name"</userinput>
+	    option to the <command>zone</command> statement with a matching
+	    policy name.
+	  </para>
+
+	  <variablelist>
+
+	    <varlistentry>
+	      <term><command>cdnskey</command></term>
+	      <listitem>
+		<para>
+		If set to <userinput>yes</userinput>, a CDNSKEY record will
+		be added to the zone when it is time to publish the DS record
+		in the parent zone.  Default is <userinput>yes</userinput>.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>cds</command></term>
+	      <listitem>
+		<para>
+		If set to <userinput>yes</userinput>, a CDS record will
+		be added to the zone when it is time to publish the DS record
+		in the parent zone.  Default is <constant>yes</constant>.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>denial-type</command></term>
+	      <listitem>
+		<para>
+		Whether to use NSEC or NSEC3 for denial of existence.  Default
+		is <constant>nsec</constant>.  If NSEC is used, zones with this
+		policy include NSEC records when signing the zone.  If NSEC3
+		is used, signed zones with this policy include NSEC3 and
+		NSEC3PARAM records.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>description</command></term>
+	      <listitem>
+		<para>
+		This does nothing except that it can be used as a note to the
+		operator what this DNSSEC policy is used for.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>dnskey-publish-safety</command></term>
+	      <listitem>
+		<para>
+		A margin that is added to the publish interval in key timing
+		equations to give some extra time to cover unforeseen events.
+		Default is <constant>PT5M</constant> (5 minutes).
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>dnskey-retire-safety</command></term>
+	      <listitem>
+		<para>
+		A margin that is added to the retire interval in key timing
+		equations to give some extra time to cover unforeseen events.
+		Default is <constant>PT5M</constant> (5 minutes).
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>dnskey-ttl</command></term>
+	      <listitem>
+		<para>
+		The TTL of the DNSKEY resource records.
+		Default is <constant>3600</constant> seconds.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+
+	    <varlistentry>
+	      <term><command>keys</command></term>
+	      <listitem>
+		<para>
+		A list of keys to use.  Each line represents one key. Here is
+	        an example (for illustration purposes only) of some possible
+		keys in a <command>dnssec-policy</command>:
+		</para>
+
+<programlisting>keys {
+	ksk directory "/etc/bind9/kasp/keys" P5Y 8 2048;
+	zsk directory "/etc/bind9/kasp/keys" P30D 8;
+	csk directory "/etc/bind9/kasp/keys" P6MT12H3M15S 13;
+};
+</programlisting>
+
+		<para>
+		This example lists three keys. The first token determines
+		what RRsets the key will sign. If set to
+		<userinput>ksk</userinput> the key will sign the DNSKEY, CDS,
+		and CDNSKEY RRsets, if set to <userinput>zsk</userinput> the
+		key will sign the other RRsets, and if set to
+		<userinput>csk</userinput> the key will sign all RRsets.
+		</para>
+		<para>
+		The following two parts determine where the key will be stored.
+		Currently keys can only be stored in directories (HSM support
+		is to be implemented).
+		</para>
+		<para>
+		The third token tells how long the key may be used.  In the
+		example the first key has a lifetime of 5 years, the second
+		key may be used for 30 days and the third key has a peculiar
+		lifetime of 6 months, 12 hourse, 3 minutes and 15 seconds.
+		</para>
+		<para>
+		The last token(s) are the key's algorithm and algorithm length.
+		The length may be omitted as shown in the example for the
+		second and third key.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>nsec3-hash-algorithm</command></term>
+	      <listitem>
+		<para>
+		If <command>denial-type</command> is set to
+		<userinput>nsec3</userinput> this option defines the hash
+		algorithm to be used.  Currently only
+		<userinput>1</userinput> (SHA-1) is defined.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>nsec3-hash-iterations</command></term>
+	      <listitem>
+		<para>
+		If <command>denial-type</command> is set to
+		<userinput>nsec3</userinput> this option defines the number of
+		hash iterations to be used.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>nsec3-optout</command></term>
+	      <listitem>
+		<para>
+		If <command>denial-type</command> is set to
+		<userinput>nsec3</userinput> and
+		<command>nsec3-optout</command> is set to
+		<userinput>yes</userinput>, NSEC3 records will have the
+		Opt-Out Flag set, indicating that unsigned delegations may
+		have been excluded from the NSEC3 chain.
+		Default is <constant>no</constant>.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>nsec3-resalt</command></term>
+	      <listitem>
+		<para>
+		If <command>denial-type</command> is set to
+		<userinput>nsec3</userinput> this option defines how often
+		a new salt should be generated.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>nsec3-salt-length</command></term>
+	      <listitem>
+		<para>
+		If <command>denial-type</command> is set to
+		<userinput>nsec3</userinput> this option defines the length
+		of the salt.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>nsec3param-ttl</command></term>
+	      <listitem>
+		<para>
+		If <command>denial-type</command> is set to
+		<userinput>nsec3</userinput> this option defines the TTL to
+		be used for the NSEC3PARAM record.
+		Default is <constant>0</constant> seconds.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>parent-ds-ttl</command></term>
+	      <listitem>
+		<para>
+		Set this to the TTL the parent zone uses for your DS records.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>parent-propagation-delay</command></term>
+	      <listitem>
+		<para>
+		A margin that is added to the publish interval of DS records
+		in key timing equations that reflects the maximum time it
+		should take before a DS record becomes visible in the parent
+		zone after submitting.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>parent-soa-minimum</command></term>
+	      <listitem>
+		<para>
+		Set this to the value the parent zone uses in the MINIMUM
+		field in the SOA record.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>parent-soa-ttl</command></term>
+	      <listitem>
+		<para>
+		Set this to the TTL the parent zone uses for its SOA record.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>purge-keys-after</command></term>
+	      <listitem>
+		<para>
+		Keys that are no longer in use will be removed from the key
+		storage after this interval.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>share-keys</command></term>
+	      <listitem>
+		<para>
+		If multiple zones are associated with the same policy,
+		and this policy has <command>share-keys</command> set to
+		<userinput>yes</userinput>, the keys will be shared between
+		zones.  Default is <constant>no</constant>.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>signatures-inception-offset</command></term>
+	      <listitem>
+		<para>
+		A duration that is subtracted from the inception time of an
+		RRSIG record.  This is required to allow for clock skew
+		between the signer and validator.
+		Default is <constant>PT1H</constant> (1 hour).
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>signatures-jitter</command></term>
+	      <listitem>
+		<para>
+		A value added to the expiration time of an RRSIG record to
+		ensure that not all signatures expire at the same time.
+		The value added is <command>-j + (r % 2j)</command> where
+		<command>j</command> is the jitter and <command>r</command>
+		is random value, uniformly ranging between -j and j.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>signatures-refresh</command></term>
+	      <listitem>
+		<para>
+		This determines when a RRSIG record needs to be refreshed.
+		The signatures is renewed when the time until the expiration
+		time is closer than <command>signatures-refresh</command>.
+		If set to <userinput>PT0S</userinput> (zero seconds),
+		RRSIG records are refreshed each
+		<command>signatures-resign</command> interval.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>signatures-resign</command></term>
+	      <listitem>
+		<para>
+		How often a zone needs to be resigned.  Not all RRSIG records
+		are updated, only those that need to be refreshed (see
+		<command>signatures-refresh</command>.
+		Default is <constant>PT1H</constant> (1 hour).
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>signatures-validity</command></term>
+	      <listitem>
+		<para>
+		The validity period of an RRSIG record (minus the inception
+		offset and jitter).
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>signatures-validity-denial</command></term>
+	      <listitem>
+		<para>
+		Like <command>signatures-validity</command> but for NSEC and
+		NSEC3 records.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>signatures-validity-dnskey</command></term>
+	      <listitem>
+		<para>
+		Like <command>signatures-validity</command> but for DNSKEY
+		records.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>zone-max-ttl</command></term>
+	      <listitem>
+		<para>
+		Like <command>max-zone-ttl</command>, specifies the maximum
+		permissible TTL value in seconds. When loading a zone file
+		using a <option>masterfile-format</option> or
+		<constant>text</constant> or <constant>raw</constant>,
+		any record encountered with a TTL higher than
+		<option>zone-max-ttl</option> will be capped to the maximum
+		permissible TTL value.
+		</para>
+		<para>
+		This is needed in DNSSEC-maintained zones because when
+		rolling to a new DNSKEY, the old key needs to remain
+		available until RRSIG records have expired from
+		caches.  The <option>zone-max-ttl</option> option guarantees
+		that the largest TTL in the zone will be no higher than the
+		set value.
+		</para>
+	      <para>
+		(NOTE: Because <constant>map</constant>-format files
+		load directly into memory, this option cannot be
+		used with them.)
+	      </para>
+	      <para>
+		The default value is <constant>PT24H</constant> (24 hours).
+		A <option>zone-max-ttl</option> of zero is treated as the
+		default value.
+	      </para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>zone-propagation-delay</command></term>
+	      <listitem>
+		<para>
+		A margin that is added to the publish interval in key timing
+		equations that reflects the maximum time it should take
+		before a new version of the zone becomes visible to all name
+		servers.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>zone-serial-update-method</command></term>
+	      <listitem>
+		<para>
+		The update method that will be used for the zone serial number
+		in the SOA record if the zone is changed (for example because
+		of refreshed signatures or a key rollover).
+		</para>
+		<para>
+		With the default setting of
+		<command>serial-update-method increment;</command>, the
+		SOA serial number will be incremented by one each time
+		the zone is updated.
+		</para>
+		<para>
+		When set to
+		<command>serial-update-method unixtime;</command>, the
+		SOA serial number will be set to the number of seconds
+		since the UNIX epoch, unless the serial number is
+		already greater than or equal to that value, in which
+		case it is simply incremented by one.
+		</para>
+		<para>
+		When set to
+		<command>serial-update-method date;</command>, the
+		new SOA serial number will be the current date
+		in the form "YYYYMMDD", followed by two zeroes,
+		unless the existing serial number is already greater
+		than or equal to that value, in which case it is
+		incremented by one.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>zone-soa-minimum</command></term>
+	      <listitem>
+		<para>
+		Set this to the value the zone uses in the MINIMUM field in
+		the SOA record.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><command>zone-soa-ttl</command></term>
+	      <listitem>
+		<para>
+		Set this to the TTL the zone uses for its SOA record.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	  </variablelist>
+
+	</section>
+
 	<section xml:id="managed-keys"><info><title><command>managed-keys</command> Statement Grammar</title></info>
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="managed-keys.grammar.xml"/>
 	</section>
@@ -11880,6 +12356,15 @@ view "external" {
 		  <para>
 		    See the description of
 		    <command>dnssec-loadkeys-interval</command> in <xref linkend="options"/>.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><command>dnssec-policy</command></term>
+		<listitem>
+		  <para>
+		    The key and signing policy for this zone. Experimental.
 		  </para>
 		</listitem>
 	      </varlistentry>

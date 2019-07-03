@@ -25,6 +25,42 @@ dnssec-keys { <string> ( static-key |
     initial-key ) <integer> <integer> <integer>
     <quoted_string>; ... }; // may occur multiple times
 
+dnssec-policy <string> {
+        cdnskey <boolean>;
+        cds <boolean>;
+        denial-type ( nsec | nsec3 );
+        description <quoted_string>;
+        dnskey-publish-safety <duration>;
+        dnskey-retire-safety <duration>;
+        dnskey-ttl <ttlval>;
+        keys { ( csk | ksk | zsk ) ( directory | hsm ) <string> <duration>
+               <string> [ <integer> ]; ... };
+        nsec3-hash-algorithm <integer>;
+        nsec3-hash-iterations <integer>;
+        nsec3-optout <boolean>;
+        nsec3-resalt <duration>;
+        nsec3-salt-length <integer>;
+        nsec3param-ttl <ttlval>;
+        parent-ds-ttl <ttlval>;
+        parent-propagation-delay <duration>;
+        parent-soa-minimum <ttlval>;
+        parent-soa-ttl <ttlval>;
+        purge-keys-after <duration>;
+        share-keys <boolean>;
+        signatures-inception-offset <duration>;
+        signatures-jitter <duration>;
+        signatures-refresh <duration>;
+        signatures-resign <duration>;
+        signatures-validity <duration>;
+        signatures-validity-denial <duration>;
+        signatures-validity-dnskey <duration>;
+        zone-max-ttl <ttlval>;
+        zone-propagation-delay <duration>;
+        zone-soa-minimum <ttlval>;
+        zone-soa-serial-update-method ( date | increment | unixtime );
+        zone-soa-ttl <ttlval>;
+}; // may occur multiple times
+
 dyndb <string> <quoted_string> {
     <unspecified-text> }; // may occur multiple times
 
@@ -777,6 +813,7 @@ view <string> [ <class> ] {
                 dnskey-sig-validity <integer>;
                 dnssec-dnskey-kskonly <boolean>;
                 dnssec-loadkeys-interval <integer>;
+                dnssec-policy <string>;
                 dnssec-secure-to-insecure <boolean>;
                 dnssec-update-mode ( maintain | no-resign );
                 file <quoted_string>;
@@ -882,6 +919,7 @@ zone <string> [ <class> ] {
         dnskey-sig-validity <integer>;
         dnssec-dnskey-kskonly <boolean>;
         dnssec-loadkeys-interval <integer>;
+        dnssec-policy <string>;
         dnssec-secure-to-insecure <boolean>;
         dnssec-update-mode ( maintain | no-resign );
         file <quoted_string>;

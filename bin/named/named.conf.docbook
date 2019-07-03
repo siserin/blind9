@@ -846,6 +846,7 @@ view <replaceable>string</replaceable> [ <replaceable>class</replaceable> ] {
 		dnskey-sig-validity <replaceable>integer</replaceable>;
 		dnssec-dnskey-kskonly <replaceable>boolean</replaceable>;
 		dnssec-loadkeys-interval <replaceable>integer</replaceable>;
+		dnssec-policy <replaceable>string</replaceable>; // experimental
 		dnssec-secure-to-insecure <replaceable>boolean</replaceable>;
 		dnssec-update-mode ( maintain | no-resign );
 		file <replaceable>quoted_string</replaceable>;
@@ -949,6 +950,7 @@ zone <replaceable>string</replaceable> [ <replaceable>class</replaceable> ] {
 	dnskey-sig-validity <replaceable>integer</replaceable>;
 	dnssec-dnskey-kskonly <replaceable>boolean</replaceable>;
 	dnssec-loadkeys-interval <replaceable>integer</replaceable>;
+	dnssec-policy <replaceable>string</replaceable>; // experimental
 	dnssec-secure-to-insecure <replaceable>boolean</replaceable>;
 	dnssec-update-mode ( maintain | no-resign );
 	file <replaceable>quoted_string</replaceable>;
@@ -1011,6 +1013,46 @@ zone <replaceable>string</replaceable> [ <replaceable>class</replaceable> ] {
 	zero-no-soa-ttl <replaceable>boolean</replaceable>;
 	zone-statistics ( full | terse | none | <replaceable>boolean</replaceable> );
 };
+</literallayout>
+  </refsection>
+
+  <refsection><info><title>DNSSEC-POLICY</title></info>
+
+    <literallayout class="normal">
+dnssec-policy <replaceable>string</replaceable> {
+	cdnskey <replaceable>boolean</replaceable>;
+	cds <replaceable>boolean</replaceable>;
+	denial-type ( nsec | nsec3 );
+	description <replaceable>quoted_string</replaceable>;
+	dnskey-publish-safety <replaceable>duration</replaceable>;
+	dnskey-retire-safety <replaceable>duration</replaceable>;
+	dnskey-ttl <replaceable>ttlval</replaceable>;
+	keys { ( csk | ksk | zsk ) ( hsm | directory ) <replaceable>string</replaceable> <replaceable>duration</replaceable> <replaceable>integer</replaceable> [ <replaceable>integer</replaceable> ] ; ... };
+	nsec3-hash-algorithm <replaceable>integer</replaceable>;
+	nsec3-hash-iterations <replaceable>integer</replaceable>;
+	nsec3-optout <replaceable>boolean</replaceable>;
+	nsec3-salt-length <replaceable>integer</replaceable>;
+	nsec3-resalt <replaceable>duration</replaceable>;
+	nsec3param-ttl <replaceable>ttlval</replaceable>;
+	parent-ds-ttl <replaceable>ttlval</replaceable>;
+	parent-propagation-delay <replaceable>duration</replaceable>;
+	parent-soa-minimum <replaceable>ttlval</replaceable>;
+	parent-soa-ttl <replaceable>ttlval</replaceable>;
+	purge-keys-after <replaceable>duration</replaceable>;
+	share-keys <replaceable>boolean</replaceable>;
+	signatures-inception-offset <replaceable>duration</replaceable>;
+	signatures-jitter <replaceable>duration</replaceable>;
+	signatures-refresh <replaceable>duration</replaceable>;
+	signatures-resign <replaceable>duration</replaceable>;
+	signatures-validity <replaceable>duration</replaceable>;
+	signatures-validity-denial <replaceable>duration</replaceable>;
+	signatures-validity-dnskey <replaceable>duration</replaceable>;
+	zone-max-ttl <replaceable>ttlval</replaceable>;
+	zone-propagation-delay <replaceable>duration</replaceable>;
+	zone-serial-update-method ( date | increment | unixtime );
+	zone-soa-minimum <replaceable>ttlval</replaceable>;
+	zone-soa-ttl <replaceable>ttlval</replaceable>;
+}; // experimental
 </literallayout>
   </refsection>
 
