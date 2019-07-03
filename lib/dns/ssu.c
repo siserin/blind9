@@ -43,7 +43,7 @@ struct dns_ssurule {
 	dns_name_t *identity;		/*%< the identity to match */
 	dns_name_t *name;		/*%< the name being updated */
 	unsigned int ntypes;		/*%< number of data types covered */
-	dns_rdatatype_t *types;		/*%< the data types.  Can include */
+	dns_ssuruletype_t *types;	/*%< the data types.  Can include */
 					/*   ANY. if NULL, defaults to all */
 					/*   types except SIG, SOA, and NS */
 	ISC_LINK(dns_ssurule_t) link;
@@ -85,15 +85,17 @@ destroy(dns_ssutable_t *table) {
 		dns_ssurule_t *rule = ISC_LIST_HEAD(table->rules);
 		if (rule->identity != NULL) {
 			dns_name_free(rule->identity, mctx);
-			isc_mem_put(mctx, rule->identity, sizeof(dns_name_t));
+			isc_mem_put(mctx, rule->identity,
+				    sizeof(*rule->identity));
 		}
 		if (rule->name != NULL) {
 			dns_name_free(rule->name, mctx);
-			isc_mem_put(mctx, rule->name, sizeof(dns_name_t));
+			isc_mem_put(mctx, rule->name, sizeof(*rule->name));
 		}
-		if (rule->types != NULL)
+		if (rule->types != NULL) {
 			isc_mem_put(mctx, rule->types,
-				    rule->ntypes * sizeof(dns_rdatatype_t));
+				    rule->ntypes * sizeof(*rule->types));
+		}
 		ISC_LIST_UNLINK(table->rules, rule, link);
 		rule->magic = 0;
 		isc_mem_put(mctx, rule, sizeof(dns_ssurule_t));
@@ -131,7 +133,7 @@ isc_result_t
 dns_ssutable_addrule(dns_ssutable_t *table, bool grant,
 		     const dns_name_t *identity, dns_ssumatchtype_t matchtype,
 		     const dns_name_t *name, unsigned int ntypes,
-		     dns_rdatatype_t *types)
+		     dns_ssuruletype_t *types)
 {
 	dns_ssurule_t *rule;
 	isc_mem_t *mctx;
@@ -141,13 +143,15 @@ dns_ssutable_addrule(dns_ssutable_t *table, bool grant,
 	REQUIRE(dns_name_isabsolute(identity));
 	REQUIRE(dns_name_isabsolute(name));
 	REQUIRE(matchtype <= dns_ssumatchtype_max);
-	if (matchtype == dns_ssumatchtype_wildcard)
+	if (matchtype == dns_ssumatchtype_wildcard) {
 		REQUIRE(dns_name_iswildcard(name));
-	if (ntypes > 0)
+	}
+	if (ntypes > 0) {
 		REQUIRE(types != NULL);
+	}
 
 	mctx = table->mctx;
-	rule = isc_mem_get(mctx, sizeof(dns_ssurule_t));
+	rule = isc_mem_get(mctx, sizeof(*rule));
 
 	rule->identity = NULL;
 	rule->name = NULL;
@@ -155,27 +159,29 @@ dns_ssutable_addrule(dns_ssutable_t *table, bool grant,
 
 	rule->grant = grant;
 
-	rule->identity = isc_mem_get(mctx, sizeof(dns_name_t));
+	rule->identity = isc_mem_get(mctx, sizeof(*rule->identity));
 	dns_name_init(rule->identity, NULL);
 	result = dns_name_dup(identity, mctx, rule->identity);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto failure;
+	}
 
-	rule->name = isc_mem_get(mctx, sizeof(dns_name_t));
+	rule->name = isc_mem_get(mctx, sizeof(*rule->name));
 	dns_name_init(rule->name, NULL);
 	result = dns_name_dup(name, mctx, rule->name);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto failure;
+	}
 
 	rule->matchtype = matchtype;
 
 	rule->ntypes = ntypes;
 	if (ntypes > 0) {
-		rule->types = isc_mem_get(mctx,
-					  ntypes * sizeof(dns_rdatatype_t));
-		memmove(rule->types, types, ntypes * sizeof(dns_rdatatype_t));
-	} else
+		rule->types = isc_mem_get(mctx, ntypes * sizeof(*rule->types));
+		memmove(rule->types, types, ntypes * sizeof(*rule->types));
+	} else {
 		rule->types = NULL;
+	}
 
 	rule->magic = SSURULEMAGIC;
 	ISC_LIST_INITANDAPPEND(table->rules, rule, link);
@@ -184,19 +190,21 @@ dns_ssutable_addrule(dns_ssutable_t *table, bool grant,
 
  failure:
 	if (rule->identity != NULL) {
-		if (dns_name_dynamic(rule->identity))
+		if (dns_name_dynamic(rule->identity)) {
 			dns_name_free(rule->identity, mctx);
-		isc_mem_put(mctx, rule->identity, sizeof(dns_name_t));
+		}
+		isc_mem_put(mctx, rule->identity, sizeof(*rule->identity));
 	}
 	if (rule->name != NULL) {
-		if (dns_name_dynamic(rule->name))
+		if (dns_name_dynamic(rule->name)) {
 			dns_name_free(rule->name, mctx);
-		isc_mem_put(mctx, rule->name, sizeof(dns_name_t));
+		}
+		isc_mem_put(mctx, rule->name, sizeof(*rule->name));
 	}
-	if (rule->types != NULL)
-		isc_mem_put(mctx, rule->types,
-			    ntypes * sizeof(dns_rdatatype_t));
-	isc_mem_put(mctx, rule, sizeof(dns_ssurule_t));
+	if (rule->types != NULL) {
+		isc_mem_put(mctx, rule->types, ntypes * sizeof(*rule->types));
+	}
+	isc_mem_put(mctx, rule, sizeof(*rule));
 
 	return (result);
 }
@@ -524,9 +532,10 @@ dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
 				continue;
 		} else {
 			for (i = 0; i < rule->ntypes; i++) {
-				if (rule->types[i] == dns_rdatatype_any ||
-				    rule->types[i] == type)
+				if (rule->types[i].type == dns_rdatatype_any ||
+				    rule->types[i].type == type) {
 					break;
+				}
 			}
 			if (i == rule->ntypes)
 				continue;
@@ -562,7 +571,7 @@ dns_ssurule_name(const dns_ssurule_t *rule) {
 }
 
 unsigned int
-dns_ssurule_types(const dns_ssurule_t *rule, dns_rdatatype_t **types) {
+dns_ssurule_types(const dns_ssurule_t *rule, dns_ssuruletype_t **types) {
 	REQUIRE(VALID_SSURULE(rule));
 	REQUIRE(types != NULL && *types != NULL);
 	*types = rule->types;
@@ -608,7 +617,6 @@ dns_ssutable_createdlz(isc_mem_t *mctx, dns_ssutable_t **tablep,
 
 	rule->identity = NULL;
 	rule->name = NULL;
-	rule->types = NULL;
 	rule->grant = true;
 	rule->matchtype = dns_ssumatchtype_dlz;
 	rule->ntypes = 0;
