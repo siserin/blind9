@@ -3332,6 +3332,8 @@ By default, records are returned in indeterminate but consistent order
    compile time by specifying "--enable-fixed-rrset" on the "configure"
    command line.
 
+.. _tuning:
+
 Tuning
 ^^^^^^
 
@@ -5649,7 +5651,7 @@ The ruletype field has 16 values: ``name``, ``subdomain``, ``wildcard``,
  |                    | is based on the client's IP address, it is not          |
  |                    | necessary for update request messages to be signed.     |
  |                    |                                                         |
- |                    | .. note::                                             |
+ |                    | .. note::                                               |
  |                    |                                                         |
  |                    |    It is theoretically possible to spoof these TCP      |
  |                    |    sessions.                                            |
@@ -5674,7 +5676,7 @@ The ruletype field has 16 values: ``name``, ``subdomain``, ``wildcard``,
  |                    | can update records at                                   |
  |                    | ``C.0.D.E.8.B.D.0.1.0.0.2.ip6.arpa``.                   |
  |                    |                                                         |
- |                    |.. note::                                             |
+ |                    | .. note::                                               |
  |                    |                                                         |
  |                    |    It is theoretically possible to spoof these TCP      |
  |                    |    sessions.                                            |
@@ -6684,7 +6686,8 @@ Name Server Statistics Counters
 |                        |             | ``clients-per-query`` and               |
 |                        |             | ``max-clients-per-query`` options (see  |
 |                        |             | the description about                   |
-|                        |             | :ref:`clients-per-query`.) This         |
+|                        |             | clients-per-query in                    |
+|                        |             | :ref:`server_resource_limits`.) This    |
 |                        |             | corresponds to the ``dropped`` counter  |
 |                        |             | of previous versions of BIND 9.         |
 +------------------------+-------------+-----------------------------------------+
