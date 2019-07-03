@@ -11037,7 +11037,7 @@ example.com                 CNAME   rpz-tcp-only.
 	    KASP is used to determine how one or more zones need to be signed
 	    with DNSSEC.  For example, how often RRSIG records need to be
 	    updated, what type of denial of existence to use (NSEC or NSEC3),
-	    what algorithms to use, and what type of key rollover to use. 
+	    what algorithms to use, and what type of key rollover to use.
 	  </para>
 	  <para>
 	    You can configure multiple policies.  To attach a policy to a zone

@@ -46,10 +46,10 @@ struct dns_kasp {
 	bool				frozen;
 
 	/* Locked by themselves. */
-        isc_refcount_t			references;
+	isc_refcount_t			references;
 
 	/* Under owner's locking control. */
-        ISC_LINK(struct dns_kasp)	link;
+	ISC_LINK(struct dns_kasp)	link;
 	dns_kasplist_t*			kasplist;
 
 	/* Configuration */

@@ -2204,21 +2204,21 @@ check_zoneconf(const cfg_obj_t *zconfig, const cfg_obj_t *voptions,
 	obj = NULL;
 	(void)cfg_map_get(zoptions, "dnssec-policy", &obj);
 	if (obj != NULL) {
-	        const cfg_obj_t *kasps = NULL;
+		const cfg_obj_t *kasps = NULL;
 		const char* kaspname = cfg_obj_asstring(obj);
 
 		(void)cfg_map_get(config, "dnssec-policy", &kasps);
-	        for (element = cfg_list_first(kasps);
-	             element != NULL;
-	             element = cfg_list_next(element))
-	        {
+		for (element = cfg_list_first(kasps);
+		     element != NULL;
+		     element = cfg_list_next(element))
+		{
 			cfg_obj_t *kconfig = cfg_listelt_value(element);
 			const char* kn =
 			       cfg_obj_asstring(cfg_tuple_get(kconfig, "name"));
 			if (strcmp(kaspname, kn) == 0) {
 				has_dnssecpolicy = true;
 			}
-	        }
+		}
 
 		if (!has_dnssecpolicy) {
 			cfg_obj_log(zconfig, logctx, ISC_LOG_ERROR,

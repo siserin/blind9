@@ -119,16 +119,16 @@ dns_kasp_detach(dns_kasp_t **kaspp) {
 
 void
 dns_kasp_freeze(dns_kasp_t *kasp) {
-        REQUIRE(DNS_KASP_VALID(kasp));
-        REQUIRE(!kasp->frozen);
-        kasp->frozen = true;
+	REQUIRE(DNS_KASP_VALID(kasp));
+	REQUIRE(!kasp->frozen);
+	kasp->frozen = true;
 }
 
 void
 dns_kasp_thaw(dns_kasp_t *kasp) {
-        REQUIRE(DNS_KASP_VALID(kasp));
-        REQUIRE(kasp->frozen);
-        kasp->frozen = false;
+	REQUIRE(DNS_KASP_VALID(kasp));
+	REQUIRE(kasp->frozen);
+	kasp->frozen = false;
 }
 
 isc_result_t
