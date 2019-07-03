@@ -425,6 +425,7 @@ $CHECKCONF check-root-ksk-both.conf > checkconf.out$n 2>/dev/null || ret=1
 if [ $ret != 0 ]; then echo_i "failed"; ret=1; fi
 status=`expr $status + $ret`
 
+n=`expr $n + 1`
 echo_i "check that the 2017 ICANN ROOT KSK alone does not generate a warning ($n)"
 ret=0
 $CHECKCONF check-root-ksk-2017.conf > checkconf.out$n 2>/dev/null || ret=1
@@ -432,6 +433,7 @@ $CHECKCONF check-root-ksk-2017.conf > checkconf.out$n 2>/dev/null || ret=1
 if [ $ret != 0 ]; then echo_i "failed"; ret=1; fi
 status=`expr $status + $ret`
 
+n=`expr $n + 1`
 echo_i "check that a static root key generates a warning ($n)"
 ret=0
 $CHECKCONF check-root-static-key.conf > checkconf.out$n 2>/dev/null || ret=1
@@ -439,6 +441,7 @@ grep "static-key entry for the root zone WILL FAIL" checkconf.out$n > /dev/null 
 if [ $ret != 0 ]; then echo_i "failed"; ret=1; fi
 status=`expr $status + $ret`
 
+n=`expr $n + 1`
 echo_i "check that a trusted-keys entry for root generates a warning ($n)"
 ret=0
 $CHECKCONF check-root-trusted-key.conf > checkconf.out$n 2>/dev/null || ret=1
@@ -446,6 +449,7 @@ grep "trusted-keys entry for the root zone WILL FAIL" checkconf.out$n > /dev/nul
 if [ $ret != 0 ]; then echo_i "failed"; ret=1; fi
 status=`expr $status + $ret`
 
+n=`expr $n + 1`
 echo_i "check that using dnssec-keys and managed-keys generates an error ($n)"
 ret=0
 $CHECKCONF check-mixed-keys.conf > checkconf.out$n 2>/dev/null && ret=1
@@ -453,6 +457,7 @@ grep "use of managed-keys is not allowed" checkconf.out$n > /dev/null || ret=1
 if [ $ret != 0 ]; then echo_i "failed"; ret=1; fi
 status=`expr $status + $ret`
 
+n=`expr $n + 1`
 echo_i "check that the dlv.isc.org KSK generates a warning ($n)"
 ret=0
 $CHECKCONF check-dlv-ksk-key.conf > checkconf.out$n 2>/dev/null || ret=1
@@ -461,12 +466,43 @@ grep "trust anchor for dlv.isc.org is present" < checkconf.out$n > /dev/null || 
 if [ $ret != 0 ]; then echo_i "failed"; ret=1; fi
 status=`expr $status + $ret`
 
+n=`expr $n + 1`
 echo_i "check that 'geoip-use-ecs no' generates a warning ($n)"
 ret=0
 $CHECKCONF warn-geoip-use-ecs.conf > checkconf.out$n 2>/dev/null || ret=1
 [ -s checkconf.out$n ] || ret=1
 grep "'geoip-use-ecs' is obsolete" < checkconf.out$n > /dev/null || ret=1
 if [ $ret != 0 ]; then echo_i "failed"; ret=1; fi
+status=`expr $status + $ret`
+
+n=`expr $n + 1`
+echo_i "checking named-checkconf kasp warnings ($n)"
+ret=0
+# dnssec.1: dnssec-enable is obsolete
+$CHECKCONF kasp-and-other-dnssec-options.conf > checkconf.out$n 2>&1
+grep "inline-signing: cannot be configured if dnssec-policy is also set" < checkconf.out$n > /dev/null || ret=1
+grep "'auto-dnssec maintain;' cannot be configured if dnssec-policy is also set" < checkconf.out$n > /dev/null || ret=1
+grep "dnssec-dnskey-kskonly: cannot be configured if dnssec-policy is also set" < checkconf.out$n > /dev/null || ret=1
+grep "dnssec-secure-to-insecure: cannot be configured if dnssec-policy is also set" < checkconf.out$n > /dev/null || ret=1
+grep "update-check-ksk: cannot be configured if dnssec-policy is also set" < checkconf.out$n > /dev/null || ret=1
+if [ $ret != 0 ]; then echo_i "failed"; fi
+status=`expr $status + $ret`
+
+n=`expr $n + 1`
+echo_i "check that a good 'kasp' configuration is accepted ($n)"
+ret=0
+$CHECKCONF good-kasp.conf > checkconf.out$n 2>/dev/null || ret=1
+if [ $ret != 0 ]; then echo_i "failed"; fi
+status=`expr $status + $ret`
+
+n=`expr $n + 1`
+echo_i "checking that named-checkconf prints a known good kasp config ($n)"
+ret=0
+awk 'BEGIN { ok = 0; } /cut here/ { ok = 1; getline } ok == 1 { print }' good-kasp.conf > good-kasp.conf.in
+[ -s good-kasp.conf.in ] || ret=1
+$CHECKCONF -p good-kasp.conf.in | grep -v '^good-kasp.conf.in:' > good-kasp.conf.out 2>&1 || ret=1
+cmp good-kasp.conf.in good-kasp.conf.out || ret=1
+if [ $ret != 0 ]; then echo_i "failed"; fi
 status=`expr $status + $ret`
 
 echo_i "exit status: $status"

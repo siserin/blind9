@@ -88,6 +88,17 @@ cat "$infile" "$cnameandkey.key" "$dnameandkey.key" "$keyname.key" > "$zonefile"
 
 "$SIGNER" -P -o "$zone" "$zonefile" > /dev/null 2>&1
 
+zone=kasp.example.
+infile=kasp.example.db.in
+zonefile=kasp.example.db
+
+keyname1=$("$KEYGEN" -q -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" -n zone "$zone")
+keyname2=$("$KEYGEN" -q -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" -n zone -f KSK "$zone")
+
+cat "$infile" "$keyname1.key" "$keyname2.key" > "$zonefile"
+
+"$SIGNER" -P -o "$zone" "$zonefile" > /dev/null 2>&1
+
 zone=bogus.example.
 infile=bogus.example.db.in
 zonefile=bogus.example.db

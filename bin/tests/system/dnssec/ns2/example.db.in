@@ -49,6 +49,10 @@ foo.dname2-target	TXT	"testing dname"
 secure			NS	ns3.secure
 ns3.secure		A	10.53.0.3
 
+; A subdomain that has a DNSSEC Key and Signing Policy
+kasp			NS	ns3.kasp
+ns3.kasp		A	10.53.0.3
+
 ; An insecure subdomain
 insecure		NS	ns.insecure
 ns.insecure		A	10.53.0.3

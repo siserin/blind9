@@ -725,8 +725,19 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-# Check the secure.example domain
+# Check the kasp.example domain has loaded
+echo_i "check DNSKEY kasp.example ($n)"
+ret=0
+dig_with_opts +noauth www.kasp.example. @10.53.0.3 a > dig.out.ns3.test$n || ret=1
+dig_with_opts +noauth www.kasp.example. @10.53.0.4 a > dig.out.ns4.test$n || ret=1
+digcomp dig.out.ns3.test$n dig.out.ns4.test$n || ret=1
+grep "status: NOERROR" dig.out.ns4.test$n > /dev/null || ret=1
+grep "flags:.*ad.*QUERY" dig.out.ns4.test$n > /dev/null || ret=1
+n=$((n+1))
+test "$ret" -eq 0 || echo_i "failed"
+status=$((status+ret))
 
+# Check the secure.example domain
 echo_i "checking multi-stage positive validation NSEC/NSEC ($n)"
 ret=0
 dig_with_opts +noauth a.secure.example. \
@@ -739,6 +750,9 @@ grep "flags:.*ad.*QUERY" dig.out.ns4.test$n > /dev/null || ret=1
 n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
+
+echo_i "exit status: $status"
+[ $status -eq 0 ] || exit 1
 
 echo_i "checking multi-stage positive validation NSEC/NSEC3 ($n)"
 ret=0

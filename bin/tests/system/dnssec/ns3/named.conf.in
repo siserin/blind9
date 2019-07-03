@@ -35,6 +35,8 @@ controls {
 	inet 10.53.0.3 port @CONTROLPORT@ allow { any; } keys { rndc_key; };
 };
 
+include "kasp.conf";
+
 zone "." {
 	type hint;
 	file "../../common/root.hint";
@@ -50,6 +52,12 @@ zone "secure.example" {
 	type master;
 	file "secure.example.db.signed";
 	allow-update { any; };
+};
+
+zone "kasp.example" {
+	type master;
+	file "kasp.example.db.signed";
+	dnssec-policy "nsec3";
 };
 
 zone "bogus.example" {
