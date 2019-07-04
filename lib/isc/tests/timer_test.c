@@ -22,6 +22,7 @@
 #define UNIT_TESTING
 #include <cmocka.h>
 
+#include <isc/atomic.h>
 #include <isc/condition.h>
 #include <isc/commandline.h>
 #include <isc/mem.h>
@@ -47,7 +48,7 @@ static isc_time_t endtime;
 static isc_time_t lasttime;
 static int seconds;
 static int nanoseconds;
-static int eventcnt;
+static atomic_int eventcnt;
 static int nevents;
 
 static int
@@ -101,7 +102,7 @@ setup_test(isc_timertype_t timertype, isc_time_t *expires,
 	isc_result_t result;
 	isc_task_t *task = NULL;
 	isc_time_settoepoch(&endtime);
-	eventcnt = 0;
+	atomic_init(&eventcnt, 0);
 
 	isc_mutex_init(&mx);
 
@@ -126,7 +127,7 @@ setup_test(isc_timertype_t timertype, isc_time_t *expires,
 	/*
 	 * Wait for shutdown processing to complete.
 	 */
-	while (eventcnt != nevents) {
+	while (atomic_load(&eventcnt) != nevents) {
 		result = isc_condition_wait(&cv, &mx);
 		assert_int_equal(result, ISC_R_SUCCESS);
 	}
@@ -148,10 +149,10 @@ ticktock(isc_task_t *task, isc_event_t *event) {
 	isc_interval_t interval;
 	isc_eventtype_t expected_event_type;
 
-	++eventcnt;
+	int tick = atomic_fetch_add(&eventcnt, 1);
 
 	if (verbose) {
-		print_message("# tick %d\n", eventcnt);
+		print_message("# tick %d\n", tick);
 	}
 
 	expected_event_type = ISC_TIMEREVENT_LIFE;
@@ -182,7 +183,7 @@ ticktock(isc_task_t *task, isc_event_t *event) {
 	assert_true(isc_time_compare(&ulim, &now) >= 0);
 	lasttime = now;
 
-	if (eventcnt == nevents) {
+	if (atomic_load(&eventcnt) == nevents) {
 		result = isc_time_now(&endtime);
 		assert_int_equal(result, ISC_R_SUCCESS);
 		isc_timer_detach(&timer);
@@ -245,10 +246,10 @@ test_idle(isc_task_t *task, isc_event_t *event) {
 	isc_time_t llim;
 	isc_interval_t interval;
 
-	++eventcnt;
+	int tick = atomic_fetch_add(&eventcnt, 1);
 
 	if (verbose) {
-		print_message("# tick %d\n", eventcnt);
+		print_message("# tick %d\n", tick);
 	}
 
 	result = isc_time_now(&now);
@@ -309,10 +310,10 @@ test_reset(isc_task_t *task, isc_event_t *event) {
 	isc_time_t expires;
 	isc_interval_t interval;
 
-	++eventcnt;
+	int tick = atomic_fetch_add(&eventcnt, 1);
 
 	if (verbose) {
-		print_message("# tick %d\n", eventcnt);
+		print_message("# tick %d\n", tick);
 	}
 
 	/*
@@ -337,10 +338,12 @@ test_reset(isc_task_t *task, isc_event_t *event) {
 	assert_true(isc_time_compare(&ulim, &now) >= 0);
 	lasttime = now;
 
-	if (eventcnt < 3) {
+	int _eventcnt = atomic_load(&eventcnt);
+
+	if (_eventcnt < 3) {
 		assert_int_equal(event->ev_type, ISC_TIMEREVENT_TICK);
 
-		if (eventcnt == 2) {
+		if (_eventcnt == 2) {
 			isc_interval_set(&interval, seconds, nanoseconds);
 			result = isc_time_nowplusinterval(&expires, &interval);
 			assert_int_equal(result, ISC_R_SUCCESS);
@@ -415,16 +418,16 @@ tick_event(isc_task_t *task, isc_event_t *event) {
 
 	UNUSED(task);
 
-	++eventcnt;
+	int tick = atomic_fetch_add(&eventcnt, 1);
 	if (verbose) {
-		print_message("# tick_event %d\n", eventcnt);
+		print_message("# tick_event %d\n", tick);
 	}
 
 	/*
 	 * On the first tick, purge all remaining tick events
 	 * and then shut down the task.
 	 */
-	if (eventcnt == 1) {
+	if (tick == 0) {
 		isc_time_settoepoch(&expires);
 		isc_interval_set(&interval, seconds, 0);
 		result = isc_timer_reset(tickertimer, isc_timertype_ticker,
@@ -495,7 +498,7 @@ purge(void **state) {
 
 	startflag = 0;
 	shutdownflag = 0;
-	eventcnt = 0;
+	atomic_init(&eventcnt, 0);
 	seconds = 1;
 	nanoseconds = 0;
 
@@ -550,7 +553,7 @@ purge(void **state) {
 
 	UNLOCK(&mx);
 
-	assert_int_equal(eventcnt, 1);
+	assert_int_equal(atomic_load(&eventcnt), 1);
 
 	isc_timer_detach(&tickertimer);
 	isc_timer_detach(&oncetimer);
