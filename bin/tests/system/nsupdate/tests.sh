@@ -1025,6 +1025,29 @@ grep "UPDATE, status: NOERROR" nsupdate.out-$n > /dev/null 2>&1 || ret=1
 grep "UPDATE, status: FORMERR" nsupdate.out-$n > /dev/null 2>&1 || ret=1
 [ $ret = 0 ] || { echo_i "failed"; status=1; }
 
+n=`expr $n + 1`
+ret=0
+echo_i "check that max records is enforced ($n)"
+grep "attempt to add more records than permitted by policy" ns6/named.run > /dev/null && ret=1
+$NSUPDATE -v > nsupdate.out.$n 2>&1 << END
+server 10.53.0.6 ${PORT}
+local 10.53.0.5
+update del 5.0.53.10.in-addr.arpa.
+update add 5.0.53.10.in-addr.arpa. 600 PTR localhost.
+update add 5.0.53.10.in-addr.arpa. 600 PTR other.
+send
+END
+$DIG $DIGOPTS @10.53.0.6 \
+        +tcp +noadd +nosea +nostat +noquest +nocomm +nocmd \
+        -x 10.53.0.5 > dig.out.ns6.$n
+grep localhost. dig.out.ns6.$n > /dev/null 2>&1 || ret=1
+grep other. dig.out.ns6.$n > /dev/null 2>&1 && ret=1
+grep "attempt to add more records than permitted by policy" ns6/named.run > /dev/null || ret=1
+if test $ret -ne 0
+then
+echo_i "failed"; status=1
+fi
+
 if $FEATURETEST --gssapi ; then
   n=`expr $n + 1`
   ret=0
