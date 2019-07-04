@@ -3373,7 +3373,7 @@ dump_adb(dns_adb_t *adb, FILE *f, bool debug, isc_stdtime_t now) {
 		"512 timeout]\n");
 	fprintf(f, "; [plain success/timeout]\n;\n");
 	if (debug)
-		fprintf(f, "; addr %p, erefcnt %u, irefcnt %u, finds out %u\n",
+		fprintf(f, "; addr %p, erefcnt %" PRIu32 ", irefcnt %" PRIu32 ", finds out %u\n",
 			adb,
 			isc_refcount_current(&adb->erefcnt),
 			isc_refcount_current(&adb->irefcnt),
