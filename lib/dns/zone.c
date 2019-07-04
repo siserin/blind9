@@ -19834,7 +19834,7 @@ dns_zone_getgluecachestats(dns_zone_t *zone) {
 }
 
 bool
-dns_zone_isloaded(const dns_zone_t *zone) {
+dns_zone_isloaded(dns_zone_t *zone) {
 	REQUIRE(DNS_ZONE_VALID(zone));
 
 	return (DNS_ZONE_FLAG(zone, DNS_ZONEFLG_LOADED));
