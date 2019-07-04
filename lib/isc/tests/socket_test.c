@@ -24,6 +24,7 @@
 #define UNIT_TESTING
 #include <cmocka.h>
 
+#include <isc/atomic.h>
 #include <isc/platform.h>
 #include <isc/socket.h>
 #include <isc/task.h>
@@ -62,7 +63,7 @@ _teardown(void **state) {
 }
 
 typedef struct {
-	bool done;
+	atomic_bool done;
 	isc_result_t result;
 	isc_socket_t *socket;
 } completion_t;
@@ -116,14 +117,14 @@ event_done(isc_task_t *task, isc_event_t *event) {
 	default:
 		assert_false(true);
 	}
-	completion->done = true;
+	atomic_store(&completion->done, true);
 	isc_event_free(&event);
 }
 
 static isc_result_t
 waitfor(completion_t *completion) {
 	int i = 0;
-	while (!completion->done && i++ < 5000) {
+	while (!atomic_load(&completion->done) && i++ < 5000) {
 		isc_test_nap(1000);
 	}
 	if (completion->done) {
