@@ -21,6 +21,7 @@
 #include <isc/mutex.h>
 #include <isc/platform.h>
 #include <isc/types.h>
+#include <isc/util.h>
 
 ISC_LANG_BEGINDECLS
 
