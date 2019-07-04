@@ -119,7 +119,11 @@ LIBISC_EXTERNAL_DATA extern unsigned int isc_mem_defaultflags;
  */
 
 #ifndef ISC_MEM_USE_INTERNAL_MALLOC
+#if defined(__SANITIZE_THREAD__)
 #define ISC_MEM_USE_INTERNAL_MALLOC 1
+#else
+#define ISC_MEM_USE_INTERNAL_MALLOC 1
+#endif
 #endif
 
 /*
@@ -130,7 +134,7 @@ LIBISC_EXTERNAL_DATA extern unsigned int isc_mem_defaultflags;
 #define ISC_MEMFLAG_FILL	0x00000004	 /* fill with pattern after alloc and frees */
 
 #if !ISC_MEM_USE_INTERNAL_MALLOC
-#define ISC_MEMFLAG_DEFAULT 	0
+#define ISC_MEMFLAG_DEFAULT	0
 #else
 #define ISC_MEMFLAG_DEFAULT	ISC_MEMFLAG_INTERNAL|ISC_MEMFLAG_FILL
 #endif

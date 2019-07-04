@@ -1710,7 +1710,6 @@ isc__mempool_get(isc_mempool_t *mpctx0 FLARG) {
 	isc__mempool_t *mpctx = (isc__mempool_t *)mpctx0;
 	element *item;
 	isc__mem_t *mctx;
-	unsigned int i;
 
 	REQUIRE(VALID_MEMPOOL(mpctx));
 
@@ -1727,7 +1726,11 @@ isc__mempool_get(isc_mempool_t *mpctx0 FLARG) {
 		goto out;
 	}
 
+#if defined(__SANITIZE_THREAD__)
+	item = default_memalloc(NULL, mpctx->size);
+#else /* defined(__SANITIZE_THREAD__) */
 	if (ISC_UNLIKELY(mpctx->items == NULL)) {
+		unsigned int i;
 		/*
 		 * We need to dip into the well.  Lock the memory context
 		 * here and fill up our free list.
@@ -1749,7 +1752,6 @@ isc__mempool_get(isc_mempool_t *mpctx0 FLARG) {
 		}
 		MCTXUNLOCK(mctx, &mctx->lock);
 	}
-
 	/*
 	 * If we didn't get any items, return NULL.
 	 */
@@ -1760,6 +1762,7 @@ isc__mempool_get(isc_mempool_t *mpctx0 FLARG) {
 	mpctx->items = item->next;
 	INSIST(mpctx->freecount > 0);
 	mpctx->freecount--;
+#endif /* defined(__SANITIZE_THREAD__) */
 	mpctx->gets++;
 	mpctx->allocated++;
 
@@ -1806,6 +1809,10 @@ isc__mempool_put(isc_mempool_t *mpctx0, void *mem FLARG) {
 	}
 #endif /* ISC_MEM_TRACKLINES */
 
+#if defined(__SANITIZE_THREAD__)
+	UNUSED(item);
+	default_memfree(NULL, mem);
+#else /* defined(__SANITIZE_THREAD__) */
 	/*
 	 * If our free list is full, return this to the mctx directly.
 	 */
@@ -1826,10 +1833,11 @@ isc__mempool_put(isc_mempool_t *mpctx0, void *mem FLARG) {
 	/*
 	 * Otherwise, attach it to our free list and bump the counter.
 	 */
-	mpctx->freecount++;
 	item = (element *)mem;
 	item->next = mpctx->items;
 	mpctx->items = item;
+	mpctx->freecount++;
+#endif /* defined(__SANITIZE_THREAD__) */
 
 	if (mpctx->lock != NULL)
 		UNLOCK(mpctx->lock);
