@@ -744,6 +744,17 @@ foreach_rr(dns_db_t *db, dns_dbversion_t *ver, dns_name_t *name,
  */
 typedef bool rr_predicate(dns_rdata_t *update_rr, dns_rdata_t *db_rr);
 
+static isc_result_t
+count_action(void *data, rr_t *rr) {
+	unsigned int *ui = (unsigned int *)data;
+
+	UNUSED(rr);
+
+	(*ui)++;
+
+	return (ISC_R_SUCCESS);
+}
+
 /*%
  * Helper function for rrset_exists().
  */
@@ -2820,6 +2831,7 @@ update_action(isc_task_t *task, isc_event_t *event) {
 			       &name, &rdata, &covers, &ttl, &update_class);
 
 		if (update_class == zoneclass) {
+			unsigned int max = 0;
 
 			/*
 			 * RFC1123 doesn't allow MF and MD in master zones.
@@ -2943,6 +2955,23 @@ update_action(isc_task_t *task, isc_event_t *event) {
 						   "reducing TTL to the "
 						   "configured max-zone-ttl %d",
 						   maxttl);
+				}
+			}
+
+			if (rules != NULL && rules[rule] != NULL) {
+				max = dns_ssurule_max(rules[rule], rdata.type);
+			}
+			if (max != 0) {
+				unsigned int count = 0;
+				CHECK(foreach_rr(db, ver, name, rdata.type,
+						 covers, count_action, &count));
+				if (count >= max) {
+					update_log(client, zone,
+						   LOGLEVEL_PROTOCOL,
+						   "attempt to add more "
+						   "records than permitted by "
+						   "policy max=%u", max);
+					continue;
 				}
 			}
 
