@@ -15,6 +15,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include <isc/atomic.h>
 #include <isc/file.h>
 #include <isc/hex.h>
 #include <isc/mutex.h>
@@ -214,7 +215,7 @@ struct dns_zone {
 	int32_t		journalsize;
 	dns_rdataclass_t	rdclass;
 	dns_zonetype_t		type;
-	unsigned int		flags;
+	atomic_uint		flags;
 	dns_zoneopt_t		options;
 	unsigned int		db_argc;
 	char			**db_argv;
@@ -441,15 +442,9 @@ struct dns_zone {
 		(_z)->offline = false; \
 	} while (0)
 
-#define DNS_ZONE_FLAG(z,f) ((z)->flags & (f))
-#define DNS_ZONE_SETFLAG(z,f) do { \
-		INSIST(LOCKED_ZONE(z)); \
-		(z)->flags |= (f); \
-		} while (0)
-#define DNS_ZONE_CLRFLAG(z,f) do { \
-		INSIST(LOCKED_ZONE(z)); \
-		(z)->flags &= ~(f); \
-		} while (0)
+#define DNS_ZONE_FLAG(z,f) ((atomic_load_relaxed(&(z)->flags) & (f)) != 0)
+#define DNS_ZONE_SETFLAG(z,f) atomic_fetch_or(&(z)->flags, (f))
+#define DNS_ZONE_CLRFLAG(z,f) atomic_fetch_and(&(z)->flags, ~(f))
 	/* XXX MPA these may need to go back into zone.h */
 #define DNS_ZONEFLG_REFRESH	0x00000001U	/*%< refresh check in progress */
 #define DNS_ZONEFLG_NEEDDUMP	0x00000002U	/*%< zone need consolidation */
