@@ -24,6 +24,7 @@
 #include <cmocka.h>
 
 #include <isc/app.h>
+#include <isc/atomic.h>
 #include <isc/buffer.h>
 #include <isc/print.h>
 #include <isc/task.h>
@@ -78,21 +79,21 @@ count_zone(dns_zone_t *zone, void *uap) {
 static isc_result_t
 load_done(dns_zt_t *zt, dns_zone_t *zone, isc_task_t *task) {
 	/* We treat zt as a pointer to a boolean for testing purposes */
-	bool *done = (bool *) zt;
+	atomic_bool *done = (atomic_bool *) zt;
 
 	UNUSED(zone);
 	UNUSED(task);
 
-	*done = true;
+	atomic_store(done, true);
 	isc_app_shutdown();
 	return (ISC_R_SUCCESS);
 }
 
 static isc_result_t
 all_done(void *arg) {
-	bool *done = (bool *) arg;
+	atomic_bool *done = (atomic_bool *) arg;
 
-	*done = true;
+	atomic_store(done, true);
 	isc_app_shutdown();
 	return (ISC_R_SUCCESS);
 }
@@ -163,7 +164,7 @@ asyncload_zone(void **state) {
 	dns_db_t *db = NULL;
 	FILE* zonefile, *origfile;
 	char buf[4096];
-	bool done = false;
+	atomic_bool done = false;
 	int i = 0;
 	struct args args;
 
@@ -181,7 +182,7 @@ asyncload_zone(void **state) {
 	assert_non_null(view->zonetable);
 
 	assert_false(dns__zone_loadpending(zone));
-	assert_false(done);
+	assert_false(atomic_load(&done));
 	zonefile = fopen("./zone.data", "wb");
 	assert_non_null(zonefile);
 	origfile = fopen("./testdata/zt/zone1.db", "r+b");
@@ -202,7 +203,7 @@ asyncload_zone(void **state) {
 	isc_app_run();
 	while (dns__zone_loadpending(zone) && i++ < 5000)
 		dns_test_nap(1000);
-	assert_true(done);
+	assert_true(atomic_load(&done));
 	/* The zone should now be loaded; test it */
 	result = dns_zone_getdb(zone, &db);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -224,7 +225,7 @@ asyncload_zone(void **state) {
 
 	while (dns__zone_loadpending(zone) && i++ < 5000)
 		dns_test_nap(1000);
-	assert_true(done);
+	assert_true(atomic_load(&done));
 	/* The zone should now be loaded; test it */
 	result = dns_zone_getdb(zone, &db);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -240,7 +241,7 @@ asyncload_zone(void **state) {
 
 	while (dns__zone_loadpending(zone) && i++ < 5000)
 		dns_test_nap(1000);
-	assert_true(done);
+	assert_true(atomic_load(&done));
 	/* The zone should now be loaded; test it */
 	result = dns_zone_getdb(zone, &db);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -264,7 +265,7 @@ asyncload_zt(void **state) {
 	dns_view_t *view;
 	dns_zt_t *zt = NULL;
 	dns_db_t *db = NULL;
-	bool done = false;
+	atomic_bool done = false;
 	int i = 0;
 	struct args args;
 
@@ -301,16 +302,17 @@ asyncload_zt(void **state) {
 
 	assert_false(dns__zone_loadpending(zone1));
 	assert_false(dns__zone_loadpending(zone2));
-	assert_false(done);
+	assert_false(atomic_load(&done));
 
 	args.arg1 = zt;
 	args.arg2 = &done;
 	isc_app_onrun(dt_mctx, maintask, start_zt_asyncload, &args);
 
 	isc_app_run();
-	while (!done && i++ < 5000)
+	while (!atomic_load(&done) && i++ < 5000) {
 		dns_test_nap(1000);
-	assert_true(done);
+	}
+	assert_true(atomic_load(&done));
 
 	/* Both zones should now be loaded; test them */
 	result = dns_zone_getdb(zone1, &db);
