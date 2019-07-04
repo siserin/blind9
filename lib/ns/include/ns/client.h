@@ -57,8 +57,10 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include <isc/atomic.h>
 #include <isc/buffer.h>
 #include <isc/magic.h>
+#include <isc/refcount.h>
 #include <isc/stdtime.h>
 #include <isc/quota.h>
 #include <isc/queue.h>
@@ -219,7 +221,7 @@ typedef ISC_LIST(ns_client_t) client_list_t;
  */
 #define NS_FAILCACHE_CD		0x01
 
-LIBNS_EXTERNAL_DATA extern unsigned int ns_client_requests;
+LIBNS_EXTERNAL_DATA extern isc_refcount_t ns_client_requests;
 
 /***
  *** Functions

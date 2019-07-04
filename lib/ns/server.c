@@ -131,8 +131,6 @@ ns_server_detach(ns_server_t **sctxp) {
 	if (isc_refcount_decrement(&sctx->references) == 1) {
 		ns_altsecret_t *altsecret;
 
-		sctx->magic = 0;
-
 		while ((altsecret = ISC_LIST_HEAD(sctx->altsecrets)) != NULL) {
 			ISC_LIST_UNLINK(sctx->altsecrets, altsecret, link);
 			isc_mem_put(sctx->mctx, altsecret, sizeof(*altsecret));
@@ -179,6 +177,8 @@ ns_server_detach(ns_server_t **sctxp) {
 			isc_stats_detach(&sctx->udpoutstats6);
 		if (sctx->tcpoutstats6 != NULL)
 			isc_stats_detach(&sctx->tcpoutstats6);
+
+		sctx->magic = 0;
 
 		isc_mem_putanddetach(&sctx->mctx, sctx, sizeof(*sctx));
 	}

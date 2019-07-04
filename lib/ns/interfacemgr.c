@@ -1294,12 +1294,19 @@ ns_interfacemgr_listeningon(ns_interfacemgr_t *mgr,
 
 ns_interface_t *
 ns__interfacemgr_getif(ns_interfacemgr_t *mgr) {
+	ns_interface_t *head;
 	REQUIRE(NS_INTERFACEMGR_VALID(mgr));
-
-	return (ISC_LIST_HEAD(mgr->interfaces));
+	LOCK(&mgr->lock);
+	head = ISC_LIST_HEAD(mgr->interfaces);
+	UNLOCK(&mgr->lock);
+	return (head);
 }
 
 ns_interface_t *
 ns__interfacemgr_nextif(ns_interface_t *ifp) {
-	return (ISC_LIST_NEXT(ifp, link));
+	ns_interface_t *next;
+	LOCK(&ifp->lock);
+	next = ISC_LIST_NEXT(ifp, link);
+	UNLOCK(&ifp->lock);
+	return (next);
 }

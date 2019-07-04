@@ -63,7 +63,7 @@ ns_server_t *sctx = NULL;
 bool app_running = false;
 int ncpus;
 bool debug_mem_record = true;
-bool run_managers = false;
+atomic_bool run_managers = false;
 
 static bool dst_active = false;
 static bool test_running = false;
@@ -103,7 +103,7 @@ matchview(isc_netaddr_t *srcaddr, isc_netaddr_t *destaddr,
 /*
  * These need to be shut down from a running task.
  */
-bool shutdown_done = false;
+atomic_bool shutdown_done = false;
 static void
 shutdown_managers(isc_task_t *task, isc_event_t *event) {
 	UNUSED(task);
@@ -121,22 +121,22 @@ shutdown_managers(isc_task_t *task, isc_event_t *event) {
 		dns_dispatchmgr_destroy(&dispatchmgr);
 	}
 
-	shutdown_done = true;
-	run_managers = false;
+	atomic_store(&shutdown_done, true);
+	atomic_store(&run_managers, false);
 
 	isc_event_free(&event);
 }
 
 static void
 cleanup_managers(void) {
-	shutdown_done = false;
+	atomic_store(&shutdown_done, false);
 
 	if (maintask != NULL) {
 		isc_task_shutdown(maintask);
 		isc_task_destroy(&maintask);
 	}
 
-	while (run_managers && !shutdown_done) {
+	while (atomic_load(&run_managers) && !atomic_load(&shutdown_done)) {
 		/*
 		 * There's no straightforward way to determine
 		 * whether all the clients have shut down, so
@@ -213,7 +213,7 @@ create_managers(void) {
 	 */
 	ns_test_nap(500000);
 
-	run_managers = true;
+	atomic_store(&run_managers, true);
 
 	return (ISC_R_SUCCESS);
 
