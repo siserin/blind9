@@ -13,6 +13,7 @@
 #include <stdbool.h>
 
 #include <isc/aes.h>
+#include <isc/atomic.h>
 #include <isc/formatcheck.h>
 #include <isc/fuzz.h>
 #include <isc/hmac.h>
@@ -227,7 +228,7 @@ struct ns_clientmgr {
 #define NS_CLIENT_DROPPORT 1
 #endif
 
-LIBNS_EXTERNAL_DATA unsigned int ns_client_requests;
+LIBNS_EXTERNAL_DATA isc_refcount_t ns_client_requests;
 
 static void read_settimeout(ns_client_t *client, bool newconn);
 static void client_read(ns_client_t *client, bool newconn);
@@ -2403,7 +2404,7 @@ ns__client_request(isc_task_t *task, isc_event_t *event) {
 				       NS_CLIENTSTATE_READING :
 				       NS_CLIENTSTATE_READY));
 
-	ns_client_requests++;
+	isc_refcount_increment(&ns_client_requests);
 
 	if (event->ev_type == ISC_SOCKEVENT_RECVDONE) {
 		INSIST(!TCP_CLIENT(client));
