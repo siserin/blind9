@@ -26,6 +26,7 @@
 #include <isc/netaddr.h>
 #include <isc/print.h>
 #include <isc/random.h>
+#include <isc/refcount.h>
 #include <isc/stats.h>
 #include <isc/string.h>         /* Required for HP/UX (and others?) */
 #include <isc/task.h>
@@ -97,7 +98,6 @@ struct dns_adb {
 	unsigned int                    magic;
 
 	isc_mutex_t                     lock;
-	isc_mutex_t                     reflock; /*%< Covers irefcnt, erefcnt */
 	isc_mutex_t                     overmemlock; /*%< Covers overmem */
 	isc_mem_t                      *mctx;
 	dns_view_t                     *view;
@@ -109,8 +109,8 @@ struct dns_adb {
 	isc_interval_t                  tick_interval;
 	int                             next_cleanbucket;
 
-	unsigned int                    irefcnt;
-	unsigned int                    erefcnt;
+	isc_refcount_t			irefcnt;
+	isc_refcount_t			erefcnt;
 
 	isc_mutex_t                     mplock;
 	isc_mempool_t                  *nmp;    /*%< dns_adbname_t */
@@ -317,8 +317,6 @@ static void print_namehook_list(FILE *, const char *legend,
 static void print_find_list(FILE *, dns_adbname_t *);
 static void print_fetch_list(FILE *, dns_adbname_t *);
 static inline bool dec_adb_irefcnt(dns_adb_t *);
-static inline void inc_adb_irefcnt(dns_adb_t *);
-static inline void inc_adb_erefcnt(dns_adb_t *);
 static inline void inc_entry_refcnt(dns_adb_t *, dns_adbentry_t *,
 				    bool);
 static inline bool dec_entry_refcnt(dns_adb_t *, bool,
@@ -615,7 +613,7 @@ grow_entries(isc_task_t *task, isc_event_t *ev) {
 		ISC_LIST_INIT(newdeadentries[i]);
 		newentry_sd[i] = false;
 		newentry_refcnt[i] = 0;
-		adb->irefcnt++;
+		isc_refcount_increment(&adb->irefcnt);
 	}
 
 	/*
@@ -645,7 +643,7 @@ grow_entries(isc_task_t *task, isc_event_t *ev) {
 			e = ISC_LIST_HEAD(adb->deadentries[i]);
 		}
 		INSIST(adb->entry_refcnt[i] == 0);
-		adb->irefcnt--;
+		isc_refcount_decrement(&adb->irefcnt);
 	}
 
 	/*
@@ -770,7 +768,7 @@ grow_names(isc_task_t *task, isc_event_t *ev) {
 		ISC_LIST_INIT(newdeadnames[i]);
 		newname_sd[i] = false;
 		newname_refcnt[i] = 0;
-		adb->irefcnt++;
+		isc_refcount_increment(&adb->irefcnt);
 	}
 
 	/*
@@ -800,7 +798,7 @@ grow_names(isc_task_t *task, isc_event_t *ev) {
 			name = ISC_LIST_HEAD(adb->deadnames[i]);
 		}
 		INSIST(adb->name_refcnt[i] == 0);
-		adb->irefcnt--;
+		isc_refcount_decrement(&adb->irefcnt);
 	}
 
 	/*
@@ -1566,44 +1564,22 @@ check_exit(dns_adb_t *adb) {
 
 static inline bool
 dec_adb_irefcnt(dns_adb_t *adb) {
-	isc_event_t *event;
-	isc_task_t *etask;
-	bool result = false;
-
-	LOCK(&adb->reflock);
-
-	INSIST(adb->irefcnt > 0);
-	adb->irefcnt--;
-
-	if (adb->irefcnt == 0) {
-		event = ISC_LIST_HEAD(adb->whenshutdown);
+	if (isc_refcount_decrement(&adb->irefcnt) == 1) {
+		isc_event_t *event = ISC_LIST_HEAD(adb->whenshutdown);
 		while (event != NULL) {
+			isc_task_t *etask;
 			ISC_LIST_UNLINK(adb->whenshutdown, event, ev_link);
 			etask = event->ev_sender;
 			event->ev_sender = adb;
 			isc_task_sendanddetach(&etask, &event);
 			event = ISC_LIST_HEAD(adb->whenshutdown);
 		}
+		if (isc_refcount_current(&adb->erefcnt) == 0) {
+			return (true);
+		}
 	}
 
-	if (adb->irefcnt == 0 && adb->erefcnt == 0)
-		result = true;
-	UNLOCK(&adb->reflock);
-	return (result);
-}
-
-static inline void
-inc_adb_irefcnt(dns_adb_t *adb) {
-	LOCK(&adb->reflock);
-	adb->irefcnt++;
-	UNLOCK(&adb->reflock);
-}
-
-static inline void
-inc_adb_erefcnt(dns_adb_t *adb) {
-	LOCK(&adb->reflock);
-	adb->erefcnt++;
-	UNLOCK(&adb->reflock);
+	return (false);
 }
 
 static inline void
@@ -1699,7 +1675,7 @@ new_adbname(dns_adb_t *adb, const dns_name_t *dnsname) {
 	    adb->namescnt > (adb->nnames * 8))
 	{
 		isc_event_t *event = &adb->grownames;
-		inc_adb_irefcnt(adb);
+		isc_refcount_increment(&adb->irefcnt);
 		isc_task_send(adb->excl, &event);
 		adb->grownames_sent = true;
 	}
@@ -1845,7 +1821,7 @@ new_adbentry(dns_adb_t *adb) {
 	    adb->entriescnt > (adb->nentries * 8))
 	{
 		isc_event_t *event = &adb->growentries;
-		inc_adb_irefcnt(adb);
+		isc_refcount_increment(&adb->irefcnt);
 		isc_task_send(adb->excl, &event);
 		adb->growentries_sent = true;
 	}
@@ -1918,7 +1894,7 @@ new_adbfind(dns_adb_t *adb) {
 	ISC_EVENT_INIT(&h->event, sizeof(isc_event_t), 0, 0, 0, NULL, NULL,
 		       NULL, NULL, h);
 
-	inc_adb_irefcnt(adb);
+	isc_refcount_increment(&adb->irefcnt);
 	h->magic = DNS_ADBFIND_MAGIC;
 	return (h);
 }
@@ -2497,7 +2473,6 @@ destroy(dns_adb_t *adb) {
 	isc_mem_put(adb->mctx, adb->name_refcnt,
 		    sizeof(*adb->name_refcnt) * adb->nnames);
 
-	isc_mutex_destroy(&adb->reflock);
 	isc_mutex_destroy(&adb->lock);
 	isc_mutex_destroy(&adb->mplock);
 	isc_mutex_destroy(&adb->overmemlock);
@@ -2601,7 +2576,6 @@ dns_adb_create(isc_mem_t *mem, dns_view_t *view, isc_timermgr_t *timermgr,
 
 	isc_mutex_init(&adb->lock);
 	isc_mutex_init(&adb->mplock);
-	isc_mutex_init(&adb->reflock);
 	isc_mutex_init(&adb->overmemlock);
 	isc_mutex_init(&adb->entriescntlock);
 	isc_mutex_init(&adb->namescntlock);
@@ -2763,7 +2737,6 @@ dns_adb_create(isc_mem_t *mem, dns_view_t *view, isc_timermgr_t *timermgr,
 	isc_mutex_destroy(&adb->namescntlock);
 	isc_mutex_destroy(&adb->entriescntlock);
 	isc_mutex_destroy(&adb->overmemlock);
-	isc_mutex_destroy(&adb->reflock);
 	isc_mutex_destroy(&adb->mplock);
 	isc_mutex_destroy(&adb->lock);
 	if (adb->excl != NULL)
@@ -2779,28 +2752,25 @@ dns_adb_attach(dns_adb_t *adb, dns_adb_t **adbx) {
 	REQUIRE(DNS_ADB_VALID(adb));
 	REQUIRE(adbx != NULL && *adbx == NULL);
 
-	inc_adb_erefcnt(adb);
+	isc_refcount_increment(&adb->erefcnt);
 	*adbx = adb;
 }
 
 void
 dns_adb_detach(dns_adb_t **adbx) {
 	dns_adb_t *adb;
-	bool need_exit_check;
 
 	REQUIRE(adbx != NULL && DNS_ADB_VALID(*adbx));
 
 	adb = *adbx;
 	*adbx = NULL;
 
-	INSIST(adb->erefcnt > 0);
+	uint32_t erefcnt = isc_refcount_decrement(&adb->erefcnt);
+	INSIST(erefcnt >= 1);
 
-	LOCK(&adb->reflock);
-	adb->erefcnt--;
-	need_exit_check = (adb->erefcnt == 0 && adb->irefcnt == 0);
-	UNLOCK(&adb->reflock);
-
-	if (need_exit_check) {
+	if (erefcnt == 1 &&
+	    isc_refcount_current(&adb->irefcnt) == 0)
+	{
 		LOCK(&adb->lock);
 		INSIST(adb->shutting_down);
 		check_exit(adb);
@@ -2825,9 +2795,8 @@ dns_adb_whenshutdown(dns_adb_t *adb, isc_task_t *task, isc_event_t **eventp) {
 	*eventp = NULL;
 
 	LOCK(&adb->lock);
-	LOCK(&adb->reflock);
 
-	zeroirefcnt = (adb->irefcnt == 0);
+	zeroirefcnt = (isc_refcount_current(&adb->irefcnt) == 0);
 
 	if (adb->shutting_down && zeroirefcnt &&
 	    isc_mempool_getallocated(adb->ahmp) == 0) {
@@ -2843,7 +2812,6 @@ dns_adb_whenshutdown(dns_adb_t *adb, isc_task_t *task, isc_event_t **eventp) {
 		ISC_LIST_APPEND(adb->whenshutdown, event, ev_link);
 	}
 
-	UNLOCK(&adb->reflock);
 	UNLOCK(&adb->lock);
 }
 
@@ -2882,7 +2850,7 @@ dns_adb_shutdown(dns_adb_t *adb) {
 		/*
 		 * Isolate shutdown_names and shutdown_entries calls.
 		 */
-		inc_adb_irefcnt(adb);
+		isc_refcount_increment(&adb->irefcnt);
 		ISC_EVENT_INIT(&adb->cevent, sizeof(adb->cevent), 0, NULL,
 			       DNS_EVENT_ADBCONTROL, shutdown_stage2, adb,
 			       adb, NULL, NULL);
@@ -3406,7 +3374,9 @@ dump_adb(dns_adb_t *adb, FILE *f, bool debug, isc_stdtime_t now) {
 	fprintf(f, "; [plain success/timeout]\n;\n");
 	if (debug)
 		fprintf(f, "; addr %p, erefcnt %u, irefcnt %u, finds out %u\n",
-			adb, adb->erefcnt, adb->irefcnt,
+			adb,
+			isc_refcount_current(&adb->erefcnt),
+			isc_refcount_current(&adb->irefcnt),
 			isc_mempool_getallocated(adb->nhmp));
 
 /*
@@ -3437,7 +3407,7 @@ dump_adb(dns_adb_t *adb, FILE *f, bool debug, isc_stdtime_t now) {
 			continue;
 		}
 		if (debug) {
-			fprintf(f, "; bucket %u\n", i);
+			fprintf(f, "; bucket %d\n", i);
 		}
 		for (;
 		     name != NULL;
