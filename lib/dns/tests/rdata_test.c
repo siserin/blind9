@@ -2202,6 +2202,45 @@ wks(void **state) {
 		    dns_rdatatype_wks, sizeof(dns_rdata_in_wks_t));
 }
 
+static void
+httpssvc(void **state) {
+	text_ok_t text_ok[] = {
+		TEXT_INVALID("1 . \"\""),
+		TEXT_VALID("1 0 . \"\""),
+		TEXT_VALID("1 0 \"\" \"\""),
+		TEXT_VALID("1 2 svc.example.net. \"hq=\\\":8003\\\"\""),
+		TEXT_SENTINEL()
+	};
+	wire_ok_t wire_ok[] = {
+		/*
+		 * Too short
+		 */
+		WIRE_INVALID(0x00, 0x00, 0x00, 0x00, 0x00),
+		/*
+		 * Too extra data at end (svclen == 0x0000).
+		 */
+		WIRE_INVALID(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00),
+		/*
+		 * SvcDomain/SvcDomainLen mismatch.
+		 */
+		WIRE_INVALID(0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00),
+		/*
+		 * Svc/SvcLen mismatch.
+		 */
+		WIRE_INVALID(0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00),
+		/*
+		 * Minimal length record.
+		 */
+		WIRE_VALID(0x00, 0x00, 0x00, 0x00, 0x00, 0x00),
+		WIRE_SENTINEL()
+	};
+
+	UNUSED(state);
+
+	check_rdata(text_ok, wire_ok, NULL, false, dns_rdataclass_in,
+		    dns_rdatatype_httpssvc, sizeof(dns_rdata_in_httpssvc_t));
+}
+
 /*
  * ZONEMD tests.
  *
@@ -2436,17 +2475,16 @@ iszonecutauth(void **state) {
 int
 main(int argc, char **argv) {
 	const struct CMUnitTest tests[] = {
+		/* types */
 		cmocka_unit_test_setup_teardown(amtrelay, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(apl, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(atma, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(cdnskey, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(csync, _setup, _teardown),
-		cmocka_unit_test_setup_teardown(doa, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(dnskey, _setup, _teardown),
+		cmocka_unit_test_setup_teardown(doa, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(ds, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(eid, _setup, _teardown),
-		cmocka_unit_test_setup_teardown(edns_client_subnet,
-						_setup, _teardown),
 		cmocka_unit_test_setup_teardown(hip, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(isdn, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(key, _setup, _teardown),
@@ -2454,10 +2492,14 @@ main(int argc, char **argv) {
 		cmocka_unit_test_setup_teardown(nsec, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(nsec3, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(nxt, _setup, _teardown),
+		cmocka_unit_test_setup_teardown(rkey, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(sshfp, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(wks, _setup, _teardown),
-		cmocka_unit_test_setup_teardown(rkey, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(zonemd, _setup, _teardown),
+		cmocka_unit_test_setup_teardown(httpssvc, _setup, _teardown),
+		/* other tests */
+		cmocka_unit_test_setup_teardown(edns_client_subnet,
+						_setup, _teardown),
 		cmocka_unit_test_setup_teardown(atcname, NULL, NULL),
 		cmocka_unit_test_setup_teardown(atparent, NULL, NULL),
 		cmocka_unit_test_setup_teardown(iszonecutauth, NULL, NULL),
