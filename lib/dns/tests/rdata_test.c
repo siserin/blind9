@@ -2486,6 +2486,7 @@ main(int argc, char **argv) {
 		cmocka_unit_test_setup_teardown(ds, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(eid, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(hip, _setup, _teardown),
+		cmocka_unit_test_setup_teardown(httpssvc, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(isdn, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(key, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(nimloc, _setup, _teardown),
@@ -2496,7 +2497,6 @@ main(int argc, char **argv) {
 		cmocka_unit_test_setup_teardown(sshfp, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(wks, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(zonemd, _setup, _teardown),
-		cmocka_unit_test_setup_teardown(httpssvc, _setup, _teardown),
 		/* other tests */
 		cmocka_unit_test_setup_teardown(edns_client_subnet,
 						_setup, _teardown),
