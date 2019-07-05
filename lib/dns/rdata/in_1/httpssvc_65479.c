@@ -93,12 +93,12 @@ fromtext_in_httpssvc(ARGS_FROMTEXT) {
 	sb = *target;
 	RETERR(uint16_tobuffer(0, target));		/* dummy */
 #endif
-        RETERR(isc_lex_getmastertoken(lexer, &token,
-                                      isc_tokentype_qstring, false));
-        if (token.type != isc_tokentype_qstring &&
-            token.type != isc_tokentype_string)
-                RETERR(DNS_R_SYNTAX);
-        RETERR(multitxt_fromtext(&token.value.as_textregion, target));
+	RETERR(isc_lex_getmastertoken(lexer, &token,
+				      isc_tokentype_qstring, false));
+	if (token.type != isc_tokentype_qstring &&
+	    token.type != isc_tokentype_string)
+		RETERR(DNS_R_SYNTAX);
+	RETERR(multitxt_fromtext(&token.value.as_textregion, target));
 #ifdef SVCLEN
 	/* backfill length */
 	RETERR (uint16_tobuffer(target->used - sb.used - 2, &sb));
@@ -277,8 +277,8 @@ compare_in_httpssvc(ARGS_COMPARE) {
 	REQUIRE(rdata2->length != 0);
 
 	dns_rdata_toregion(rdata1, &region1);
-        dns_rdata_toregion(rdata2, &region2);
-        return (isc_region_compare(&region1, &region2));
+	dns_rdata_toregion(rdata2, &region2);
+	return (isc_region_compare(&region1, &region2));
 }
 
 static inline isc_result_t
@@ -352,8 +352,8 @@ tostruct_in_httpssvc(ARGS_TOSTRUCT) {
 	httpssvc->svclen = region.length;
 #endif
 	httpssvc->svc = mem_maybedup(mctx, region.base, region.length);
-        if (httpssvc->svc == NULL)
-                return (ISC_R_NOMEMORY);
+	if (httpssvc->svc == NULL)
+		return (ISC_R_NOMEMORY);
 
 	httpssvc->mctx = mctx;
 	return (ISC_R_SUCCESS);
