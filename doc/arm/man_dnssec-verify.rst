@@ -87,4 +87,4 @@ Options
 See Also
 ~~~~~~~~
 
-:manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual, RFC 4033.
+:manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual, :rfc:`4033`.

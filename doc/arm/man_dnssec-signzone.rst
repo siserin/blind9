@@ -193,7 +193,7 @@ Options
       Do not modify the SOA serial number.
 
    ``"increment"``
-      Increment the SOA serial number using RFC 1982 arithmetics.
+      Increment the SOA serial number using :rfc:`1982` arithmetics.
 
    ``"unixtime"``
       Set the SOA serial number to the number of seconds since epoch.
@@ -234,7 +234,7 @@ Options
    with cached copies of the old DNSKEY RRset. The ``-Q`` forces
    ``dnssec-signzone`` to remove signatures from keys that are no longer
    active. This enables ZSK rollover using the procedure described in
-   RFC 4641, section 4.2.1.1 ("Pre-Publish Key Rollover").
+   :rfc:`4641#4.2.1.1` ("Pre-Publish Key Rollover").
 
 **-R**
    Remove signatures from keys that are no longer published.
@@ -242,7 +242,7 @@ Options
    This option is similar to ``-Q``, except it forces
    ``dnssec-signzone`` to signatures from keys that are no longer
    published. This enables ZSK rollover using the procedure described in
-   RFC 4641, section 4.2.1.2 ("Double Signature Zone Signing Key
+   :rfc:`4641#4.2.1.2` ("Double Signature Zone Signing Key
    Rollover").
 
 **-S**
@@ -374,5 +374,5 @@ The private keys are assumed to be in the current directory.
 See Also
 ~~~~~~~~
 
-:manpage:`dnssec-keygen(8)`, BIND 9 Administrator Reference Manual, RFC 4033, RFC
-4641.
+:manpage:`dnssec-keygen(8)`, BIND 9 Administrator Reference Manual, :rfc:`4033`,
+:rfc:`4641`.

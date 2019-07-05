@@ -385,7 +385,7 @@ The following statements are supported:
  +-------------------------+----------------------------------------------------+
  | ``dnssec-keys``         | defines DNSSEC keys: if used with the              |
  |                         | ``initial-key`` keyword, keys are kept up to date  |
- |                         | using RFC 5011 trust anchor maintenance, and if    |
+ |                         | using :rfc:`5011` trust anchor maintenance, and if |
  |                         | used with ``static-key``, keys are permanent.      |
  |                         | Identical to ``managed-keys``, but has been added  |
  |                         | for improved clarity.                              |
@@ -1267,7 +1267,7 @@ default will be used.
 ``qname-minimization``
    This option controls QNAME minimization behaviour in the BIND
    resolver. When set to ``strict``, BIND will follow the QNAME
-   minimization algorithm to the letter, as specified in RFC 7816.
+   minimization algorithm to the letter, as specified in :rfc:`7816`.
    Setting this option to ``relaxed`` will cause BIND to fall back to
    normal (non-minimized) query mode when it receives either NXDOMAIN or
    other unexpected responses (e.g. SERVFAIL, improper zone cut,
@@ -1508,7 +1508,7 @@ default will be used.
    prefix. Multiple DNS64 prefixes can be defined.
 
    Compatible IPv6 prefixes have lengths of 32, 40, 48, 56, 64 and 96 as
-   per RFC 6052.
+   per :rfc:`6052`.
 
    Additionally a reverse IP6.ARPA zone will be created for the prefix
    to provide a mapping from the IP6.ARPA names to the corresponding
@@ -1804,7 +1804,7 @@ Boolean Options
    Setting this option to ``no`` reduces CPU usage on servers and may
    improve throughput. However, it increases response size, which may
    cause more queries to be processed using TCP; a server with
-   compression disabled is out of compliance with RFC 1123 Section
+   compression disabled is out of compliance with :rfc:`1123` Section
    6.1.3.2. The default is ``yes``.
 
 ``minimal-responses``
@@ -2168,8 +2168,8 @@ Boolean Options
    default is ``warn``. For answers received from the network
    (``response``) the default is ``ignore``.
 
-   The rules for legal hostnames and mail domains are derived from RFC
-   952 and RFC 821 as modified by RFC 1123.
+   The rules for legal hostnames and mail domains are derived from
+   :rfc:`952` and :rfc:`821` as modified by :rfc:`1123`.
 
    ``check-names`` applies to the owner names of A, AAAA and MX records.
    It also applies to the domain names in the RDATA of NS, SOA, MX, and
@@ -2190,7 +2190,7 @@ Boolean Options
 ``check-wildcard``
    This option is used to check for non-terminal wildcards. The use of
    non-terminal wildcards is almost always as a result of a failure to
-   understand the wildcard matching algorithm (RFC 1034). This option
+   understand the wildcard matching algorithm (:rfc:`1034`). This option
    affects master zones. The default (``yes``) is to check for
    non-terminal wildcards and issue a warning.
 
@@ -2483,7 +2483,7 @@ for details on how to specify IP address lists.
    Specifies a list of addresses which require responses to use
    case-insensitive compression. This ACL can be used when ``named``
    needs to work with clients that do not comply with the requirement in
-   RFC 1034 to use case-insensitive name comparisons when checking for
+   :rfc:`1034` to use case-insensitive name comparisons when checking for
    matching domain names.
 
    If left undefined, the ACL defaults to ``none``: case-insensitive
@@ -2562,8 +2562,8 @@ When
 is specified as the ``address_match_list`` for the ``listen-on-v6``
 option, the server does not bind a separate socket to each IPv6
 interface address as it does for IPv4 if the operating system has enough
-API support for IPv6 (specifically if it conforms to RFC 3493 and RFC
-3542). Instead, it listens on the IPv6 wildcard address. If the system
+API support for IPv6 (specifically if it conforms to :rfc:`3493` and
+:rfc:`3542`). Instead, it listens on the IPv6 wildcard address. If the system
 only has incomplete API support for IPv6, however, the behavior is the
 same as that for IPv4.
 
@@ -3663,7 +3663,7 @@ only). These are for zones that should normally be answered locally and
 which queries should not be sent to the Internet's root servers. The
 official servers which cover these namespaces return NXDOMAIN responses
 to these queries. In particular, these cover the reverse namespaces for
-addresses from RFC 1918, RFC 4193, RFC 5737 and RFC 6598. They also
+addresses from :rfc:`1918`, :rfc:`4193`, :rfc:`5737` and :rfc:`6598`. They also
 include the reverse namespace for IPv6 local address (locally assigned),
 IPv6 link local addresses, the IPv6 loopback address and the IPv6
 unknown address.
@@ -4093,8 +4093,8 @@ By default, the actions encoded in a response policy zone are applied
 only to queries that ask for recursion (RD=1). That default can be
 changed for a single policy zone or all response policy zones in a view
 with a ``recursive-only no`` clause. This feature is useful for serving
-the same zone files both inside and outside an RFC 1918 cloud and using
-RPZ to delete answers that would otherwise contain RFC 1918 values on
+the same zone files both inside and outside an :rfc:`1918` cloud and using
+RPZ to delete answers that would otherwise contain :rfc:`1918` values on
 the externally visible name server or view.
 
 Also by default, RPZ actions are applied only to DNS requests that
@@ -4497,7 +4497,7 @@ the ``options/view`` behavior in future releases.)
 
 The ``edns-version`` option sets the maximum EDNS VERSION that will be
 sent to the server(s) by the resolver. The actual EDNS version sent is
-still subject to normal EDNS version negotiation rules (see RFC 6891),
+still subject to normal EDNS version negotiation rules (see :rfc:`6891`),
 the maximum EDNS version supported by the server, and any other
 heuristics that indicate that a lower version should be sent. This
 option is intended to be used when a remote server reacts badly to a
@@ -4720,7 +4720,7 @@ root DNSSEC key up to date.
 Whereas ``static-key`` keys continue to be trusted until they are
 removed from ``named.conf``, an ``initial-key`` is only trusted *once*:
 for as long as it takes to load the managed key database and start the
-RFC 5011 key maintenance process.
+:rfc:`5011` key maintenance process.
 
 The first time ``named`` runs with an ``initial-key`` configured in
 ``named.conf``, it fetches the DNSKEY RRset directly from the zone apex,
@@ -4729,7 +4729,7 @@ DNSKEY RRset is validly signed, then it is used as the basis for a new
 managed keys database.
 
 From that point on, whenever ``named`` runs, it sees the ``initial-key``
-listed in ``dnssec-keys``, checks to make sure RFC 5011 key maintenance
+listed in ``dnssec-keys``, checks to make sure :rfc:`5011` key maintenance
 has already been initialized for the specified domain, and if so, it
 simply moves on. The key specified in the ``dnssec-keys`` statement is
 not used to validate answers; it is superseded by the key or keys stored
@@ -4738,7 +4738,7 @@ in the managed keys database.
 The next time ``named`` runs after an ``initial-key`` has been *removed*
 from the ``dnssec-keys`` statement (or changed to a ``static-key``), the
 corresponding zone will be removed from the managed keys database, and
-RFC 5011 key maintenance will no longer be used for that domain.
+:rfc:`5011` key maintenance will no longer be used for that domain.
 
 In the current implementation, the managed keys database is stored as a
 master-format zone file.
@@ -4975,7 +4975,7 @@ it is an ``in-view`` configuration. Its acceptable values include:
 
    Stub zones can also be used as a way of forcing the resolution of a given
    domain to use a particular set of authoritative servers. For example, the
-   caching name servers on a private network using RFC1918 addressing may be
+   caching name servers on a private network using :rfc:`1918` addressing may be
    configured with stub zones for ``10.in-addr.arpa`` to use a set of
    internal name servers as the authoritative servers for that domain.
 
@@ -5000,8 +5000,8 @@ it is an ``in-view`` configuration. Its acceptable values include:
 
    While any zone may be configured with this type, it is intended to be
    used to set up a fast local copy of the root zone, similar to the one
-   described in RFC 7706. Note, however, that mirror zones are not supposed
-   to augment the example configuration provided by RFC 7706 but rather to
+   described in :rfc:`7706`. Note, however, that mirror zones are not supposed
+   to augment the example configuration provided by :rfc:`7706` but rather to
    replace it altogether.
 
    A default list of primary servers for the IANA root zone is built into
@@ -5657,7 +5657,7 @@ The ruletype field has 16 values: ``name``, ``subdomain``, ``wildcard``,
  |                    |    sessions.                                            |
  +--------------------+---------------------------------------------------------+
  | ``6to4-self``      | This allows the name matching a 6to4 IPv6 prefix, as    |
- |                    | specified in RFC 3056, to be updated by any TCP         |
+ |                    | specified in :rfc:`3056`, to be updated by any TCP      |
  |                    | connection from either the 6to4 network or from the     |
  |                    | corresponding IPv4 address. This is intended to allow   |
  |                    | NS or DNAME RRsets to be added to the ``ip6.arpa``      |
@@ -5773,9 +5773,9 @@ Zone File
 Types of Resource Records and When to Use Them
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This section, largely borrowed from RFC 1034, describes the concept of a
+This section, largely borrowed from :rfc:`1034`, describes the concept of a
 Resource Record (RR) and explains when each is used. Since the
-publication of RFC 1034, several new RRs have been identified and
+publication of :rfc:`1034`, several new RRs have been identified and
 implemented in the DNS. These are also included.
 
 Resource Records
@@ -5815,23 +5815,23 @@ The following are *types* of valid RRs:
 
  +-------------+---------------------------------------------------------+
  | A           | A host address. In the IN class, this is a 32-bit IP    |
- |             | address. Described in RFC 1035.                         |
+ |             | address. Described in :rfc:`1035`.                      |
  +-------------+---------------------------------------------------------+
- | AAAA        | IPv6 address. Described in RFC 1886.                    |
+ | AAAA        | IPv6 address. Described in :rfc:`1886`.                 |
  +-------------+---------------------------------------------------------+
  | A6          | IPv6 address. This can be a partial address (a suffix)  |
  |             | and an indirection to the name where the rest of the    |
  |             | address (the prefix) can be found. Experimental.        |
- |             | Described in RFC 2874.                                  |
+ |             | Described in :rfc:`2874`.                               |
  +-------------+---------------------------------------------------------+
  | AFSDB       | Location of AFS database servers. Experimental.         |
- |             | Described in RFC 1183.                                  |
+ |             | Described in :rfc:`1183`.                               |
  +-------------+---------------------------------------------------------+
  | AMTRELAY    | Automatic Multicast Tunneling Relay discovery record.   |
  |             | Work in progress draft-ietf-mboned-driad-amt-discovery. |
  +-------------+---------------------------------------------------------+
- | APL         | Address prefix list. Experimental. Described in RFC     |
- |             | 3123.                                                   |
+ | APL         | Address prefix list. Experimental. Described in         |
+ |             | :rfc:`3123`.                                            |
  +-------------+---------------------------------------------------------+
  | ATMA        | ATM Address.                                            |
  +-------------+---------------------------------------------------------+
@@ -5839,7 +5839,7 @@ The following are *types* of valid RRs:
  +-------------+---------------------------------------------------------+
  | CAA         | Identifies which Certificate Authorities can issue      |
  |             | certificates for this domain and what rules they need   |
- |             | to follow when doing so. Defined in RFC 6844.           |
+ |             | to follow when doing so. Defined in :rfc:`6844`.        |
  +-------------+---------------------------------------------------------+
  | CDNSKEY     | Identifies which DNSKEY records should be published as  |
  |             | DS records in the parent zone.                          |
@@ -5847,75 +5847,76 @@ The following are *types* of valid RRs:
  | CDS         | Contains the set of DS records that should be published |
  |             | by the parent zone.                                     |
  +-------------+---------------------------------------------------------+
- | CERT        | Holds a digital certificate. Described in RFC 2538.     |
+ | CERT        | Holds a digital certificate. Described in :rfc:`2538`.  |
  +-------------+---------------------------------------------------------+
  | CNAME       | Identifies the canonical name of an alias. Described in |
- |             | RFC 1035.                                               |
+ |             | :rfc:`1035`.                                            |
  +-------------+---------------------------------------------------------+
  | CSYNC       | Child-to-Parent Synchronization in DNS as described in  |
- |             | RFC 7477.                                               |
+ |             | :rfc:`7477`.                                            |
  +-------------+---------------------------------------------------------+
  | DHCID       | Is used for identifying which DHCP client is associated |
- |             | with this name. Described in RFC 4701.                  |
+ |             | with this name. Described in :rfc:`4701`.               |
  +-------------+---------------------------------------------------------+
  | DLV         | A DNS Look-aside Validation record which contains the   |
  |             | records that are used as trust anchors for zones in a   |
- |             | DLV namespace. Described in RFC 4431.                   |
+ |             | DLV namespace. Described in :rfc:`4431`.                |
  +-------------+---------------------------------------------------------+
  | DNAME       | Replaces the domain name specified with another name to |
  |             | be looked up, effectively aliasing an entire subtree of |
  |             | the domain name space rather than a single record as in |
- |             | the case of the CNAME RR. Described in RFC 2672.        |
+ |             | the case of the CNAME RR. Described in :rfc:`2672`.     |
  +-------------+---------------------------------------------------------+
  | DNSKEY      | Stores a public key associated with a signed DNS zone.  |
- |             | Described in RFC 4034.                                  |
+ |             | Described in :rfc:`4034`.                               |
  +-------------+---------------------------------------------------------+
  | DOA         | Implements the Digital Object Architecture over DNS.    |
  |             | Experimental.                                           |
  +-------------+---------------------------------------------------------+
  | DS          | Stores the hash of a public key associated with a       |
- |             | signed DNS zone. Described in RFC 4034.                 |
+ |             | signed DNS zone. Described in :rfc:`4034`.              |
  +-------------+---------------------------------------------------------+
  | EID         | End Point Identifier.                                   |
  +-------------+---------------------------------------------------------+
- | EUI48       | A 48-bit EUI address. Described in RFC 7043.            |
+ | EUI48       | A 48-bit EUI address. Described in :rfc:`7043`.         |
  +-------------+---------------------------------------------------------+
- | EUI64       | A 64-bit EUI address. Described in RFC 7043.            |
+ | EUI64       | A 64-bit EUI address. Described in :rfc:`7043`.         |
  +-------------+---------------------------------------------------------+
  | GID         | Reserved.                                               |
  +-------------+---------------------------------------------------------+
  | GPOS        | Specifies the global position. Superseded by LOC.       |
  +-------------+---------------------------------------------------------+
  | HINFO       | Identifies the CPU and OS used by a host. Described in  |
- |             | RFC 1035.                                               |
+ |             | :rfc:`1035`.                                            |
  +-------------+---------------------------------------------------------+
- | HIP         | Host Identity Protocol Address. Described in RFC 5205.  |
+ | HIP         | Host Identity Protocol Address. Described in            |
+ |             | :rfc:`5205`.                                            |
  +-------------+---------------------------------------------------------+
  | IPSECKEY    | Provides a method for storing IPsec keying material in  |
- |             | DNS. Described in RFC 4025.                             |
+ |             | DNS. Described in :rfc:`4025`.                          |
  +-------------+---------------------------------------------------------+
  | ISDN        | Representation of ISDN addresses. Experimental.         |
- |             | Described in RFC 1183.                                  |
+ |             | Described in :rfc:`1183`.                               |
  +-------------+---------------------------------------------------------+
  | KEY         | Stores a public key associated with a DNS name. Used in |
  |             | original DNSSEC; replaced by DNSKEY in DNSSECbis, but   |
- |             | still used with SIG(0). Described in RFCs 2535 and      |
- |             | 2931.                                                   |
+ |             | still used with SIG(0). Described in :rfc:`2535` and    |
+ |             | :rfc:`2931`.                                            |
  +-------------+---------------------------------------------------------+
  | KX          | Identifies a key exchanger for this DNS name. Described |
- |             | in RFC 2230.                                            |
+ |             | in :rfc:`2230`.                                         |
  +-------------+---------------------------------------------------------+
  | L32         | Holds 32-bit Locator values for Identifier-Locator      |
- |             | Network Protocol. Described in RFC 6742.                |
+ |             | Network Protocol. Described in :rfc:`6742`.             |
  +-------------+---------------------------------------------------------+
  | L64         | Holds 64-bit Locator values for Identifier-Locator      |
- |             | Network Protocol. Described in RFC 6742.                |
+ |             | Network Protocol. Described in :rfc:`6742`.             |
  +-------------+---------------------------------------------------------+
- | LOC         | For storing GPS info. Described in RFC 1876.            |
+ | LOC         | For storing GPS info. Described in :rfc:`1876`.         |
  |             | Experimental.                                           |
  +-------------+---------------------------------------------------------+
- | LP          | Identifier-Locator Network Protocol. Described in RFC   |
- |             | 6742.                                                   |
+ | LP          | Identifier-Locator Network Protocol. Described in       |
+ |             | :rfc:`6742`.                                            |
  +-------------+---------------------------------------------------------+
  | MB          | Mail Box. Historical.                                   |
  +-------------+---------------------------------------------------------+
@@ -5931,29 +5932,30 @@ The following are *types* of valid RRs:
  +-------------+---------------------------------------------------------+
  | MX          | Identifies a mail exchange for the domain with a 16-bit |
  |             | preference value (lower is better) followed by the host |
- |             | name of the mail exchange. Described in RFC 974, RFC    |
- |             | 1035.                                                   |
+ |             | name of the mail exchange. Described in :rfc:`974`,     |
+ |             | :rfc:`1035`.                                            |
  +-------------+---------------------------------------------------------+
- | NAPTR       | Name authority pointer. Described in RFC 2915.          |
+ | NAPTR       | Name authority pointer. Described in :rfc:`2915`.       |
  +-------------+---------------------------------------------------------+
  | NID         | Holds values for Node Identifiers in Identifier-Locator |
- |             | Network Protocol. Described in RFC 6742.                |
+ |             | Network Protocol. Described in :rfc:`6742`.             |
  +-------------+---------------------------------------------------------+
  | NINFO       | Contains zone status information.                       |
  +-------------+---------------------------------------------------------+
  | NIMLOC      | Nimrod Locator.                                         |
  +-------------+---------------------------------------------------------+
- | NSAP        | A network service access point. Described in RFC 1706.  |
+ | NSAP        | A network service access point. Described in            |
+ |             | :rfc:`1706`.                                            |
  +-------------+---------------------------------------------------------+
  | NSAP-PTR    | Historical.                                             |
  +-------------+---------------------------------------------------------+
  | NS          | The authoritative name server for the domain. Described |
- |             | in RFC 1035.                                            |
+ |             | in :rfc:`1035`.                                         |
  +-------------+---------------------------------------------------------+
  | NSEC        | Used in DNSSECbis to securely indicate that RRs with an |
  |             | owner name in a certain name interval do not exist in a |
  |             | zone and indicate what RR types are present for an      |
- |             | existing name. Described in RFC 4034.                   |
+ |             | existing name. Described in :rfc:`4034`.                |
  +-------------+---------------------------------------------------------+
  | NSEC3       | Used in DNSSECbis to securely indicate that RRs with an |
  |             | owner name in a certain name interval do not exist in a |
@@ -5961,11 +5963,11 @@ The following are *types* of valid RRs:
  |             | existing name. NSEC3 differs from NSEC in that it       |
  |             | prevents zone enumeration but is more computationally   |
  |             | expensive on both the server and the client than NSEC.  |
- |             | Described in RFC 5155.                                  |
+ |             | Described in :rfc:`5155`.                               |
  +-------------+---------------------------------------------------------+
  | NSEC3PARAM  | Used in DNSSECbis to tell the authoritative server      |
  |             | which NSEC3 chains are available to use. Described in   |
- |             | RFC 5155.                                               |
+ |             | :rfc:`5155`.                                            |
  +-------------+---------------------------------------------------------+
  | NULL        | This is an opaque container.                            |
  +-------------+---------------------------------------------------------+
@@ -5973,56 +5975,56 @@ The following are *types* of valid RRs:
  |             | owner name in a certain name interval do not exist in a |
  |             | zone and indicate what RR types are present for an      |
  |             | existing name. Used in original DNSSEC; replaced by     |
- |             | NSEC in DNSSECbis. Described in RFC 2535.               |
+ |             | NSEC in DNSSECbis. Described in :rfc:`2535`.            |
  +-------------+---------------------------------------------------------+
  | OPENPGPKEY  | Used to hold an OPENPGPKEY.                             |
  +-------------+---------------------------------------------------------+
  | PTR         | A pointer to another part of the domain name space.     |
- |             | Described in RFC 1035.                                  |
+ |             | Described in :rfc:`1035`.                               |
  +-------------+---------------------------------------------------------+
- | PX          | Provides mappings between RFC 822 and X.400 addresses.  |
- |             | Described in RFC 2163.                                  |
+ | PX          | Provides mappings between :rfc:`822` and X.400          |
+ |             | addresses. Described in :rfc:`2163`.                    |
  +-------------+---------------------------------------------------------+
  | RKEY        | Resource key.                                           |
  +-------------+---------------------------------------------------------+
  | RP          | Information on persons responsible for the domain.      |
- |             | Experimental. Described in RFC 1183.                    |
+ |             | Experimental. Described in :rfc:`1183`.                 |
  +-------------+---------------------------------------------------------+
- | RRSIG       | Contains DNSSECbis signature data. Described in RFC     |
- |             | 4034.                                                   |
+ | RRSIG       | Contains DNSSECbis signature data. Described in         |
+ |             | :rfc:`4034`.                                            |
  +-------------+---------------------------------------------------------+
  | RT          | Route-through binding for hosts that do not have their  |
  |             | own direct wide area network addresses. Experimental.   |
- |             | Described in RFC 1183.                                  |
+ |             | Described in :rfc:`1183`.                               |
  +-------------+---------------------------------------------------------+
  | SIG         | Contains DNSSEC signature data. Used in original        |
  |             | DNSSEC; replaced by RRSIG in DNSSECbis, but still used  |
- |             | for SIG(0). Described in RFCs 2535 and 2931.            |
+ |             | for SIG(0). Described in :rfc:`2535` and :rfc:`2931`.   |
  +-------------+---------------------------------------------------------+
  | SINK        | The kitchen sink record.                                |
  +-------------+---------------------------------------------------------+
  | SMIMEA      | The S/MIME Security Certificate Association.            |
  +-------------+---------------------------------------------------------+
  | SOA         | Identifies the start of a zone of authority. Described  |
- |             | in RFC 1035.                                            |
+ |             | in :rfc:`1035`.                                         |
  +-------------+---------------------------------------------------------+
  | SPF         | Contains the Sender Policy Framework information for a  |
- |             | given email domain. Described in RFC 4408.              |
+ |             | given email domain. Described in :rfc:`4408`.           |
  +-------------+---------------------------------------------------------+
  | SRV         | Information about well known network services (replaces |
- |             | WKS). Described in RFC 2782.                            |
+ |             | WKS). Described in :rfc:`2782`.                         |
  +-------------+---------------------------------------------------------+
  | SSHFP       | Provides a way to securely publish a secure shell key's |
- |             | fingerprint. Described in RFC 4255.                     |
+ |             | fingerprint. Described in :rfc:`4255`.                  |
  +-------------+---------------------------------------------------------+
  | TA          | Trust Anchor. Experimental.                             |
  +-------------+---------------------------------------------------------+
  | TALINK      | Trust Anchor Link. Experimental.                        |
  +-------------+---------------------------------------------------------+
  | TLSA        | Transport Layer Security Certificate Association.       |
- |             | Described in RFC 6698.                                  |
+ |             | Described in :rfc:`6698`.                               |
  +-------------+---------------------------------------------------------+
- | TXT         | Text records. Described in RFC 1035.                    |
+ | TXT         | Text records. Described in :rfc:`1035`.                 |
  +-------------+---------------------------------------------------------+
  | UID         | Reserved.                                               |
  +-------------+---------------------------------------------------------+
@@ -6030,13 +6032,13 @@ The following are *types* of valid RRs:
  +-------------+---------------------------------------------------------+
  | UNSPEC      | Reserved. Historical.                                   |
  +-------------+---------------------------------------------------------+
- | URI         | Holds a URI. Described in RFC 7553.                     |
+ | URI         | Holds a URI. Described in :rfc:`7553`.                  |
  +-------------+---------------------------------------------------------+
  | WKS         | Information about which well known network services,    |
  |             | such as SMTP, that a domain supports. Historical.       |
  +-------------+---------------------------------------------------------+
  | X25         | Representation of X.25 network addresses. Experimental. |
- |             | Described in RFC 1183.                                  |
+ |             | Described in :rfc:`1183`.                               |
  +-------------+---------------------------------------------------------+
  | ZONEMD      | Zone Message Digest. Work in progress                   |
  |             | draft-wessels-dns-zone-digest.                          |
@@ -6089,7 +6091,7 @@ Textual expression of RRs
 
 RRs are represented in binary form in the packets of the DNS protocol,
 and are usually represented in highly encoded form when stored in a name
-server or resolver. In the examples provided in RFC 1034, a style
+server or resolver. In the examples provided in :rfc:`1034`, a style
 similar to that used in master files was employed in order to show the
 contents of RRs. In this format, most RRs are shown on a single line,
 although continuation lines are possible using parentheses.
@@ -6250,7 +6252,7 @@ records if the machine has more than one name. For example, in the
 Other Zone File Directives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Master File Format was initially defined in RFC 1035 and has
+The Master File Format was initially defined in :rfc:`1035` and has
 subsequently been extended. While the Master File Format itself is class
 independent all records in a Master File must be of the same class.
 
@@ -6306,10 +6308,10 @@ prior to the ``$INCLUDE`` once the file has been read.
 
    **Note**
 
-   RFC 1035 specifies that the current origin should be restored after
+   :rfc:`1035` specifies that the current origin should be restored after
    an ``$INCLUDE``, but it is silent on whether the current domain name
    should also be restored. BIND 9 restores both of them. This could be
-   construed as a deviation from RFC 1035, a feature, or both.
+   construed as a deviation from :rfc:`1035`, a feature, or both.
 
 .. _ttl_directive:
 
@@ -6321,7 +6323,7 @@ Syntax: ``$TTL`` default-ttl [comment]
 Set the default Time To Live (TTL) for subsequent records with undefined
 TTLs. Valid TTLs are of the range 0-2147483647 seconds.
 
-``$TTL`` is defined in RFC 2308.
+``$TTL`` is defined in :rfc:`2308`.
 
 .. _generate_directive:
 
@@ -6333,7 +6335,7 @@ Syntax: ``$GENERATE`` range lhs [ttl] [class] type rhs [comment]
 ``$GENERATE`` is used to create a series of resource records that only
 differ from each other by an iterator. ``$GENERATE`` can be used to
 easily generate the sets of records required to support sub /24 reverse
-delegations described in RFC 2317: Classless IN-ADDR.ARPA delegation.
+delegations described in :rfc:`2317`: Classless IN-ADDR.ARPA delegation.
 
 ::
 

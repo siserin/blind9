@@ -74,7 +74,7 @@ Known Defects/Restrictions
       $ cd lib/export
       $ make
 
--  RFC 5011 is not supported in the validating stub resolver of the
+-  :rfc:`5011` is not supported in the validating stub resolver of the
    export library. In fact, it is not clear whether it should: trust
    anchors would be a system-wide configuration which would be managed
    by an administrator, while the stub resolver will be used by ordinary
@@ -280,7 +280,7 @@ nsprobe: domain/name server checker in terms of RFC 4074
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Checks a set of domains to see the name servers of the domains behave
-correctly in terms of RFC 4074. This is included in the set of sample
+correctly in terms of :rfc:`4074`. This is included in the set of sample
 programs to show how the export library can be used in a DNS-related
 application.
 

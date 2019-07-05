@@ -24,7 +24,7 @@ Description
 ~~~~~~~~~~~
 
 ``nsupdate`` is used to submit Dynamic DNS Update requests as defined in
-RFC 2136 to a name server. This allows resource records to be added or
+:rfc:`2136` to a name server. This allows resource records to be added or
 removed from a zone without manually editing the zone file. A single
 update request can contain requests to add or remove more than one
 resource record.
@@ -39,9 +39,9 @@ zone's master server. This is identified by the MNAME field of the
 zone's SOA record.
 
 Transaction signatures can be used to authenticate the Dynamic DNS
-updates. These use the TSIG resource record type described in RFC 2845
-or the SIG(0) record described in RFC 2535 and RFC 2931 or GSS-TSIG as
-described in RFC 3645.
+updates. These use the TSIG resource record type described in :rfc:`2845`
+or the SIG(0) record described in :rfc:`2535` and :rfc:`2931` or GSS-TSIG as
+described in :rfc:`3645`.
 
 TSIG relies on a shared secret that should only be known to ``nsupdate``
 and the name server. For instance, suitable ``key`` and ``server``
@@ -320,9 +320,9 @@ The prerequisite condition gets the name server to check that there are
 no resource records of any type for ``nickname.example.com``. If there
 are, the update request fails. If this name does not exist, a CNAME for
 it is added. This ensures that when the CNAME is added, it cannot
-conflict with the long-standing rule in RFC 1034 that a name must not
+conflict with the long-standing rule in :rfc:`1034` that a name must not
 exist as any other record type if it exists as a CNAME. (The rule has
-been updated for DNSSEC in RFC 2535 to allow CNAMEs to have RRSIG,
+been updated for DNSSEC in :rfc:`2535` to allow CNAMEs to have RRSIG,
 DNSKEY and NSEC records.)
 
 Files
@@ -343,7 +343,7 @@ Files
 See Also
 ~~~~~~~~
 
-RFC 2136, RFC 3007, RFC 2104, RFC 2845, RFC 1034, RFC 2535, RFC 2931,
+:rfc:`2136`, :rfc:`3007`, :rfc:`2104`, :rfc:`2845`, :rfc:`1034`, :rfc:`2535`, :rfc:`2931`,
 :manpage:`named(8)`, :manpage:`ddns-confgen(8)`, :manpage:`dnssec-keygen(8)`.
 
 Bugs

@@ -1,10 +1,10 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
@@ -48,8 +48,8 @@ Supported Platforms
 -------------------
 
 To build on UNIX-like systems, BIND requires support for POSIX.1c
-threads (IEEE Std 1003.1c-1995), the Advanced Sockets API for IPv6 (RFC
-3542), and standard atomic operations provided by the C compiler.
+threads (IEEE Std 1003.1c-1995), the Advanced Sockets API for IPv6
+(:rfc:`3542`), and standard atomic operations provided by the C compiler.
 
 The OpenSSL cryptography library must be available for the target
 platform. A PKCS#11 provider can be used instead for Public Key

@@ -143,5 +143,5 @@ See Also
 ~~~~~~~~
 
 :manpage:`dnssec-keygen(8)`, :manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual,
-RFC 3658 (DS RRs), RFC 4431 (DLV RRs), RFC 4509 (SHA-256 for DS RRs),
-RFC 6605 (SHA-384 for DS RRs), RFC 7344 (CDS and CDNSKEY RRs).
+:rfc:`3658` (DS RRs), :rfc:`4431` (DLV RRs), :rfc:`4509` (SHA-256 for DS RRs),
+:rfc:`6605` (SHA-384 for DS RRs), :rfc:`7344` (CDS and CDNSKEY RRs).

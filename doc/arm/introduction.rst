@@ -160,7 +160,7 @@ domain, the rest of which could be delegated to other name servers.
 Every name in the DNS tree is a *domain*, even if it is *terminal*, that
 is, has no *subdomains*. Every subdomain is a domain and every domain
 except the root is also a subdomain. The terminology is not intuitive
-and we suggest that you read RFCs 1033, 1034 and 1035 to gain a complete
+and we suggest that you read :rfc:`1033`, :rfc:`1034` and :rfc:`1035` to gain a complete
 understanding of this difficult and subtle topic.
 
 Though BIND is called a "domain name server", it deals primarily in

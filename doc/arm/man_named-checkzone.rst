@@ -181,7 +181,7 @@ Options
 **-W** mode
    Specify whether to check for non-terminal wildcards. Non-terminal
    wildcards are almost always the result of a failure to understand the
-   wildcard matching algorithm (RFC 1034). Possible modes are ``"warn"``
+   wildcard matching algorithm (:rfc:`1034`). Possible modes are ``"warn"``
    (default) and ``"ignore"``.
 
 zonename
@@ -199,5 +199,5 @@ and 0 otherwise.
 See Also
 ~~~~~~~~
 
-:manpage:`named(8)`, :manpage:`named-checkconf(8)`, RFC 1035, BIND 9 Administrator Reference
+:manpage:`named(8)`, :manpage:`named-checkconf(8)`, :rfc:`1035`, BIND 9 Administrator Reference
 Manual.

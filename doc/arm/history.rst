@@ -1,10 +1,10 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
@@ -14,14 +14,14 @@ A Brief History of the DNS and BIND
 ===================================
 
 Although the "official" beginning of the Domain Name System occurred in
-1984 with the publication of RFC 920, the core of the new system was
-described in 1983 in RFCs 882 and 883. From 1984 to 1987, the ARPAnet
+1984 with the publication of :rfc:`920`, the core of the new system was
+described in 1983 in :rfc:`882` and :rfc:`883`. From 1984 to 1987, the ARPAnet
 (the precursor to today's Internet) became a testbed of experimentation
 for developing the new naming/addressing scheme in a rapidly expanding,
 operational network environment. New RFCs were written and published in
 1987 that modified the original documents to incorporate improvements
-based on the working model. RFC 1034, "Domain Names-Concepts and
-Facilities", and RFC 1035, "Domain Names-Implementation and
+based on the working model. :rfc:`1034`, "Domain Names-Concepts and
+Facilities", and :rfc:`1035`, "Domain Names-Implementation and
 Specification" were published and became the standards upon which all
 DNS implementations are built.
 

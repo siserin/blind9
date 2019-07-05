@@ -271,7 +271,7 @@ server.
    to algorithm, currently only the strings "``hmac-md5``",
    "``hmac-sha1``", "``hmac-sha224``", "``hmac-sha256``",
    "``hmac-sha384``" and "``hmac-sha512``" have any meaning. The secret
-   is a Base64 encoded string as specified in RFC 3548.
+   is a Base64 encoded string as specified in :rfc:`3548`.
 
    The ``server`` statement associates a key defined using the ``key``
    statement with a server. The keyword ``server`` is followed by a host

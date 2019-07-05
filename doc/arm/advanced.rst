@@ -26,7 +26,7 @@ the zone is the current version and, if not, initiate a zone transfer.
 For more information about DNS ``NOTIFY``, see the description of the
 ``notify`` option in :ref:`boolean_options` and the
 description of the zone option ``also-notify`` in :ref:`zone_transfers`.
-The ``NOTIFY`` protocol is specified in RFC 1996.
+The ``NOTIFY`` protocol is specified in :rfc:`1996`.
 
 .. note::
 
@@ -42,7 +42,7 @@ Dynamic Update
 
 Dynamic Update is a method for adding, replacing or deleting records in
 a master server by sending it a special form of DNS messages. The format
-and meaning of these messages is specified in RFC 2136.
+and meaning of these messages is specified in :rfc:`2136`.
 
 Dynamic update is enabled by including an ``allow-update`` or an
 ``update-policy`` clause in the ``zone`` statement.
@@ -58,7 +58,7 @@ or alternatively by setting both the ``tkey-gssapi-credential`` and
 matched against the update policies for the zone, using the Kerberos
 principal as the signer for the request.
 
-Updating of secure zones (zones using DNSSEC) follows RFC 3007: RRSIG,
+Updating of secure zones (zones using DNSSEC) follows :rfc:`3007`: RRSIG,
 NSEC and NSEC3 records affected by updates are automatically regenerated
 by the server using an online zone key. Update authorization is based on
 transaction signatures and an explicit server policy.
@@ -116,7 +116,7 @@ Incremental Zone Transfers (IXFR)
 
 The incremental zone transfer (IXFR) protocol is a way for slave servers
 to transfer only changed data, instead of having to transfer the entire
-zone. The IXFR protocol is specified in RFC 1995. See :ref:`proposed_standards`.
+zone. The IXFR protocol is specified in :rfc:`1995`. See :ref:`proposed_standards`.
 
 When acting as a master, BIND 9 supports IXFR for those zones where the
 necessary change history information is available. These include master
@@ -151,8 +151,8 @@ delays and other annoyances, an organization may choose to use a Split
 DNS to present a consistent view of itself to the outside world.
 
 Another common reason for setting up a Split DNS system is to allow
-internal networks that are behind filters or in RFC 1918 space (reserved
-IP space, as documented in RFC 1918) to resolve DNS on the Internet.
+internal networks that are behind filters or in :rfc:`1918` space (reserved
+IP space, as documented in :rfc:`1918`) to resolve DNS on the Internet.
 Split DNS can also be used to allow mail from outside back in to the
 internal network.
 
@@ -362,7 +362,7 @@ TSIG
 ----
 
 TSIG (Transaction SIGnatures) is a mechanism for authenticating DNS
-messages, originally specified in RFC 2845. It allows DNS messages to be
+messages, originally specified in :rfc:`2845`. It allows DNS messages to be
 cryptographically signed using a shared secret. TSIG can be used in any
 DNS transaction, as a way to restrict access to certain server functions
 (e.g., recursive queries) to authorized clients when IP-based access
@@ -515,7 +515,7 @@ TKEY
 ----
 
 TKEY (Transaction KEY) is a mechanism for automatically negotiating a
-shared secret between two hosts, originally specified in RFC 2930.
+shared secret between two hosts, originally specified in :rfc:`2930`.
 
 There are several TKEY "modes" that specify how a key is to be generated
 or assigned. BIND 9 implements only one of these modes: Diffie-Hellman
@@ -545,7 +545,7 @@ SIG(0)
 ------
 
 BIND partially supports DNSSEC SIG(0) transaction signatures as
-specified in RFC 2535 and RFC 2931. SIG(0) uses public/private keys to
+specified in :rfc:`2535` and :rfc:`2931`. SIG(0) uses public/private keys to
 authenticate messages. Access control is performed in the same manner as
 TSIG keys; privileges can be granted or denied in ACL directives based
 on the key name.
@@ -565,8 +565,8 @@ DNSSEC
 ------
 
 Cryptographic authentication of DNS information is possible through the
-DNS Security (*DNSSEC-bis*) extensions, defined in RFC 4033, RFC 4034,
-and RFC 4035. This section describes the creation and use of DNSSEC
+DNS Security (*DNSSEC-bis*) extensions, defined in :rfc:`4033`, :rfc:`4034`,
+and :rfc:`4035`. This section describes the creation and use of DNSSEC
 signed zones.
 
 In order to set up a DNSSEC secure zone, there are a series of steps
@@ -663,7 +663,7 @@ To enable ``named`` to validate answers received from other servers, the
 
 When ``dnssec-validation`` is set to ``auto``, a trust anchor for the
 DNS root zone will automatically be used. This trust anchor is provided
-as part of BIND and is kept up to date using RFC 5011 key management.
+as part of BIND and is kept up to date using :rfc:`5011` key management.
 
 When ``dnssec-validation`` is set to ``yes``, DNSSEC validation will
 only occur if at least one trust anchor has been explicitly configured
@@ -682,7 +682,7 @@ that are used to form the first link in the cryptographic chain of
 trust. Keys configured with the keyword ``static-key`` are loaded
 directly into the table of trust anchors, and can only be changed by
 altering the configuration. Keys configured with ``initial-key`` are
-used to initialize RFC 5011 trust anchor maintenance, and will be kept
+used to initialize :rfc:`5011` trust anchor maintenance, and will be kept
 up to date automatically after the first time ``named`` runs.
 
 ``dnssec-keys`` is described in more detail later in this document.
@@ -796,7 +796,7 @@ BIND 9 fully supports all currently defined forms of IPv6 name to
 address and address to name lookups. It will also use IPv6 addresses to
 make queries when running on an IPv6 capable system.
 
-For forward lookups, BIND 9 supports only AAAA records. RFC 3363
+For forward lookups, BIND 9 supports only AAAA records. :rfc:`3363`
 deprecated the use of A6 records, and client-side support for A6 records
 was accordingly removed from BIND 9. However, authoritative BIND 9 name
 servers still load zone files containing A6 records correctly, answer
@@ -807,7 +807,7 @@ For IPv6 reverse lookups, BIND 9 supports the traditional "nibble"
 format used in the *ip6.arpa* domain, as well as the older, deprecated
 *ip6.int* domain. Older versions of BIND 9 supported the "binary label"
 (also known as "bitstring") format, but support of binary labels has
-been completely removed per RFC 3363. Many applications in BIND 9 do not
+been completely removed per :rfc:`3363`. Many applications in BIND 9 do not
 understand the binary label format at all any more, and will return an
 error if given. In particular, an authoritative BIND 9 name server will
 not load a zone file containing binary labels.

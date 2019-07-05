@@ -290,7 +290,7 @@ The local query options are:
    Sets the timeout between UDP query retries.
 
 ``+[no]unknownformat``
-   Print all RDATA in unknown RR type presentation format (RFC 3597).
+   Print all RDATA in unknown RR type presentation format (:rfc:`3597`).
    The default is to print RDATA for known types in the type's
    presentation format.
 
@@ -301,4 +301,4 @@ The local query options are:
 See Also
 ~~~~~~~~
 
-:manpage:`dig(1)`, RFC1035.
+:manpage:`dig(1)`, :rfc:`1035`.

@@ -43,4 +43,4 @@ and private type mnemonics respectively.
 See Also
 ~~~~~~~~
 
-RFC 1034, RFC 1035, :manpage:`named(8)`.
+:rfc:`1034`, :rfc:`1035`, :manpage:`named(8)`.

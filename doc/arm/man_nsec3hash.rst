@@ -59,4 +59,4 @@ Arguments
 See Also
 ~~~~~~~~
 
-BIND 9 Administrator Reference Manual, RFC 5155.
+BIND 9 Administrator Reference Manual, :rfc:`5155`.

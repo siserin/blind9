@@ -1,10 +1,10 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
@@ -173,7 +173,7 @@ BIND currently supports the following options:
    ::
 
            masters.catalog.example.    IN A 192.0.2.1
-          
+
 
    This option defines a master server for the member zones - it can be
    either an A or AAAA record. If multiple masters are set the order in
@@ -185,7 +185,7 @@ BIND currently supports the following options:
 
                label.masters.catalog.example.     IN A 192.0.2.2
                label.masters.catalog.example.     IN TXT "tsig_key_name"
-              
+
 
    This option defines a master server for the member zone with a TSIG
    key set. The TSIG key must be configured in the configuration file.
@@ -197,13 +197,13 @@ BIND currently supports the following options:
 
                allow-query.catalog.example.   IN APL 1:10.0.0.1/24
                allow-transfer.catalog.example.    IN APL !1:10.0.0.1/32 1:10.0.0.0/24
-              
+
 
    These options are the equivalents of ``allow-query`` and
    ``allow-transfer`` in a zone declaration in the ``named.conf``
    configuration file. The ACL is processed in order - if there's no
    match to any rule the default policy is to deny access. For the
-   syntax of the APL RR see RFC 3123
+   syntax of the APL RR see :rfc:`3123`
 
 A member zone is added by including a ``PTR`` resource record in the
 ``zones`` sub-domain of the catalog zone. The record label is a

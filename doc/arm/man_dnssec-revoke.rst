@@ -24,7 +24,7 @@ Description
 ~~~~~~~~~~~
 
 ``dnssec-revoke`` reads a DNSSEC key file, sets the REVOKED bit on the
-key as defined in RFC 5011, and creates a new pair of key files
+key as defined in :rfc:`5011`, and creates a new pair of key files
 containing the now-revoked key.
 
 Options
@@ -67,4 +67,4 @@ Options
 See Also
 ~~~~~~~~
 
-:manpage:`dnssec-keygen(8)`, BIND 9 Administrator Reference Manual, RFC 5011.
+:manpage:`dnssec-keygen(8)`, BIND 9 Administrator Reference Manual, :rfc:`5011`.

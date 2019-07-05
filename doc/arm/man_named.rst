@@ -24,8 +24,8 @@ Description
 ~~~~~~~~~~~
 
 ``named`` is a Domain Name System (DNS) server, part of the BIND 9
-distribution from ISC. For more information on the DNS, see RFCs 1033,
-1034, and 1035.
+distribution from ISC. For more information on the DNS, see :rfc:`1033`,
+:rfc:`1034`, and :rfc:`1035`.
 
 When invoked without arguments, ``named`` will read the default
 configuration file ``/etc/named.conf``, read any initial data, and
@@ -220,4 +220,4 @@ Files
 See Also
 ~~~~~~~~
 
-RFC 1033, RFC 1034, RFC 1035, :manpage:`named-checkconf(8)`, :manpage:`named-checkzone(8)`, :manpage:`rndc(8), :manpage:`named.conf(5)`, BIND 9 Administrator Reference Manual.
+:rfc:`1033`, :rfc:`1034`, :rfc:`1035`, :manpage:`named-checkconf(8)`, :manpage:`named-checkzone(8)`, :manpage:`rndc(8), :manpage:`named.conf(5)`, BIND 9 Administrator Reference Manual.

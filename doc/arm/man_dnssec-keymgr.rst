@@ -190,7 +190,7 @@ Remaining Work
    it's safe for the key to roll.
 
 -  Allow configuration of standby keys and use of the REVOKE bit, for
-   keys that use RFC 5011 semantics.
+   keys that use :rfc:`5011` semantics.
 
 See Also
 ~~~~~~~~

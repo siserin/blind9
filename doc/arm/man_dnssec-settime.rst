@@ -176,4 +176,4 @@ See Also
 ~~~~~~~~
 
 :manpage:`dnssec-keygen(8)`, :manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual,
-RFC 5011.
+:rfc:`5011`.

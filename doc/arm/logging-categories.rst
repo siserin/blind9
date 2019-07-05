@@ -1,10 +1,10 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
@@ -37,25 +37,25 @@
 +----------------------------+----------------------------------------------------+
 | ``edns-disabled``          | Log queries that have been forced to use plain DNS |
 |                            | due to timeouts. This is often due to the remote   |
-|                            | servers not being RFC 1034 compliant (not always   |
-|                            | returning FORMERR or similar to EDNS queries and   |
-|                            | other extensions to the DNS when they are not      |
-|                            | understood). In other words, this is targeted at   |
-|                            | servers that fail to respond to DNS queries that   |
-|                            | they don't understand.                             |
+|                            | servers not being :rfc:`1034` compliant (not       |
+|                            | always returning FORMERR or similar to EDNS        |
+|                            | queries and other extensions to the DNS when       |
+|                            | they are not understood). In other words, this     |
+|                            | is targeted at servers that fail to respond to DNS |
+|                            | queries that they don't understand.                |
 |                            |                                                    |
 |                            | Note: the log message can also be due to packet    |
-|                            | loss. Before reporting servers for non-RFC 1034    |
+|                            | loss. Before reporting servers for non-:rfc:`1034` |
 |                            | compliance they should be re-tested to determine   |
 |                            | the nature of the non-compliance. This testing     |
 |                            | should prevent or reduce the number of             |
 |                            | false-positive reports.                            |
 |                            |                                                    |
 |                            | Note: eventually ``named`` will have to stop       |
-|                            | treating such timeouts as due to RFC 1034 non      |
+|                            | treating such timeouts as due to :rfc:`1034` non   |
 |                            | compliance and start treating it as plain packet   |
 |                            | loss. Falsely classifying packet loss as due to    |
-|                            | RFC 1034 non compliance impacts on DNSSEC          |
+|                            | :rfc:`1034` non compliance impacts on DNSSEC       |
 |                            | validation which requires EDNS for the DNSSEC      |
 |                            | records to be returned.                            |
 +----------------------------+----------------------------------------------------+

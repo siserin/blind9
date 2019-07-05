@@ -22,9 +22,9 @@ Description
 ~~~~~~~~~~~
 
 ``dnssec-keygen`` generates keys for DNSSEC (Secure DNS), as defined in
-RFC 2535 and RFC 4034. It can also generate keys for use with TSIG
-(Transaction Signatures) as defined in RFC 2845, or TKEY (Transaction
-Key) as defined in RFC 2930.
+:rfc:`2535` and :rfc:`4034`. It can also generate keys for use with TSIG
+(Transaction Signatures) as defined in :rfc:`2845`, or TKEY (Transaction
+Key) as defined in :rfc:`2930`.
 
 The ``name`` of the key is specified on the command line. For DNSSEC
 keys, this must match the name of the zone for which the key is being
@@ -107,7 +107,7 @@ Options
 **-g** generator
    If generating a Diffie Hellman key, use this generator. Allowed
    values are 2 and 5. If no generator is specified, a known prime from
-   RFC 2539 will be used if possible; otherwise the default is 2.
+   :rfc:`2539` will be used if possible; otherwise the default is 2.
 
 **-h**
    Prints a short summary of the options and arguments to
@@ -136,7 +136,7 @@ Options
    Sets the protocol value for the generated key, for use with
    ``-T KEY``. The protocol is a number between 0 and 255. The default
    is 3 (DNSSEC). Other possible values for this argument are listed in
-   RFC 2535 and its successors.
+   :rfc:`2535` and its successors.
 
 **-q**
    Quiet mode: Suppresses unnecessary output, including progress
@@ -291,5 +291,5 @@ To generate a matching key-signing key, issue the command:
 See Also
 ~~~~~~~~
 
-:manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual, RFC 2539, RFC
-2845, RFC 4034.
+:manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual, :rfc:`2539`,
+:rfc:`2845`, :rfc:`4034`.

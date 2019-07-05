@@ -142,7 +142,7 @@ Options
 **-p** protocol
    Sets the protocol value for the key. The protocol is a number between
    0 and 255. The default is 3 (DNSSEC). Other possible values for this
-   argument are listed in RFC 2535 and its successors.
+   argument are listed in :rfc:`2535` and its successors.
 
 **-S** key
    Generate a key as an explicit successor to an existing key. The name,
@@ -168,7 +168,7 @@ Options
    Allows DNSSEC key files to be generated even if the key ID would
    collide with that of an existing key, in the event of either key
    being revoked. (This is only safe to use if you are sure you won't be
-   using RFC 5011 trust anchor maintenance with either of the keys
+   using :rfc:`5011` trust anchor maintenance with either of the keys
    involved.)
 
 Timing Options
@@ -262,4 +262,4 @@ See Also
 ~~~~~~~~
 
 :manpage:`dnssec-keygen(8)`, :manpage:`dnssec-signzone(8)`, BIND 9 Administrator Reference Manual,
-RFC 4034, The PKCS#11 URI Scheme (draft-pechanec-pkcs11uri-13).
+:rfc:`4034`, The PKCS#11 URI Scheme (draft-pechanec-pkcs11uri-13).

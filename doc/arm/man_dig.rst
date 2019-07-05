@@ -153,7 +153,7 @@ Options
 
    All resource record types can be expressed as "TYPEnn", where "nn" is
    the number of the type. If the resource record type is not supported
-   in BIND 9, the result will be displayed as described in RFC 3597.
+   in BIND 9, the result will be displayed as described in :rfc:`3597`.
 
 **-u**
    Print query times in microseconds instead of milliseconds.
@@ -533,7 +533,7 @@ abbreviation is unambiguous; for example, ``+cd`` is equivalent to
    hours, days and weeks. Implies +ttlid.
 
 ``+[no]unknownformat``
-   Print all RDATA in unknown RR type presentation format (RFC 3597).
+   Print all RDATA in unknown RR type presentation format (:rfc:`3597`).
    The default is to print RDATA for known types in the type's
    presentation format.
 
@@ -600,7 +600,7 @@ Files
 See Also
 ~~~~~~~~
 
-:manpage:`delv(1)`, :manpage:`host(1)`, :manpage:`named(8)`, :manpage:`dnssec-keygen(8)`, RFC 1035.
+:manpage:`delv(1)`, :manpage:`host(1)`, :manpage:`named(8)`, :manpage:`dnssec-keygen(8)`, :rfc:`1035`.
 
 Bugs
 ~~~~

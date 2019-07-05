@@ -210,8 +210,8 @@ Currently supported commands are:
    Reference Manual for more details.)
 
 ``managed-keys`` (*status* | *refresh* | *sync* | *destroy*) [*class* [*view*]]
-   Inspect and control the "managed-keys" database which handles RFC
-   5011 DNSSEC trust anchor maintenance. If a view is specified, these
+   Inspect and control the "managed-keys" database which handles
+   :rfc:`5011` DNSSEC trust anchor maintenance. If a view is specified, these
    commands are applied to that view; otherwise they are applied to all
    views.
 

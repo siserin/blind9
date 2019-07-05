@@ -107,7 +107,7 @@ Options
    Note: When reading the trust anchor file, ``delv`` treats
    ``managed-keys`` statements and ``trusted-keys`` statements
    identically. That is, for a managed key, it is the *initial* key that
-   is trusted; RFC 5011 key management is not supported. ``delv`` will
+   is trusted; :rfc:`5011` key management is not supported. ``delv`` will
    not consult the managed-keys database maintained by ``named``. This
    means that if either of the keys in ``/etc/bind.keys`` is revoked and
    rolled over, it will be necessary to update ``/etc/bind.keys`` to use
@@ -314,7 +314,7 @@ assign values to options like the timeout interval. They have the form
    use UDP unless a truncated response has been received.
 
 ``+[no]unknownformat``
-   Print all RDATA in unknown RR type presentation format (RFC 3597).
+   Print all RDATA in unknown RR type presentation format (:rfc:`3597`).
    The default is to print RDATA for known types in the type's
    presentation format.
 
@@ -328,4 +328,4 @@ Files
 See Also
 ~~~~~~~~
 
-:manpage:`dig(1)`, :manpage:`named(8)`, RFC4034, RFC4035, RFC4431, RFC5074, RFC5155.
+:manpage:`dig(1)`, :manpage:`named(8)`, :rfc:`4034`, :rfc:`4035`, :rfc:`4431`, :rfc:`5074`, :rfc:`5155`.
