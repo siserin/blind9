@@ -534,6 +534,29 @@ unit:asan:sid:amd64:
   dependencies:
     - asan:sid:amd64
 
+# Jobs for GCC builds with TSAN enabled on Debian Sid (amd64)
+
+tsan:sid:amd64:
+  variables:
+    CC: gcc
+    CFLAGS: "-Wall -Wextra -O2 -g -fsanitize=thread -DISC_MEM_USE_INTERNAL_MALLOC=0"
+    LDFLAGS: "-fsanitize=thread"
+    EXTRA_CONFIGURE: "--with-libidn2 --enable-pthread-rwlock"
+  <<: *debian_sid_amd64_image
+  <<: *build_job
+
+#system:tsan:sid:amd64:
+#  <<: *debian_sid_amd64_image
+#  <<: *system_test_job
+#  dependencies:
+#    - tsan:sid:amd64
+
+unit:tsan:sid:amd64:
+  <<: *debian_sid_amd64_image
+  <<: *unit_test_job
+  dependencies:
+    - tsan:sid:amd64
+
 rwlock:sid:amd64:
   variables:
     CC: gcc
