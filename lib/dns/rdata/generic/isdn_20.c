@@ -26,6 +26,7 @@ fromtext_isdn(ARGS_FROMTEXT) {
 	UNUSED(rdclass);
 	UNUSED(origin);
 	UNUSED(options);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	/* ISDN-address */

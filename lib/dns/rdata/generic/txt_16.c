@@ -23,6 +23,7 @@ generic_fromtext_txt(ARGS_FROMTEXT) {
 	UNUSED(rdclass);
 	UNUSED(origin);
 	UNUSED(options);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	strings = 0;
@@ -87,8 +88,7 @@ fromtext_txt(ARGS_FROMTEXT) {
 
 	REQUIRE(type == dns_rdatatype_txt);
 
-	return (generic_fromtext_txt(rdclass, type, lexer, origin, options,
-				     target, callbacks));
+	return (generic_fromtext_txt(CALL_FROMTEXT));
 }
 
 static inline isc_result_t

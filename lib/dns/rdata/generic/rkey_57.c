@@ -19,8 +19,7 @@ fromtext_rkey(ARGS_FROMTEXT) {
 
 	REQUIRE(type == dns_rdatatype_rkey);
 
-	return (generic_fromtext_key(rdclass, type, lexer, origin,
-				     options, target, callbacks));
+	return (generic_fromtext_key(CALL_FROMTEXT));
 }
 
 static inline isc_result_t

@@ -30,6 +30,7 @@ fromtext_any_tsig(ARGS_FROMTEXT) {
 
 	UNUSED(type);
 	UNUSED(rdclass);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	/*

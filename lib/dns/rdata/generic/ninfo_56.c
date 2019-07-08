@@ -23,10 +23,10 @@ fromtext_ninfo(ARGS_FROMTEXT) {
 	UNUSED(rdclass);
 	UNUSED(origin);
 	UNUSED(options);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
-	return (generic_fromtext_txt(rdclass, type, lexer, origin, options,
-				     target, callbacks));
+	return (generic_fromtext_txt(CALL_FROMTEXT));
 }
 
 static inline isc_result_t

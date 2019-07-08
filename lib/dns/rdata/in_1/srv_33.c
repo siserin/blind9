@@ -28,6 +28,7 @@ fromtext_in_srv(ARGS_FROMTEXT) {
 
 	UNUSED(type);
 	UNUSED(rdclass);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	/*

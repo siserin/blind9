@@ -27,6 +27,7 @@ fromtext_gpos(ARGS_FROMTEXT) {
 	UNUSED(rdclass);
 	UNUSED(origin);
 	UNUSED(options);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	for (i = 0; i < 3; i++) {

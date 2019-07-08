@@ -15,6 +15,10 @@
 typedef struct dns_rdata_timeout {
 	dns_rdatacommon_t	common;
 	isc_mem_t *		mctx;
+	dns_rdatatype_t		covers;
+	unsigned char		count;
+	unsigned char		type;
+	uint64_t		when;
 	uint16_t		length;
 	unsigned char *		data;
 } dns_rdata_timeout_t;

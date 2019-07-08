@@ -32,6 +32,7 @@ fromtext_nsec(ARGS_FROMTEXT) {
 
 	UNUSED(type);
 	UNUSED(rdclass);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	/*

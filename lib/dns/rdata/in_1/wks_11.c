@@ -91,6 +91,7 @@ fromtext_in_wks(ARGS_FROMTEXT) {
 	UNUSED(origin);
 	UNUSED(options);
 	UNUSED(rdclass);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	RUNTIME_CHECK(isc_once_do(&once, init_lock) == ISC_R_SUCCESS);

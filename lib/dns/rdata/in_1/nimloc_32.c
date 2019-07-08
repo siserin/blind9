@@ -26,6 +26,7 @@ fromtext_in_nimloc(ARGS_FROMTEXT) {
 	UNUSED(origin);
 	UNUSED(options);
 	UNUSED(rdclass);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	return (isc_hex_tobuffer(lexer, target, -2));

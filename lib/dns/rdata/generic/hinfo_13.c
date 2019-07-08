@@ -23,6 +23,7 @@ fromtext_hinfo(ARGS_FROMTEXT) {
 	UNUSED(rdclass);
 	UNUSED(origin);
 	UNUSED(options);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	REQUIRE(type == dns_rdatatype_hinfo);

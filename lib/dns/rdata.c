@@ -77,8 +77,11 @@
 
 #define ARGS_FROMTEXT	int rdclass, dns_rdatatype_t type, \
 			isc_lex_t *lexer, const dns_name_t *origin, \
-			unsigned int options, isc_buffer_t *target, \
-			dns_rdatacallbacks_t *callbacks
+			unsigned int options, isc_mem_t *mctx, \
+			isc_buffer_t *target, dns_rdatacallbacks_t *callbacks
+
+#define CALL_FROMTEXT	rdclass, type, lexer, origin, options, mctx, target, \
+			callbacks
 
 #define ARGS_TOTEXT	dns_rdata_t *rdata, dns_rdata_textctx_t *tctx, \
 			isc_buffer_t *target
@@ -155,6 +158,9 @@ buffer_empty(isc_buffer_t *source);
 
 static void
 buffer_fromregion(isc_buffer_t *buffer, isc_region_t *region);
+
+static isc_result_t
+uint64_tobuffer(uint64_t, isc_buffer_t *target);
 
 static isc_result_t
 uint32_tobuffer(uint32_t, isc_buffer_t *target);
@@ -969,7 +975,7 @@ dns_rdata_fromtext(dns_rdata_t *rdata, dns_rdataclass_t rdclass,
 	 * If not at end of line initially set error code.
 	 * Call callback via fromtext_error once if there was an error.
 	 */
-	do {
+	while ((options & DNS_RDATA_NOCHECKEOL) == 0) {
 		name = isc_lex_getsourcename(lexer);
 		line = isc_lex_getsourceline(lexer);
 		tresult = isc_lex_gettoken(lexer, lexoptions, &token);
@@ -998,7 +1004,7 @@ dns_rdata_fromtext(dns_rdata_t *rdata, dns_rdataclass_t rdclass,
 				fromtext_warneof(lexer, callbacks);
 			break;
 		}
-	} while (1);
+	}
 
 	length = isc_buffer_usedlength(target) - isc_buffer_usedlength(&st);
 	if (result == ISC_R_SUCCESS && length > DNS_RDATA_MAXLENGTH)
@@ -1726,6 +1732,17 @@ buffer_fromregion(isc_buffer_t *buffer, isc_region_t *region) {
 	isc_buffer_init(buffer, region->base, region->length);
 	isc_buffer_add(buffer, region->length);
 	isc_buffer_setactive(buffer, region->length);
+}
+
+static isc_result_t
+uint64_tobuffer(uint64_t value, isc_buffer_t *target) {
+	isc_region_t region;
+
+	isc_buffer_availableregion(target, &region);
+	if (region.length < 8)
+		return (ISC_R_NOSPACE);
+	isc_buffer_putuint64(target, value);
+	return (ISC_R_SUCCESS);
 }
 
 static isc_result_t

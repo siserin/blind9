@@ -21,8 +21,7 @@ fromtext_ta(ARGS_FROMTEXT) {
 
 	REQUIRE(type == dns_rdatatype_ta);
 
-	return (generic_fromtext_ds(rdclass, type, lexer, origin, options,
-				    target, callbacks));
+	return (generic_fromtext_ds(CALL_FROMTEXT));
 }
 
 static inline isc_result_t

@@ -24,6 +24,7 @@ fromtext_null(ARGS_FROMTEXT) {
 	UNUSED(origin);
 	UNUSED(options);
 	UNUSED(target);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	return (DNS_R_SYNTAX);

@@ -9,7 +9,7 @@
  * information regarding copyright ownership.
  */
 
-/* draft-pusateri-dnsop-update-timeout */
+/* draft-pusateri-dnsop-update-timeout-03 */
 
 #include <isc/time.h>
 
@@ -20,12 +20,14 @@
 
 static inline isc_result_t
 fromtext_timeout(ARGS_FROMTEXT) {
-	isc_time_t isc_time;
+	isc_result_t result;
 	isc_token_t token;
+	int64_t timeout;
 	unsigned int count;
-	unsigned int alg;
-	unsigned int timeouts = 0;
-	int64_t expire;
+	unsigned int method;
+	dns_rdatatype_t covers;
+	unsigned int i;
+	unsigned int rdlen;
 
 	REQUIRE(type == dns_rdatatype_timeout);
 
@@ -34,62 +36,93 @@ fromtext_timeout(ARGS_FROMTEXT) {
 	UNUSED(options);
 	UNUSED(callbacks);
 
-	do {
-		RETERR(isc_lex_getmastertoken(lexer, &token,
-					      isc_tokentype_number, true));
-		if (token.type == isc_tokentype_eol) {
-			break;
-		}
-		if (token.value.as_ulong > 0xffffU) {
+	/*
+	 * Type covered.
+	 */
+	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_string,
+				      false));
+	result = dns_rdatatype_fromtext(&covers, &token.value.as_textregion);
+	if (result != ISC_R_SUCCESS && result != ISC_R_NOTIMPLEMENTED) {
+		char *e;
+		i = strtoul(DNS_AS_STR(token), &e, 10);
+		if (i > 0xffffU)
 			RETTOK(ISC_R_RANGE);
-		}
-		count = token.value.as_ulong;
-		RETERR(uint16_tobuffer(token.value.as_ulong, target));
+		if (*e != 0)
+			RETTOK(result);
+		covers = (dns_rdatatype_t)i;
+	}
+	RETERR(uint16_tobuffer(covers, target));
 
-		RETERR(isc_lex_getmastertoken(lexer, &token,
-					       isc_tokentype_number, false));
-		if (token.value.as_ulong > 0xffffU)
-			RETTOK(ISC_R_RANGE);
-		alg = token.value.as_ulong;
-		RETERR(uint16_tobuffer(token.value.as_ulong, target));
+	/*
+	 * Count
+	 */
+	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_number,
+				      false));
+	if (token.value.as_ulong > 0xffU)
+		RETTOK(ISC_R_RANGE);
+	count = token.value.as_ulong;
+	RETERR(uint8_tobuffer(token.value.as_ulong, target));
 
-		if (alg == 0 && count != 0) {
-			RETTOK(DNS_R_SYNTAX);
-		}
+	/*
+	 * Method
+	 */
+	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_number,
+				      false));
+	if (token.value.as_ulong > 0xffU)
+		RETTOK(ISC_R_RANGE);
+	method = token.value.as_ulong;
+	RETERR(uint8_tobuffer(token.value.as_ulong, target));
 
-		RETERR(isc_lex_getmastertoken(lexer, &token,
-					      isc_tokentype_string, false));
-		RETERR(isc_time_ISO8601fromtext(&isc_time, DNS_AS_STR(token)));
-		if (isc_time_nanoseconds(&isc_time) != 0) {
-			RETTOK(DNS_R_SYNTAX);
-		}
-		expire = isc_time_seconds(&isc_time);
-		RETERR(uint32_tobuffer((uint32_t)(expire >> 32), target));
-		RETERR(uint32_tobuffer((uint32_t)(expire & 0xffffffffU),
-				       target));
+	/*
+	 * Timeout
+	 */
+	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_string,
+				      false));
+	RETTOK(dns_time64_fromtext(DNS_AS_STR(token), &timeout));
+	RETERR(uint64_tobuffer(timeout, target));
 
-		while (count-- > 0) {
-			switch (alg) {
-			case 1:
-				RETERR(isc_base64_tobuffer(lexer, target, 16));
-				break;
-			default:
-				RETERR(ISC_R_NOTIMPLEMENTED);
+	for (i = 0; i < count; i++ ) {
+		isc_buffer_t b = *target;
+		switch (method) {
+		case 0:
+			return (DNS_R_FORMERR);
+		case 1:
+			/*
+			 * Data Length
+			 */
+			RETERR(isc_lex_getmastertoken(lexer, &token,
+						      isc_tokentype_number,
+						      false));
+			if (token.value.as_ulong > 0xffffU) {
+				RETTOK(ISC_R_RANGE);
 			}
+			rdlen = token.value.as_ulong;
+			RETERR(uint16_tobuffer(token.value.as_ulong, target));
+			RETERR(dns_rdata_fromtext(NULL, rdclass, covers,
+						  lexer, origin,
+						  options|DNS_RDATA_NOCHECKEOL,
+						  mctx, target, callbacks));
+			/*
+			 * Sanity.
+			 */
+			if ((target->used - b.used - 2) != rdlen) {
+				RETERR(DNS_R_SYNTAX);
+			}
+			break;
+		default:
+			return (ISC_R_NOTIMPLEMENTED);
 		}
-		timeouts++;
-	} while (1);
+	}
 
-	return (timeouts > 0 ? ISC_R_SUCCESS : ISC_R_UNEXPECTEDEND);
+	return (ISC_R_SUCCESS);
 }
 
 static inline isc_result_t
 totext_timeout(ARGS_TOTEXT) {
 	isc_region_t sr;
-	isc_time_t isc_time;
+	dns_rdatatype_t covers;
 	unsigned int count;
-	unsigned int alg;
-	bool first = true;
+	unsigned int method;
 	char buf[sizeof("yyyy-mm-ddTHH:MM:SSZ")];
 	int64_t expire;
 
@@ -99,73 +132,82 @@ totext_timeout(ARGS_TOTEXT) {
 
 	dns_rdata_toregion(rdata, &sr);
 
-	while (sr.length != 0) {
-		count = uint16_fromregion(&sr);
-		isc_region_consume(&sr, 2);
-		snprintf(buf, sizeof(buf), "%u", count);
+	/*
+	 * Type covered.
+	 */
+	covers = uint16_fromregion(&sr);
+	isc_region_consume(&sr, 2);
+	/*
+	 * XXXAG We should have something like dns_rdatatype_isknown()
+	 * that does the right thing with type 0.
+	 */
+	if (dns_rdatatype_isknown(covers) && covers != 0) {
+		RETERR(dns_rdatatype_totext(covers, target));
+	} else {
+		snprintf(buf, sizeof(buf), "TYPE%u", covers);
 		RETERR(str_totext(buf, target));
-		RETERR(str_totext(" ", target));
-
-		alg = uint16_fromregion(&sr);
-		isc_region_consume(&sr, 2);
-		snprintf(buf, sizeof(buf), "%u", alg);
-		RETERR(str_totext(buf, target));
-		RETERR(str_totext(" ", target));
-
-		if (alg > 1) {
-			RETERR(ISC_R_NOTIMPLEMENTED);
-		}
-
-		expire = uint32_fromregion(&sr);
-		expire <<= 32;
-		expire += uint32_fromregion(&sr);
-		isc_region_consume(&sr, 8);
-
-		isc_time_set(&isc_time, expire, 0);
-		isc_time_formatISO8601(&isc_time, buf, sizeof(buf));
-		RETERR(str_totext(buf, target));
-		RETERR(str_totext(" ", target));
-
-		if (first && (count != 0 || sr.length != 0) &&
-		    (tctx->flags & DNS_STYLEFLAG_MULTILINE) != 0) {
-			RETERR(str_totext(" (", target));
-			RETERR(str_totext(tctx->linebreak, target));
-			first = false;
-		} else if (count != 0) {
-			RETERR(str_totext(tctx->linebreak, target));
-		}
-
-		while (count-- != 0) {
-			unsigned int length = sr.length;
-			unsigned int hashlen = 0;
-			switch (alg) {
-			case 1:
-				INSIST(sr.length >= 16);
-				hashlen = 16;
-				break;
-			default:
-				INSIST(0);
-			}
-			sr.length = hashlen;
-			if (tctx->width == 0)   /* No splitting */
-				RETERR(isc_base64_totext(&sr, 60, "", target));
-			else
-				RETERR(isc_base64_totext(&sr, tctx->width - 2,
-							 tctx->linebreak,
-							 target));
-			if (count != 0) {
-				RETERR(str_totext(tctx->linebreak, target));
-			}
-			sr.length = length;
-			isc_region_consume(&sr, hashlen);
-		}
-		if (sr.length != 0) {
-			RETERR(str_totext(tctx->linebreak, target));
-		}
 	}
+	RETERR(str_totext(" ", target));
 
-	if (!first) {
-		RETERR(str_totext(" )", target));
+	/*
+	 * Count
+	 */
+	count = uint8_fromregion(&sr);
+	isc_region_consume(&sr, 1);
+	snprintf(buf, sizeof(buf), "%u ", count);
+	RETERR(str_totext(buf, target));
+
+	/*
+	 * Method
+	 */
+	method = uint8_fromregion(&sr);
+	isc_region_consume(&sr, 1);
+	snprintf(buf, sizeof(buf), "%u ", method);
+	RETERR(str_totext(buf, target));
+
+	if (method != 0 && method != 1)
+		return (ISC_R_NOTIMPLEMENTED);
+
+	/*
+	 * Expire
+	 */
+	expire = uint32_fromregion(&sr);
+	isc_region_consume(&sr, 4);
+	expire <<= 32;
+	expire |= uint32_fromregion(&sr);
+	isc_region_consume(&sr, 4);
+	RETERR(dns_time64_totext(expire, target));
+
+	while (sr.length != 0) {
+		unsigned int rdlen, length;
+
+		INSIST(sr.length >= 2);
+		rdlen = uint16_fromregion(&sr);
+		isc_region_consume(&sr, 2);
+		snprintf(buf, sizeof(buf), " %u ", rdlen);
+		RETERR(str_totext(buf, target));
+
+		INSIST(sr.length >= rdlen);
+		length = sr.length;
+		sr.length = rdlen;
+
+		switch (method) {
+		case 1: {
+			dns_rdata_t this = DNS_RDATA_INIT;
+			dns_rdata_fromregion(&this, rdata->rdclass, covers,
+					     &sr);
+			RETERR(dns_rdata_tofmttext(&this, tctx->origin,
+						   tctx->flags, tctx->width,
+						   0xffffffff,
+						   tctx->linebreak,
+						   target));
+			break;
+			}
+		default:
+			INSIST(0);
+		}
+		sr.length = length;
+		isc_region_consume(&sr, rdlen);
 	}
 
 	return (ISC_R_SUCCESS);
@@ -174,8 +216,7 @@ totext_timeout(ARGS_TOTEXT) {
 static inline isc_result_t
 fromwire_timeout(ARGS_FROMWIRE) {
 	isc_region_t sr;
-	unsigned int count;
-	unsigned int alg;
+	unsigned int covers, count, method, i;
 
 	REQUIRE(type == dns_rdatatype_timeout);
 
@@ -183,47 +224,48 @@ fromwire_timeout(ARGS_FROMWIRE) {
 	UNUSED(dctx);
 	UNUSED(options);
 
-	/*
-	 * There must be at least one timout block.
-	 */
 	isc_buffer_activeregion(source, &sr);
 	if (sr.length < 12)
 		return (ISC_R_UNEXPECTEDEND);
 
-	while (sr.length != 0) {
-		if (sr.length < 12) {
+	isc_buffer_forward(source, 12);
+	RETERR(mem_tobuffer(target, sr.base, 12));
+
+	covers = uint16_fromregion(&sr);
+	isc_region_consume(&sr, 2);
+	count = uint8_fromregion(&sr);
+	isc_region_consume(&sr, 1);
+	method = uint8_fromregion(&sr);
+	isc_region_consume(&sr, 1);
+	/* expire */
+	isc_region_consume(&sr, 8);
+
+	for (i = 0; i < count; i++) {
+		unsigned int rdlen;
+		if (sr.length < 2)
 			return (ISC_R_UNEXPECTEDEND);
-		}
-		isc_buffer_forward(source, 8);
-		RETERR(mem_tobuffer(target, sr.base, 8));
-
-		count = uint16_fromregion(&sr);
+		RETERR(mem_tobuffer(target, sr.base, 2));
+		isc_buffer_forward(source, 2);
+		rdlen = uint16_fromregion(&sr);
 		isc_region_consume(&sr, 2);
-
-		alg = uint16_fromregion(&sr);
-		isc_region_consume(&sr, 2);
-
-		if (alg == 0 && count != 0) {
-			return (DNS_R_FORMERR);
-		}
-
-		isc_region_consume(&sr, 8);
-
-		while (count-- != 0) {
-			unsigned int hashlen = 0;
-			switch (alg) {
-			case 1:
-				hashlen = 16;
-				break;
-			default:
-				return (ISC_R_NOTIMPLEMENTED);
+		if (sr.length < rdlen)
+			return (ISC_R_UNEXPECTEDEND);
+		switch (method) {
+		case 1: {
+			isc_buffer_t b;
+			isc_buffer_init(&b, sr.base, rdlen);
+			isc_buffer_add(&b, rdlen);
+			isc_buffer_setactive(&b, rdlen);
+			RETERR(dns_rdata_fromwire(NULL, rdclass, covers,
+						  &b, dctx, options, target));
+			break;
 			}
-			if (sr.length < hashlen) {
-				return (ISC_R_UNEXPECTEDEND);
-			}
-			RETERR(mem_tobuffer(target, sr.base, hashlen));
-			isc_region_consume(&sr, hashlen);
+		default:
+			RETERR(mem_tobuffer(target, sr.base, rdlen));
+			break;
 		}
+		isc_buffer_forward(source, rdlen);
+		isc_region_consume(&sr, rdlen);
 	}
 
 	return (ISC_R_SUCCESS);
@@ -273,6 +315,11 @@ fromstruct_timeout(ARGS_FROMSTRUCT) {
 	UNUSED(type);
 	UNUSED(rdclass);
 
+	RETERR(uint16_tobuffer(timeout->covers, target));
+	RETERR(uint8_tobuffer(timeout->count, target));
+	RETERR(uint8_tobuffer(timeout->type, target));
+	RETERR(uint64_tobuffer(timeout->when, target));
+
 	return (mem_tobuffer(target, timeout->data, timeout->length));
 }
 
@@ -286,14 +333,25 @@ tostruct_timeout(ARGS_TOSTRUCT) {
 	REQUIRE(rdata->length != 0);
 
 	REQUIRE(timeout != NULL);
-	REQUIRE(timeout->common.rdclass == rdata->rdclass);
-	REQUIRE(timeout->common.rdtype == rdata->type);
-	REQUIRE(!ISC_LINK_LINKED(&timeout->common, link));
+	timeout->common.rdclass = rdata->rdclass;
+	timeout->common.rdtype = rdata->type;
+	ISC_LINK_INIT(&timeout->common, link);
 
 	dns_rdata_toregion(rdata, &sr);
+	timeout->covers = uint16_fromregion(&sr);
+	isc_region_consume(&sr, 2);
+	timeout->count = uint8_fromregion(&sr);
+	isc_region_consume(&sr, 1);
+	timeout->type = uint8_fromregion(&sr);
+	isc_region_consume(&sr, 1);
+	timeout->when = uint32_fromregion(&sr);
+	isc_region_consume(&sr, 4);
+	timeout->when <<= 32;
+	timeout->when |= uint32_fromregion(&sr);
+	isc_region_consume(&sr, 4);
 
 	timeout->length = sr.length;
-	timeout->data = mem_maybedup(mctx, sr.base, timeout->length);
+	timeout->data = mem_maybedup(mctx, sr.base, sr.length);
 	if (timeout->data == NULL)
 		return (ISC_R_NOMEMORY);
 

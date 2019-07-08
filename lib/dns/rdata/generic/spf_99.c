@@ -19,14 +19,7 @@ fromtext_spf(ARGS_FROMTEXT) {
 
 	REQUIRE(type == dns_rdatatype_spf);
 
-	UNUSED(type);
-	UNUSED(rdclass);
-	UNUSED(origin);
-	UNUSED(options);
-	UNUSED(callbacks);
-
-	return (generic_fromtext_txt(rdclass, type, lexer, origin, options,
-				     target, callbacks));
+	return (generic_fromtext_txt(CALL_FROMTEXT));
 }
 
 static inline isc_result_t

@@ -32,6 +32,7 @@ fromtext_in_nsap(ARGS_FROMTEXT) {
 	UNUSED(origin);
 	UNUSED(options);
 	UNUSED(rdclass);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	/* 0x<hex.string.with.periods> */

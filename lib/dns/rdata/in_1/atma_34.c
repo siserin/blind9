@@ -33,6 +33,7 @@ fromtext_in_atma(ARGS_FROMTEXT) {
 	UNUSED(origin);
 	UNUSED(options);
 	UNUSED(rdclass);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	/* ATM End System Address (AESA) format or E.164 */

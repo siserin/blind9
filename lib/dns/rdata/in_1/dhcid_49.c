@@ -27,6 +27,7 @@ fromtext_in_dhcid(ARGS_FROMTEXT) {
 	UNUSED(rdclass);
 	UNUSED(origin);
 	UNUSED(options);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	return (isc_base64_tobuffer(lexer, target, -2));

@@ -30,6 +30,7 @@ fromtext_ch_a(ARGS_FROMTEXT) {
 	REQUIRE(rdclass == dns_rdataclass_ch); /* 3 */
 
 	UNUSED(type);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_string,

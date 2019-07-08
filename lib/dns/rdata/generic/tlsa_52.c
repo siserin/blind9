@@ -24,6 +24,7 @@ generic_fromtext_tlsa(ARGS_FROMTEXT) {
 	UNUSED(rdclass);
 	UNUSED(origin);
 	UNUSED(options);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	/*
@@ -134,8 +135,7 @@ fromtext_tlsa(ARGS_FROMTEXT) {
 
 	REQUIRE(type == dns_rdatatype_tlsa);
 
-	return (generic_fromtext_tlsa(rdclass, type, lexer, origin, options,
-				      target, callbacks));
+	return (generic_fromtext_tlsa(CALL_FROMTEXT));
 }
 
 static inline isc_result_t

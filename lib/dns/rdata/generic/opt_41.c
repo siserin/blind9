@@ -32,6 +32,7 @@ fromtext_opt(ARGS_FROMTEXT) {
 	UNUSED(origin);
 	UNUSED(options);
 	UNUSED(target);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	return (ISC_R_NOTIMPLEMENTED);

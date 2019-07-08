@@ -2118,6 +2118,30 @@ sshfp(void **state) {
 		    dns_rdatatype_sshfp, sizeof(dns_rdata_sshfp_t));
 }
 
+static void
+timeout(void **state) {
+	text_ok_t text_ok[] = {
+		TEXT_VALID("A 0 0 20190711000000"),
+		/*
+		 * Single Timeout of A record.
+		 */
+		TEXT_VALID("A 1 1 20190711000000 4 1.2.3.4"),
+		/*
+		 * Timeout of 2 A records.
+		 */
+		TEXT_VALID("A 2 1 20190711000000 4 1.2.3.4 4 1.2.3.5"),
+		TEXT_SENTINEL()
+	};
+	wire_ok_t wire_ok[] = {
+		WIRE_SENTINEL()
+	};
+
+	UNUSED(state);
+
+	check_rdata(text_ok, wire_ok, NULL, false, dns_rdataclass_in,
+		    dns_rdatatype_timeout, sizeof(dns_rdata_timeout_t));
+}
+
 /*
  * WKS tests.
  *
@@ -2455,6 +2479,7 @@ main(int argc, char **argv) {
 		cmocka_unit_test_setup_teardown(nsec3, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(nxt, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(sshfp, _setup, _teardown),
+		cmocka_unit_test_setup_teardown(timeout, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(wks, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(rkey, _setup, _teardown),
 		cmocka_unit_test_setup_teardown(zonemd, _setup, _teardown),

@@ -25,6 +25,7 @@ fromtext_talink(ARGS_FROMTEXT) {
 
 	UNUSED(type);
 	UNUSED(rdclass);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	if (origin == NULL)

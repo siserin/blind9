@@ -48,6 +48,7 @@ fromtext_nsec3(ARGS_FROMTEXT) {
 
 	UNUSED(type);
 	UNUSED(rdclass);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 	UNUSED(origin);
 	UNUSED(options);

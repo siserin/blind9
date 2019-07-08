@@ -52,6 +52,7 @@ generic_fromtext_key(ARGS_FROMTEXT) {
 	UNUSED(rdclass);
 	UNUSED(origin);
 	UNUSED(options);
+	UNUSED(mctx);
 	UNUSED(callbacks);
 
 	/* flags */
@@ -233,8 +234,7 @@ fromtext_key(ARGS_FROMTEXT) {
 
 	REQUIRE(type == dns_rdatatype_key);
 
-	return (generic_fromtext_key(rdclass, type, lexer, origin,
-				     options, target, callbacks));
+	return (generic_fromtext_key(CALL_FROMTEXT));
 }
 
 static inline isc_result_t
