@@ -427,6 +427,52 @@ isc__buffer_putuint48(isc_buffer_t *b, uint64_t val) {
 	ISC__BUFFER_PUTUINT32(b, vallo);
 }
 
+uint64_t
+isc_buffer_getuint64(isc_buffer_t *b) {
+	unsigned char *cp;
+	uint64_t result;
+
+	/*
+	 * Read an unsigned 64-bit integer in network byte order from 'b',
+	 * convert it to host byte order, and return it.
+	 */
+
+	REQUIRE(ISC_BUFFER_VALID(b));
+	REQUIRE(b->used - b->current >= 8);
+
+	cp = isc_buffer_current(b);
+	b->current += 8;
+	result = ((int64_t)(cp[0])) << 56;
+	result |= ((int64_t)(cp[1])) << 48;
+	result |= ((int64_t)(cp[2])) << 40;
+	result |= ((int64_t)(cp[3])) << 32;
+	result |= ((int64_t)(cp[4])) << 24;
+	result |= ((int64_t)(cp[5])) << 16;
+	result |= ((int64_t)(cp[6])) << 8;
+	result |= ((int64_t)(cp[7]));
+
+	return (result);
+}
+
+void
+isc__buffer_putuint64(isc_buffer_t *b, uint64_t val) {
+	isc_result_t result;
+	uint32_t valhi;
+	uint32_t vallo;
+
+	REQUIRE(ISC_BUFFER_VALID(b));
+	if (ISC_UNLIKELY(b->autore)) {
+		result = isc_buffer_reserve(&b, 8);
+		REQUIRE(result == ISC_R_SUCCESS);
+	}
+	REQUIRE(isc_buffer_availablelength(b) >= 8);
+
+	valhi = (uint32_t)(val >> 32);
+	vallo = (uint32_t)(val & 0xFFFFFFFF);
+	ISC__BUFFER_PUTUINT32(b, valhi);
+	ISC__BUFFER_PUTUINT32(b, vallo);
+}
+
 void
 isc__buffer_putmem(isc_buffer_t *b, const unsigned char *base,
 		   unsigned int length)

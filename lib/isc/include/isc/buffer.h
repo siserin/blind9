@@ -638,6 +638,43 @@ isc__buffer_putuint48(isc_buffer_t *b, uint64_t val);
  *\li	The used pointer in 'b' is advanced by 6.
  */
 
+uint64_t
+isc_buffer_getuint64(isc_buffer_t *b);
+/*!<
+ * \brief Read an unsigned 64-bit integer in network byte order from 'b',
+ * convert it to host byte order, and return it.
+ *
+ * Requires:
+ *
+ *\li	'b' is a valid buffer.
+ *
+ *\li	The length of the available region of 'b' is at least 8.
+ *
+ * Ensures:
+ *
+ *\li	The current pointer in 'b' is advanced by 8.
+ *
+ * Returns:
+ *
+ *\li	A 64-bit unsigned integer (stored in a 64-bit integer).
+ */
+
+void
+isc__buffer_putuint64(isc_buffer_t *b, uint64_t val);
+/*!<
+ * \brief Store an unsigned 48-bit integer in host byte order from 'val'
+ * into 'b' in network byte order.
+ *
+ * Requires:
+ *\li	'b' is a valid buffer.
+ *
+ *\li	The length of the unused region of 'b' is at least 8
+ *	or the buffer has autoreallocation enabled.
+ *
+ * Ensures:
+ *\li	The used pointer in 'b' is advanced by 8.
+ */
+
 void
 isc__buffer_putuint24(isc_buffer_t *b, uint32_t val);
 /*!<
@@ -1048,8 +1085,9 @@ ISC_LANG_ENDDECLS
 	} while (0)
 
 /*
- * No inline method for this one (yet).
+ * No inline method for these ones (yet).
  */
 #define isc_buffer_putuint48		isc__buffer_putuint48
+#define isc_buffer_putuint64		isc__buffer_putuint64
 
 #endif /* ISC_BUFFER_H */
