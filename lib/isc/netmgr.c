@@ -9,7 +9,7 @@
  * information regarding copyright ownership.
  */
 
-#include <config.h>
+#include "config.h"
 
 #include <unistd.h>
 #include <uv.h>
@@ -1408,18 +1408,58 @@ tcp_connection_cb(uv_stream_t *server, int status) {
  *
  */
 
+typedef struct isc__nm_dnstcpconn {
+	isc_nmsocket_t *socket; /* The 'original' listening socket. */
+	isc_buffer_t remainder; /* Operational buffer. */
+	isc_nmhandle_t *tcphandle; /* TCP handle we're using. */
+	isc_nmhandle_t *dnshandle; /* DNS handle given to clients. */
+} isc__nm_dnstcpconn_t;
+
+static void
+dnslisten_acceptcb(isc_nmhandle_t *handle, isc_result_t result, void *cbarg) {
+	INSIST(result == ISC_R_SUCCESS); /* XXXWPK TODO */
+	isc_nmsocket_t *dnssocket = (isc_nmsocket_t*) cbarg;
+	INSIST(VALID_NMSOCK(dnssocket));
+	isc_nmhandle_setdata(handle, dnssocket, NULL, NULL);
+
+
+}
 /*
  * isc_nm_tcp_dnslistens listens for connections and accepts
  * them immediately, then calls the cb for each incoming DNS packet
- * (with 2-byte length stripped).
+ * (with 2-byte length stripped) - just like for UDP packet.
  */
 
-/*isc_nmsocket_t *
- * isc_nm_tcp_dnslisten(isc_nm_t *mgr,
- *                   isc_nmiface_t *iface,
- *                   isc_nm_recv_cb_t cb,
- *                   void *arg) {
- */
+isc_nmsocket_t *
+isc_nm_tcp_dnslisten(isc_nm_t *mgr,
+		     isc_nmiface_t *iface,
+		     size_t extrahandlesize,
+		     isc_nm_recv_cb_t cb,
+		     void *cbarg)
+{
+	isc_nmsocket_t *tcpsocket;
+	isc_nmsocket_t *dnssocket;
+
+	dnssocket = isc_mem_get(mgr->mctx, sizeof(*dnssocket));
+	dnssocket->iface = iface;
+	isc_nm_attach(mgr, &dnssocket->mgr);
+	dnssocket->type = isc_nm_tcplistener;
+	dnssocket->nchildren = 0;
+	dnssocket->children = NULL;
+	dnssocket->cb.recv = cb;
+	dnssocket->cbarg = cbarg;
+	dnssocket->parent = NULL;
+	dnssocket->extrahandlesize = extrahandlesize;
+	
+	tcpsocket = isc_nm_tcp_listen(mgr,
+				      iface,
+				      extrahandlesize,
+				      dnslisten_acceptcb,
+				      dnssocket);
+	return (tcpsocket);
+}
+ 
+		   
 /*	isc_nm_tcp_listen(mgr, iface, tisc_nm_t *mgr,
  *                isc_nmiface_t *iface,
  *                isc_nm_accept_cb_t cb,
