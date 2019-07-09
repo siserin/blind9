@@ -1,10 +1,10 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
-   
+
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
    file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   
+
    See the COPYRIGHT file distributed with this work for additional
    information regarding copyright ownership.
 
@@ -41,7 +41,7 @@ A plugin is configured with the ``plugin`` statement in ``named.conf``:
        plugin query "library.so" {
            parameters
        };
-       
+
 
 In this example, file ``library.so`` is the plugin library. ``query``
 indicates that this is a query plugin.
@@ -49,7 +49,7 @@ indicates that this is a query plugin.
 Multiple ``plugin`` statements can be specified, to load different
 plugins or multiple instances of the same plugin.
 
-parameters are passed as an opaque string to the plugin's initialization
+*parameters* are passed as an opaque string to the plugin's initialization
 routine. Configuration syntax will differ depending on the module.
 
 Developing Plugins

@@ -181,8 +181,7 @@ servers, on different networks.
 
 Responses from authoritative servers have the "authoritative answer"
 (AA) bit set in the response packets. This makes them easy to identify
-when debugging DNS configurations using tools like ``dig`` (`Diagnostic
-Tools :ref:`diagnostic_tools`).
+when debugging DNS configurations using tools like ``dig`` (:ref:`diagnostic_tools`).
 
 .. _primary_master:
 
