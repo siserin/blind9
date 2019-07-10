@@ -1,4 +1,4 @@
-.. 
+..
    Copyright (C) Internet Systems Consortium, Inc. ("ISC")
 
    This Source Code Form is subject to the terms of the Mozilla Public
@@ -79,12 +79,12 @@ When BIND 9 is built with GeoIP support, ACLs can also be used for
 geographic access restrictions. This is done by specifying an ACL
 element of the form: ``geoip db database field value``
 
-The field indicates which field to search for a match. Available fields
+The ``field`` indicates which field to search for a match. Available fields
 are "country", "region", "city", "continent", "postal" (postal code),
 "metro" (metro code), "area" (area code), "tz" (timezone), "isp", "org",
 "asnum", "domain" and "netspeed".
 
-value is the value to search for within the database. A string may be
+``value`` is the value to search for within the database. A string may be
 quoted if it contains spaces or other special characters. If this is an
 "asnum" search, then the leading "ASNNNN" string can be used, otherwise
 the full description must be used (e.g. "ASNNNN Example Company Name").
@@ -96,7 +96,7 @@ if this is a "region" search and the string is two characters long, then
 it must be a standard two-letter state or province abbreviation;
 otherwise it is the full name of the state or province.
 
-The database field indicates which GeoIP database to search for a match.
+The ``database`` field indicates which GeoIP database to search for a match.
 In most cases this is unnecessary, because most search fields can only
 be found in a single database. However, searches for country can be
 answered from the "city", "region", or "country" databases, and searches
