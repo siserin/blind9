@@ -141,8 +141,13 @@ record indicates that the zone needs to be signed with the key matching
 the record, or that all signatures that match the record should be
 removed.
 
-algorithm (octet 1) key id in network order (octet 2 and 3) removal flag
-(octet 4) complete flag (octet 5)
+   algorithm (octet 1)
+
+   key id in network order (octet 2 and 3)
+
+   removal flag (octet 4)
+   
+   complete flag (octet 5)
 
 Only records flagged as "complete" can be removed via dynamic update.
 Attempts to remove other private type records will be silently ignored.
@@ -153,7 +158,13 @@ changes to the NSEC3 chains are in progress. The rest of the record
 contains an NSEC3PARAM record. The flag field tells what operation to
 perform based on the flag bits.
 
-0x01 OPTOUT 0x80 CREATE 0x40 REMOVE 0x20 NONSEC
+   0x01 OPTOUT
+
+   0x80 CREATE
+
+   0x40 REMOVE
+
+   0x20 NONSEC
 
 DNSKEY rollovers
 ~~~~~~~~~~~~~~~~
