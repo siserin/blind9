@@ -84,7 +84,7 @@ Where Can I Get Help?
 ---------------------
 The BIND-users mailing list at lists.isc.org is an excellent resource for
 peer user support. In addition, ISC maintains a library of helpful articles
-at kb.isc.org.
+at https://kb.isc.org.
 
 The Internet Systems Consortium (ISC) offers annual support agreements
 for BIND, ISC DHCP and Kea. Four levels of premium support are available.
@@ -93,4 +93,4 @@ greater service level agreements (SLAs), and increased priority on bug fixes
 and non-funded feature requests.
 
 To discuss arrangements for support, contact info@isc.org or visit the
-ISC web page at http://www.isc.org/support/ to read more.
+ISC web page at https://www.isc.org/support/ to read more.
