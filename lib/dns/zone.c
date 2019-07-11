@@ -228,6 +228,7 @@ struct dns_zone {
 	isc_time_t		signingtime;
 	isc_time_t		nsec3chaintime;
 	isc_time_t		refreshkeytime;
+	isc_time_t		timeouttime;
 	uint32_t		refreshkeyinterval;
 	uint32_t		refreshkeycount;
 	uint32_t		refresh;
@@ -282,8 +283,8 @@ struct dns_zone {
 	dns_acl_t		*query_acl;
 	dns_acl_t		*queryon_acl;
 	dns_acl_t		*xfr_acl;
-	bool		update_disabled;
-	bool		zero_no_soa_ttl;
+	bool			update_disabled;
+	bool			zero_no_soa_ttl;
 	dns_severity_t		check_names;
 	ISC_LIST(dns_notify_t)	notifies;
 	dns_request_t		*request;
@@ -648,8 +649,8 @@ struct dns_signing {
 	dns_dbiterator_t	*dbiterator;
 	dns_secalg_t		algorithm;
 	uint16_t		keyid;
-	bool		deleteit;
-	bool		done;
+	bool			deleteit;
+	bool			done;
 	ISC_LINK(dns_signing_t)	link;
 };
 
@@ -659,10 +660,10 @@ struct dns_nsec3chain {
 	dns_dbiterator_t		*dbiterator;
 	dns_rdata_nsec3param_t		nsec3param;
 	unsigned char			salt[255];
-	bool			done;
-	bool			seen_nsec;
-	bool			delete_nsec;
-	bool			save_delete_nsec;
+	bool				done;
+	bool				seen_nsec;
+	bool				delete_nsec;
+	bool				save_delete_nsec;
 	ISC_LINK(dns_nsec3chain_t)	link;
 };
 /*%<
@@ -949,6 +950,7 @@ dns_zone_create(dns_zone_t **zonep, isc_mem_t *mctx) {
 	isc_time_settoepoch(&zone->signingtime);
 	isc_time_settoepoch(&zone->nsec3chaintime);
 	isc_time_settoepoch(&zone->refreshkeytime);
+	isc_time_settoepoch(&zone->timeouttime);
 	zone->refreshkeyinterval = 0;
 	zone->refreshkeycount = 0;
 	zone->refresh = DNS_ZONE_DEFAULTREFRESH;
@@ -3733,6 +3735,58 @@ set_resigntime(dns_zone_t *zone) {
 	return;
 }
 
+static void
+set_timeouttime(dns_zone_t *zone) {
+	dns_rdataset_t rdataset;
+	dns_fixedname_t fixed;
+	isc_result_t result;
+	uint32_t nanosecs;
+	dns_db_t *db = NULL;
+
+	dns_zone_log(zone, ISC_LOG_INFO, "set_timeouttime");
+
+	/* We only re-sign zones that can be dynamically updated */
+	if (zone->update_disabled)
+		return;
+
+	if (!inline_secure(zone) && (zone->type != dns_zone_master ||
+	    (zone->ssutable == NULL &&
+	     (zone->update_acl == NULL || dns_acl_isnone(zone->update_acl)))))
+		return;
+
+	dns_rdataset_init(&rdataset);
+	dns_fixedname_init(&fixed);
+
+	ZONEDB_LOCK(&zone->dblock, isc_rwlocktype_read);
+	if (zone->db != NULL)
+		dns_db_attach(zone->db, &db);
+	ZONEDB_UNLOCK(&zone->dblock, isc_rwlocktype_read);
+	if (db == NULL) {
+		dns_zone_log(zone, ISC_LOG_INFO, "set_timeouttime: no db");
+		isc_time_settoepoch(&zone->timeouttime);
+		return;
+	}
+
+	result = dns_db_gettimeouttime(db, &rdataset,
+				       dns_fixedname_name(&fixed));
+	if (result != ISC_R_SUCCESS) {
+		dns_zone_log(zone, ISC_LOG_INFO, "set_timeouttime: dns_db_gettimeouttime -> %s", dns_result_totext(result));
+		isc_time_settoepoch(&zone->timeouttime);
+		goto cleanup;
+	}
+
+	char namebuf[DNS_NAME_FORMATSIZE];
+	dns_name_format(dns_fixedname_name(&fixed), namebuf, sizeof(namebuf));
+	dns_zone_log(zone, ISC_LOG_INFO, "set_timeouttime: dns_db_gettimeouttime -> (%s, %u)", namebuf, rdataset.resign);
+
+	nanosecs = isc_random_uniform(1000000000);
+	isc_time_set(&zone->timeouttime, rdataset.resign, nanosecs);
+	dns_rdataset_disassociate(&rdataset);
+ cleanup:
+	dns_db_detach(&db);
+	return;
+}
+
 static isc_result_t
 check_nsec3param(dns_zone_t *zone, dns_db_t *db) {
 	dns_dbnode_t *node = NULL;
@@ -4980,6 +5034,7 @@ zone_postload(dns_zone_t *zone, dns_db_t *db, isc_time_t loadtime,
 	if (zone->task != NULL) {
 		if (zone->type == dns_zone_master) {
 			set_resigntime(zone);
+			set_timeouttime(zone);
 			resume_signingwithkey(zone);
 			resume_addnsec3chain(zone);
 		}
@@ -10404,6 +10459,225 @@ zone_refreshkeys(dns_zone_t *zone) {
 }
 
 static void
+update_log_cb(void *arg, dns_zone_t *zone, int level, const char *message) {
+	UNUSED(arg);
+	dns_zone_log(zone, level, "%s", message);
+}
+
+static isc_result_t
+process_timeout_rr(dns_db_t *db, dns_dbversion_t *ver, dns_diff_t *diff,
+		   dns_name_t *name, dns_rdata_timeout_t *timeout)
+{
+	bool delete_all;
+	dns_rdataset_t rdataset;
+	dns_fixedname_t fixed;
+	isc_region_t region;
+	isc_result_t result;
+
+	dns_rdataset_init(&rdataset);
+	dns_fixedname_init(&fixed);
+	result = dns_db_find(db, name, ver, timeout->covers, 0, 0, NULL,
+			     dns_fixedname_name(&fixed), &rdataset, NULL);
+	if (result != ISC_R_SUCCESS) {
+		result = ISC_R_SUCCESS;
+		goto failure;
+	}
+	region.length = timeout->length;
+	region.base = timeout->data;
+	delete_all = timeout->type == 0;
+	while (delete_all || region.length > 0) {
+		dns_rdata_t rdata1 = DNS_RDATA_INIT;
+		unsigned int length;
+		uint16_t rdlen;
+
+		if (!delete_all) {
+			rdlen = region.base[0] << 8 | region.base[1];
+			INSIST(rdlen + 2U >= region.length);
+			isc_region_consume(&region, 2);
+
+			length = region.length;
+			region.length = rdlen;
+			dns_rdata_fromregion(&rdata1, timeout->common.rdclass,
+					     timeout->covers, &region);
+			region.length = length;
+			isc_region_consume(&region, rdlen);
+		} else {
+			/* make sure loop terminates */
+			region.length = 0;
+		}
+
+		for (result = dns_rdataset_first(&rdataset);
+		     result == ISC_R_SUCCESS;
+		     result = dns_rdataset_next(&rdataset)) {
+			dns_rdata_t rdata2 = DNS_RDATA_INIT;
+			dns_rdataset_current(&rdataset, &rdata2);
+			if (delete_all ||
+			    dns_rdata_compare(&rdata1, &rdata2) == 0) {
+				fprintf(stderr, "delete RR\n");
+				CHECK(update_one_rr(db, ver, diff,
+						    DNS_DIFFOP_DEL, name,
+						    rdataset.ttl, &rdata2));
+				if (!delete_all) {
+					break;
+				}
+			}
+		}
+		if (result == ISC_R_NOMORE) {
+			result = ISC_R_SUCCESS;
+		}
+		/* make sure loop terminates */
+		delete_all = false;
+	}
+ failure:
+	if (dns_rdataset_isassociated(&rdataset)) {
+		dns_rdataset_disassociate(&rdataset);
+	}
+	return (result);
+}
+
+static void
+zone_process_timeout(dns_zone_t *zone) {
+	bool commit = false;
+	dns_db_t *db = NULL;
+	dns_dbversion_t *newver = NULL, *oldver = NULL;
+	dns_diff_t diff;
+	dns_fixedname_t fixed;
+	dns_name_t *name;
+	dns_rdataset_t rdataset;
+	dns_update_log_t log = { update_log_cb, NULL };
+	isc_result_t result;
+	isc_stdtime_t now;
+
+	dns_zone_log(zone, ISC_LOG_INFO, "zone_process_timeout");
+
+	if (zone->update_disabled)
+		return;
+
+	ZONEDB_LOCK(&zone->dblock, isc_rwlocktype_read);
+	if (zone->db != NULL)
+		dns_db_attach(zone->db, &db);
+	ZONEDB_UNLOCK(&zone->dblock, isc_rwlocktype_read);
+
+	if (db == NULL) {
+		LOCK_ZONE(zone);
+		isc_time_settoepoch(&zone->timeouttime);
+		UNLOCK_ZONE(zone);
+		return;
+	}
+
+	dns_diff_init(zone->mctx, &diff);
+	dns_rdataset_init(&rdataset);
+	dns_fixedname_init(&fixed);
+	name = dns_fixedname_name(&fixed);
+
+	dns_db_currentversion(db, &oldver);
+	result = dns_db_newversion(db, &newver);
+	if (result != ISC_R_SUCCESS) {
+		dns_zone_log(zone, ISC_LOG_ERROR,
+			     "zone_process_timeout: dns_db_newversion -> %s",
+			     dns_result_totext(result));
+		goto failure;
+	}
+
+	isc_stdtime_get(&now);
+
+	result = dns_db_gettimeouttime(db, &rdataset, name);
+	if (result == ISC_R_SUCCESS) {
+		char namebuf[DNS_NAME_FORMATSIZE];
+		dns_name_format(name, namebuf, sizeof(namebuf));
+		dns_zone_log(zone, ISC_LOG_INFO, "zone_process_timeout: "
+			     "dns_db_gettimeouttime -> (%s, %u)",
+			     namebuf, rdataset.resign);
+	} else {
+		dns_zone_log(zone, ISC_LOG_INFO, "zone_process_timeout: "
+			     "dns_db_gettimeouttime -> %s",
+			     dns_result_totext(result));
+	}
+	while (result == ISC_R_SUCCESS && rdataset.resign <= now) {
+		for (result = dns_rdataset_first(&rdataset);
+		     result == ISC_R_SUCCESS;
+		     result = dns_rdataset_next(&rdataset)) {
+			dns_rdata_t rdata = DNS_RDATA_INIT;
+			dns_rdata_timeout_t timeout;
+
+			dns_rdataset_current(&rdataset, &rdata);
+			dns_rdata_tostruct(&rdata, &timeout, NULL);
+			switch (timeout.type) {
+			case 0:
+			case 1:
+				CHECK(process_timeout_rr(db, newver, &diff,
+							 name, &timeout));
+				break;
+			default:
+				/* log unhandled timeout type */
+				break;
+			}
+
+			/*
+			 * Delete this record now that it has been processed.
+			 */
+			fprintf(stderr, "delete TIMEOUT\n");
+			CHECK(update_one_rr(db, newver, &diff,
+					    DNS_DIFFOP_DELRESIGN, name,
+					    rdataset.ttl, &rdata));
+		}
+		dns_rdataset_disassociate(&rdataset);
+		result = dns_db_gettimeouttime(db, &rdataset, name);
+		if (result == ISC_R_SUCCESS) {
+			char namebuf[DNS_NAME_FORMATSIZE];
+			dns_name_format(name, namebuf, sizeof(namebuf));
+			dns_zone_log(zone, ISC_LOG_INFO,
+				     "zone_process_timeout: "
+				     "dns_db_gettimeouttime -> (%s, %u)",
+				     namebuf, rdataset.resign);
+		} else {
+			dns_zone_log(zone, ISC_LOG_INFO,
+				     "zone_process_timeout: "
+				     "dns_db_gettimeouttime -> %s",
+				     dns_result_totext(result));
+		}
+	}
+
+	if (!ISC_LIST_EMPTY(diff.tuples)) {
+		CHECK(update_soa_serial(db, newver, &diff, zone->mctx,
+					zone->updatemethod));
+
+		if (dns_db_issecure(db)) {
+			CHECK(dns_update_signatures(&log, zone, db, oldver,
+						    newver, &diff,
+						    zone->sigvalidityinterval));
+		}
+
+		CHECK(zone_journal(zone, &diff, NULL, "zone_process_timeout"));
+
+		LOCK_ZONE(zone);
+		zone_needdump(zone, DNS_DUMP_DELAY);
+		DNS_ZONE_SETFLAG(zone, DNS_ZONEFLG_NEEDNOTIFY);
+		UNLOCK_ZONE(zone);
+		commit = true;
+	}
+
+ failure:
+	dns_diff_clear(&diff);
+	if (dns_rdataset_isassociated(&rdataset)) {
+		dns_rdataset_disassociate(&rdataset);
+	}
+	if (db != NULL) {
+		if (oldver != NULL) {
+			dns_db_closeversion(db, &oldver, false);
+		}
+		if (newver != NULL) {
+			dns_db_closeversion(db, &newver, commit);
+		}
+		dns_db_detach(&db);
+	}
+
+	LOCK_ZONE(zone);
+	set_timeouttime(zone);
+	UNLOCK_ZONE(zone);
+}
+
+static void
 zone_maintenance(dns_zone_t *zone) {
 	const char me[] = "zone_maintenance";
 	isc_time_t now;
@@ -10567,13 +10841,18 @@ zone_maintenance(dns_zone_t *zone) {
 			zone_sign(zone);
 		}
 		else if (!isc_time_isepoch(&zone->resigntime) &&
-		    isc_time_compare(&now, &zone->resigntime) >= 0) {
+			 isc_time_compare(&now, &zone->resigntime) >= 0) {
 			zone_resigninc(zone);
 		}
 		else if (!isc_time_isepoch(&zone->nsec3chaintime) &&
-			isc_time_compare(&now, &zone->nsec3chaintime) >= 0) {
+			 isc_time_compare(&now, &zone->nsec3chaintime) >= 0) {
 			zone_nsec3chain(zone);
 		}
+		else if (!isc_time_isepoch(&zone->timeouttime) &&
+			 isc_time_compare(&now, &zone->timeouttime) >= 0) {
+			zone_process_timeout(zone);
+		}
+
 		/*
 		 * Do we need to issue a key expiry warning?
 		 */
@@ -10600,6 +10879,7 @@ dns_zone_markdirty(dns_zone_t *zone) {
 	 * could result in a deadlock due to a LOR so we will spin if we
 	 * can't obtain the both locks.
 	 */
+	dns_zone_log(zone, ISC_LOG_INFO, "dns_zone_markdirty");
  again:
 	LOCK_ZONE(zone);
 	if (zone->type == dns_zone_master) {
@@ -10629,8 +10909,10 @@ dns_zone_markdirty(dns_zone_t *zone) {
 		}
 
 		/* XXXMPA make separate call back */
-		if (result == ISC_R_SUCCESS)
+		if (result == ISC_R_SUCCESS) {
 			set_resigntime(zone);
+			set_timeouttime(zone);
+		}
 	}
 	if (secure != NULL)
 		UNLOCK_ZONE(secure);
@@ -13457,6 +13739,11 @@ zone_settimer(dns_zone_t *zone, isc_time_t *now) {
 			    isc_time_compare(&zone->nsec3chaintime, &next) < 0)
 				next = zone->nsec3chaintime;
 		}
+		if (!isc_time_isepoch(&zone->timeouttime)) {
+			if (isc_time_isepoch(&next) ||
+			    isc_time_compare(&zone->timeouttime, &next) < 0)
+				next = zone->timeouttime;
+		}
 		break;
 
 	case dns_zone_slave:
@@ -14526,12 +14813,6 @@ struct secure_event {
 	dns_db_t *db;
 	uint32_t serial;
 };
-
-static void
-update_log_cb(void *arg, dns_zone_t *zone, int level, const char *message) {
-	UNUSED(arg);
-	dns_zone_log(zone, level, "%s", message);
-}
 
 static isc_result_t
 sync_secure_journal(dns_zone_t *zone, dns_zone_t *raw, dns_journal_t *journal,
