@@ -720,6 +720,28 @@
 
 	<varlistentry>
 	  <term>
+	      <command><optional>update</optional> timeout</command>
+	      <arg choice="req" rep="norepeat">domain-name</arg>
+	      <arg choice="req" rep="norepeat">lifetime</arg>
+	      <arg choice="opt" rep="norepeat">class</arg>
+	      <arg choice="req" rep="norepeat">type</arg>
+	      <arg choice="req" rep="repeat">data</arg>
+	    </term>
+	  <listitem>
+	    <para>
+	      Adds a Type 1 TIMEOUT record with the expiry Expiry Time set
+	      to <parameter>lifetime</parameter> from now for the record
+	      matching <parameter>domain-name</parameter>,
+	      <parameter>type</parameter>,
+	      <parameter>class</parameter>
+	      and
+	      <parameter>data</parameter>.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
 	      <command>show</command>
 	    </term>
 	  <listitem>
@@ -813,7 +835,8 @@
       <programlisting>
 # nsupdate
 &gt; update delete oldhost.example.com A
-&gt; update add newhost.example.com 86400 A 172.16.1.1
+&gt; update add newhost.example.com 3600 A 172.16.1.1
+&gt; update timeout newhost.example.com 86400 A 172.16.1.1
 &gt; send
 </programlisting>
     </para>
@@ -824,7 +847,9 @@
       And an A record for
       <type>newhost.example.com</type>
       with IP address 172.16.1.1 is added.
-      The newly-added record has a 1 day TTL (86400 seconds).
+      The newly-added record has a 1 hour TTL (3600 seconds) and
+      a TIMEOUT record requesting that it be deleted in 1 day
+      (86400 second) will also be added.
       <programlisting>
 # nsupdate
 &gt; prereq nxdomain nickname.example.com
