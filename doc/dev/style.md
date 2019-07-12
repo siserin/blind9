@@ -1,13 +1,3 @@
-<!--
- - Copyright (C) Internet Systems Consortium, Inc. ("ISC")
- -
- - This Source Code Form is subject to the terms of the Mozilla Public
- - License, v. 2.0. If a copy of the MPL was not distributed with this
- - file, You can obtain one at http://mozilla.org/MPL/2.0/.
- -
- - See the COPYRIGHT file distributed with this work for additional
- - information regarding copyright ownership.
--->
 ## BIND 9 Coding Style
 
 BIND 9 is principally written in [C](#cstyle), with some additional code
@@ -19,22 +9,22 @@ below.
 
 #### Compiler
 
-An ANSI standard C compiler and library are assumed.  Feel free to use any
-ANSI C feature.
+A C99 compiler, library with C11 extensions and POSIX:2001 are assumed.  Feel
+free to use any C11 feature, but make sure to provide compatibility shims for
+all supported platforms, e.g. Windows MSVC that doesn't support most of the C11
+features.
 
 #### Warnings
 
-Given a reasonable set of things to warn about (e.g. -W -Wall for gcc), the
-goal is to compile with no warnings.
+Given a reasonable set of things to warn about (e.g. -W -Wall for gcc), the goal
+is to compile with no warnings.
 
 #### Copyright Notices
 
-All source files should have a copyright.  The copyright year(s) should be
-kept current.  The files and the copyright year(s) should be listed in
-util/copyrights.  When an existing file is updated in the source
-repository, its copyright notice and dates are updated automatically.
+Source files with significant content should have a copyright.  The copyright
+year(s) should be kept current.
 
-#### Line Formatting
+#### Indentation
 
 Use tabs for indentation.  Spaces before statements are only allowed when
 needed to line up a continued expression.  In the following example, spaces
@@ -73,8 +63,8 @@ to one another.
 
 #### Line Length
 
-Lines should be no longer than 79 characters, even if it requires violating
-indentation rules to make them fit.  Since ANSI C is assumed, the best way to
+Lines should be no longer than 80 characters, even if it requires violating
+indentation rules to make them fit.  Since C11 is assumed, the best way to
 deal with strings that extend past column 79 is to break them into two or
 more sections separated from each other by a newline and indentation:
 
@@ -82,6 +72,9 @@ more sections separated from each other by a newline and indentation:
                                        "right and wrapped.  ANSI catenation "
                                        "rules will turn this into one "
                                        "long string.");
+
+The rule for string formatting can be violated in cases where breaking
+the string prevents ability to lookup the string using grep.
 
 #### Comments
 
@@ -380,6 +373,8 @@ warnings with casts is not desireable.
 C99 standard integer types must be used when `unsigned long` or
 `short` could be ambiguous.
 
+size_t is prefered to unsigned int variables.
+
 #### Clear Success or Failure
 
 A function should report success or failure, and do so accurately.  It
@@ -540,6 +535,89 @@ Good:
     	isc_mem_free(mctx, text);
     	text = NULL;
 
+#### Variable scopes
+
+Always use minimal scope for the variables, e.g.
+
+        int foo() {
+        	int i;
+        	[...];
+        	for (i; i < X; i++);
+	}
+
+is discourage.  Use minimal scope for variable i instead:
+
+        int foo() {
+        	[...];
+        	for (int i; i < X; i++);
+	}
+
+Integrating cppcheck with editor of your choice (f.e. flycheck with emacs) could
+be a great help in identifying places where variable scopes can be reduced.
+
+#### Initializing variables
+
+Static initializers should be used instead of memset.
+
+Good:
+	char array[10] = { 0 };
+
+Bad:
+	char array[10];
+	memset(array, 0, sizeof(array));
+
+Designated initializers should be used to initialize structures.
+
+Good:
+	struct example {
+		int foo;
+		int bar;
+		int baz;
+	};
+
+	struct example x = { .foo = -1 };
+
+Bad:
+	struct example {
+		int foo;
+		int bar;
+		int baz;
+	};
+
+	struct example x;
+
+	x.foo = -1;
+	x.bar = 0;
+	x.baz = 0;
+
+Good:
+	struct example {
+		int foo;
+		int bar;
+		int baz;
+	};
+
+	struct example *x = isc_mem_get(mctx, sizeof(*x));
+
+	*x = (struct example){ .foo = -1 };
+
+Bad:
+	struct example {
+		int foo;
+		int bar;
+		int baz;
+	};
+
+	struct example *x = isc_mem_get(mctx, sizeof(*x));
+
+	x->foo = -1;
+	x->bar = 0;
+	x->baz = 0;
+
+#### Const
+
+Declare variables as consts if they are not to be modified.
+
 #### <a name="public_namespace"></a>Public Interface Namespace
 
 All public interfaces to functions, macros, typedefs, and variables
@@ -650,12 +728,12 @@ support it.  Is it in the POSIX standard?  If so, how long has it been
 there? (BIND is still run on some operating systems released in the
 1990s.)  Is its behavior the same on all platforms?  Is its signature
 the same?  Are integer parameters the same size and signedness?  Does it
-alwasy return the same values on success, and set the same `errno` codes
+always return the same values on success, and set the same `errno` codes
 on failure?
 
 If there is a chance the library call may not be completely portable,
 edit `configure.in` to check for it on the local system and only call
-it from within a suitable `#ifdef`.  If the function is nonoptional, 
+it from within a suitable `#ifdef`.  If the function is nonoptional,
 it may be necessary to add your own implentation of it (or copy one
 from a source with a BSD-compatible license).
 
