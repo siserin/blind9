@@ -365,11 +365,13 @@ Not so good:
 #### Integral Types
 
 Careful thought should be given to whether an integral type should be signed or
-unsigned, and to whether a specific size is required.  `size_t` should be used
-for generic variables (e.g. iteration counters, array subscripts).  If a
-negative value isn't meaningful, the variable should be unsigned.  Assignments
-and comparisons between signed and unsigned integers should be avoided;
-suppressing the warnings with casts is not desireable.
+unsigned, and to whether a specific size is required.  The basic rule of thum is
+to use `size_t` for sizes, cardinalities or ordinal numbers (e.g. iteration
+counters, array subscripts).  Use unsigned type for small quantities that can’t
+be negative, use signed types for small quantities that bear a sign, and finally
+use ptrdiff_t for large differences that bear a sign.  Assignments and
+comparisons between signed and unsigned integers should be avoided; suppressing
+the warnings with casts is not desireable.
 
 C99 standard integer types are generally preferred, and must be used when
 `unsigned long` or `short` could be ambiguous, and `size_t` is preferred to
@@ -535,7 +537,7 @@ Good:
     	isc_mem_free(mctx, text);
     	text = NULL;
 
-#### Variable scopes
+#### Variable Scopes
 
 Always use minimal scope for the variables.  Function scope is discouraged and
 the usage of then minimal scope for variable i instead:
@@ -645,6 +647,12 @@ Bad:
 #### Const
 
 Declare variables as constant if they are not to be modified.
+
+#### Variable-Length Arrays
+
+Use VLAs where it is more appropriate to allocate the memory on the stack rather
+than allocate it using `isc_mem_get()` from the heap.  Usually, a short lived
+arrays local to that particular functions would be good fit for using VLAs.
 
 #### <a name="public_namespace"></a>Public Interface Namespace
 
