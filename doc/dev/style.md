@@ -282,7 +282,7 @@ this.
 Good:
 
     	static void
-    	(int i) {
+    	f(int i) {
     	       if (i > 0) {
     		       printf("yes\\n");
     		       i = 0;
@@ -364,18 +364,16 @@ Not so good:
 
 #### Integral Types
 
-Careful thought should be given to whether an integral type should be
-signed or unsigned, and to whether a specific size is required.  `int`
-should be used for generic variables (e.g. iteration counters, array
-subscripts).  Other than for generic variables, if a negative value isn't
-meaningful, the variable should be unsigned.  Assignments and comparisons
-between signed and unsigned integers should be avoided; suppressing the
-warnings with casts is not desireable.
+Careful thought should be given to whether an integral type should be signed or
+unsigned, and to whether a specific size is required.  `size_t` should be used
+for generic variables (e.g. iteration counters, array subscripts).  If a
+negative value isn't meaningful, the variable should be unsigned.  Assignments
+and comparisons between signed and unsigned integers should be avoided;
+suppressing the warnings with casts is not desireable.
 
-C99 standard integer types must be used when `unsigned long` or
-`short` could be ambiguous.
-
-size_t is preferred to unsigned int variables.
+C99 standard integer types are generally preferred, and must be used when
+`unsigned long` or `short` could be ambiguous, and `size_t` is preferred to
+`unsigned int` variables.
 
 #### Clear Success or Failure
 
@@ -545,7 +543,7 @@ the usage of then minimal scope for variable i instead:
 Bad:
     	void
     	foo() {
-    		int i;
+    		size_t i;
     		[...];
     		for (i = 0; i < 10; i++);
     		[...]
@@ -555,14 +553,14 @@ Good:
     	void
     	foo() {
     		[...];
-    		for (int i = 0; i < 10; i++);
+    		for (size_t i = 0; i < 10; i++);
     		[...]
     	}
 
 Bad:
     	void
     	foo() {
-    		int j = 0;
+    		size_t j = 0;
     		[...] /* j not used here */
     		if (true) {
     			while (j < 10) ++j;
@@ -576,7 +574,7 @@ Good:
     	foo() {
     		[...]
     		if (true) {
-    			int j = 0;
+    			size_t j = 0;
     			while (j < 10) ++j;
     		}
     		[...]
@@ -646,7 +644,7 @@ Bad:
 
 #### Const
 
-Declare variables as consts if they are not to be modified.
+Declare variables as constant if they are not to be modified.
 
 #### <a name="public_namespace"></a>Public Interface Namespace
 
