@@ -119,7 +119,11 @@ typedef struct atomic_bool {
 	({ typeof((obj)->v) __v; isc_mutex_lock(&(obj)->m); __v= (obj)->v; (obj)->v += arg; isc_mutex_unlock(&(obj)->m); __v;} )
 #define atomic_fetch_sub_explicit(obj, arg, order)	\
 	({ typeof((obj)->v) __v; isc_mutex_lock(&(obj)->m); __v= (obj)->v; (obj)->v -= arg; isc_mutex_unlock(&(obj)->m); __v;} )
-#define atomic_compare_exchange_strong_explicit(obj, expected, desired, succ, fail)	\
+#define atomic_fetch_or_explicit(obj, arg, order)	\
+	({ typeof((obj)->v) __v; isc_mutex_lock(&(obj)->m); __v= (obj)->v; (obj)->v |= arg; isc_mutex_unlock(&(obj)->m); __v;} )
+#define atomic_fetch_and_explicit(obj, arg, order)	\
+	({ typeof((obj)->v) __v; isc_mutex_lock(&(obj)->m); __v= (obj)->v; (obj)->v &= arg; isc_mutex_unlock(&(obj)->m); __v;} )
+#define atomic_compare_exchange_strong_explicit(obj, expected, desired, succ, fail) \
 	({ bool __v; isc_mutex_lock(&(obj)->m); __v = ((obj)->v == *expected); *expected = (obj)->v; (obj)->v = __v ? desired : (obj)->v; isc_mutex_unlock(&(obj)->m); __v;} )
 #define atomic_compare_exchange_weak_explicit(obj, expected, desired, succ, fail)	\
 	({ bool __v; isc_mutex_lock(&(obj)->m); __v = ((obj)->v == *expected); *expected = (obj)->v; (obj)->v = __v ? desired : (obj)->v; isc_mutex_unlock(&(obj)->m); __v;} )
@@ -135,6 +139,10 @@ typedef struct atomic_bool {
 	atomic_fetch_add_explicit(obj, arg, memory_order_seq_cst)
 #define atomic_fetch_sub(obj, arg) \
 	atomic_fetch_sub_explicit(obj, arg, memory_order_seq_cst)
+#define atomic_fetch_or(obj, arg) \
+	atomic_fetch_or_explicit(obj, arg, memory_order_seq_cst)
+#define atomic_fetch_and(obj, arg) \
+	atomic_fetch_and_explicit(obj, arg, memory_order_seq_cst)
 #define atomic_compare_exchange_strong(obj, expected, desired)	\
 	atomic_compare_exchange_strong_explicit(obj, expected, desired, memory_order_seq_cst, memory_order_seq_cst)
 #define atomic_compare_exchange_weak(obj, expected, desired)	\
