@@ -73,6 +73,16 @@ enum memory_order {
 
 typedef enum memory_order memory_order;
 
+typedef struct automic_int {
+	isc_mutex_t m;
+	int v;
+} atomic_int;
+
+typedef struct atomic_uint {
+	isc_mutex_t m;
+	unsigned int v;
+} atomic_uint;
+
 typedef struct atomic_int_fast32 {
 	isc_mutex_t m;
 	int32_t v;
@@ -93,8 +103,7 @@ typedef struct atomic_uint_fast64 {
 	uint64_t v;
 } atomic_uint_fast64_t;
 
-
-typedef struct atomic_bool_s {
+typedef struct atomic_bool {
 	isc_mutex_t m;
 	bool v;
 } atomic_bool;
