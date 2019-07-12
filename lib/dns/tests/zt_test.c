@@ -165,7 +165,7 @@ asyncload_zone(void **state) {
 	dns_db_t *db = NULL;
 	FILE* zonefile, *origfile;
 	char buf[4096];
-	atomic_bool done = false;
+	atomic_bool done = ATOMIC_VAR_INIT(false);
 	int i = 0;
 	struct args args;
 
@@ -266,7 +266,7 @@ asyncload_zt(void **state) {
 	dns_view_t *view;
 	dns_zt_t *zt = NULL;
 	dns_db_t *db = NULL;
-	atomic_bool done = false;
+	atomic_bool done = ATOMIC_VAR_INIT(false);
 	int i = 0;
 	struct args args;
 

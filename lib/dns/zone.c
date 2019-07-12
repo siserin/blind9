@@ -926,7 +926,7 @@ dns_zone_create(dns_zone_t **zonep, isc_mem_t *mctx) {
 	zone->journal = NULL;
 	zone->rdclass = dns_rdataclass_none;
 	zone->type = dns_zone_none;
-	zone->flags = 0;
+	atomic_init(&zone->flags, 0);
 	zone->options = 0;
 	zone->keyopts = 0;
 	zone->db_argc = 0;
@@ -10599,7 +10599,7 @@ dns_zone_refresh(dns_zone_t *zone) {
 	 */
 
 	LOCK_ZONE(zone);
-	oldflags = zone->flags;
+	oldflags = atomic_load(&zone->flags);
 	if (zone->masterscnt == 0) {
 		DNS_ZONE_SETFLAG(zone, DNS_ZONEFLG_NOMASTERS);
 		if ((oldflags & DNS_ZONEFLG_NOMASTERS) == 0)
@@ -15589,7 +15589,7 @@ zone_xfrdone(dns_zone_t *zone, isc_result_t result) {
 		}
 	}
 
-	INSIST((zone->flags & DNS_ZONEFLG_REFRESH) != 0);
+	INSIST(DNS_ZONE_FLAG(zone, DNS_ZONEFLG_REFRESH));
 	DNS_ZONE_CLRFLAG(zone, DNS_ZONEFLG_REFRESH);
 	DNS_ZONE_CLRFLAG(zone, DNS_ZONEFLG_SOABEFOREAXFR);
 

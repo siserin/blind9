@@ -71,7 +71,7 @@ typedef struct {
 
 static void
 completion_init(completion_t *completion) {
-	completion->done = false;
+	atomic_store(&completion->done, false);
 	completion->socket = NULL;
 }
 
@@ -545,7 +545,7 @@ tcp_dscp_v4_test(void **state) {
 	waitfor2(&completion, &completion2);
 	assert_true(atomic_load(&completion.done));
 	assert_int_equal(completion.result, ISC_R_SUCCESS);
-	assert_true(completion2.done);
+	assert_true(atomic_load(&completion2.done));
 	assert_int_equal(completion2.result, ISC_R_SUCCESS);
 	s3 = completion2.socket;
 
@@ -642,7 +642,7 @@ tcp_dscp_v6_test(void **state) {
 	waitfor2(&completion, &completion2);
 	assert_true(atomic_load(&completion.done));
 	assert_int_equal(completion.result, ISC_R_SUCCESS);
-	assert_true(completion2.done);
+	assert_true(atomic_load(&completion2.done));
 	assert_int_equal(completion2.result, ISC_R_SUCCESS);
 	s3 = completion2.socket;
 

@@ -63,7 +63,7 @@ ns_server_t *sctx = NULL;
 bool app_running = false;
 int ncpus;
 bool debug_mem_record = true;
-atomic_bool run_managers = false;
+atomic_bool run_managers = ATOMIC_VAR_INIT(false);
 
 static bool dst_active = false;
 static bool test_running = false;
@@ -103,7 +103,7 @@ matchview(isc_netaddr_t *srcaddr, isc_netaddr_t *destaddr,
 /*
  * These need to be shut down from a running task.
  */
-atomic_bool shutdown_done = false;
+atomic_bool shutdown_done = ATOMIC_VAR_INIT(false);
 static void
 shutdown_managers(isc_task_t *task, isc_event_t *event) {
 	UNUSED(task);

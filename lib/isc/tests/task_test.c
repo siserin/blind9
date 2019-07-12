@@ -802,7 +802,7 @@ sd_event1(isc_task_t *task, isc_event_t *event) {
 	UNUSED(task);
 
 	LOCK(&lock);
-	while (!ready) {
+	while (!atomic_load(&ready)) {
 		WAIT(&cv, &lock);
 	}
 	UNLOCK(&lock);
@@ -839,7 +839,7 @@ shutdown(void **state) {
 
 	nevents = nsdevents = 0;
 	event_type = 3;
-	ready = false;
+	atomic_store(&ready, false);
 
 	LOCK(&lock);
 
@@ -879,7 +879,7 @@ shutdown(void **state) {
 	/*
 	 * Now we free the task by signaling cv.
 	 */
-	ready = true;
+	atomic_store(&ready, true);
 	SIGNAL(&cv);
 	UNLOCK(&lock);
 
@@ -977,7 +977,7 @@ static isc_eventtype_t purge_type_last;
 static void *purge_tag;
 static int eventcnt;
 
-atomic_bool started = false;
+atomic_bool started = ATOMIC_VAR_INIT(false);
 
 static void
 pg_event1(isc_task_t *task, isc_event_t *event) {
