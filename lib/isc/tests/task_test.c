@@ -46,9 +46,9 @@ static bool verbose = false;
 static isc_mutex_t lock;
 static isc_condition_t cv;
 
-atomic_int counter = 0;
+atomic_int counter;
 static int active[10];
-static atomic_bool done = false;
+static atomic_bool done;
 
 static int
 _setup(void **state) {
@@ -154,12 +154,14 @@ all_events(void **state) {
 	isc_result_t result;
 	isc_task_t *task = NULL;
 	isc_event_t *event = NULL;
-	atomic_int a = 0, b = 0;
+	atomic_int a, b;
 	int i = 0;
 
 	UNUSED(state);
 
 	atomic_init(&counter, 1);
+	atomic_init(&a, 0);
+	atomic_init(&b, 0);
 
 	result = isc_task_create(taskmgr, 0, &task);
 	assert_int_equal(result, ISC_R_SUCCESS);
@@ -196,12 +198,17 @@ privileged_events(void **state) {
 	isc_result_t result;
 	isc_task_t *task1 = NULL, *task2 = NULL;
 	isc_event_t *event = NULL;
-	atomic_int a = 0, b = 0, c = 0, d = 0, e = 0;
+	atomic_int a, b, c, d, e;
 	int i = 0;
 
 	UNUSED(state);
 
 	atomic_init(&counter, 1);
+	atomic_init(&a, 0);
+	atomic_init(&b, 0);
+	atomic_init(&c, 0);
+	atomic_init(&d, 0);
+	atomic_init(&e, 0);
 
 	/*
 	 * Pause the task manager so we can fill up the work queue
@@ -312,12 +319,17 @@ privilege_drop(void **state) {
 	isc_result_t result;
 	isc_task_t *task1 = NULL, *task2 = NULL;
 	isc_event_t *event = NULL;
-	atomic_int a = -1, b = -1, c = -1, d = -1, e = -1;	/* non valid states */
+	atomic_int a, b, c, d, e;	/* non valid states */
 	int i = 0;
 
 	UNUSED(state);
 
 	atomic_init(&counter, 1);
+	atomic_init(&a, -1);
+	atomic_init(&b, -1);
+	atomic_init(&c, -1);
+	atomic_init(&d, -1);
+	atomic_init(&e, -1);
 
 	/*
 	 * Pause the task manager so we can fill up the work queue
