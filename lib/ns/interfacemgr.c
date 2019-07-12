@@ -420,7 +420,9 @@ ns_interface_create(ns_interfacemgr_t *mgr, isc_sockaddr_t *addr,
 	ISC_LINK_INIT(ifp, link);
 
 	ns_interfacemgr_attach(mgr, &ifp->mgr);
+	LOCK(&mgr->lock);
 	ISC_LIST_APPEND(mgr->interfaces, ifp, link);
+	UNLOCK(&mgr->lock);
 
 	isc_refcount_init(&ifp->references, 1);
 	ifp->magic = IFACE_MAGIC;
@@ -610,7 +612,9 @@ ns_interface_setup(ns_interfacemgr_t *mgr, isc_sockaddr_t *addr,
 	return (result);
 
  cleanup_interface:
+	LOCK(&ifp->mgr->lock);
 	ISC_LIST_UNLINK(ifp->mgr->interfaces, ifp, link);
+	UNLOCK(&ifp->mgr->lock);
 	ns_interface_detach(&ifp);
 	return (result);
 }
@@ -623,14 +627,13 @@ ns_interface_shutdown(ns_interface_t *ifp) {
 
 static void
 ns_interface_destroy(ns_interface_t *ifp) {
-	isc_mem_t *mctx = ifp->mgr->mctx;
-	int disp;
-
 	REQUIRE(NS_INTERFACE_VALID(ifp));
+
+	isc_mem_t *mctx = ifp->mgr->mctx;
 
 	ns_interface_shutdown(ifp);
 
-	for (disp = 0; disp < ifp->nudpdispatch; disp++)
+	for (int disp = 0; disp < ifp->nudpdispatch; disp++)
 		if (ifp->udpdispatch[disp] != NULL) {
 			dns_dispatch_changeattributes(ifp->udpdispatch[disp], 0,
 						    DNS_DISPATCHATTR_NOLISTEN);
@@ -648,6 +651,7 @@ ns_interface_destroy(ns_interface_t *ifp) {
 	isc_refcount_destroy(&ifp->ntcpaccepting);
 
 	ifp->magic = 0;
+
 	isc_mem_put(mctx, ifp, sizeof(*ifp));
 }
 
@@ -676,11 +680,13 @@ ns_interface_detach(ns_interface_t **targetp) {
 static ns_interface_t *
 find_matching_interface(ns_interfacemgr_t *mgr, isc_sockaddr_t *addr) {
 	ns_interface_t *ifp;
+	LOCK(&mgr->lock);
 	for (ifp = ISC_LIST_HEAD(mgr->interfaces); ifp != NULL;
 	     ifp = ISC_LIST_NEXT(ifp, link)) {
 		if (isc_sockaddr_equal(&ifp->addr, addr))
 			break;
 	}
+	UNLOCK(&mgr->lock);
 	return (ifp);
 }
 
@@ -690,6 +696,7 @@ find_matching_interface(ns_interfacemgr_t *mgr, isc_sockaddr_t *addr) {
 static void
 purge_old_interfaces(ns_interfacemgr_t *mgr) {
 	ns_interface_t *ifp, *next;
+	LOCK(&mgr->lock);
 	for (ifp = ISC_LIST_HEAD(mgr->interfaces); ifp != NULL; ifp = next) {
 		INSIST(NS_INTERFACE_VALID(ifp));
 		next = ISC_LIST_NEXT(ifp, link);
@@ -704,6 +711,7 @@ purge_old_interfaces(ns_interfacemgr_t *mgr) {
 			ns_interface_detach(&ifp);
 		}
 	}
+	UNLOCK(&mgr->lock);
 }
 
 static isc_result_t
@@ -784,6 +792,7 @@ setup_listenon(ns_interfacemgr_t *mgr, isc_interface_t *interface,
 
 	isc_sockaddr_fromnetaddr(addr, &interface->address, port);
 
+	LOCK(&mgr->lock);
 	for (old = ISC_LIST_HEAD(mgr->listenon);
 	     old != NULL;
 	     old = ISC_LIST_NEXT(old, link))
@@ -794,18 +803,21 @@ setup_listenon(ns_interfacemgr_t *mgr, isc_interface_t *interface,
 		isc_mem_put(mgr->mctx, addr, sizeof(*addr));
 	else
 		ISC_LIST_APPEND(mgr->listenon, addr, link);
+	UNLOCK(&mgr->lock);
 }
 
 static void
 clearlistenon(ns_interfacemgr_t *mgr) {
 	isc_sockaddr_t *old;
 
+	LOCK(&mgr->lock);
 	old = ISC_LIST_HEAD(mgr->listenon);
 	while (old != NULL) {
 		ISC_LIST_UNLINK(mgr->listenon, old, link);
 		isc_mem_put(mgr->mctx, old, sizeof(*old));
 		old = ISC_LIST_HEAD(mgr->listenon);
 	}
+	UNLOCK(&mgr->lock);
 }
 
 static isc_result_t
@@ -1281,15 +1293,23 @@ ns_interfacemgr_listeningon(ns_interfacemgr_t *mgr,
 			    const isc_sockaddr_t *addr)
 {
 	isc_sockaddr_t *old;
+	bool result = false;
 
 	REQUIRE(NS_INTERFACEMGR_VALID(mgr));
 
+	LOCK(&mgr->lock);
 	for (old = ISC_LIST_HEAD(mgr->listenon);
 	     old != NULL;
 	     old = ISC_LIST_NEXT(old, link))
-		if (isc_sockaddr_equal(old, addr))
-			return (true);
-	return (false);
+	{
+		if (isc_sockaddr_equal(old, addr)) {
+			result = true;
+			break;
+		}
+	}
+	UNLOCK(&mgr->lock);
+
+	return (result);
 }
 
 ns_interface_t *
