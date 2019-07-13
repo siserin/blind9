@@ -14,6 +14,8 @@ variables:
   BUILD_PARALLEL_JOBS: 6
   TEST_PARALLEL_JOBS: 6
 
+  TSAN_OPTIONS: "second_deadlock_stack=1 history_size=4 external_symbolizer_path=/usr/bin/llvm-symbolizer-8"
+
 stages:
   - precheck
   - build
