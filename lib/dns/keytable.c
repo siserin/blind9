@@ -577,7 +577,7 @@ dns_keytable_detachkeynode(dns_keytable_t *keytable, dns_keynode_t **keynodep)
 	REQUIRE(VALID_KEYTABLE(keytable));
 	REQUIRE(keynodep != NULL && VALID_KEYNODE(*keynodep));
 
-	INSIST(isc_refcount_decrement(&keytable->active_nodes) > 0);
+	isc_refcount_decrement(&keytable->active_nodes);
 	dns_keynode_detach(keytable->mctx, keynodep);
 }
 
@@ -735,7 +735,7 @@ dns_keytable_forall(dns_keytable_t *keytable,
 			break;
 		}
 	}
-	INSIST(isc_refcount_decrement(&keytable->active_nodes) > 0);
+	isc_refcount_decrement(&keytable->active_nodes);
 
    cleanup:
 	dns_rbtnodechain_invalidate(&chain);

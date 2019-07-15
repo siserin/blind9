@@ -1919,7 +1919,9 @@ free_socket(isc__socket_t **socketp) {
 	isc__socket_t *sock = *socketp;
 
 	INSIST(VALID_SOCKET(sock));
-	INSIST(isc_refcount_current(&sock->references) == 0);
+
+	isc_refcount_destroy(&sock->references);
+
 	INSIST(!sock->connecting);
 	INSIST(ISC_LIST_EMPTY(sock->recv_list));
 	INSIST(ISC_LIST_EMPTY(sock->send_list));

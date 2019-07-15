@@ -315,7 +315,7 @@ dns_view_create(isc_mem_t *mctx, dns_rdataclass_t rdclass,
 	}
 
  cleanup_references:
-	INSIST(isc_refcount_decrement(&view->references) > 0);
+	isc_refcount_decrement(&view->references);
 	isc_refcount_destroy(&view->references);
 
 	if (view->fwdtable != NULL) {

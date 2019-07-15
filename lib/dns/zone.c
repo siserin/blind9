@@ -1086,7 +1086,7 @@ dns_zone_create(dns_zone_t **zonep, isc_mem_t *mctx) {
 		isc_stats_detach(&zone->gluecachestats);
 
  free_refs:
-	INSIST(isc_refcount_decrement(&zone->erefs) > 0);
+	isc_refcount_decrement(&zone->erefs);
 	isc_refcount_destroy(&zone->erefs);
 	isc_refcount_destroy(&zone->irefs);
 
@@ -1112,8 +1112,8 @@ zone_free(dns_zone_t *zone) {
 	dns_include_t *include;
 
 	REQUIRE(DNS_ZONE_VALID(zone));
-	REQUIRE(isc_refcount_current(&zone->erefs) == 0);
-	REQUIRE(isc_refcount_current(&zone->irefs) == 0);
+	isc_refcount_destroy(&zone->erefs);
+	isc_refcount_destroy(&zone->irefs);
 	REQUIRE(!LOCKED_ZONE(zone));
 	REQUIRE(zone->timer == NULL);
 	REQUIRE(zone->zmgr == NULL);
@@ -5499,7 +5499,7 @@ dns_zone_detach(dns_zone_t **zonep) {
 void
 dns_zone_iattach(dns_zone_t *source, dns_zone_t **target) {
 	REQUIRE(DNS_ZONE_VALID(source));
-	REQUIRE(target != NULL && *target == NULL);
+
 	LOCK_ZONE(source);
 	zone_iattach(source, target);
 	UNLOCK_ZONE(source);
@@ -5507,17 +5507,15 @@ dns_zone_iattach(dns_zone_t *source, dns_zone_t **target) {
 
 static void
 zone_iattach(dns_zone_t *source, dns_zone_t **target) {
-
-	/*
-	 * 'source' locked by caller.
-	 */
-	REQUIRE(LOCKED_ZONE(source));
 	REQUIRE(DNS_ZONE_VALID(source));
 	REQUIRE(target != NULL && *target == NULL);
+	REQUIRE(LOCKED_ZONE(source));
+
 	INSIST(isc_refcount_increment(&source->irefs) +
 	       isc_refcount_current(&source->erefs) > 0);
 	*target = source;
 }
+
 
 static void
 zone_idetach(dns_zone_t **zonep) {
@@ -5527,8 +5525,9 @@ zone_idetach(dns_zone_t **zonep) {
 	 * 'zone' locked by caller.
 	 */
 	REQUIRE(zonep != NULL && DNS_ZONE_VALID(*zonep));
-	zone = *zonep;
 	REQUIRE(LOCKED_ZONE(*zonep));
+
+	zone = *zonep;
 	*zonep = NULL;
 
 	INSIST(isc_refcount_decrement(&zone->irefs) - 1 +
@@ -5541,6 +5540,7 @@ dns_zone_idetach(dns_zone_t **zonep) {
 	bool free_needed;
 
 	REQUIRE(zonep != NULL && DNS_ZONE_VALID(*zonep));
+
 	zone = *zonep;
 	*zonep = NULL;
 

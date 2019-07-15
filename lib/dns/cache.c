@@ -338,7 +338,7 @@ cache_free(dns_cache_t *cache) {
 	int i;
 
 	REQUIRE(VALID_CACHE(cache));
-	REQUIRE(isc_refcount_current(&cache->references) == 0);
+	isc_refcount_destroy(&cache->references);
 
 	isc_mem_setwater(cache->mctx, NULL, NULL, 0, 0);
 

@@ -4,9 +4,15 @@
 #include <isc/refcount.h>
 
 @depends on has_isc_refcount_h@
-
 expression E;
 @@
 
 - isc_refcount_increment0(E);
 + isc_refcount_increment(E);
+
+@depends on has_isc_refcount_h@
+expression E;
+@@
+
+- REQUIRE(isc_refcount_current(E) == 0);
++ isc_refcount_destroy(E);
