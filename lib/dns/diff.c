@@ -231,6 +231,34 @@ setresign(dns_rdataset_t *modified) {
 	return ((isc_stdtime_t)when);
 }
 
+static isc_stdtime_t
+settimeouttime(dns_rdataset_t *modified) {
+	dns_rdata_t rdata = DNS_RDATA_INIT;
+	dns_rdata_timeout_t timeout;
+	uint64_t when;
+	isc_result_t result;
+
+	result = dns_rdataset_first(modified);
+	INSIST(result == ISC_R_SUCCESS);
+	dns_rdataset_current(modified, &rdata);
+	(void)dns_rdata_tostruct(&rdata, &timeout, NULL);
+	when = timeout.when;
+	dns_rdata_reset(&rdata);
+
+	result = dns_rdataset_next(modified);
+	while (result == ISC_R_SUCCESS) {
+		dns_rdataset_current(modified, &rdata);
+		(void)dns_rdata_tostruct(&rdata, &timeout, NULL);
+		if (timeout.when < when) {
+			when = timeout.when;
+		}
+		dns_rdata_reset(&rdata);
+		result = dns_rdataset_next(modified);
+	}
+	INSIST(result == ISC_R_NOMORE);
+	return ((isc_stdtime_t)when);
+}
+
 static void
 getownercase(dns_rdataset_t *rdataset, dns_name_t *name) {
 	if (dns_rdataset_isassociated(rdataset))
@@ -387,6 +415,14 @@ diff_apply(dns_diff_t *diff, dns_db_t *db, dns_dbversion_t *ver,
 					resign = setresign(&ardataset);
 					dns_db_setsigningtime(db, &ardataset,
 							      resign);
+				}
+				if (rds.type == dns_rdatatype_timeout &&
+				    (op == DNS_DIFFOP_DELRESIGN ||
+				     op == DNS_DIFFOP_ADDRESIGN)) {
+					isc_stdtime_t when;
+					when = settimeouttime(&ardataset);
+					dns_db_settimeouttime(db, &ardataset,
+							      when);
 				}
 				if (op == DNS_DIFFOP_ADD ||
 				    op == DNS_DIFFOP_ADDRESIGN)
