@@ -1796,7 +1796,7 @@ new_reference(dns_rbtdb_t *rbtdb, dns_rbtnode_t *node) {
 	INSIST(!ISC_LINK_LINKED(node, deadlink));
 	if (isc_refcount_increment(&node->references) == 0) {
 		/* this is the first reference to the node */
-		isc_refcount_increment0(&rbtdb->node_locks[node->locknum].references);
+		isc_refcount_increment(&rbtdb->node_locks[node->locknum].references);
 	}
 }
 
@@ -2478,11 +2478,9 @@ closeversion(dns_db_t *db, dns_dbversion_t **versionp, bool commit) {
 			/*
 			 * Keep the current version in the open list, and
 			 * gain a reference for the DB itself (see the DB
-			 * creation function below).  This must be the only
-			 * case where we need to increment the counter from
-			 * zero and need to use isc_refcount_increment0().
+			 * creation function below).
 			 */
-			INSIST(isc_refcount_increment0(&version->references) == 0);
+			INSIST(isc_refcount_increment(&version->references) == 0);
 			PREPEND(rbtdb->open_versions,
 				rbtdb->current_version, link);
 			resigned_list = version->resigned_list;
@@ -10014,7 +10012,7 @@ no_glue:
 	 * when named is terminated by a keyboard break. This doesn't
 	 * cleanup the node reference and keeps the process dangling.
 	 */
-	/* isc_refcount_increment0(&node->references); */
+	/* isc_refcount_increment(&node->references); */
 	cur->node = node;
 
 	if (ctx.glue_list == NULL) {

@@ -399,7 +399,7 @@ dns_keytable_find(dns_keytable_t *keytable, const dns_name_t *keyname,
 				  DNS_RBTFIND_NOOPTIONS, NULL, NULL);
 	if (result == ISC_R_SUCCESS) {
 		if (node->data != NULL) {
-			isc_refcount_increment0(&keytable->active_nodes);
+			isc_refcount_increment(&keytable->active_nodes);
 			dns_keynode_attach(node->data, keynodep);
 		} else
 			result = ISC_R_NOTFOUND;
@@ -475,7 +475,7 @@ dns_keytable_findkeynode(dns_keytable_t *keytable, const dns_name_t *name,
 				break;
 		}
 		if (knode != NULL) {
-			isc_refcount_increment0(&keytable->active_nodes);
+			isc_refcount_increment(&keytable->active_nodes);
 			dns_keynode_attach(knode, keynodep);
 		} else
 			result = DNS_R_PARTIALMATCH;
@@ -723,7 +723,7 @@ dns_keytable_forall(dns_keytable_t *keytable,
 			result = ISC_R_SUCCESS;
 		goto cleanup;
 	}
-	isc_refcount_increment0(&keytable->active_nodes);
+	isc_refcount_increment(&keytable->active_nodes);
 	for (;;) {
 		dns_rbtnodechain_current(&chain, NULL, NULL, &node);
 		if (node->data != NULL)

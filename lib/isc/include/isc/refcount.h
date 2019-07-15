@@ -63,19 +63,6 @@ typedef atomic_uint_fast32_t isc_refcount_t;
 #define isc_refcount_destroy(target)				\
 	ISC_REQUIRE(isc_refcount_current(target) == 0)
 
-/** \def isc_refcount_increment0(ref)
- *  \brief increases reference counter by 1.
- *  \param[in] ref pointer to reference counter.
- *  \returns previous value of reference counter.
- */
-#define isc_refcount_increment0(target)					\
-	({								\
-	uint32_t __v;							\
-	__v = atomic_fetch_add_explicit(target, 1, memory_order_relaxed); \
-	INSIST(__v >= 0);						\
-	__v;								\
-	})
-
 /** \def isc_refcount_increment(ref)
  *  \brief increases reference counter by 1.
  *  \param[in] ref pointer to reference counter.

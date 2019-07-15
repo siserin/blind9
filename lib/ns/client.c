@@ -23,6 +23,7 @@
 #include <isc/print.h>
 #include <isc/queue.h>
 #include <isc/random.h>
+#include <isc/refcount.h>
 #include <isc/safe.h>
 #include <isc/serial.h>
 #include <isc/siphash.h>
@@ -422,7 +423,7 @@ tcpconn_detach(ns_client_t *client) {
 static void
 mark_tcp_active(ns_client_t *client, bool active) {
 	if (active && !client->tcpactive) {
-		isc_refcount_increment0(&client->interface->ntcpactive);
+		isc_refcount_increment(&client->interface->ntcpactive);
 		client->tcpactive = active;
 	} else if (!active && client->tcpactive) {
 		uint32_t old =
@@ -3513,7 +3514,7 @@ client_accept(ns_client_t *client) {
 	 * listening for connections itself to prevent the interface
 	 * going dead.
 	 */
-	isc_refcount_increment0(&client->interface->ntcpaccepting);
+	isc_refcount_increment(&client->interface->ntcpaccepting);
 }
 
 static void

@@ -1,0 +1,12 @@
+@has_isc_refcount_h@
+@@
+
+#include <isc/refcount.h>
+
+@depends on has_isc_refcount_h@
+
+expression E;
+@@
+
+- isc_refcount_increment0(E);
++ isc_refcount_increment(E);
