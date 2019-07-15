@@ -1306,9 +1306,14 @@ delete_if_action(void *data, rr_t *rr) {
 	conditional_delete_ctx_t *ctx = data;
 	if ((*ctx->predicate)(ctx->update_rr, &rr->rdata)) {
 		isc_result_t result;
-		result = update_one_rr(ctx->db, ctx->ver, ctx->diff,
-				       DNS_DIFFOP_DEL, ctx->name,
-				       rr->ttl, &rr->rdata);
+		dns_diffop_t op;
+		if (rr->rdata.type == dns_rdatatype_timeout) {
+			op = DNS_DIFFOP_DELRESIGN;
+		} else {
+			op = DNS_DIFFOP_DEL;
+		}
+		result = update_one_rr(ctx->db, ctx->ver, ctx->diff, op,
+				       ctx->name, rr->ttl, &rr->rdata);
 		return (result);
 	} else {
 		return (ISC_R_SUCCESS);
@@ -2983,6 +2988,7 @@ update_action(isc_task_t *task, isc_event_t *event) {
 					dns_diff_clear(&ctx.del_diff);
 					dns_diff_clear(&ctx.add_diff);
 				} else {
+					dns_diffop_t op;
 					result = do_diff(&ctx.del_diff, db, ver,
 							 &diff);
 					if (result == ISC_R_SUCCESS) {
@@ -2995,8 +3001,11 @@ update_action(isc_task_t *task, isc_event_t *event) {
 						dns_diff_clear(&ctx.add_diff);
 						goto failure;
 					}
-					CHECK(update_one_rr(db, ver, &diff,
-							    DNS_DIFFOP_ADD,
+					if (rdata.type == dns_rdatatype_timeout)
+						op = DNS_DIFFOP_ADDRESIGN;
+					else
+						op = DNS_DIFFOP_ADD;
+					CHECK(update_one_rr(db, ver, &diff, op,
 							    name, ttl, &rdata));
 				}
 			}
