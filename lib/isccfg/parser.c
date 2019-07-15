@@ -2888,7 +2888,7 @@ cfg_parse_netprefix(cfg_parser_t *pctx, const cfg_type_t *type,
 	} else {
 		if (isprefix) {
 			cfg_parser_error(pctx, CFG_LOG_NEAR,
-				         "Incomplete IPv4 address / prefix");
+					 "Incomplete IPv4 address / prefix");
 			return (ISC_R_FAILURE);
 		}
 		prefixlen = addrlen;
