@@ -1,3 +1,6 @@
+5264.	[bug]		Detect partial prefixes / incomplete IPv4 address in
+			acls. [GL #1143]
+
 	--- 9.15.2 released ---
 
 5263.	[cleanup]	Use atomics and isc_refcount_t wherever possible.
