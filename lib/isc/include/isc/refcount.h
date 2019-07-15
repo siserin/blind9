@@ -68,23 +68,40 @@ typedef atomic_uint_fast32_t isc_refcount_t;
  *  \param[in] ref pointer to reference counter.
  *  \returns previous value of reference counter.
  */
-#define isc_refcount_increment0(target)				\
-	isc_refcount_increment(target)
+#define isc_refcount_increment0(target)					\
+	({								\
+	uint32_t __r;							\
+	__r = atomic_fetch_add_explicit(target, 1, memory_order_relaxed); \
+	INSIST(__r < UINT32_MAX);				\
+	__r;								\
+	})
 
 /** \def isc_refcount_increment(ref)
  *  \brief increases reference counter by 1.
  *  \param[in] ref pointer to reference counter.
  *  \returns previous value of reference counter.
  */
-#define isc_refcount_increment(target)				\
-	atomic_fetch_add_explicit(target, 1, memory_order_relaxed)
+#define isc_refcount_increment(target)					\
+	({								\
+		uint32_t __r;						\
+		__r = atomic_fetch_add_explicit(target, 1,		\
+						memory_order_relaxed);	\
+		INSIST(__r > 0 && __r < UINT32_MAX);			\
+		__r;							\
+	})
 
 /** \def isc_refcount_decrement(ref)
  *  \brief decreases reference counter by 1.
  *  \param[in] ref pointer to reference counter.
  *  \returns previous value of reference counter.
  */
-#define isc_refcount_decrement(target)				\
-	atomic_fetch_sub_explicit(target, 1, memory_order_release)
+#define isc_refcount_decrement(target)					\
+	({								\
+		uint32_t __r;						\
+		__r = atomic_fetch_sub_explicit(target, 1,		\
+						memory_order_release);	\
+		INSIST(__r > 0);					\
+		__r;							\
+	})
 
 ISC_LANG_ENDDECLS
