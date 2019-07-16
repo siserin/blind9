@@ -12,9 +12,9 @@
 #ifndef ISC_DIR_H
 #define ISC_DIR_H 1
 
-#include <windows.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <windows.h>
 
 #include <isc/lang.h>
 #include <isc/result.h>
@@ -28,17 +28,17 @@
 #endif
 
 typedef struct {
-	char 		name[NAME_MAX];
-	unsigned int	length;
-	WIN32_FIND_DATA	find_data;
+	char name[NAME_MAX];
+	unsigned int length;
+	WIN32_FIND_DATA find_data;
 } isc_direntry_t;
 
 typedef struct {
-	unsigned int	magic;
-	char		dirname[PATH_MAX];
-	isc_direntry_t	entry;
-	bool	entry_filled;
-	HANDLE        	search_handle;
+	unsigned int magic;
+	char dirname[PATH_MAX];
+	isc_direntry_t entry;
+	bool entry_filled;
+	HANDLE search_handle;
 } isc_dir_t;
 
 ISC_LANG_BEGINDECLS

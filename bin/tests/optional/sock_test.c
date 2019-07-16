@@ -25,7 +25,8 @@ isc_mem_t *mctx;
 isc_taskmgr_t *manager;
 
 static void
-my_shutdown(isc_task_t *task, isc_event_t *event) {
+my_shutdown(isc_task_t *task, isc_event_t *event)
+{
 	char *name = event->ev_arg;
 
 	printf("shutdown %s (%p)\n", name, task);
@@ -34,7 +35,8 @@ my_shutdown(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-my_send(isc_task_t *task, isc_event_t *event) {
+my_send(isc_task_t *task, isc_event_t *event)
+{
 	isc_socket_t *sock;
 	isc_socketevent_t *dev;
 
@@ -43,9 +45,8 @@ my_send(isc_task_t *task, isc_event_t *event) {
 
 	printf("my_send: %s task %p\n\t(sock %p, base %p, length %u, n %u, "
 	       "result %u)\n",
-	       (char *)(event->ev_arg), task, sock,
-	       dev->region.base, dev->region.length,
-	       dev->n, dev->result);
+	       (char *)(event->ev_arg), task, sock, dev->region.base,
+	       dev->region.length, dev->n, dev->result);
 
 	if (dev->result != ISC_R_SUCCESS) {
 		isc_socket_detach(&sock);
@@ -59,7 +60,8 @@ my_send(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-my_recv(isc_task_t *task, isc_event_t *event) {
+my_recv(isc_task_t *task, isc_event_t *event)
+{
 	isc_socket_t *sock;
 	isc_socketevent_t *dev;
 	isc_region_t region;
@@ -70,17 +72,16 @@ my_recv(isc_task_t *task, isc_event_t *event) {
 	dev = (isc_socketevent_t *)event;
 
 	printf("Socket %s (sock %p, base %p, length %u, n %u, result %u)\n",
-	       (char *)(event->ev_arg), sock,
-	       dev->region.base, dev->region.length,
-	       dev->n, dev->result);
+	       (char *)(event->ev_arg), sock, dev->region.base,
+	       dev->region.length, dev->n, dev->result);
 	if (dev->address.type.sa.sa_family == AF_INET6) {
-		inet_ntop(AF_INET6, &dev->address.type.sin6.sin6_addr,
-			  host, sizeof(host));
+		inet_ntop(AF_INET6, &dev->address.type.sin6.sin6_addr, host,
+			  sizeof(host));
 		printf("\tFrom: %s port %d\n", host,
 		       ntohs(dev->address.type.sin6.sin6_port));
 	} else {
-		inet_ntop(AF_INET, &dev->address.type.sin.sin_addr,
-			  host, sizeof(host));
+		inet_ntop(AF_INET, &dev->address.type.sin.sin_addr, host,
+			  sizeof(host));
 		printf("\tFrom: %s port %d\n", host,
 		       ntohs(dev->address.type.sin.sin_port));
 	}
@@ -112,8 +113,8 @@ my_recv(isc_task_t *task, isc_event_t *event) {
 		isc_socket_send(sock, &region, task, my_send, event->ev_arg);
 	} else {
 		region = dev->region;
-		printf("\r\nReceived: %.*s\r\n\r\n",
-		       (int)dev->n, (char *)region.base);
+		printf("\r\nReceived: %.*s\r\n\r\n", (int)dev->n,
+		       (char *)region.base);
 	}
 
 	isc_socket_recv(sock, &dev->region, 1, task, my_recv, event->ev_arg);
@@ -122,7 +123,8 @@ my_recv(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-my_http_get(isc_task_t *task, isc_event_t *event) {
+my_http_get(isc_task_t *task, isc_event_t *event)
+{
 	isc_socket_t *sock;
 	isc_socketevent_t *dev;
 
@@ -131,9 +133,8 @@ my_http_get(isc_task_t *task, isc_event_t *event) {
 
 	printf("my_http_get: %s task %p\n\t(sock %p, base %p, length %u, "
 	       "n %u, result %u)\n",
-	       (char *)(event->ev_arg), task, sock,
-	       dev->region.base, dev->region.length,
-	       dev->n, dev->result);
+	       (char *)(event->ev_arg), task, sock, dev->region.base,
+	       dev->region.length, dev->n, dev->result);
 
 	if (dev->result != ISC_R_SUCCESS) {
 		isc_socket_detach(&sock);
@@ -150,7 +151,8 @@ my_http_get(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-my_connect(isc_task_t *task, isc_event_t *event) {
+my_connect(isc_task_t *task, isc_event_t *event)
+{
 	isc_socket_t *sock;
 	isc_socket_connev_t *dev;
 	isc_region_t region;
@@ -190,7 +192,8 @@ my_connect(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-my_listen(isc_task_t *task, isc_event_t *event) {
+my_listen(isc_task_t *task, isc_event_t *event)
+{
 	char *name = event->ev_arg;
 	isc_socket_newconnev_t *dev;
 	isc_region_t region;
@@ -199,8 +202,8 @@ my_listen(isc_task_t *task, isc_event_t *event) {
 
 	dev = (isc_socket_newconnev_t *)event;
 
-	printf("newcon %s (task %p, oldsock %p, newsock %p, result %u)\n",
-	       name, task, event->ev_sender, dev->newsocket, dev->result);
+	printf("newcon %s (task %p, oldsock %p, newsock %p, result %u)\n", name,
+	       task, event->ev_sender, dev->newsocket, dev->result);
 	fflush(stdout);
 
 	if (dev->result == ISC_R_SUCCESS) {
@@ -208,8 +211,8 @@ my_listen(isc_task_t *task, isc_event_t *event) {
 		 * Queue another listen on this socket.
 		 */
 		RUNTIME_CHECK(isc_socket_accept(event->ev_sender, task,
-						my_listen, event->ev_arg)
-			      == ISC_R_SUCCESS);
+						my_listen, event->ev_arg) ==
+			      ISC_R_SUCCESS);
 
 		region.base = isc_mem_get(mctx, 20);
 		region.length = 20;
@@ -219,10 +222,10 @@ my_listen(isc_task_t *task, isc_event_t *event) {
 		 * recv on it.
 		 */
 		newtask = NULL;
-		RUNTIME_CHECK(isc_task_create(manager, 0, &newtask)
-			      == ISC_R_SUCCESS);
-		isc_socket_recv(dev->newsocket, &region, 1,
-				newtask, my_recv, event->ev_arg);
+		RUNTIME_CHECK(isc_task_create(manager, 0, &newtask) ==
+			      ISC_R_SUCCESS);
+		isc_socket_recv(dev->newsocket, &region, 1, newtask, my_recv,
+				event->ev_arg);
 		isc_task_detach(&newtask);
 	} else {
 		printf("detaching from socket %p\n", event->ev_sender);
@@ -239,7 +242,8 @@ my_listen(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-timeout(isc_task_t *task, isc_event_t *event) {
+timeout(isc_task_t *task, isc_event_t *event)
+{
 	isc_socket_t *sock = event->ev_arg;
 
 	printf("Timeout, canceling IO on socket %p (task %p)\n", sock, task);
@@ -255,7 +259,8 @@ static char xso1[] = "so1";
 static char xso2[] = "so2";
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char *argv[])
+{
 	isc_task_t *t1, *t2;
 	isc_timermgr_t *timgr;
 	isc_time_t expires;
@@ -340,14 +345,14 @@ main(int argc, char *argv[]) {
 	/*
 	 * Queue up the first accept event.
 	 */
-	RUNTIME_CHECK(isc_socket_accept(so1, t1, my_listen, xso1)
-		      == ISC_R_SUCCESS);
+	RUNTIME_CHECK(isc_socket_accept(so1, t1, my_listen, xso1) ==
+		      ISC_R_SUCCESS);
 	isc_time_settoepoch(&expires);
 	isc_interval_set(&interval, 10, 0);
 	ti1 = NULL;
 	RUNTIME_CHECK(isc_timer_create(timgr, isc_timertype_once, &expires,
-				       &interval, t1, timeout, so1, &ti1) ==
-		      ISC_R_SUCCESS);
+				       &interval, t1, timeout, so1,
+				       &ti1) == ISC_R_SUCCESS);
 
 	/*
 	 * Open up a socket that will connect to www.flame.org, port 80.
@@ -363,8 +368,8 @@ main(int argc, char *argv[]) {
 					isc_sockettype_tcp,
 					&so2) == ISC_R_SUCCESS);
 
-	RUNTIME_CHECK(isc_socket_connect(so2, &sockaddr, t2,
-					 my_connect, xso2) == ISC_R_SUCCESS);
+	RUNTIME_CHECK(isc_socket_connect(so2, &sockaddr, t2, my_connect,
+					 xso2) == ISC_R_SUCCESS);
 
 	/*
 	 * Detaching these is safe, since the socket will attach to the

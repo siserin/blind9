@@ -11,13 +11,12 @@
 
 #if HAVE_CMOCKA
 
+#include <inttypes.h>
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
-
-#include <stdlib.h>
 #include <stdio.h>
-#include <inttypes.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #define UNIT_TESTING
@@ -29,10 +28,11 @@
 
 #include "dnstest.h"
 
-#define TEST_ORIGIN	"test"
+#define TEST_ORIGIN "test"
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -44,7 +44,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	dns_test_end();
@@ -54,7 +55,8 @@ _teardown(void **state) {
 
 /* value = 0xfffffffff <-> 19691231235959 */
 static void
-epoch_minus_one_test(void **state) {
+epoch_minus_one_test(void **state)
+{
 	const char *test_text = "19691231235959";
 	const uint32_t test_time = 0xffffffff;
 	isc_result_t result;
@@ -76,7 +78,8 @@ epoch_minus_one_test(void **state) {
 
 /* value = 0x000000000 <-> 19700101000000*/
 static void
-epoch_test(void **state) {
+epoch_test(void **state)
+{
 	const char *test_text = "19700101000000";
 	const uint32_t test_time = 0x00000000;
 	isc_result_t result;
@@ -98,7 +101,8 @@ epoch_test(void **state) {
 
 /* value = 0x7fffffff <-> 20380119031407 */
 static void
-half_maxint_test(void **state) {
+half_maxint_test(void **state)
+{
 	const char *test_text = "20380119031407";
 	const uint32_t test_time = 0x7fffffff;
 	isc_result_t result;
@@ -120,7 +124,8 @@ half_maxint_test(void **state) {
 
 /* value = 0x80000000 <-> 20380119031408 */
 static void
-half_plus_one_test(void **state) {
+half_plus_one_test(void **state)
+{
 	const char *test_text = "20380119031408";
 	const uint32_t test_time = 0x80000000;
 	isc_result_t result;
@@ -142,7 +147,8 @@ half_plus_one_test(void **state) {
 
 /* value = 0xef68f5d0 <-> 19610307130000 */
 static void
-fifty_before_test(void **state) {
+fifty_before_test(void **state)
+{
 	isc_result_t result;
 	const char *test_text = "19610307130000";
 	const uint32_t test_time = 0xef68f5d0;
@@ -164,7 +170,8 @@ fifty_before_test(void **state) {
 
 /* value = 0x4d74d6d0 <-> 20110307130000 */
 static void
-some_ago_test(void **state) {
+some_ago_test(void **state)
+{
 	const char *test_text = "20110307130000";
 	const uint32_t test_time = 0x4d74d6d0;
 	isc_result_t result;
@@ -185,20 +192,20 @@ some_ago_test(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test_setup_teardown(epoch_minus_one_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(epoch_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(half_maxint_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(half_plus_one_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(fifty_before_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(some_ago_test,
-						_setup, _teardown),
+		cmocka_unit_test_setup_teardown(epoch_minus_one_test, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(epoch_test, _setup, _teardown),
+		cmocka_unit_test_setup_teardown(half_maxint_test, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(half_plus_one_test, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(fifty_before_test, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(some_ago_test, _setup,
+						_teardown),
 	};
 
 	return (cmocka_run_group_tests(tests, NULL, NULL));
@@ -209,7 +216,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

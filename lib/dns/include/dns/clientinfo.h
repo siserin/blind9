@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 #ifndef DNS_CLIENTINFO_H
 #define DNS_CLIENTINFO_H 1
 

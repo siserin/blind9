@@ -10,29 +10,30 @@
  */
 
 #include <inttypes.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
+
+#include <isc/endian.h>
+#include <isc/siphash.h>
+#include <isc/util.h>
 
 #include <openssl/opensslv.h>
 
-#include <isc/endian.h>
-#include <isc/util.h>
-#include <isc/siphash.h>
+#define ROTATE(x, b) (uint64_t)(((x) << (b)) | ((x) >> (64 - (b))))
 
-#define ROTATE(x, b) (uint64_t)( ((x) << (b)) | ( (x) >> (64 - (b))) )
-
-#define HALF_ROUND(a, b, c, d, s, t)		 \
-	a += b; c += d;				 \
-	b = ROTATE(b, s) ^ a;			 \
-	d = ROTATE(d, t) ^ c;			 \
+#define HALF_ROUND(a, b, c, d, s, t)                                           \
+	a += b;                                                                \
+	c += d;                                                                \
+	b = ROTATE(b, s) ^ a;                                                  \
+	d = ROTATE(d, t) ^ c;                                                  \
 	a = ROTATE(a, 32);
 
-#define FULL_ROUND(v0, v1, v2, v3)			      \
-	HALF_ROUND(v0, v1, v2, v3, 13, 16);		      \
+#define FULL_ROUND(v0, v1, v2, v3)                                             \
+	HALF_ROUND(v0, v1, v2, v3, 13, 16);                                    \
 	HALF_ROUND(v2, v1, v0, v3, 17, 21);
 
-#define DOUBLE_ROUND(v0, v1, v2, v3)		\
-	FULL_ROUND(v0, v1, v2, v3)			\
+#define DOUBLE_ROUND(v0, v1, v2, v3)                                           \
+	FULL_ROUND(v0, v1, v2, v3)                                             \
 	FULL_ROUND(v0, v1, v2, v3)
 
 #define SIPROUND FULL_ROUND
@@ -64,7 +65,8 @@ isc_siphash24(const uint8_t *k, const uint8_t *in, size_t inlen, uint8_t *out)
 
 		v0 ^= m;
 
-		inbuf++; left -= 8;
+		inbuf++;
+		left -= 8;
 	}
 
 	const uint8_t *end = in + (inlen - left);

@@ -15,32 +15,28 @@
 
 #include <isc/mem.h>
 #include <isc/print.h>
-#include <isc/string.h>		/* Required for HP/UX (and others?) */
+#include <isc/string.h> /* Required for HP/UX (and others?) */
 #include <isc/util.h>
 
-#include <isccfg/namedconf.h>
-#include <isccfg/aclconf.h>
-
 #include <dns/acl.h>
-#include <dns/iptable.h>
 #include <dns/fixedname.h>
+#include <dns/iptable.h>
 #include <dns/log.h>
 
-#define LOOP_MAGIC ISC_MAGIC('L','O','O','P')
+#include <isccfg/aclconf.h>
+#include <isccfg/namedconf.h>
+
+#define LOOP_MAGIC ISC_MAGIC('L', 'O', 'O', 'P')
 
 #if defined(HAVE_GEOIP2)
 static const char *geoip_dbnames[] = {
-	"country",
-	"city",
-	"asnum",
-	"isp",
-	"domain",
-	NULL,
+	"country", "city", "asnum", "isp", "domain", NULL,
 };
 #endif
 
 isc_result_t
-cfg_aclconfctx_create(isc_mem_t *mctx, cfg_aclconfctx_t **ret) {
+cfg_aclconfctx_create(isc_mem_t *mctx, cfg_aclconfctx_t **ret)
+{
 	cfg_aclconfctx_t *actx;
 
 	REQUIRE(mctx != NULL);
@@ -65,7 +61,8 @@ cfg_aclconfctx_create(isc_mem_t *mctx, cfg_aclconfctx_t **ret) {
 }
 
 void
-cfg_aclconfctx_attach(cfg_aclconfctx_t *src, cfg_aclconfctx_t **dest) {
+cfg_aclconfctx_attach(cfg_aclconfctx_t *src, cfg_aclconfctx_t **dest)
+{
 	REQUIRE(src != NULL);
 	REQUIRE(dest != NULL && *dest == NULL);
 
@@ -74,7 +71,8 @@ cfg_aclconfctx_attach(cfg_aclconfctx_t *src, cfg_aclconfctx_t **dest) {
 }
 
 void
-cfg_aclconfctx_detach(cfg_aclconfctx_t **actxp) {
+cfg_aclconfctx_detach(cfg_aclconfctx_t **actxp)
+{
 	REQUIRE(actxp != NULL && *actxp != NULL);
 	cfg_aclconfctx_t *actx = *actxp;
 	*actxp = NULL;
@@ -82,10 +80,8 @@ cfg_aclconfctx_detach(cfg_aclconfctx_t **actxp) {
 	if (isc_refcount_decrement(&actx->references) == 1) {
 		dns_acl_t *dacl, *next;
 		isc_refcount_destroy(&actx->references);
-		for (dacl = ISC_LIST_HEAD(actx->named_acl_cache);
-		     dacl != NULL;
-		     dacl = next)
-		{
+		for (dacl = ISC_LIST_HEAD(actx->named_acl_cache); dacl != NULL;
+		     dacl = next) {
 			next = ISC_LIST_NEXT(dacl, nextincache);
 			ISC_LIST_UNLINK(actx->named_acl_cache, dacl,
 					nextincache);
@@ -99,7 +95,8 @@ cfg_aclconfctx_detach(cfg_aclconfctx_t **actxp) {
  * Find the definition of the named acl whose name is "name".
  */
 static isc_result_t
-get_acl_def(const cfg_obj_t *cctx, const char *name, const cfg_obj_t **ret) {
+get_acl_def(const cfg_obj_t *cctx, const char *name, const cfg_obj_t **ret)
+{
 	isc_result_t result;
 	const cfg_obj_t *acls = NULL;
 	const cfg_listelt_t *elt;
@@ -107,12 +104,11 @@ get_acl_def(const cfg_obj_t *cctx, const char *name, const cfg_obj_t **ret) {
 	result = cfg_map_get(cctx, "acl", &acls);
 	if (result != ISC_R_SUCCESS)
 		return (result);
-	for (elt = cfg_list_first(acls);
-	     elt != NULL;
+	for (elt = cfg_list_first(acls); elt != NULL;
 	     elt = cfg_list_next(elt)) {
 		const cfg_obj_t *acl = cfg_listelt_value(elt);
-		const char *aclname =
-			cfg_obj_asstring(cfg_tuple_get(acl, "name"));
+		const char *aclname = cfg_obj_asstring(cfg_tuple_get(acl, "nam"
+									  "e"));
 		if (strcasecmp(aclname, name) == 0) {
 			if (ret != NULL) {
 				*ret = cfg_tuple_get(acl, "value");
@@ -125,9 +121,8 @@ get_acl_def(const cfg_obj_t *cctx, const char *name, const cfg_obj_t **ret) {
 
 static isc_result_t
 convert_named_acl(const cfg_obj_t *nameobj, const cfg_obj_t *cctx,
-		  isc_log_t *lctx, cfg_aclconfctx_t *ctx,
-		  isc_mem_t *mctx, unsigned int nest_level,
-		  dns_acl_t **target)
+		  isc_log_t *lctx, cfg_aclconfctx_t *ctx, isc_mem_t *mctx,
+		  unsigned int nest_level, dns_acl_t **target)
 {
 	isc_result_t result;
 	const cfg_obj_t *cacl = NULL;
@@ -136,10 +131,8 @@ convert_named_acl(const cfg_obj_t *nameobj, const cfg_obj_t *cctx,
 	const char *aclname = cfg_obj_asstring(nameobj);
 
 	/* Look for an already-converted version. */
-	for (dacl = ISC_LIST_HEAD(ctx->named_acl_cache);
-	     dacl != NULL;
-	     dacl = ISC_LIST_NEXT(dacl, nextincache))
-	{
+	for (dacl = ISC_LIST_HEAD(ctx->named_acl_cache); dacl != NULL;
+	     dacl = ISC_LIST_NEXT(dacl, nextincache)) {
 		if (strcasecmp(aclname, dacl->name) == 0) {
 			if (ISC_MAGIC_VALID(dacl, LOOP_MAGIC)) {
 				cfg_obj_log(nameobj, lctx, ISC_LOG_ERROR,
@@ -165,8 +158,8 @@ convert_named_acl(const cfg_obj_t *nameobj, const cfg_obj_t *cctx,
 	DE_CONST(aclname, loop.name);
 	loop.magic = LOOP_MAGIC;
 	ISC_LIST_APPEND(ctx->named_acl_cache, &loop, nextincache);
-	result = cfg_acl_fromconfig(cacl, cctx, lctx, ctx, mctx,
-				    nest_level, &dacl);
+	result = cfg_acl_fromconfig(cacl, cctx, lctx, ctx, mctx, nest_level,
+				    &dacl);
 	ISC_LIST_UNLINK(ctx->named_acl_cache, &loop, nextincache);
 	loop.magic = 0;
 	loop.name = NULL;
@@ -226,16 +219,14 @@ count_acl_elements(const cfg_obj_t *caml, const cfg_obj_t *cctx,
 	if (has_negative != NULL)
 		*has_negative = false;
 
-	for (elt = cfg_list_first(caml);
-	     elt != NULL;
+	for (elt = cfg_list_first(caml); elt != NULL;
 	     elt = cfg_list_next(elt)) {
 		const cfg_obj_t *ce = cfg_listelt_value(elt);
 
 		/* might be a negated element, in which case get the value. */
 		if (cfg_obj_istuple(ce)) {
-			const cfg_obj_t *negated =
-				cfg_tuple_get(ce, "negated");
-			if (! cfg_obj_isvoid(negated)) {
+			const cfg_obj_t *negated = cfg_tuple_get(ce, "negated");
+			if (!cfg_obj_isvoid(negated)) {
 				ce = negated;
 				if (has_negative != NULL)
 					*has_negative = true;
@@ -256,16 +247,14 @@ count_acl_elements(const cfg_obj_t *caml, const cfg_obj_t *cctx,
 				n++;
 #if defined(HAVE_GEOIP2)
 		} else if (cfg_obj_istuple(ce) &&
-			   cfg_obj_isvoid(cfg_tuple_get(ce, "negated")))
-		{
+			   cfg_obj_isvoid(cfg_tuple_get(ce, "negated"))) {
 			n++;
 #endif /* HAVE_GEOIP2 */
 		} else if (cfg_obj_isstring(ce)) {
 			const char *name = cfg_obj_asstring(ce);
 			if (strcasecmp(name, "localhost") == 0 ||
 			    strcasecmp(name, "localnets") == 0 ||
-			    strcasecmp(name, "none") == 0)
-			{
+			    strcasecmp(name, "none") == 0) {
 				n++;
 			} else if (strcasecmp(name, "any") != 0) {
 				dns_acl_t *inneracl = NULL;
@@ -293,8 +282,8 @@ count_acl_elements(const cfg_obj_t *caml, const cfg_obj_t *cctx,
 
 #if defined(HAVE_GEOIP2)
 static dns_geoip_subtype_t
-get_subtype(const cfg_obj_t *obj, isc_log_t *lctx,
-	    dns_geoip_subtype_t subtype, const char *dbname)
+get_subtype(const cfg_obj_t *obj, isc_log_t *lctx, dns_geoip_subtype_t subtype,
+	    const char *dbname)
 {
 	if (dbname == NULL) {
 		return (subtype);
@@ -415,7 +404,8 @@ get_subtype(const cfg_obj_t *obj, isc_log_t *lctx,
 }
 
 static bool
-geoip_can_answer(dns_aclelement_t *elt, cfg_aclconfctx_t *ctx) {
+geoip_can_answer(dns_aclelement_t *elt, cfg_aclconfctx_t *ctx)
+{
 	if (ctx->geoip == NULL) {
 		return (true);
 	}
@@ -425,9 +415,7 @@ geoip_can_answer(dns_aclelement_t *elt, cfg_aclconfctx_t *ctx) {
 	case dns_geoip_countryname:
 	case dns_geoip_continentcode:
 	case dns_geoip_continent:
-		if (ctx->geoip->country != NULL ||
-		    ctx->geoip->city != NULL)
-		{
+		if (ctx->geoip->country != NULL || ctx->geoip->city != NULL) {
 			return (true);
 		}
 		break;
@@ -438,8 +426,8 @@ geoip_can_answer(dns_aclelement_t *elt, cfg_aclconfctx_t *ctx) {
 		if (ctx->geoip->country != NULL) {
 			return (true);
 		}
-	       /* city db can answer these too, so: */
-	       /* FALLTHROUGH */
+		/* city db can answer these too, so: */
+		/* FALLTHROUGH */
 	case dns_geoip_region:
 	case dns_geoip_regionname:
 	case dns_geoip_city_countrycode:
@@ -550,15 +538,14 @@ parse_geoip_element(const cfg_obj_t *obj, isc_log_t *lctx,
 		strlcpy(de.geoip_elem.as_string, search,
 			sizeof(de.geoip_elem.as_string));
 	} else if ((strcasecmp(stype, "region") == 0 ||
-		    strcasecmp(stype, "subdivision") == 0) && len == 2)
-	{
+		    strcasecmp(stype, "subdivision") == 0) &&
+		   len == 2) {
 		/* Two-letter region code */
 		subtype = dns_geoip_region;
 		strlcpy(de.geoip_elem.as_string, search,
 			sizeof(de.geoip_elem.as_string));
 	} else if (strcasecmp(stype, "region") == 0 ||
-		   strcasecmp(stype, "subdivision") == 0)
-	{
+		   strcasecmp(stype, "subdivision") == 0) {
 		/* Region name */
 		subtype = dns_geoip_regionname;
 		strlcpy(de.geoip_elem.as_string, search,
@@ -569,26 +556,22 @@ parse_geoip_element(const cfg_obj_t *obj, isc_log_t *lctx,
 		strlcpy(de.geoip_elem.as_string, search,
 			sizeof(de.geoip_elem.as_string));
 	} else if (strcasecmp(stype, "postal") == 0 ||
-		   strcasecmp(stype, "postalcode") == 0)
-	{
+		   strcasecmp(stype, "postalcode") == 0) {
 		if (len < 7) {
 			subtype = dns_geoip_city_postalcode;
 			strlcpy(de.geoip_elem.as_string, search,
 				sizeof(de.geoip_elem.as_string));
 		} else {
 			cfg_obj_log(obj, lctx, ISC_LOG_ERROR,
-				    "geoiop postal code (%s) too long",
-				    search);
+				    "geoiop postal code (%s) too long", search);
 			return (ISC_R_FAILURE);
 		}
 	} else if (strcasecmp(stype, "metro") == 0 ||
-		   strcasecmp(stype, "metrocode") == 0)
-	{
+		   strcasecmp(stype, "metrocode") == 0) {
 		subtype = dns_geoip_city_metrocode;
 		de.geoip_elem.as_int = atoi(search);
 	} else if (strcasecmp(stype, "tz") == 0 ||
-		   strcasecmp(stype, "timezone") == 0)
-	{
+		   strcasecmp(stype, "timezone") == 0) {
 		subtype = dns_geoip_city_timezonecode;
 		strlcpy(de.geoip_elem.as_string, search,
 			sizeof(de.geoip_elem.as_string));
@@ -611,16 +594,18 @@ parse_geoip_element(const cfg_obj_t *obj, isc_log_t *lctx,
 	} else {
 		cfg_obj_log(obj, lctx, ISC_LOG_ERROR,
 			    "type '%s' is unavailable "
-			    "in GeoIP2 databases", stype);
+			    "in GeoIP2 databases",
+			    stype);
 		return (ISC_R_FAILURE);
 	}
 
 	de.geoip_elem.subtype = get_subtype(obj, lctx, subtype, dbname);
 
-	if (! geoip_can_answer(&de, ctx)) {
+	if (!geoip_can_answer(&de, ctx)) {
 		cfg_obj_log(obj, lctx, ISC_LOG_ERROR,
 			    "no GeoIP2 database installed which can answer "
-			    "queries of type '%s'", stype);
+			    "queries of type '%s'",
+			    stype);
 		return (ISC_R_FAILURE);
 	}
 
@@ -632,19 +617,18 @@ parse_geoip_element(const cfg_obj_t *obj, isc_log_t *lctx,
 
 isc_result_t
 cfg_acl_fromconfig(const cfg_obj_t *caml, const cfg_obj_t *cctx,
-		   isc_log_t *lctx, cfg_aclconfctx_t *ctx,
-		   isc_mem_t *mctx, unsigned int nest_level,
-		   dns_acl_t **target)
+		   isc_log_t *lctx, cfg_aclconfctx_t *ctx, isc_mem_t *mctx,
+		   unsigned int nest_level, dns_acl_t **target)
 {
-	return (cfg_acl_fromconfig2(caml, cctx, lctx, ctx, mctx,
-				    nest_level, 0, target));
+	return (cfg_acl_fromconfig2(caml, cctx, lctx, ctx, mctx, nest_level, 0,
+				    target));
 }
 
 isc_result_t
 cfg_acl_fromconfig2(const cfg_obj_t *caml, const cfg_obj_t *cctx,
-		   isc_log_t *lctx, cfg_aclconfctx_t *ctx,
-		   isc_mem_t *mctx, unsigned int nest_level,
-		   uint16_t family, dns_acl_t **target)
+		    isc_log_t *lctx, cfg_aclconfctx_t *ctx, isc_mem_t *mctx,
+		    unsigned int nest_level, uint16_t family,
+		    dns_acl_t **target)
 {
 	isc_result_t result;
 	dns_acl_t *dacl = NULL, *inneracl = NULL;
@@ -679,8 +663,8 @@ cfg_acl_fromconfig2(const cfg_obj_t *caml, const cfg_obj_t *cctx,
 		uint32_t nelem;
 
 		if (nest_level == 0) {
-			result = count_acl_elements(caml, cctx, lctx, ctx,
-						    mctx, &nelem, NULL);
+			result = count_acl_elements(caml, cctx, lctx, ctx, mctx,
+						    &nelem, NULL);
 			if (result != ISC_R_SUCCESS)
 				return (result);
 		} else {
@@ -694,8 +678,7 @@ cfg_acl_fromconfig2(const cfg_obj_t *caml, const cfg_obj_t *cctx,
 	}
 
 	de = dacl->elements;
-	for (elt = cfg_list_first(caml);
-	     elt != NULL;
+	for (elt = cfg_list_first(caml); elt != NULL;
 	     elt = cfg_list_next(elt)) {
 		const cfg_obj_t *ce = cfg_listelt_value(elt);
 		bool neg = false;
@@ -704,9 +687,8 @@ cfg_acl_fromconfig2(const cfg_obj_t *caml, const cfg_obj_t *cctx,
 
 		if (cfg_obj_istuple(ce)) {
 			/* Might be a negated element */
-			const cfg_obj_t *negated =
-				cfg_tuple_get(ce, "negated");
-			if (! cfg_obj_isvoid(negated)) {
+			const cfg_obj_t *negated = cfg_tuple_get(ce, "negated");
+			if (!cfg_obj_isvoid(negated)) {
 				neg = true;
 				dacl->has_negatives = true;
 				ce = negated;
@@ -732,8 +714,8 @@ cfg_acl_fromconfig2(const cfg_obj_t *caml, const cfg_obj_t *cctx,
 
 		if (cfg_obj_isnetprefix(ce)) {
 			/* Network prefix */
-			isc_netaddr_t	addr;
-			unsigned int	bitlen;
+			isc_netaddr_t addr;
+			unsigned int bitlen;
 
 			cfg_obj_asnetprefix(ce, &addr, &bitlen);
 			if (family != 0 && family != addr.family) {
@@ -741,7 +723,8 @@ cfg_acl_fromconfig2(const cfg_obj_t *caml, const cfg_obj_t *cctx,
 				isc_netaddr_format(&addr, buf, sizeof(buf));
 				cfg_obj_log(ce, lctx, ISC_LOG_WARNING,
 					    "'%s': incorrect address family; "
-					    "ignoring", buf);
+					    "ignoring",
+					    buf);
 				if (nest_level != 0) {
 					dns_acl_detach(&de->nestedacl);
 				}
@@ -753,7 +736,8 @@ cfg_acl_fromconfig2(const cfg_obj_t *caml, const cfg_obj_t *cctx,
 				isc_netaddr_format(&addr, buf, sizeof(buf));
 				cfg_obj_log(ce, lctx, ISC_LOG_ERROR,
 					    "'%s/%u': address/prefix length "
-					    "mismatch", buf, bitlen);
+					    "mismatch",
+					    buf, bitlen);
 				goto cleanup;
 			}
 
@@ -786,13 +770,12 @@ cfg_acl_fromconfig2(const cfg_obj_t *caml, const cfg_obj_t *cctx,
 			if (inneracl != NULL) {
 				dns_acl_detach(&inneracl);
 			}
-			result = cfg_acl_fromconfig(ce, cctx, lctx,
-						    ctx, mctx, new_nest_level,
-						    &inneracl);
+			result = cfg_acl_fromconfig(ce, cctx, lctx, ctx, mctx,
+						    new_nest_level, &inneracl);
 			if (result != ISC_R_SUCCESS) {
 				goto cleanup;
 			}
-nested_acl:
+		nested_acl:
 			if (nest_level > 0 || inneracl->has_negatives) {
 				INSIST(dacl->length < dacl->alloc);
 				de->type = dns_aclelementtype_nestedacl;
@@ -804,10 +787,10 @@ nested_acl:
 				dns_acl_detach(&inneracl);
 				/* Fall through. */
 			} else {
-				INSIST(dacl->length + inneracl->length
-				       <= dacl->alloc);
+				INSIST(dacl->length + inneracl->length <=
+				       dacl->alloc);
 				dns_acl_merge(dacl, inneracl, !neg);
-				de += inneracl->length;  /* elements added */
+				de += inneracl->length; /* elements added */
 				dns_acl_detach(&inneracl);
 				INSIST(dacl->length <= dacl->alloc);
 				continue;
@@ -818,15 +801,13 @@ nested_acl:
 			de->type = dns_aclelementtype_keyname;
 			de->negative = neg;
 			dns_name_init(&de->keyname, NULL);
-			result = convert_keyname(ce, lctx, mctx,
-						 &de->keyname);
+			result = convert_keyname(ce, lctx, mctx, &de->keyname);
 			if (result != ISC_R_SUCCESS) {
 				goto cleanup;
 			}
 #if defined(HAVE_GEOIP2)
 		} else if (cfg_obj_istuple(ce) &&
-			   cfg_obj_isvoid(cfg_tuple_get(ce, "negated")))
-		{
+			   cfg_obj_isvoid(cfg_tuple_get(ce, "negated"))) {
 			INSIST(dacl->length < dacl->alloc);
 			result = parse_geoip_element(ce, lctx, ctx, de);
 			if (result != ISC_R_SUCCESS) {
@@ -918,8 +899,7 @@ nested_acl:
 		 * nonzero (i.e., in sortlists).
 		 */
 		if (de->nestedacl != NULL &&
-		    de->type != dns_aclelementtype_nestedacl)
-		{
+		    de->type != dns_aclelementtype_nestedacl) {
 			dns_acl_detach(&de->nestedacl);
 		}
 
@@ -934,7 +914,7 @@ nested_acl:
 	dns_acl_attach(dacl, target);
 	result = ISC_R_SUCCESS;
 
- cleanup:
+cleanup:
 	if (inneracl != NULL) {
 		dns_acl_detach(&inneracl);
 	}

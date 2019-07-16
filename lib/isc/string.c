@@ -45,7 +45,7 @@
 #endif
 #include <string.h>
 
-#include <isc/string.h>  // IWYU pragma: keep
+#include <isc/string.h> // IWYU pragma: keep
 
 #if !defined(HAVE_STRLCPY)
 size_t
@@ -67,13 +67,13 @@ strlcpy(char *dst, const char *src, size_t size)
 	/* Not enough room in dst, add NUL and traverse rest of src */
 	if (n == 0U) {
 		if (size != 0U) {
-			*d = '\0';		/* NUL-terminate dst */
+			*d = '\0'; /* NUL-terminate dst */
 		}
 		while (*s++)
 			;
 	}
 
-	return(s - src - 1);	/* count does not include NUL */
+	return (s - src - 1); /* count does not include NUL */
 }
 #endif /* !defined(HAVE_STRLCPY) */
 
@@ -94,7 +94,7 @@ strlcat(char *dst, const char *src, size_t size)
 	n = size - dlen;
 
 	if (n == 0U) {
-		return(dlen + strlen(s));
+		return (dlen + strlen(s));
 	}
 	while (*s != '\0') {
 		if (n != 1U) {
@@ -105,12 +105,13 @@ strlcat(char *dst, const char *src, size_t size)
 	}
 	*d = '\0';
 
-	return(dlen + (s - src));	/* count does not include NUL */
+	return (dlen + (s - src)); /* count does not include NUL */
 }
 #endif /* !defined(HAVE_STRLCAT) */
 
 int
-isc_string_strerror_r(int errnum, char *buf, size_t buflen) {
+isc_string_strerror_r(int errnum, char *buf, size_t buflen)
+{
 #if defined(_WIN32) || defined(_WIN64)
 	return (strerror_s(buf, buflen, errnum));
 #else

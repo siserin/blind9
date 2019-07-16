@@ -26,7 +26,9 @@ struct dns_ecs {
 	uint8_t scope;
 };
 
-#define DNS_ECS_FORMATSIZE (ISC_NETADDR_FORMATSIZE + 8) /* <address>/NNN/NNN */
+#define DNS_ECS_FORMATSIZE                                                     \
+	(ISC_NETADDR_FORMATSIZE + 8) /* <address>/NNN/NNN                      \
+				      */
 
 ISC_LANG_BEGINDECLS
 

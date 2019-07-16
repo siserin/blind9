@@ -11,14 +11,13 @@
 
 #if HAVE_CMOCKA
 
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
-
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 
 #define UNIT_TESTING
 #include <cmocka.h>
@@ -29,7 +28,8 @@
 #include "isctest.h"
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -41,7 +41,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	isc_test_end();
@@ -51,21 +52,23 @@ _teardown(void **state) {
 
 typedef struct item item_t;
 struct item {
-	int 			value;
-	ISC_QLINK(item_t)	qlink;
+	int value;
+	ISC_QLINK(item_t) qlink;
 };
 
 typedef ISC_QUEUE(item_t) item_queue_t;
 
 static void
-item_init(item_t *item, int value) {
+item_init(item_t *item, int value)
+{
 	item->value = value;
 	ISC_QLINK_INIT(item, qlink);
 }
 
 /* Test UDP sendto/recv (IPv4) */
 static void
-queue_valid(void **state) {
+queue_valid(void **state)
+{
 	item_queue_t queue;
 	item_t one, two, three, four, five;
 	item_t *p;
@@ -142,10 +145,10 @@ queue_valid(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test_setup_teardown(queue_valid,
-						_setup, _teardown),
+		cmocka_unit_test_setup_teardown(queue_valid, _setup, _teardown),
 	};
 
 	return (cmocka_run_group_tests(tests, NULL, NULL));
@@ -156,7 +159,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

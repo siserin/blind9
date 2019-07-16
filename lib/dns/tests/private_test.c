@@ -11,34 +11,34 @@
 
 #if HAVE_CMOCKA
 
-#include <stdarg.h>
-#include <stddef.h>
-#include <setjmp.h>
-
 #include <inttypes.h>
+#include <setjmp.h>
+#include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #define UNIT_TESTING
 #include <cmocka.h>
 
-#include <isc/util.h>
 #include <isc/buffer.h>
+#include <isc/util.h>
 
 #include <dns/nsec3.h>
 #include <dns/private.h>
 #include <dns/rdataclass.h>
 #include <dns/rdatatype.h>
 
-#include <dst/dst.h>
-
 #include "dnstest.h"
+
+#include <dst/dst.h>
 
 static dns_rdatatype_t privatetype = 65534;
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -50,7 +50,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	dns_test_end();
@@ -86,10 +87,14 @@ make_signing(signing_testcase_t *testcase, dns_rdata_t *private,
 	buf[2] = (testcase->keyid & 0xff);
 	buf[3] = testcase->remove;
 	buf[4] = testcase->complete;
-	private->data = buf;
-	private->length = len;
-	private->type = privatetype;
-	private->rdclass = dns_rdataclass_in;
+      private
+	->data = buf;
+      private
+	->length = len;
+      private
+	->type = privatetype;
+      private
+	->rdclass = dns_rdataclass_in;
 }
 
 static void
@@ -106,7 +111,7 @@ make_nsec3(nsec3_testcase_t *testcase, dns_rdata_t *private,
 
 	/* for simplicity, we're using a maximum salt length of 4 */
 	salt = htonl(testcase->salt);
-	sp = (unsigned char *) &salt;
+	sp = (unsigned char *)&salt;
 	while (slen > 0 && *sp == '\0') {
 		slen--;
 		sp++;
@@ -138,28 +143,27 @@ make_nsec3(nsec3_testcase_t *testcase, dns_rdata_t *private,
 
 	dns_rdata_init(private);
 
-	dns_nsec3param_toprivate(&nsec3param, private, privatetype,
-				 pbuf, DNS_NSEC3PARAM_BUFFERSIZE + 1);
+	dns_nsec3param_toprivate(&nsec3param, private, privatetype, pbuf,
+				 DNS_NSEC3PARAM_BUFFERSIZE + 1);
 }
 
 /* convert private signing records to text */
 static void
-private_signing_totext_test(void **state) {
+private_signing_totext_test(void **state)
+{
 	dns_rdata_t private;
 	int i;
 
-	signing_testcase_t testcases[] = {
-		{ DST_ALG_RSASHA512, 12345, 0, 0 },
-		{ DST_ALG_RSASHA256, 54321, 1, 0 },
-		{ DST_ALG_NSEC3RSASHA1, 22222, 0, 1 },
-		{ DST_ALG_RSASHA1, 33333, 1, 1 }
-	};
-	const char *results[] = {
-		"Signing with key 12345/RSASHA512",
-		"Removing signatures for key 54321/RSASHA256",
-		"Done signing with key 22222/NSEC3RSASHA1",
-		"Done removing signatures for key 33333/RSASHA1"
-	};
+	signing_testcase_t testcases[] = { { DST_ALG_RSASHA512, 12345, 0, 0 },
+					   { DST_ALG_RSASHA256, 54321, 1, 0 },
+					   { DST_ALG_NSEC3RSASHA1, 22222, 0,
+					     1 },
+					   { DST_ALG_RSASHA1, 33333, 1, 1 } };
+	const char *results[] = { "Signing with key 12345/RSASHA512",
+				  "Removing signatures for key 54321/RSASHA256",
+				  "Done signing with key 22222/NSEC3RSASHA1",
+				  "Done removing signatures for key "
+				  "33333/RSASHA1" };
 	int ncases = 4;
 
 	UNUSED(state);
@@ -175,12 +179,12 @@ private_signing_totext_test(void **state) {
 		dns_private_totext(&private, &buf);
 		assert_string_equal(output, results[i]);
 	}
-
 }
 
 /* convert private chain records to text */
 static void
-private_nsec3_totext_test(void **state) {
+private_nsec3_totext_test(void **state)
+{
 	dns_rdata_t private;
 	int i;
 
@@ -191,13 +195,12 @@ private_nsec3_totext_test(void **state) {
 		{ 1, 0, 30, 0xdeaf, 1, 0, 0 },
 		{ 1, 0, 100, 0xfeedabee, 1, 0, 1 },
 	};
-	const char *results[] = {
-		"Creating NSEC3 chain 1 0 1 BEEF",
-		"Creating NSEC3 chain 1 1 10 DADD",
-		"Pending NSEC3 chain 1 0 20 BEAD",
-		"Removing NSEC3 chain 1 0 30 DEAF / creating NSEC chain",
-		"Removing NSEC3 chain 1 0 100 FEEDABEE"
-	};
+	const char *results[] = { "Creating NSEC3 chain 1 0 1 BEEF",
+				  "Creating NSEC3 chain 1 1 10 DADD",
+				  "Pending NSEC3 chain 1 0 20 BEAD",
+				  "Removing NSEC3 chain 1 0 30 DEAF / creating "
+				  "NSEC chain",
+				  "Removing NSEC3 chain 1 0 100 FEEDABEE" };
 	int ncases = 5;
 
 	UNUSED(state);
@@ -216,7 +219,8 @@ private_nsec3_totext_test(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test_setup_teardown(private_signing_totext_test,
 						_setup, _teardown),
@@ -232,7 +236,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

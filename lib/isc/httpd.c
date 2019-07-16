@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 /*! \file */
 
 #include <inttypes.h>
@@ -45,46 +44,61 @@
 #define MSETSHUTTINGDOWN(cm) (cm->flags |= ISC_HTTPDMGR_FLAGSHUTTINGDOWN)
 
 #ifdef DEBUG_HTTPD
-#define ENTER(x) do { fprintf(stderr, "ENTER %s\n", (x)); } while (0)
-#define EXIT(x) do { fprintf(stderr, "EXIT %s\n", (x)); } while (0)
-#define NOTICE(x) do { fprintf(stderr, "NOTICE %s\n", (x)); } while (0)
+#define ENTER(x)                                                               \
+	do {                                                                   \
+		fprintf(stderr, "ENTER %s\n", (x));                            \
+	} while (0)
+#define EXIT(x)                                                                \
+	do {                                                                   \
+		fprintf(stderr, "EXIT %s\n", (x));                             \
+	} while (0)
+#define NOTICE(x)                                                              \
+	do {                                                                   \
+		fprintf(stderr, "NOTICE %s\n", (x));                           \
+	} while (0)
 #else
-#define ENTER(x) do { } while(0)
-#define EXIT(x) do { } while(0)
-#define NOTICE(x) do { } while(0)
+#define ENTER(x)                                                               \
+	do {                                                                   \
+	} while (0)
+#define EXIT(x)                                                                \
+	do {                                                                   \
+	} while (0)
+#define NOTICE(x)                                                              \
+	do {                                                                   \
+	} while (0)
 #endif
 
-#define HTTP_RECVLEN			1024
-#define HTTP_SENDGROW			1024
-#define HTTP_SEND_MAXLEN		10240
+#define HTTP_RECVLEN 1024
+#define HTTP_SENDGROW 1024
+#define HTTP_SEND_MAXLEN 10240
 
-#define HTTPD_CLOSE		0x0001 /* Got a Connection: close header */
-#define HTTPD_FOUNDHOST		0x0002 /* Got a Host: header */
-#define HTTPD_KEEPALIVE		0x0004 /* Got a Connection: Keep-Alive */
-#define HTTPD_ACCEPT_DEFLATE   0x0008
+#define HTTPD_CLOSE 0x0001     /* Got a Connection: close header */
+#define HTTPD_FOUNDHOST 0x0002 /* Got a Host: header */
+#define HTTPD_KEEPALIVE 0x0004 /* Got a Connection: Keep-Alive */
+#define HTTPD_ACCEPT_DEFLATE 0x0008
 
 /*% http client */
 struct isc_httpd {
-	isc_httpdmgr_t	       *mgr;		/*%< our parent */
-	ISC_LINK(isc_httpd_t)	link;
-	unsigned int		state;
-	isc_socket_t		*sock;
+	isc_httpdmgr_t *mgr; /*%< our parent */
+	ISC_LINK(isc_httpd_t) link;
+	unsigned int state;
+	isc_socket_t *sock;
 
 	/*%
 	 * Received data state.
 	 */
-	char			recvbuf[HTTP_RECVLEN]; /*%< receive buffer */
-	uint32_t		recvlen;	/*%< length recv'd */
-	char		       *headers;	/*%< set in process_request() */
-	unsigned int		method;
-	char		       *url;
-	char		       *querystring;
-	char		       *protocol;
+	char recvbuf[HTTP_RECVLEN]; /*%< receive buffer */
+	uint32_t recvlen;	   /*%< length recv'd */
+	char *headers;		    /*%< set in process_request() */
+	unsigned int method;
+	char *url;
+	char *querystring;
+	char *protocol;
 
 	/*
 	 * Flags on the httpd client.
 	 */
-	int			flags;
+	int flags;
 
 	/*%
 	 * Transmit data state.
@@ -112,45 +126,45 @@ struct isc_httpd {
 	 * compressed HTTP data, if compression is used.
 	 *
 	 */
-	isc_buffer_t		headerbuffer;
-	isc_buffer_t		compbuffer;
-	isc_buffer_t		*sendbuffer;
+	isc_buffer_t headerbuffer;
+	isc_buffer_t compbuffer;
+	isc_buffer_t *sendbuffer;
 
-	const char	       *mimetype;
-	unsigned int		retcode;
-	const char	       *retmsg;
-	isc_buffer_t		bodybuffer;
-	isc_httpdfree_t	       *freecb;
-	void		       *freecb_arg;
+	const char *mimetype;
+	unsigned int retcode;
+	const char *retmsg;
+	isc_buffer_t bodybuffer;
+	isc_httpdfree_t *freecb;
+	void *freecb_arg;
 };
 
 /*% lightweight socket manager for httpd output */
 struct isc_httpdmgr {
-	isc_mem_t	       *mctx;
-	isc_socket_t	       *sock;		/*%< listening socket */
-	isc_task_t	       *task;		/*%< owning task */
-	isc_timermgr_t	       *timermgr;
+	isc_mem_t *mctx;
+	isc_socket_t *sock; /*%< listening socket */
+	isc_task_t *task;   /*%< owning task */
+	isc_timermgr_t *timermgr;
 
-	isc_httpdclientok_t    *client_ok;	/*%< client validator */
-	isc_httpdondestroy_t   *ondestroy;	/*%< cleanup callback */
-	void		       *cb_arg;		/*%< argument for the above */
+	isc_httpdclientok_t *client_ok;  /*%< client validator */
+	isc_httpdondestroy_t *ondestroy; /*%< cleanup callback */
+	void *cb_arg;			 /*%< argument for the above */
 
-	unsigned int		flags;
-	ISC_LIST(isc_httpd_t)	running;	/*%< running clients */
+	unsigned int flags;
+	ISC_LIST(isc_httpd_t) running; /*%< running clients */
 
-	isc_mutex_t		lock;
+	isc_mutex_t lock;
 
-	ISC_LIST(isc_httpdurl_t) urls;		/*%< urls we manage */
-	isc_httpdaction_t      *render_404;
-	isc_httpdaction_t      *render_500;
+	ISC_LIST(isc_httpdurl_t) urls; /*%< urls we manage */
+	isc_httpdaction_t *render_404;
+	isc_httpdaction_t *render_500;
 };
 
 /*%
  * HTTP methods.
  */
-#define ISC_HTTPD_METHODUNKNOWN	0
-#define ISC_HTTPD_METHODGET	1
-#define ISC_HTTPD_METHODPOST	2
+#define ISC_HTTPD_METHODUNKNOWN 0
+#define ISC_HTTPD_METHODGET 1
+#define ISC_HTTPD_METHODPOST 2
 
 /*%
  * Client states.
@@ -181,33 +195,41 @@ struct isc_httpdmgr {
  *	At any time -> RECV on error.  If RECV fails, the client will
  *	self-destroy, closing the socket and freeing memory.
  */
-#define ISC_HTTPD_STATEIDLE	0
-#define ISC_HTTPD_STATERECV	1
-#define ISC_HTTPD_STATERECVDONE	2
-#define ISC_HTTPD_STATESEND	3
-#define ISC_HTTPD_STATESENDDONE	4
+#define ISC_HTTPD_STATEIDLE 0
+#define ISC_HTTPD_STATERECV 1
+#define ISC_HTTPD_STATERECVDONE 2
+#define ISC_HTTPD_STATESEND 3
+#define ISC_HTTPD_STATESENDDONE 4
 
-#define ISC_HTTPD_ISRECV(c)	((c)->state == ISC_HTTPD_STATERECV)
-#define ISC_HTTPD_ISRECVDONE(c)	((c)->state == ISC_HTTPD_STATERECVDONE)
-#define ISC_HTTPD_ISSEND(c)	((c)->state == ISC_HTTPD_STATESEND)
-#define ISC_HTTPD_ISSENDDONE(c)	((c)->state == ISC_HTTPD_STATESENDDONE)
+#define ISC_HTTPD_ISRECV(c) ((c)->state == ISC_HTTPD_STATERECV)
+#define ISC_HTTPD_ISRECVDONE(c) ((c)->state == ISC_HTTPD_STATERECVDONE)
+#define ISC_HTTPD_ISSEND(c) ((c)->state == ISC_HTTPD_STATESEND)
+#define ISC_HTTPD_ISSENDDONE(c) ((c)->state == ISC_HTTPD_STATESENDDONE)
 
 /*%
  * Overall magic test that means we're not idle.
  */
-#define ISC_HTTPD_SETRECV(c)	((c)->state = ISC_HTTPD_STATERECV)
-#define ISC_HTTPD_SETRECVDONE(c)	((c)->state = ISC_HTTPD_STATERECVDONE)
-#define ISC_HTTPD_SETSEND(c)	((c)->state = ISC_HTTPD_STATESEND)
-#define ISC_HTTPD_SETSENDDONE(c)	((c)->state = ISC_HTTPD_STATESENDDONE)
+#define ISC_HTTPD_SETRECV(c) ((c)->state = ISC_HTTPD_STATERECV)
+#define ISC_HTTPD_SETRECVDONE(c) ((c)->state = ISC_HTTPD_STATERECVDONE)
+#define ISC_HTTPD_SETSEND(c) ((c)->state = ISC_HTTPD_STATESEND)
+#define ISC_HTTPD_SETSENDDONE(c) ((c)->state = ISC_HTTPD_STATESENDDONE)
 
-static void isc_httpd_accept(isc_task_t *, isc_event_t *);
-static void isc_httpd_recvdone(isc_task_t *, isc_event_t *);
-static void isc_httpd_senddone(isc_task_t *, isc_event_t *);
-static void destroy_client(isc_httpd_t **);
-static isc_result_t process_request(isc_httpd_t *, int);
-static void httpdmgr_destroy(isc_httpdmgr_t *);
-static isc_result_t grow_headerspace(isc_httpd_t *);
-static void reset_client(isc_httpd_t *httpd);
+static void
+isc_httpd_accept(isc_task_t *, isc_event_t *);
+static void
+isc_httpd_recvdone(isc_task_t *, isc_event_t *);
+static void
+isc_httpd_senddone(isc_task_t *, isc_event_t *);
+static void
+destroy_client(isc_httpd_t **);
+static isc_result_t
+process_request(isc_httpd_t *, int);
+static void
+httpdmgr_destroy(isc_httpdmgr_t *);
+static isc_result_t
+grow_headerspace(isc_httpd_t *);
+static void
+reset_client(isc_httpd_t *httpd);
 
 static isc_httpdaction_t render_404;
 static isc_httpdaction_t render_500;
@@ -215,7 +237,8 @@ static isc_httpdaction_t render_500;
 static void (*finishhook)(void) = NULL;
 
 static void
-destroy_client(isc_httpd_t **httpdp) {
+destroy_client(isc_httpd_t **httpdp)
+{
 	isc_httpd_t *httpd = *httpdp;
 	isc_httpdmgr_t *httpdmgr = httpd->mgr;
 	isc_region_t r;
@@ -303,7 +326,7 @@ isc_httpdmgr_create(isc_mem_t *mctx, isc_socket_t *sock, isc_task_t *task,
 	*httpdmgrp = httpdmgr;
 	return (ISC_R_SUCCESS);
 
-  cleanup:
+cleanup:
 	isc_task_detach(&httpdmgr->task);
 	isc_socket_detach(&httpdmgr->sock);
 	isc_mem_detach(&httpdmgr->mctx);
@@ -313,7 +336,8 @@ isc_httpdmgr_create(isc_mem_t *mctx, isc_socket_t *sock, isc_task_t *task,
 }
 
 static void
-httpdmgr_destroy(isc_httpdmgr_t *httpdmgr) {
+httpdmgr_destroy(isc_httpdmgr_t *httpdmgr)
+{
 	isc_mem_t *mctx;
 	isc_httpdurl_t *url;
 
@@ -437,7 +461,8 @@ have_header(isc_httpd_t *httpd, const char *header, const char *value,
 }
 
 static isc_result_t
-process_request(isc_httpd_t *httpd, int length) {
+process_request(isc_httpd_t *httpd, int length)
+{
 	char *s;
 	char *p;
 	int delim;
@@ -501,8 +526,7 @@ process_request(isc_httpd_t *httpd, int length) {
 	/*
 	 * Make the URL relative.
 	 */
-	if ((strncmp(p, "http:/", 6) == 0)
-	    || (strncmp(p, "https:/", 7) == 0)) {
+	if ((strncmp(p, "http:/", 6) == 0) || (strncmp(p, "https:/", 7) == 0)) {
 		/* Skip first / */
 		while (*p != '/' && *p != 0)
 			p++;
@@ -555,11 +579,11 @@ process_request(isc_httpd_t *httpd, int length) {
 	if (strncmp(s, delim == 1 ? "\n" : "\r\n", delim) != 0)
 		return (ISC_R_RANGE);
 	*s = 0;
-	if ((strncmp(p, "HTTP/1.0", 8) != 0)
-	    && (strncmp(p, "HTTP/1.1", 8) != 0))
+	if ((strncmp(p, "HTTP/1.0", 8) != 0) &&
+	    (strncmp(p, "HTTP/1.1", 8) != 0))
 		return (ISC_R_RANGE);
 	httpd->protocol = p;
-	p = s + delim;	/* skip past eol */
+	p = s + delim; /* skip past eol */
 	s = p;
 
 	httpd->headers = s;
@@ -571,8 +595,7 @@ process_request(isc_httpd_t *httpd, int length) {
 		httpd->flags |= HTTPD_FOUNDHOST;
 
 	if (strncmp(httpd->protocol, "HTTP/1.0", 8) == 0) {
-		if (have_header(httpd, "Connection:", "Keep-Alive",
-				", \t\r\n"))
+		if (have_header(httpd, "Connection:", "Keep-Alive", ", \t\r\n"))
 			httpd->flags |= HTTPD_KEEPALIVE;
 		else
 			httpd->flags |= HTTPD_CLOSE;
@@ -589,8 +612,8 @@ process_request(isc_httpd_t *httpd, int length) {
 	/*
 	 * Standards compliance hooks here.
 	 */
-	if (strcmp(httpd->protocol, "HTTP/1.1") == 0
-	    && ((httpd->flags & HTTPD_FOUNDHOST) == 0))
+	if (strcmp(httpd->protocol, "HTTP/1.1") == 0 &&
+	    ((httpd->flags & HTTPD_FOUNDHOST) == 0))
 		return (ISC_R_RANGE);
 
 	EXIT("request");
@@ -599,7 +622,8 @@ process_request(isc_httpd_t *httpd, int length) {
 }
 
 static void
-isc_httpd_accept(isc_task_t *task, isc_event_t *ev) {
+isc_httpd_accept(isc_task_t *task, isc_event_t *ev)
+{
 	isc_result_t result;
 	isc_httpdmgr_t *httpdmgr = ev->ev_arg;
 	isc_httpd_t *httpd;
@@ -674,7 +698,7 @@ isc_httpd_accept(isc_task_t *task, isc_event_t *ev) {
 	POST(result);
 	NOTICE("accept queued recv on socket");
 
- requeue:
+requeue:
 	result = isc_socket_accept(httpdmgr->sock, task, isc_httpd_accept,
 				   httpdmgr);
 	if (result != ISC_R_SUCCESS) {
@@ -682,7 +706,7 @@ isc_httpd_accept(isc_task_t *task, isc_event_t *ev) {
 		NOTICE("accept could not reaccept due to failure");
 	}
 
- out:
+out:
 	UNLOCK(&httpdmgr->lock);
 
 	httpdmgr_destroy(httpdmgr);
@@ -693,10 +717,9 @@ isc_httpd_accept(isc_task_t *task, isc_event_t *ev) {
 }
 
 static isc_result_t
-render_404(const char *url, isc_httpdurl_t *urlinfo,
-	   const char *querystring, const char *headers, void *arg,
-	   unsigned int *retcode, const char **retmsg,
-	   const char **mimetype, isc_buffer_t *b,
+render_404(const char *url, isc_httpdurl_t *urlinfo, const char *querystring,
+	   const char *headers, void *arg, unsigned int *retcode,
+	   const char **retmsg, const char **mimetype, isc_buffer_t *b,
 	   isc_httpdfree_t **freecb, void **freecb_args)
 {
 	static char msg[] = "No such URL.\r\n";
@@ -719,10 +742,9 @@ render_404(const char *url, isc_httpdurl_t *urlinfo,
 }
 
 static isc_result_t
-render_500(const char *url, isc_httpdurl_t *urlinfo,
-	   const char *querystring, const char *headers, void *arg,
-	   unsigned int *retcode, const char **retmsg,
-	   const char **mimetype, isc_buffer_t *b,
+render_500(const char *url, isc_httpdurl_t *urlinfo, const char *querystring,
+	   const char *headers, void *arg, unsigned int *retcode,
+	   const char **retmsg, const char **mimetype, isc_buffer_t *b,
 	   isc_httpdfree_t **freecb, void **freecb_args)
 {
 	static char msg[] = "Internal server failure.\r\n";
@@ -757,7 +779,8 @@ render_500(const char *url, isc_httpdurl_t *urlinfo,
  *\li	#ISC_R_NOMEMORY		-- not enough memory to extend buffer
  */
 static isc_result_t
-alloc_compspace(isc_httpd_t *httpd, unsigned int size) {
+alloc_compspace(isc_httpd_t *httpd, unsigned int size)
+{
 	char *newspace;
 	isc_region_t r;
 
@@ -792,7 +815,8 @@ alloc_compspace(isc_httpd_t *httpd, unsigned int size) {
  *			     data would be larger than input data
  */
 static isc_result_t
-isc_httpd_compress(isc_httpd_t *httpd) {
+isc_httpd_compress(isc_httpd_t *httpd)
+{
 	z_stream zstr;
 	isc_region_t r;
 	isc_result_t result;
@@ -811,8 +835,8 @@ isc_httpd_compress(isc_httpd_t *httpd) {
 	 * compressed data size would be bigger than the input size.
 	 */
 	memset(&zstr, 0, sizeof(zstr));
-	zstr.total_in = zstr.avail_in =
-			zstr.total_out = zstr.avail_out = inputlen;
+	zstr.total_in = zstr.avail_in = zstr.total_out = zstr.avail_out =
+		inputlen;
 
 	zstr.next_in = isc_buffer_base(&httpd->bodybuffer);
 	zstr.next_out = r.base;
@@ -832,7 +856,8 @@ isc_httpd_compress(isc_httpd_t *httpd) {
 #endif
 
 static void
-isc_httpd_recvdone(isc_task_t *task, isc_event_t *ev) {
+isc_httpd_recvdone(isc_task_t *task, isc_event_t *ev)
+{
 	isc_result_t result;
 	isc_httpd_t *httpd = ev->ev_arg;
 	isc_socketevent_t *sev = (isc_socketevent_t *)ev;
@@ -886,42 +911,30 @@ isc_httpd_recvdone(isc_task_t *task, isc_event_t *ev) {
 		url = ISC_LIST_NEXT(url, link);
 	}
 	if (url == NULL)
-		result = httpd->mgr->render_404(httpd->url, NULL,
-						httpd->querystring,
-						NULL, NULL,
-						&httpd->retcode,
-						&httpd->retmsg,
-						&httpd->mimetype,
-						&httpd->bodybuffer,
-						&httpd->freecb,
-						&httpd->freecb_arg);
+		result = httpd->mgr->render_404(
+			httpd->url, NULL, httpd->querystring, NULL, NULL,
+			&httpd->retcode, &httpd->retmsg, &httpd->mimetype,
+			&httpd->bodybuffer, &httpd->freecb, &httpd->freecb_arg);
 	else
-		result = url->action(httpd->url, url,
-				     httpd->querystring,
-				     httpd->headers,
-				     url->action_arg,
+		result = url->action(httpd->url, url, httpd->querystring,
+				     httpd->headers, url->action_arg,
 				     &httpd->retcode, &httpd->retmsg,
 				     &httpd->mimetype, &httpd->bodybuffer,
 				     &httpd->freecb, &httpd->freecb_arg);
 	if (result != ISC_R_SUCCESS) {
-		result = httpd->mgr->render_500(httpd->url, url,
-						httpd->querystring,
-						NULL, NULL,
-						&httpd->retcode,
-						&httpd->retmsg,
-						&httpd->mimetype,
-						&httpd->bodybuffer,
-						&httpd->freecb,
-						&httpd->freecb_arg);
+		result = httpd->mgr->render_500(
+			httpd->url, url, httpd->querystring, NULL, NULL,
+			&httpd->retcode, &httpd->retmsg, &httpd->mimetype,
+			&httpd->bodybuffer, &httpd->freecb, &httpd->freecb_arg);
 		RUNTIME_CHECK(result == ISC_R_SUCCESS);
 	}
 
 #ifdef HAVE_ZLIB
 	if ((httpd->flags & HTTPD_ACCEPT_DEFLATE) != 0) {
-			result = isc_httpd_compress(httpd);
-			if (result == ISC_R_SUCCESS) {
-				is_compressed = true;
-			}
+		result = isc_httpd_compress(httpd);
+		if (result == ISC_R_SUCCESS) {
+			is_compressed = true;
+		}
 	}
 #endif
 
@@ -934,8 +947,8 @@ isc_httpd_recvdone(isc_task_t *task, isc_event_t *ev) {
 
 	if (url != NULL && url->isstatic) {
 		char loadbuf[ISC_FORMATHTTPTIMESTAMP_SIZE];
-		isc_time_formathttptimestamp(&url->loadtime,
-					     loadbuf, sizeof(loadbuf));
+		isc_time_formathttptimestamp(&url->loadtime, loadbuf,
+					     sizeof(loadbuf));
 		isc_httpd_addheader(httpd, "Last-Modified", loadbuf);
 		isc_httpd_addheader(httpd, "Cache-Control: public", NULL);
 	} else {
@@ -948,21 +961,23 @@ isc_httpd_recvdone(isc_task_t *task, isc_event_t *ev) {
 
 	if (is_compressed == true) {
 		isc_httpd_addheader(httpd, "Content-Encoding", "deflate");
-		isc_httpd_addheaderuint(httpd, "Content-Length",
-					isc_buffer_usedlength(&httpd->compbuffer));
+		isc_httpd_addheaderuint(
+			httpd, "Content-Length",
+			isc_buffer_usedlength(&httpd->compbuffer));
 	} else {
-		isc_httpd_addheaderuint(httpd, "Content-Length",
-		isc_buffer_usedlength(&httpd->bodybuffer));
+		isc_httpd_addheaderuint(
+			httpd, "Content-Length",
+			isc_buffer_usedlength(&httpd->bodybuffer));
 	}
 
-	isc_httpd_endheaders(httpd);  /* done */
+	isc_httpd_endheaders(httpd); /* done */
 
 	/*
 	 * Append either the compressed or the non-compressed response body to
 	 * the response headers and store the result in httpd->sendbuffer.
 	 */
-	isc_buffer_dup(httpd->mgr->mctx,
-		       &httpd->sendbuffer, &httpd->headerbuffer);
+	isc_buffer_dup(httpd->mgr->mctx, &httpd->sendbuffer,
+		       &httpd->headerbuffer);
 	isc_buffer_setautorealloc(httpd->sendbuffer, true);
 	databuffer = (is_compressed ? &httpd->compbuffer : &httpd->bodybuffer);
 	isc_buffer_usedregion(databuffer, &r);
@@ -974,16 +989,16 @@ isc_httpd_recvdone(isc_task_t *task, isc_event_t *ev) {
 	isc_buffer_usedregion(httpd->sendbuffer, &r);
 
 	/* check return code? */
-	(void)isc_socket_send(httpd->sock, &r, task,
-			       isc_httpd_senddone, httpd);
+	(void)isc_socket_send(httpd->sock, &r, task, isc_httpd_senddone, httpd);
 
- out:
+out:
 	isc_event_free(&ev);
 	EXIT("recv");
 }
 
 void
-isc_httpdmgr_shutdown(isc_httpdmgr_t **httpdmgrp) {
+isc_httpdmgr_shutdown(isc_httpdmgr_t **httpdmgrp)
+{
 	isc_httpdmgr_t *httpdmgr;
 	isc_httpd_t *httpd;
 	httpdmgr = *httpdmgrp;
@@ -1010,7 +1025,8 @@ isc_httpdmgr_shutdown(isc_httpdmgr_t **httpdmgrp) {
 }
 
 static isc_result_t
-grow_headerspace(isc_httpd_t *httpd) {
+grow_headerspace(isc_httpd_t *httpd)
+{
 	char *newspace;
 	unsigned int newlen;
 	isc_region_t r;
@@ -1032,13 +1048,14 @@ grow_headerspace(isc_httpd_t *httpd) {
 }
 
 isc_result_t
-isc_httpd_response(isc_httpd_t *httpd) {
+isc_httpd_response(isc_httpd_t *httpd)
+{
 	isc_result_t result;
 	unsigned int needlen;
 
 	needlen = strlen(httpd->protocol) + 1; /* protocol + space */
-	needlen += 3 + 1;  /* room for response code, always 3 bytes */
-	needlen += strlen(httpd->retmsg) + 2;  /* return msg + CRLF */
+	needlen += 3 + 1; /* room for response code, always 3 bytes */
+	needlen += strlen(httpd->retmsg) + 2; /* return msg + CRLF */
 
 	while (isc_buffer_availablelength(&httpd->headerbuffer) < needlen) {
 		result = grow_headerspace(httpd);
@@ -1047,13 +1064,12 @@ isc_httpd_response(isc_httpd_t *httpd) {
 	}
 
 	return (isc_buffer_printf(&httpd->headerbuffer, "%s %03u %s\r\n",
-				   httpd->protocol, httpd->retcode,
-				   httpd->retmsg));
+				  httpd->protocol, httpd->retcode,
+				  httpd->retmsg));
 }
 
 isc_result_t
-isc_httpd_addheader(isc_httpd_t *httpd, const char *name,
-		    const char *val)
+isc_httpd_addheader(isc_httpd_t *httpd, const char *name, const char *val)
 {
 	isc_result_t result;
 	unsigned int needlen;
@@ -1061,7 +1077,7 @@ isc_httpd_addheader(isc_httpd_t *httpd, const char *name,
 	needlen = strlen(name); /* name itself */
 	if (val != NULL)
 		needlen += 2 + strlen(val); /* :<space> and val */
-	needlen += 2; /* CRLF */
+	needlen += 2;			    /* CRLF */
 
 	while (isc_buffer_availablelength(&httpd->headerbuffer) < needlen) {
 		result = grow_headerspace(httpd);
@@ -1071,15 +1087,16 @@ isc_httpd_addheader(isc_httpd_t *httpd, const char *name,
 
 	if (val != NULL) {
 		return (isc_buffer_printf(&httpd->headerbuffer, "%s: %s\r\n",
-					   name, val));
+					  name, val));
 	} else {
 		return (isc_buffer_printf(&httpd->headerbuffer, "%s\r\n",
-					   name));
+					  name));
 	}
 }
 
 isc_result_t
-isc_httpd_endheaders(isc_httpd_t *httpd) {
+isc_httpd_endheaders(isc_httpd_t *httpd)
+{
 	isc_result_t result;
 
 	while (isc_buffer_availablelength(&httpd->headerbuffer) < 2) {
@@ -1092,16 +1109,17 @@ isc_httpd_endheaders(isc_httpd_t *httpd) {
 }
 
 isc_result_t
-isc_httpd_addheaderuint(isc_httpd_t *httpd, const char *name, int val) {
+isc_httpd_addheaderuint(isc_httpd_t *httpd, const char *name, int val)
+{
 	isc_result_t result;
 	unsigned int needlen;
 	char buf[sizeof "18446744073709551616"];
 
 	snprintf(buf, sizeof(buf), "%d", val);
 
-	needlen = strlen(name); /* name itself */
+	needlen = strlen(name);     /* name itself */
 	needlen += 2 + strlen(buf); /* :<space> and val */
-	needlen += 2; /* CRLF */
+	needlen += 2;		    /* CRLF */
 
 	while (isc_buffer_availablelength(&httpd->headerbuffer) < needlen) {
 		result = grow_headerspace(httpd);
@@ -1110,11 +1128,12 @@ isc_httpd_addheaderuint(isc_httpd_t *httpd, const char *name, int val) {
 	}
 
 	return (isc_buffer_printf(&httpd->headerbuffer, "%s: %s\r\n", name,
-				   buf));
+				  buf));
 }
 
 static void
-isc_httpd_senddone(isc_task_t *task, isc_event_t *ev) {
+isc_httpd_senddone(isc_task_t *task, isc_event_t *ev)
+{
 	isc_httpd_t *httpd = ev->ev_arg;
 	isc_region_t r;
 	isc_socketevent_t *sev = (isc_socketevent_t *)ev;
@@ -1159,8 +1178,8 @@ isc_httpd_senddone(isc_task_t *task, isc_event_t *ev) {
 	r.base = (unsigned char *)httpd->recvbuf;
 	r.length = HTTP_RECVLEN - 1;
 	/* check return code? */
-	(void)isc_socket_recv(httpd->sock, &r, 1, task,
-			      isc_httpd_recvdone, httpd);
+	(void)isc_socket_recv(httpd->sock, &r, 1, task, isc_httpd_recvdone,
+			      httpd);
 
 out:
 	isc_event_free(&ev);
@@ -1168,7 +1187,8 @@ out:
 }
 
 static void
-reset_client(isc_httpd_t *httpd) {
+reset_client(isc_httpd_t *httpd)
+{
 	/*
 	 * Catch errors here.  We MUST be in RECV mode, and we MUST NOT have
 	 * any outstanding buffers.  If we have buffers, we have a leak.
@@ -1199,8 +1219,7 @@ isc_httpdmgr_addurl(isc_httpdmgr_t *httpdmgr, const char *url,
 }
 
 isc_result_t
-isc_httpdmgr_addurl2(isc_httpdmgr_t *httpdmgr, const char *url,
-		     bool isstatic,
+isc_httpdmgr_addurl2(isc_httpdmgr_t *httpdmgr, const char *url, bool isstatic,
 		     isc_httpdaction_t *func, void *arg)
 {
 	isc_httpdurl_t *item;

@@ -9,27 +9,26 @@
  * information regarding copyright ownership.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <isc/print.h>
 
+#include <sys/stat.h>
+
 #define USAGE "usage: gencheck <filename>\n"
 
 static int
-check(const char *buf, ssize_t count, size_t *start) {
+check(const char *buf, ssize_t count, size_t *start)
+{
 	const char chars[] = "abcdefghijklmnopqrstuvwxyz0123456789";
 	ssize_t i;
 
-	for (i = 0;
-	     i < count;
-	     i++, *start = (*start + 1) % (sizeof(chars) - 1))
-	{
+	for (i = 0; i < count;
+	     i++, *start = (*start + 1) % (sizeof(chars) - 1)) {
 		/* Just ignore the trailing newline */
 		if (buf[i] == '\n')
 			continue;
@@ -76,7 +75,7 @@ main(int argc, char **argv)
 
 	ret = EXIT_SUCCESS;
 
- out:
+out:
 	printf("%lu\n", (unsigned long)length);
 
 	if (fd != -1)

@@ -11,10 +11,9 @@
 
 #if HAVE_CMOCKA
 
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
-
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -29,7 +28,8 @@
 #include "dnstest.h"
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -41,7 +41,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	dns_test_end();
@@ -51,7 +52,8 @@ _teardown(void **state) {
 
 /* Test DSCP set/get functions */
 static void
-dscp(void **state) {
+dscp(void **state)
+{
 	isc_result_t result;
 	isc_netaddr_t netaddr;
 	struct in_addr ina;
@@ -152,7 +154,8 @@ dscp(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test_setup_teardown(dscp, _setup, _teardown),
 	};
@@ -165,7 +168,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

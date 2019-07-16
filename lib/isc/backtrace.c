@@ -9,11 +9,10 @@
  * information regarding copyright ownership.
  */
 
-
 /*! \file */
 
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #ifdef HAVE_LIBCTRACE
 #include <execinfo.h>
 #endif
@@ -49,14 +48,15 @@
 #define BACKTRACE_X86STACK
 #else
 #define BACKTRACE_DISABLED
-#endif  /* HAVE_LIBCTRACE */
-#else	/* USE_BACKTRACE */
+#endif /* HAVE_LIBCTRACE */
+#else  /* USE_BACKTRACE */
 #define BACKTRACE_DISABLED
-#endif	/* USE_BACKTRACE */
+#endif /* USE_BACKTRACE */
 
 #ifdef BACKTRACE_LIBC
 isc_result_t
-isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes) {
+isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes)
+{
 	int n;
 
 	/*
@@ -79,8 +79,10 @@ isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes) {
 	return (ISC_R_SUCCESS);
 }
 #elif defined(BACKTRACE_GCC)
-extern int _Unwind_Backtrace(void* fn, void* a);
-extern void* _Unwind_GetIP(void* ctx);
+extern int
+_Unwind_Backtrace(void *fn, void *a);
+extern void *
+_Unwind_GetIP(void *ctx);
 
 typedef struct {
 	void **result;
@@ -90,7 +92,8 @@ typedef struct {
 } trace_arg_t;
 
 static int
-btcallback(void *uc, void *opq) {
+btcallback(void *uc, void *opq)
+{
 	trace_arg_t *arg = (trace_arg_t *)opq;
 
 	if (arg->skip_count > 0)
@@ -104,7 +107,8 @@ btcallback(void *uc, void *opq) {
 }
 
 isc_result_t
-isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes) {
+isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes)
+{
 	trace_arg_t arg;
 
 	/* Argument validation: see above. */
@@ -123,7 +127,8 @@ isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes) {
 }
 #elif defined(BACKTRACE_WIN32)
 isc_result_t
-isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes) {
+isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes)
+{
 	unsigned long ftc = (unsigned long)maxaddrs;
 
 	*nframes = (int)CaptureStackBackTrace(1, ftc, addrs, NULL);
@@ -132,13 +137,15 @@ isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes) {
 #elif defined(BACKTRACE_X86STACK)
 #ifdef __x86_64__
 static unsigned long
-getrbp(void) {
+getrbp(void)
+{
 	__asm("movq %rbp, %rax\n");
 }
 #endif
 
 static void **
-getnextframeptr(void **sp) {
+getnextframeptr(void **sp)
+{
 	void **newsp = (void **)*sp;
 
 	/*
@@ -164,7 +171,8 @@ getnextframeptr(void **sp) {
 }
 
 isc_result_t
-isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes) {
+isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes)
+{
 	int i = 0;
 	void **sp;
 
@@ -201,7 +209,8 @@ isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes) {
 }
 #elif defined(BACKTRACE_DISABLED)
 isc_result_t
-isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes) {
+isc_backtrace_gettrace(void **addrs, int maxaddrs, int *nframes)
+{
 	/* Argument validation: see above. */
 	if (addrs == NULL || nframes == NULL)
 		return (ISC_R_FAILURE);
@@ -228,7 +237,8 @@ isc_backtrace_getsymbolfromindex(int idx, const void **addrp,
 }
 
 static int
-symtbl_compare(const void *addr, const void *entryarg) {
+symtbl_compare(const void *addr, const void *entryarg)
+{
 	const isc_backtrace_symmap_t *entry = entryarg;
 	const isc_backtrace_symmap_t *end =
 		&isc__backtrace_symtable[isc__backtrace_nsymbols - 1];
@@ -280,8 +290,8 @@ isc_backtrace_getsymbol(const void *addr, const char **symbolp,
 		result = ISC_R_NOTFOUND;
 	else {
 		*symbolp = found->symbol;
-		*offsetp = (unsigned long) ((const char *)addr -
-					    (char *)found->addr);
+		*offsetp = (unsigned long)((const char *)addr -
+					   (char *)found->addr);
 	}
 
 	return (result);

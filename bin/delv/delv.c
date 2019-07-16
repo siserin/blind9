@@ -12,20 +12,18 @@
 #include <bind.keys.h>
 
 #ifndef WIN32
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <netdb.h>
 #include <signal.h>
 
-#include <netinet/in.h>
-
 #include <arpa/inet.h>
-
-#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #endif
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -48,12 +46,6 @@
 #include <isc/timer.h>
 #include <isc/util.h>
 
-#include <irs/resconf.h>
-#include <irs/netdb.h>
-
-#include <isccfg/log.h>
-#include <isccfg/namedconf.h>
-
 #include <dns/byaddr.h>
 #include <dns/client.h>
 #include <dns/fixedname.h>
@@ -72,17 +64,22 @@
 #include <dns/secalg.h>
 #include <dns/view.h>
 
+#include <isccfg/log.h>
+#include <isccfg/namedconf.h>
+
 #include <dst/dst.h>
 #include <dst/result.h>
+#include <irs/netdb.h>
+#include <irs/resconf.h>
 
-#define CHECK(r) \
-	do { \
-		result = (r); \
-		if (result != ISC_R_SUCCESS) \
-			goto cleanup; \
+#define CHECK(r)                                                               \
+	do {                                                                   \
+		result = (r);                                                  \
+		if (result != ISC_R_SUCCESS)                                   \
+			goto cleanup;                                          \
 	} while (0)
 
-#define MAXNAME (DNS_NAME_MAXTEXT+1)
+#define MAXNAME (DNS_NAME_MAXTEXT + 1)
 
 /* Variables used internally by delv. */
 char *progname;
@@ -101,32 +98,17 @@ static bool typeset = false;
 
 static unsigned int styleflags = 0;
 static uint32_t splitwidth = 0xffffffff;
-static bool
-	showcomments = true,
-	showdnssec = true,
-	showtrust = true,
-	rrcomments = true,
-	noclass = false,
-	nocrypto = false,
-	nottl = false,
-	multiline = false,
-	short_form = false,
-	print_unknown_format = false;
+static bool showcomments = true, showdnssec = true, showtrust = true,
+	    rrcomments = true, noclass = false, nocrypto = false, nottl = false,
+	    multiline = false, short_form = false, print_unknown_format = false;
 
-static bool
-	resolve_trace = false,
-	validator_trace = false,
-	message_trace = false;
+static bool resolve_trace = false, validator_trace = false,
+	    message_trace = false;
 
-static bool
-	use_ipv4 = true,
-	use_ipv6 = true;
+static bool use_ipv4 = true, use_ipv6 = true;
 
-static bool
-	cdflag = false,
-	no_sigs = false,
-	root_validation = true,
-	dlv_validation = true;
+static bool cdflag = false, no_sigs = false, root_validation = true,
+	    dlv_validation = true;
 
 static bool use_tcp = false;
 
@@ -148,63 +130,91 @@ static isc_result_t
 get_reverse(char *reverse, size_t len, char *value, bool strict);
 
 static isc_result_t
-parse_uint(uint32_t *uip, const char *value, uint32_t max,
-	   const char *desc);
+parse_uint(uint32_t *uip, const char *value, uint32_t max, const char *desc);
 
 static void
-usage(void) {
-	fputs(
-"Usage:  delv [@server] {q-opt} {d-opt} [domain] [q-type] [q-class]\n"
-"Where:  domain	  is in the Domain Name System\n"
-"        q-class  is one of (in,hs,ch,...) [default: in]\n"
-"        q-type   is one of (a,any,mx,ns,soa,hinfo,axfr,txt,...) [default:a]\n"
-"        q-opt    is one of:\n"
-"                 -x dot-notation     (shortcut for reverse lookups)\n"
-"                 -d level            (set debugging level)\n"
-"                 -a anchor-file      (specify root and dlv trust anchors)\n"
-"                 -b address[#port]   (bind to source address/port)\n"
-"                 -p port             (specify port number)\n"
-"                 -q name             (specify query name)\n"
-"                 -t type             (specify query type)\n"
-"                 -c class            (option included for compatibility;\n"
-"                                      only IN is supported)\n"
-"                 -4                  (use IPv4 query transport only)\n"
-"                 -6                  (use IPv6 query transport only)\n"
-"                 -i                  (disable DNSSEC validation)\n"
-"                 -m                  (enable memory usage debugging)\n"
-"        d-opt    is of the form +keyword[=value], where keyword is:\n"
-"                 +[no]all            (Set or clear all display flags)\n"
-"                 +[no]class          (Control display of class)\n"
-"                 +[no]crypto         (Control display of cryptographic\n"
-"                                      fields in records)\n"
-"                 +[no]multiline      (Print records in an expanded format)\n"
-"                 +[no]comments       (Control display of comment lines)\n"
-"                 +[no]rrcomments     (Control display of per-record "
-				       "comments)\n"
-"                 +[no]unknownformat  (Print RDATA in RFC 3597 \"unknown\" format)\n"
-"                 +[no]short          (Short form answer)\n"
-"                 +[no]split=##       (Split hex/base64 fields into chunks)\n"
-"                 +[no]tcp            (TCP mode)\n"
-"                 +[no]ttl            (Control display of ttls in records)\n"
-"                 +[no]trust          (Control display of trust level)\n"
-"                 +[no]rtrace         (Trace resolver fetches)\n"
-"                 +[no]mtrace         (Trace messages received)\n"
-"                 +[no]vtrace         (Trace validation process)\n"
-"                 +[no]dlv            (DNSSEC lookaside validation anchor)\n"
-"                 +[no]root           (DNSSEC validation trust anchor)\n"
-"                 +[no]dnssec         (Display DNSSEC records)\n"
-"        -h                           (print help and exit)\n"
-"        -v                           (print version and exit)\n",
-	stderr);
+usage(void)
+{
+	fputs("Usage:  delv [@server] {q-opt} {d-opt} [domain] [q-type] "
+	      "[q-class]\n"
+	      "Where:  domain	  is in the Domain Name System\n"
+	      "        q-class  is one of (in,hs,ch,...) [default: in]\n"
+	      "        q-type   is one of (a,any,mx,ns,soa,hinfo,axfr,txt,...) "
+	      "[default:a]\n"
+	      "        q-opt    is one of:\n"
+	      "                 -x dot-notation     (shortcut for reverse "
+	      "lookups)\n"
+	      "                 -d level            (set debugging level)\n"
+	      "                 -a anchor-file      (specify root and dlv "
+	      "trust "
+	      "anchors)\n"
+	      "                 -b address[#port]   (bind to source "
+	      "address/port)\n"
+	      "                 -p port             (specify port number)\n"
+	      "                 -q name             (specify query name)\n"
+	      "                 -t type             (specify query type)\n"
+	      "                 -c class            (option included for "
+	      "compatibility;\n"
+	      "                                      only IN is supported)\n"
+	      "                 -4                  (use IPv4 query transport "
+	      "only)\n"
+	      "                 -6                  (use IPv6 query transport "
+	      "only)\n"
+	      "                 -i                  (disable DNSSEC "
+	      "validation)\n"
+	      "                 -m                  (enable memory usage "
+	      "debugging)\n"
+	      "        d-opt    is of the form +keyword[=value], where keyword "
+	      "is:\n"
+	      "                 +[no]all            (Set or clear all display "
+	      "flags)\n"
+	      "                 +[no]class          (Control display of "
+	      "class)\n"
+	      "                 +[no]crypto         (Control display of "
+	      "cryptographic\n"
+	      "                                      fields in records)\n"
+	      "                 +[no]multiline      (Print records in an "
+	      "expanded format)\n"
+	      "                 +[no]comments       (Control display of "
+	      "comment "
+	      "lines)\n"
+	      "                 +[no]rrcomments     (Control display of "
+	      "per-record "
+	      "comments)\n"
+	      "                 +[no]unknownformat  (Print RDATA in RFC 3597 "
+	      "\"unknown\" format)\n"
+	      "                 +[no]short          (Short form answer)\n"
+	      "                 +[no]split=##       (Split hex/base64 fields "
+	      "into chunks)\n"
+	      "                 +[no]tcp            (TCP mode)\n"
+	      "                 +[no]ttl            (Control display of ttls "
+	      "in "
+	      "records)\n"
+	      "                 +[no]trust          (Control display of trust "
+	      "level)\n"
+	      "                 +[no]rtrace         (Trace resolver fetches)\n"
+	      "                 +[no]mtrace         (Trace messages received)\n"
+	      "                 +[no]vtrace         (Trace validation "
+	      "process)\n"
+	      "                 +[no]dlv            (DNSSEC lookaside "
+	      "validation "
+	      "anchor)\n"
+	      "                 +[no]root           (DNSSEC validation trust "
+	      "anchor)\n"
+	      "                 +[no]dnssec         (Display DNSSEC records)\n"
+	      "        -h                           (print help and exit)\n"
+	      "        -v                           (print version and exit)\n",
+	      stderr);
 	exit(1);
 }
 
 ISC_PLATFORM_NORETURN_PRE static void
 fatal(const char *format, ...)
-ISC_FORMAT_PRINTF(1, 2) ISC_PLATFORM_NORETURN_POST;
+	ISC_FORMAT_PRINTF(1, 2) ISC_PLATFORM_NORETURN_POST;
 
 static void
-fatal(const char *format, ...) {
+fatal(const char *format, ...)
+{
 	va_list args;
 
 	fflush(stdout);
@@ -220,7 +230,8 @@ static void
 warn(const char *format, ...) ISC_FORMAT_PRINTF(1, 2);
 
 static void
-warn(const char *format, ...) {
+warn(const char *format, ...)
+{
 	va_list args;
 
 	fflush(stdout);
@@ -231,41 +242,37 @@ warn(const char *format, ...) {
 	fprintf(stderr, "\n");
 }
 
-static isc_logcategory_t categories[] = {
-	{ "delv",	     0 },
-	{ NULL,		     0 }
-};
-#define LOGCATEGORY_DEFAULT		(&categories[0])
-#define LOGMODULE_DEFAULT		(&modules[0])
+static isc_logcategory_t categories[] = { { "delv", 0 }, { NULL, 0 } };
+#define LOGCATEGORY_DEFAULT (&categories[0])
+#define LOGMODULE_DEFAULT (&modules[0])
 
-static isc_logmodule_t modules[] = {
-	{ "delv",	 		0 },
-	{ NULL, 			0 }
-};
+static isc_logmodule_t modules[] = { { "delv", 0 }, { NULL, 0 } };
 
 static void
 delv_log(int level, const char *fmt, ...) ISC_FORMAT_PRINTF(2, 3);
 
 static void
-delv_log(int level, const char *fmt, ...) {
+delv_log(int level, const char *fmt, ...)
+{
 	va_list ap;
 	char msgbuf[2048];
 
-	if (! isc_log_wouldlog(lctx, level))
+	if (!isc_log_wouldlog(lctx, level))
 		return;
 
 	va_start(ap, fmt);
 
 	vsnprintf(msgbuf, sizeof(msgbuf), fmt, ap);
-	isc_log_write(lctx, LOGCATEGORY_DEFAULT, LOGMODULE_DEFAULT,
-		      level, "%s", msgbuf);
+	isc_log_write(lctx, LOGCATEGORY_DEFAULT, LOGMODULE_DEFAULT, level, "%s",
+		      msgbuf);
 	va_end(ap);
 }
 
 static int loglevel = 0;
 
 static void
-setup_logging(FILE *errout) {
+setup_logging(FILE *errout)
+{
 	isc_result_t result;
 	isc_logdestination_t destination;
 	isc_logconfig_t *logconfig = NULL;
@@ -286,9 +293,9 @@ setup_logging(FILE *errout) {
 	destination.file.versions = ISC_LOG_ROLLNEVER;
 	destination.file.maximum_size = 0;
 
-	result = isc_log_createchannel(logconfig, "stderr",
-				       ISC_LOG_TOFILEDESC, ISC_LOG_DYNAMIC,
-				       &destination, ISC_LOG_PRINTPREFIX);
+	result = isc_log_createchannel(logconfig, "stderr", ISC_LOG_TOFILEDESC,
+				       ISC_LOG_DYNAMIC, &destination,
+				       ISC_LOG_PRINTPREFIX);
 	if (result != ISC_R_SUCCESS)
 		fatal("Couldn't set up log channel 'stderr'");
 
@@ -304,11 +311,9 @@ setup_logging(FILE *errout) {
 		fatal("Couldn't attach to log channel 'stderr'");
 
 	if (resolve_trace && loglevel < 1) {
-		result = isc_log_createchannel(logconfig, "resolver",
-					       ISC_LOG_TOFILEDESC,
-					       ISC_LOG_DEBUG(1),
-					       &destination,
-					       ISC_LOG_PRINTPREFIX);
+		result = isc_log_createchannel(
+			logconfig, "resolver", ISC_LOG_TOFILEDESC,
+			ISC_LOG_DEBUG(1), &destination, ISC_LOG_PRINTPREFIX);
 		if (result != ISC_R_SUCCESS)
 			fatal("Couldn't set up log channel 'resolver'");
 
@@ -320,11 +325,9 @@ setup_logging(FILE *errout) {
 	}
 
 	if (validator_trace && loglevel < 3) {
-		result = isc_log_createchannel(logconfig, "validator",
-					       ISC_LOG_TOFILEDESC,
-					       ISC_LOG_DEBUG(3),
-					       &destination,
-					       ISC_LOG_PRINTPREFIX);
+		result = isc_log_createchannel(
+			logconfig, "validator", ISC_LOG_TOFILEDESC,
+			ISC_LOG_DEBUG(3), &destination, ISC_LOG_PRINTPREFIX);
 		if (result != ISC_R_SUCCESS)
 			fatal("Couldn't set up log channel 'validator'");
 
@@ -336,11 +339,9 @@ setup_logging(FILE *errout) {
 	}
 
 	if (message_trace && loglevel < 10) {
-		result = isc_log_createchannel(logconfig, "messages",
-					       ISC_LOG_TOFILEDESC,
-					       ISC_LOG_DEBUG(10),
-					       &destination,
-					       ISC_LOG_PRINTPREFIX);
+		result = isc_log_createchannel(
+			logconfig, "messages", ISC_LOG_TOFILEDESC,
+			ISC_LOG_DEBUG(10), &destination, ISC_LOG_PRINTPREFIX);
 		if (result != ISC_R_SUCCESS)
 			fatal("Couldn't set up log channel 'messages'");
 
@@ -353,7 +354,8 @@ setup_logging(FILE *errout) {
 }
 
 static void
-print_status(dns_rdataset_t *rdataset) {
+print_status(dns_rdataset_t *rdataset)
+{
 	const char *astr = "", *tstr = "";
 
 	REQUIRE(rdataset != NULL);
@@ -418,8 +420,7 @@ printdata(dns_rdataset_t *rdataset, dns_name_t *owner,
 	if (!dns_rdataset_isassociated(rdataset)) {
 		char namebuf[DNS_NAME_FORMATSIZE];
 		dns_name_format(owner, namebuf, sizeof(namebuf));
-		delv_log(ISC_LOG_DEBUG(4),
-			  "WARN: empty rdataset %s", namebuf);
+		delv_log(ISC_LOG_DEBUG(4), "WARN: empty rdataset %s", namebuf);
 		return (ISC_R_SUCCESS);
 	}
 
@@ -444,18 +445,15 @@ printdata(dns_rdataset_t *rdataset, dns_name_t *owner,
 			dns_rdata_t rdata = DNS_RDATA_INIT;
 			for (result = dns_rdataset_first(rdataset);
 			     result == ISC_R_SUCCESS;
-			     result = dns_rdataset_next(rdataset))
-			{
+			     result = dns_rdataset_next(rdataset)) {
 				if ((rdataset->attributes &
 				     DNS_RDATASETATTR_NEGATIVE) != 0)
 					continue;
 
 				dns_rdataset_current(rdataset, &rdata);
-				result = dns_rdata_tofmttext(&rdata,
-							     dns_rootname,
-							     styleflags, 0,
-							     splitwidth, " ",
-							     &target);
+				result = dns_rdata_tofmttext(
+					&rdata, dns_rootname, styleflags, 0,
+					splitwidth, " ", &target);
 				if (result != ISC_R_SUCCESS)
 					break;
 
@@ -489,7 +487,7 @@ printdata(dns_rdataset_t *rdataset, dns_name_t *owner,
 	isc_buffer_usedregion(&target, &r);
 	printf("%.*s", (int)r.length, (char *)r.base);
 
- cleanup:
+cleanup:
 	if (t != NULL)
 		isc_mem_put(mctx, t, len);
 
@@ -497,7 +495,8 @@ printdata(dns_rdataset_t *rdataset, dns_name_t *owner,
 }
 
 static isc_result_t
-setup_style(dns_master_style_t **stylep) {
+setup_style(dns_master_style_t **stylep)
+{
 	isc_result_t result;
 	dns_master_style_t *style = NULL;
 
@@ -522,17 +521,14 @@ setup_style(dns_master_style_t **stylep) {
 	}
 
 	if (multiline || (nottl && noclass))
-		result = dns_master_stylecreate(&style, styleflags,
-						24, 24, 24, 32, 80, 8,
-						splitwidth, mctx);
+		result = dns_master_stylecreate(&style, styleflags, 24, 24, 24,
+						32, 80, 8, splitwidth, mctx);
 	else if (nottl || noclass)
-		result = dns_master_stylecreate(&style, styleflags,
-						24, 24, 32, 40, 80, 8,
-						splitwidth, mctx);
+		result = dns_master_stylecreate(&style, styleflags, 24, 24, 32,
+						40, 80, 8, splitwidth, mctx);
 	else
-		result = dns_master_stylecreate(&style, styleflags,
-						24, 32, 40, 48, 80, 8,
-						splitwidth, mctx);
+		result = dns_master_stylecreate(&style, styleflags, 24, 32, 40,
+						48, 80, 8, splitwidth, mctx);
 
 	if (result == ISC_R_SUCCESS)
 		*stylep = style;
@@ -540,7 +536,8 @@ setup_style(dns_master_style_t **stylep) {
 }
 
 static isc_result_t
-convert_name(dns_fixedname_t *fn, dns_name_t **name, const char *text) {
+convert_name(dns_fixedname_t *fn, dns_name_t **name, const char *text)
+{
 	isc_result_t result;
 	isc_buffer_t b;
 	dns_name_t *n;
@@ -555,8 +552,8 @@ convert_name(dns_fixedname_t *fn, dns_name_t **name, const char *text) {
 
 	result = dns_name_fromtext(n, &b, dns_rootname, 0, NULL);
 	if (result != ISC_R_SUCCESS) {
-		delv_log(ISC_LOG_ERROR, "failed to convert QNAME %s: %s",
-			  text, isc_result_totext(result));
+		delv_log(ISC_LOG_ERROR, "failed to convert QNAME %s: %s", text,
+			 isc_result_totext(result));
 		return (result);
 	}
 
@@ -565,7 +562,8 @@ convert_name(dns_fixedname_t *fn, dns_name_t **name, const char *text) {
 }
 
 static isc_result_t
-key_fromconfig(const cfg_obj_t *key, dns_client_t *client) {
+key_fromconfig(const cfg_obj_t *key, dns_client_t *client)
+{
 	dns_rdata_dnskey_t keystruct;
 	uint32_t flags, proto, alg;
 	const char *keystr, *keynamestr;
@@ -597,10 +595,10 @@ key_fromconfig(const cfg_obj_t *key, dns_client_t *client) {
 
 	if (match_root)
 		delv_log(ISC_LOG_DEBUG(3), "adding trust anchor %s",
-			  trust_anchor);
+			 trust_anchor);
 	if (match_dlv)
 		delv_log(ISC_LOG_DEBUG(3), "adding DLV trust anchor %s",
-			  dlv_anchor);
+			 dlv_anchor);
 
 	flags = cfg_obj_asuint32(cfg_tuple_get(key, "flags"));
 	proto = cfg_obj_asuint32(cfg_tuple_get(key, "protocol"));
@@ -635,27 +633,26 @@ key_fromconfig(const cfg_obj_t *key, dns_client_t *client) {
 	keystruct.datalen = r.length;
 	keystruct.data = r.base;
 
-	CHECK(dns_rdata_fromstruct(NULL,
-				   keystruct.common.rdclass,
-				   keystruct.common.rdtype,
-				   &keystruct, &rrdatabuf));
+	CHECK(dns_rdata_fromstruct(NULL, keystruct.common.rdclass,
+				   keystruct.common.rdtype, &keystruct,
+				   &rrdatabuf));
 
-	CHECK(dns_client_addtrustedkey(client, dns_rdataclass_in,
-				       keyname, &rrdatabuf));
+	CHECK(dns_client_addtrustedkey(client, dns_rdataclass_in, keyname,
+				       &rrdatabuf));
 	num_keys++;
 
- cleanup:
+cleanup:
 	if (result == DST_R_NOCRYPTO)
 		cfg_obj_log(key, lctx, ISC_LOG_ERROR, "no crypto support");
 	else if (result == DST_R_UNSUPPORTEDALG) {
 		cfg_obj_log(key, lctx, ISC_LOG_WARNING,
-			    "skipping trusted key '%s': %s",
-			    keynamestr, isc_result_totext(result));
+			    "skipping trusted key '%s': %s", keynamestr,
+			    isc_result_totext(result));
 		result = ISC_R_SUCCESS;
 	} else if (result != ISC_R_SUCCESS) {
 		cfg_obj_log(key, lctx, ISC_LOG_ERROR,
-			    "failed to add trusted key '%s': %s",
-			    keynamestr, isc_result_totext(result));
+			    "failed to add trusted key '%s': %s", keynamestr,
+			    isc_result_totext(result));
 		result = ISC_R_FAILURE;
 	}
 
@@ -663,34 +660,32 @@ key_fromconfig(const cfg_obj_t *key, dns_client_t *client) {
 }
 
 static isc_result_t
-load_keys(const cfg_obj_t *keys, dns_client_t *client) {
+load_keys(const cfg_obj_t *keys, dns_client_t *client)
+{
 	const cfg_listelt_t *elt, *elt2;
 	const cfg_obj_t *key, *keylist;
 	isc_result_t result = ISC_R_SUCCESS;
 
-	for (elt = cfg_list_first(keys);
-	     elt != NULL;
-	     elt = cfg_list_next(elt))
-	{
+	for (elt = cfg_list_first(keys); elt != NULL;
+	     elt = cfg_list_next(elt)) {
 		keylist = cfg_listelt_value(elt);
 
-		for (elt2 = cfg_list_first(keylist);
-		     elt2 != NULL;
-		     elt2 = cfg_list_next(elt2))
-		{
+		for (elt2 = cfg_list_first(keylist); elt2 != NULL;
+		     elt2 = cfg_list_next(elt2)) {
 			key = cfg_listelt_value(elt2);
 			CHECK(key_fromconfig(key, client));
 		}
 	}
 
- cleanup:
+cleanup:
 	if (result == DST_R_NOCRYPTO)
 		result = ISC_R_SUCCESS;
 	return (result);
 }
 
 static isc_result_t
-setup_dnsseckeys(dns_client_t *client) {
+setup_dnsseckeys(dns_client_t *client)
+{
 	isc_result_t result;
 	cfg_parser_t *parser = NULL;
 	const cfg_obj_t *trusted_keys = NULL;
@@ -735,8 +730,8 @@ setup_dnsseckeys(dns_client_t *client) {
 			fatal("Unable to read key file '%s'", anchorfile);
 		}
 	} else {
-		result = cfg_parse_file(parser, filename,
-					&cfg_type_bindkeys, &bindkeys);
+		result = cfg_parse_file(parser, filename, &cfg_type_bindkeys,
+					&bindkeys);
 		if (result != ISC_R_SUCCESS) {
 			if (anchorfile != NULL) {
 				fatal("Unable to load keys from '%s'",
@@ -781,8 +776,7 @@ setup_dnsseckeys(dns_client_t *client) {
 		dns_client_setdlv(client, dns_rdataclass_in, dlv_anchor);
 	}
 
-
- cleanup:
+cleanup:
 	if (bindkeys != NULL) {
 		cfg_obj_destroy(parser, &bindkeys);
 	}
@@ -791,13 +785,14 @@ setup_dnsseckeys(dns_client_t *client) {
 	}
 	if (result != ISC_R_SUCCESS) {
 		delv_log(ISC_LOG_ERROR, "setup_dnsseckeys: %s",
-			  isc_result_totext(result));
+			 isc_result_totext(result));
 	}
 	return (result);
 }
 
 static isc_result_t
-addserver(dns_client_t *client) {
+addserver(dns_client_t *client)
+{
 	struct addrinfo hints, *res, *cur;
 	int gaierror;
 	struct in_addr in4;
@@ -846,9 +841,8 @@ addserver(dns_client_t *client) {
 		hints.ai_protocol = IPPROTO_UDP;
 		gaierror = getaddrinfo(server, port, &hints, &res);
 		if (gaierror != 0) {
-			delv_log(ISC_LOG_ERROR,
-				  "getaddrinfo failed: %s",
-				  gai_strerror(gaierror));
+			delv_log(ISC_LOG_ERROR, "getaddrinfo failed: %s",
+				 gai_strerror(gaierror));
 			return (ISC_R_FAILURE);
 		}
 
@@ -872,10 +866,9 @@ addserver(dns_client_t *client) {
 		CHECK(result);
 	}
 
-
 	CHECK(dns_client_setservers(client, dns_rdataclass_in, name, &servers));
 
- cleanup:
+cleanup:
 	while (!ISC_LIST_EMPTY(servers)) {
 		sa = ISC_LIST_HEAD(servers);
 		ISC_LIST_UNLINK(servers, sa, link);
@@ -884,13 +877,14 @@ addserver(dns_client_t *client) {
 
 	if (result != ISC_R_SUCCESS)
 		delv_log(ISC_LOG_ERROR, "addserver: %s",
-			  isc_result_totext(result));
+			 isc_result_totext(result));
 
 	return (result);
 }
 
 static isc_result_t
-findserver(dns_client_t *client) {
+findserver(dns_client_t *client)
+{
 	isc_result_t result;
 	irs_resconf_t *resconf = NULL;
 	isc_sockaddrlist_t *nameservers;
@@ -904,7 +898,7 @@ findserver(dns_client_t *client) {
 	result = irs_resconf_load(mctx, "/etc/resolv.conf", &resconf);
 	if (result != ISC_R_SUCCESS && result != ISC_R_FILENOTFOUND) {
 		delv_log(ISC_LOG_ERROR, "irs_resconf_load: %s",
-			  isc_result_totext(result));
+			 isc_result_totext(result));
 		goto cleanup;
 	}
 
@@ -961,7 +955,7 @@ findserver(dns_client_t *client) {
 				       nameservers);
 	if (result != ISC_R_SUCCESS)
 		delv_log(ISC_LOG_ERROR, "dns_client_setservers: %s",
-			  isc_result_totext(result));
+			 isc_result_totext(result));
 
 cleanup:
 	if (resconf != NULL)
@@ -970,15 +964,15 @@ cleanup:
 }
 
 static isc_result_t
-parse_uint(uint32_t *uip, const char *value, uint32_t max,
-	   const char *desc) {
+parse_uint(uint32_t *uip, const char *value, uint32_t max, const char *desc)
+{
 	uint32_t n;
 	isc_result_t result = isc_parse_uint32(&n, value, 10);
 	if (result == ISC_R_SUCCESS && n > max)
 		result = ISC_R_RANGE;
 	if (result != ISC_R_SUCCESS) {
-		printf("invalid %s '%s': %s\n", desc,
-		       value, isc_result_totext(result));
+		printf("invalid %s '%s': %s\n", desc, value,
+		       isc_result_totext(result));
 		return (result);
 	}
 	*uip = n;
@@ -986,7 +980,8 @@ parse_uint(uint32_t *uip, const char *value, uint32_t max,
 }
 
 static void
-plus_option(char *option) {
+plus_option(char *option)
+{
 	isc_result_t result;
 	char *cmd, *value, *last = NULL;
 	bool state = true;
@@ -998,18 +993,18 @@ plus_option(char *option) {
 		printf(";; Invalid option %s\n", option);
 		return;
 	}
-	if (strncasecmp(cmd, "no", 2)==0) {
+	if (strncasecmp(cmd, "no", 2) == 0) {
 		cmd += 2;
 		state = false;
 	}
 
 	value = strtok_r(NULL, "\0", &last);
 
-#define FULLCHECK(A) \
-	do { \
-		size_t _l = strlen(cmd); \
-		if (_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0) \
-			goto invalid_option; \
+#define FULLCHECK(A)                                                           \
+	do {                                                                   \
+		size_t _l = strlen(cmd);                                       \
+		if (_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0)           \
+			goto invalid_option;                                   \
 	} while (0)
 
 	switch (cmd[0]) {
@@ -1124,12 +1119,12 @@ plus_option(char *option) {
 			} else if (value == NULL)
 				break;
 
-			result = parse_uint(&splitwidth, value,
-					    1023, "split");
+			result = parse_uint(&splitwidth, value, 1023, "split");
 			if (splitwidth % 4 != 0) {
 				splitwidth = ((splitwidth + 3) / 4) * 4;
 				warn("split must be a multiple of 4; "
-				     "adjusting to %d", splitwidth);
+				     "adjusting to %d",
+				     splitwidth);
 			}
 			/*
 			 * There is an adjustment done in the
@@ -1194,7 +1189,8 @@ static const char *single_dash_opts = "46himv";
 static const char *dash_opts = "46abcdhimpqtvx";
 
 static bool
-dash_option(char *option, char *next, bool *open_type_class) {
+dash_option(char *option, char *next, bool *open_type_class)
+{
 	char opt, *value;
 	isc_result_t result;
 	bool value_from_next;
@@ -1343,7 +1339,7 @@ dash_option(char *option, char *next, bool *open_type_class) {
 		tr.base = value;
 		tr.length = strlen(value);
 		result = dns_rdatatype_fromtext(&rdtype,
-					(isc_textregion_t *)&tr);
+						(isc_textregion_t *)&tr);
 		if (result == ISC_R_SUCCESS) {
 			if (typeset)
 				warn("extra query type");
@@ -1356,8 +1352,7 @@ dash_option(char *option, char *next, bool *open_type_class) {
 			warn("ignoring invalid type");
 		return (value_from_next);
 	case 'x':
-		result = get_reverse(textname, sizeof(textname), value,
-				     false);
+		result = get_reverse(textname, sizeof(textname), value, false);
 		if (result == ISC_R_SUCCESS) {
 			if (curqname != NULL) {
 				isc_mem_free(mctx, curqname);
@@ -1389,7 +1384,8 @@ dash_option(char *option, char *next, bool *open_type_class) {
  * memory debugging when setting up the memory context.
  */
 static void
-preparse_args(int argc, char **argv) {
+preparse_args(int argc, char **argv)
+{
 	bool ipv4only = false, ipv6only = false;
 	char *option;
 
@@ -1403,7 +1399,7 @@ preparse_args(int argc, char **argv) {
 			switch (option[0]) {
 			case 'm':
 				isc_mem_debugging = ISC_MEM_DEBUGTRACE |
-					ISC_MEM_DEBUGRECORD;
+						    ISC_MEM_DEBUGRECORD;
 				break;
 			case '4':
 				if (ipv6only) {
@@ -1427,8 +1423,7 @@ preparse_args(int argc, char **argv) {
 
 		/* Look for dash value option. */
 		if (strpbrk(option, dash_opts) != &option[0] ||
-		    strlen(option) > 1U)
-		{
+		    strlen(option) > 1U) {
 			/* Error or value in option. */
 			continue;
 		}
@@ -1451,7 +1446,8 @@ preparse_args(int argc, char **argv) {
  * should be familiar to dig users, however.
  */
 static void
-parse_args(int argc, char **argv) {
+parse_args(int argc, char **argv)
+{
 	isc_result_t result;
 	isc_textregion_t tr;
 	dns_rdatatype_t rdtype;
@@ -1466,15 +1462,13 @@ parse_args(int argc, char **argv) {
 		} else if (argv[0][0] == '-') {
 			if (argc <= 1) {
 				if (dash_option(&argv[0][1], NULL,
-						&open_type_class))
-				{
+						&open_type_class)) {
 					argc--;
 					argv++;
 				}
 			} else {
 				if (dash_option(&argv[0][1], argv[1],
-						&open_type_class))
-				{
+						&open_type_class)) {
 					argc--;
 					argv++;
 				}
@@ -1486,8 +1480,8 @@ parse_args(int argc, char **argv) {
 			if (open_type_class) {
 				tr.base = argv[0];
 				tr.length = strlen(argv[0]);
-				result = dns_rdatatype_fromtext(&rdtype,
-					(isc_textregion_t *)&tr);
+				result = dns_rdatatype_fromtext(
+					&rdtype, (isc_textregion_t *)&tr);
 				if (result == ISC_R_SUCCESS) {
 					if (typeset)
 						warn("extra query type");
@@ -1498,8 +1492,8 @@ parse_args(int argc, char **argv) {
 					typeset = true;
 					continue;
 				}
-				result = dns_rdataclass_fromtext(&rdclass,
-						     (isc_textregion_t *)&tr);
+				result = dns_rdataclass_fromtext(
+					&rdclass, (isc_textregion_t *)&tr);
 				if (result == ISC_R_SUCCESS) {
 					if (classset)
 						warn("extra query class");
@@ -1537,7 +1531,8 @@ parse_args(int argc, char **argv) {
 }
 
 static isc_result_t
-append_str(const char *text, int len, char **p, char *end) {
+append_str(const char *text, int len, char **p, char *end)
+{
 	if (len > end - *p)
 		return (ISC_R_NOSPACE);
 	memmove(*p, text, len);
@@ -1546,7 +1541,8 @@ append_str(const char *text, int len, char **p, char *end) {
 }
 
 static isc_result_t
-reverse_octets(const char *in, char **p, char *end) {
+reverse_octets(const char *in, char **p, char *end)
+{
 	char *dot = strchr(in, '.');
 	int len;
 	if (dot != NULL) {
@@ -1564,7 +1560,8 @@ reverse_octets(const char *in, char **p, char *end) {
 }
 
 static isc_result_t
-get_reverse(char *reverse, size_t len, char *value, bool strict) {
+get_reverse(char *reverse, size_t len, char *value, bool strict)
+{
 	int r;
 	isc_result_t result;
 	isc_netaddr_t addr;
@@ -1607,7 +1604,8 @@ get_reverse(char *reverse, size_t len, char *value, bool strict) {
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char *argv[])
+{
 	dns_client_t *client = NULL;
 	isc_result_t result;
 	dns_fixedname_t qfn;
@@ -1666,7 +1664,7 @@ main(int argc, char *argv[]) {
 				    clopt, &client, srcaddr4, srcaddr6);
 	if (result != ISC_R_SUCCESS) {
 		delv_log(ISC_LOG_ERROR, "dns_client_create: %s",
-			  isc_result_totext(result));
+			 isc_result_totext(result));
 		goto cleanup;
 	}
 
@@ -1698,10 +1696,9 @@ main(int argc, char *argv[]) {
 				    qtype, resopt, &namelist);
 	if (result != ISC_R_SUCCESS)
 		delv_log(ISC_LOG_ERROR, "resolution failed: %s",
-			  isc_result_totext(result));
+			 isc_result_totext(result));
 
-	for (response_name = ISC_LIST_HEAD(namelist);
-	     response_name != NULL;
+	for (response_name = ISC_LIST_HEAD(namelist); response_name != NULL;
 	     response_name = ISC_LIST_NEXT(response_name, link)) {
 		for (rdataset = ISC_LIST_HEAD(response_name->list);
 		     rdataset != NULL;

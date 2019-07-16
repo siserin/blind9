@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 /*! \file */
 
 #include <ctype.h>
@@ -22,43 +21,41 @@
 #include <isc/util.h>
 
 typedef struct elt {
-	char *				key;
-	unsigned int			type;
-	isc_symvalue_t			value;
-	LINK(struct elt)		link;
+	char *key;
+	unsigned int type;
+	isc_symvalue_t value;
+	LINK(struct elt) link;
 } elt_t;
 
-typedef LIST(elt_t)			eltlist_t;
+typedef LIST(elt_t) eltlist_t;
 
-#define SYMTAB_MAGIC			ISC_MAGIC('S', 'y', 'm', 'T')
-#define VALID_SYMTAB(st)		ISC_MAGIC_VALID(st, SYMTAB_MAGIC)
+#define SYMTAB_MAGIC ISC_MAGIC('S', 'y', 'm', 'T')
+#define VALID_SYMTAB(st) ISC_MAGIC_VALID(st, SYMTAB_MAGIC)
 
 struct isc_symtab {
 	/* Unlocked. */
-	unsigned int			magic;
-	isc_mem_t *			mctx;
-	unsigned int			size;
-	unsigned int			count;
-	unsigned int			maxload;
-	eltlist_t *			table;
-	isc_symtabaction_t		undefine_action;
-	void *				undefine_arg;
-	bool			case_sensitive;
+	unsigned int magic;
+	isc_mem_t *mctx;
+	unsigned int size;
+	unsigned int count;
+	unsigned int maxload;
+	eltlist_t *table;
+	isc_symtabaction_t undefine_action;
+	void *undefine_arg;
+	bool case_sensitive;
 };
 
 isc_result_t
 isc_symtab_create(isc_mem_t *mctx, unsigned int size,
-		  isc_symtabaction_t undefine_action,
-		  void *undefine_arg,
-		  bool case_sensitive,
-		  isc_symtab_t **symtabp)
+		  isc_symtabaction_t undefine_action, void *undefine_arg,
+		  bool case_sensitive, isc_symtab_t **symtabp)
 {
 	isc_symtab_t *symtab;
 	unsigned int i;
 
 	REQUIRE(mctx != NULL);
 	REQUIRE(symtabp != NULL && *symtabp == NULL);
-	REQUIRE(size > 0);	/* Should be prime. */
+	REQUIRE(size > 0); /* Should be prime. */
 
 	symtab = (isc_symtab_t *)isc_mem_get(mctx, sizeof(*symtab));
 	if (symtab == NULL)
@@ -66,8 +63,8 @@ isc_symtab_create(isc_mem_t *mctx, unsigned int size,
 
 	symtab->mctx = NULL;
 	isc_mem_attach(mctx, &symtab->mctx);
-	symtab->table = (eltlist_t *)isc_mem_get(mctx,
-						 size * sizeof(eltlist_t));
+	symtab->table =
+		(eltlist_t *)isc_mem_get(mctx, size * sizeof(eltlist_t));
 	if (symtab->table == NULL) {
 		isc_mem_putanddetach(&symtab->mctx, symtab, sizeof(*symtab));
 		return (ISC_R_NOMEMORY);
@@ -88,7 +85,8 @@ isc_symtab_create(isc_mem_t *mctx, unsigned int size,
 }
 
 void
-isc_symtab_destroy(isc_symtab_t **symtabp) {
+isc_symtab_destroy(isc_symtab_t **symtabp)
+{
 	isc_symtab_t *symtab;
 	unsigned int i;
 	elt_t *elt, *nelt;
@@ -101,10 +99,9 @@ isc_symtab_destroy(isc_symtab_t **symtabp) {
 		for (elt = HEAD(symtab->table[i]); elt != NULL; elt = nelt) {
 			nelt = NEXT(elt, link);
 			if (symtab->undefine_action != NULL)
-			       (symtab->undefine_action)(elt->key,
-							 elt->type,
-							 elt->value,
-							 symtab->undefine_arg);
+				(symtab->undefine_action)(elt->key, elt->type,
+							  elt->value,
+							  symtab->undefine_arg);
 			isc_mem_put(symtab->mctx, elt, sizeof(*elt));
 		}
 	}
@@ -117,7 +114,8 @@ isc_symtab_destroy(isc_symtab_t **symtabp) {
 }
 
 static inline unsigned int
-hash(const char *key, bool case_sensitive) {
+hash(const char *key, bool case_sensitive)
+{
 	const char *s;
 	unsigned int h = 0;
 	int c;
@@ -142,20 +140,20 @@ hash(const char *key, bool case_sensitive) {
 	return (h);
 }
 
-#define FIND(s, k, t, b, e) \
-	b = hash((k), (s)->case_sensitive) % (s)->size; \
-	if ((s)->case_sensitive) { \
-		for (e = HEAD((s)->table[b]); e != NULL; e = NEXT(e, link)) { \
-			if (((t) == 0 || e->type == (t)) && \
-			    strcmp(e->key, (k)) == 0) \
-				break; \
-		} \
-	} else { \
-		for (e = HEAD((s)->table[b]); e != NULL; e = NEXT(e, link)) { \
-			if (((t) == 0 || e->type == (t)) && \
-			    strcasecmp(e->key, (k)) == 0) \
-				break; \
-		} \
+#define FIND(s, k, t, b, e)                                                    \
+	b = hash((k), (s)->case_sensitive) % (s)->size;                        \
+	if ((s)->case_sensitive) {                                             \
+		for (e = HEAD((s)->table[b]); e != NULL; e = NEXT(e, link)) {  \
+			if (((t) == 0 || e->type == (t)) &&                    \
+			    strcmp(e->key, (k)) == 0)                          \
+				break;                                         \
+		}                                                              \
+	} else {                                                               \
+		for (e = HEAD((s)->table[b]); e != NULL; e = NEXT(e, link)) {  \
+			if (((t) == 0 || e->type == (t)) &&                    \
+			    strcasecmp(e->key, (k)) == 0)                      \
+				break;                                         \
+		}                                                              \
 	}
 
 isc_result_t
@@ -180,7 +178,8 @@ isc_symtab_lookup(isc_symtab_t *symtab, const char *key, unsigned int type,
 }
 
 static void
-grow_table(isc_symtab_t *symtab) {
+grow_table(isc_symtab_t *symtab)
+{
 	eltlist_t *newtable;
 	unsigned int i, newsize, newmax;
 
@@ -272,7 +271,8 @@ isc_symtab_define(isc_symtab_t *symtab, const char *key, unsigned int type,
 }
 
 isc_result_t
-isc_symtab_undefine(isc_symtab_t *symtab, const char *key, unsigned int type) {
+isc_symtab_undefine(isc_symtab_t *symtab, const char *key, unsigned int type)
+{
 	unsigned int bucket;
 	elt_t *elt;
 
@@ -285,8 +285,8 @@ isc_symtab_undefine(isc_symtab_t *symtab, const char *key, unsigned int type) {
 		return (ISC_R_NOTFOUND);
 
 	if (symtab->undefine_action != NULL)
-		(symtab->undefine_action)(elt->key, elt->type,
-					  elt->value, symtab->undefine_arg);
+		(symtab->undefine_action)(elt->key, elt->type, elt->value,
+					  symtab->undefine_arg);
 	UNLINK(symtab->table[bucket], elt, link);
 	isc_mem_put(symtab->mctx, elt, sizeof(*elt));
 	symtab->count--;
@@ -295,7 +295,8 @@ isc_symtab_undefine(isc_symtab_t *symtab, const char *key, unsigned int type) {
 }
 
 unsigned int
-isc_symtab_count(isc_symtab_t *symtab) {
+isc_symtab_count(isc_symtab_t *symtab)
+{
 	REQUIRE(VALID_SYMTAB(symtab));
 	return (symtab->count);
 }

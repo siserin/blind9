@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 /*! \file */
 
 #include <ctype.h>
@@ -29,41 +28,42 @@
 #include <isc/util.h>
 
 typedef struct inputsource {
-	isc_result_t			result;
-	bool			is_file;
-	bool			need_close;
-	bool			at_eof;
-	bool			last_was_eol;
-	isc_buffer_t *			pushback;
-	unsigned int			ignored;
-	void *				input;
-	char *				name;
-	unsigned long			line;
-	unsigned long			saved_line;
-	ISC_LINK(struct inputsource)	link;
+	isc_result_t result;
+	bool is_file;
+	bool need_close;
+	bool at_eof;
+	bool last_was_eol;
+	isc_buffer_t *pushback;
+	unsigned int ignored;
+	void *input;
+	char *name;
+	unsigned long line;
+	unsigned long saved_line;
+	ISC_LINK(struct inputsource) link;
 } inputsource;
 
-#define LEX_MAGIC			ISC_MAGIC('L', 'e', 'x', '!')
-#define VALID_LEX(l)			ISC_MAGIC_VALID(l, LEX_MAGIC)
+#define LEX_MAGIC ISC_MAGIC('L', 'e', 'x', '!')
+#define VALID_LEX(l) ISC_MAGIC_VALID(l, LEX_MAGIC)
 
 struct isc_lex {
 	/* Unlocked. */
-	unsigned int			magic;
-	isc_mem_t *			mctx;
-	size_t				max_token;
-	char *				data;
-	unsigned int			comments;
-	bool			comment_ok;
-	bool			last_was_eol;
-	unsigned int			brace_count;
-	unsigned int			paren_count;
-	unsigned int			saved_paren_count;
-	isc_lexspecials_t		specials;
-	LIST(struct inputsource)	sources;
+	unsigned int magic;
+	isc_mem_t *mctx;
+	size_t max_token;
+	char *data;
+	unsigned int comments;
+	bool comment_ok;
+	bool last_was_eol;
+	unsigned int brace_count;
+	unsigned int paren_count;
+	unsigned int saved_paren_count;
+	isc_lexspecials_t specials;
+	LIST(struct inputsource) sources;
 };
 
 static inline isc_result_t
-grow_data(isc_lex_t *lex, size_t *remainingp, char **currp, char **prevp) {
+grow_data(isc_lex_t *lex, size_t *remainingp, char **currp, char **prevp)
+{
 	char *tmp;
 
 	tmp = isc_mem_get(lex->mctx, lex->max_token * 2 + 1);
@@ -81,7 +81,8 @@ grow_data(isc_lex_t *lex, size_t *remainingp, char **currp, char **prevp) {
 }
 
 isc_result_t
-isc_lex_create(isc_mem_t *mctx, size_t max_token, isc_lex_t **lexp) {
+isc_lex_create(isc_mem_t *mctx, size_t max_token, isc_lex_t **lexp)
+{
 	isc_lex_t *lex;
 
 	/*
@@ -118,7 +119,8 @@ isc_lex_create(isc_mem_t *mctx, size_t max_token, isc_lex_t **lexp) {
 }
 
 void
-isc_lex_destroy(isc_lex_t **lexp) {
+isc_lex_destroy(isc_lex_t **lexp)
+{
 	isc_lex_t *lex;
 
 	/*
@@ -140,7 +142,8 @@ isc_lex_destroy(isc_lex_t **lexp) {
 }
 
 unsigned int
-isc_lex_getcomments(isc_lex_t *lex) {
+isc_lex_getcomments(isc_lex_t *lex)
+{
 	/*
 	 * Return the current lexer commenting styles.
 	 */
@@ -151,7 +154,8 @@ isc_lex_getcomments(isc_lex_t *lex) {
 }
 
 void
-isc_lex_setcomments(isc_lex_t *lex, unsigned int comments) {
+isc_lex_setcomments(isc_lex_t *lex, unsigned int comments)
+{
 	/*
 	 * Set allowed lexer commenting styles.
 	 */
@@ -162,7 +166,8 @@ isc_lex_setcomments(isc_lex_t *lex, unsigned int comments) {
 }
 
 void
-isc_lex_getspecials(isc_lex_t *lex, isc_lexspecials_t specials) {
+isc_lex_getspecials(isc_lex_t *lex, isc_lexspecials_t specials)
+{
 	/*
 	 * Put the current list of specials into 'specials'.
 	 */
@@ -173,7 +178,8 @@ isc_lex_getspecials(isc_lex_t *lex, isc_lexspecials_t specials) {
 }
 
 void
-isc_lex_setspecials(isc_lex_t *lex, isc_lexspecials_t specials) {
+isc_lex_setspecials(isc_lex_t *lex, isc_lexspecials_t specials)
+{
 	/*
 	 * The characters in 'specials' are returned as tokens.  Along with
 	 * whitespace, they delimit strings and numbers.
@@ -185,8 +191,8 @@ isc_lex_setspecials(isc_lex_t *lex, isc_lexspecials_t specials) {
 }
 
 static inline isc_result_t
-new_source(isc_lex_t *lex, bool is_file, bool need_close,
-	   void *input, const char *name)
+new_source(isc_lex_t *lex, bool is_file, bool need_close, void *input,
+	   const char *name)
 {
 	inputsource *source;
 	isc_result_t result;
@@ -221,7 +227,8 @@ new_source(isc_lex_t *lex, bool is_file, bool need_close,
 }
 
 isc_result_t
-isc_lex_openfile(isc_lex_t *lex, const char *filename) {
+isc_lex_openfile(isc_lex_t *lex, const char *filename)
+{
 	isc_result_t result;
 	FILE *stream = NULL;
 
@@ -242,7 +249,8 @@ isc_lex_openfile(isc_lex_t *lex, const char *filename) {
 }
 
 isc_result_t
-isc_lex_openstream(isc_lex_t *lex, FILE *stream) {
+isc_lex_openstream(isc_lex_t *lex, FILE *stream)
+{
 	char name[128];
 
 	/*
@@ -257,7 +265,8 @@ isc_lex_openstream(isc_lex_t *lex, FILE *stream) {
 }
 
 isc_result_t
-isc_lex_openbuffer(isc_lex_t *lex, isc_buffer_t *buffer) {
+isc_lex_openbuffer(isc_lex_t *lex, isc_buffer_t *buffer)
+{
 	char name[128];
 
 	/*
@@ -272,7 +281,8 @@ isc_lex_openbuffer(isc_lex_t *lex, isc_buffer_t *buffer) {
 }
 
 isc_result_t
-isc_lex_close(isc_lex_t *lex) {
+isc_lex_close(isc_lex_t *lex)
+{
 	inputsource *source;
 
 	/*
@@ -314,7 +324,8 @@ typedef enum {
 #define IWSEOL (ISC_LEXOPT_INITIALWS | ISC_LEXOPT_EOL)
 
 static void
-pushback(inputsource *source, int c) {
+pushback(inputsource *source, int c)
+{
 	REQUIRE(source->pushback->current > 0);
 	if (c == EOF) {
 		source->at_eof = false;
@@ -326,7 +337,8 @@ pushback(inputsource *source, int c) {
 }
 
 static isc_result_t
-pushandgrow(isc_lex_t *lex, inputsource *source, int c) {
+pushandgrow(isc_lex_t *lex, inputsource *source, int c)
+{
 	if (isc_buffer_availablelength(source->pushback) == 0) {
 		isc_buffer_t *tbuf = NULL;
 		unsigned int oldlen;
@@ -349,7 +361,8 @@ pushandgrow(isc_lex_t *lex, inputsource *source, int c) {
 }
 
 isc_result_t
-isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
+isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp)
+{
 	inputsource *source;
 	int c;
 	bool done = false;
@@ -388,17 +401,14 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 	source->saved_line = source->line;
 
 	if (isc_buffer_remaininglength(source->pushback) == 0 &&
-	    source->at_eof)
-	{
+	    source->at_eof) {
 		if ((options & ISC_LEXOPT_DNSMULTILINE) != 0 &&
-		    lex->paren_count != 0)
-		{
+		    lex->paren_count != 0) {
 			lex->paren_count = 0;
 			return (ISC_R_UNBALANCED);
 		}
 		if ((options & ISC_LEXOPT_BTEXT) != 0 &&
-		    lex->brace_count != 0)
-		{
+		    lex->brace_count != 0) {
 			lex->brace_count = 0;
 			return (ISC_R_UNBALANCED);
 		}
@@ -468,8 +478,8 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 		if (!source->at_eof) {
 			if (state == lexstate_start)
 				/* Token has not started yet. */
-				source->ignored =
-				   isc_buffer_consumedlength(source->pushback);
+				source->ignored = isc_buffer_consumedlength(
+					source->pushback);
 			c = isc_buffer_getuint8(source->pushback);
 		} else {
 			c = EOF;
@@ -480,23 +490,22 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 
 		if (lex->comment_ok && !no_comments) {
 			if (!escaped && c == ';' &&
-			    ((lex->comments & ISC_LEXCOMMENT_DNSMASTERFILE)
-			     != 0)) {
+			    ((lex->comments & ISC_LEXCOMMENT_DNSMASTERFILE) !=
+			     0)) {
 				saved_state = state;
 				state = lexstate_eatline;
 				no_comments = true;
 				continue;
 			} else if (c == '/' &&
 				   (lex->comments &
-				    (ISC_LEXCOMMENT_C|
+				    (ISC_LEXCOMMENT_C |
 				     ISC_LEXCOMMENT_CPLUSPLUS)) != 0) {
 				saved_state = state;
 				state = lexstate_maybecomment;
 				no_comments = true;
 				continue;
-			} else if (c == '#' &&
-				   ((lex->comments & ISC_LEXCOMMENT_SHELL)
-				    != 0)) {
+			} else if (c == '#' && ((lex->comments &
+						 ISC_LEXCOMMENT_SHELL) != 0)) {
 				saved_state = state;
 				state = lexstate_eatline;
 				no_comments = true;
@@ -530,8 +539,7 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 				done = true;
 			} else if (c == ' ' || c == '\t') {
 				if (lex->last_was_eol &&
-				    (options & ISC_LEXOPT_INITIALWS)
-				    != 0) {
+				    (options & ISC_LEXOPT_INITIALWS) != 0) {
 					lex->last_was_eol = false;
 					tokenp->type = isc_tokentype_initialws;
 					tokenp->value.as_char = c;
@@ -554,8 +562,7 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 			} else if (lex->specials[c]) {
 				lex->last_was_eol = false;
 				if ((c == '(' || c == ')') &&
-				    (options & ISC_LEXOPT_DNSMULTILINE) != 0)
-				{
+				    (options & ISC_LEXOPT_DNSMULTILINE) != 0) {
 					if (c == '(') {
 						if (lex->paren_count == 0)
 							options &= ~IWSEOL;
@@ -563,7 +570,7 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 					} else {
 						if (lex->paren_count == 0) {
 							result =
-							      ISC_R_UNBALANCED;
+								ISC_R_UNBALANCED;
 							goto done;
 						}
 						lex->paren_count--;
@@ -572,8 +579,7 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 					}
 					continue;
 				} else if (c == '{' &&
-					   (options & ISC_LEXOPT_BTEXT) != 0)
-				{
+					   (options & ISC_LEXOPT_BTEXT) != 0) {
 					if (lex->brace_count != 0) {
 						result = ISC_R_UNBALANCED;
 						goto done;
@@ -612,20 +618,19 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 		case lexstate_number:
 			if (c == EOF || !isdigit((unsigned char)c)) {
 				if (c == ' ' || c == '\t' || c == '\r' ||
-				    c == '\n' || c == EOF ||
-				    lex->specials[c]) {
+				    c == '\n' || c == EOF || lex->specials[c]) {
 					int base;
 					if ((options & ISC_LEXOPT_OCTAL) != 0)
 						base = 8;
-					else if ((options & ISC_LEXOPT_CNUMBER) != 0)
+					else if ((options &
+						  ISC_LEXOPT_CNUMBER) != 0)
 						base = 0;
 					else
 						base = 10;
 					pushback(source, c);
 
-					result = isc_parse_uint32(&as_ulong,
-								  lex->data,
-								  base);
+					result = isc_parse_uint32(
+						&as_ulong, lex->data, base);
 					if (result == ISC_R_SUCCESS) {
 						tokenp->type =
 							isc_tokentype_number;
@@ -640,14 +645,14 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 						v->as_textregion.base =
 							lex->data;
 						v->as_textregion.length =
-							(unsigned int)
-							(lex->max_token -
-							 remaining);
+							(unsigned int)(lex->max_token -
+								       remaining);
 					} else
 						goto done;
 					done = true;
 					continue;
-				} else if ((options & ISC_LEXOPT_CNUMBER) == 0 ||
+				} else if ((options & ISC_LEXOPT_CNUMBER) ==
+						   0 ||
 					   ((c != 'x' && c != 'X') ||
 					    (curr != &lex->data[1]) ||
 					    (lex->data[0] != '0'))) {
@@ -659,8 +664,8 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 				state = lexstate_string;
 			}
 			if (remaining == 0U) {
-				result = grow_data(lex, &remaining,
-						   &curr, &prev);
+				result = grow_data(lex, &remaining, &curr,
+						   &prev);
 				if (result != ISC_R_SUCCESS)
 					goto done;
 			}
@@ -685,17 +690,17 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 				tokenp->type = isc_tokentype_string;
 				tokenp->value.as_textregion.base = lex->data;
 				tokenp->value.as_textregion.length =
-					(unsigned int)
-					(lex->max_token - remaining);
+					(unsigned int)(lex->max_token -
+						       remaining);
 				done = true;
 				continue;
 			}
 			if ((options & ISC_LEXOPT_ESCAPE) != 0)
-				escaped = (!escaped && c == '\\') ?
-						true : false;
+				escaped = (!escaped && c == '\\') ? true
+								  : false;
 			if (remaining == 0U) {
-				result = grow_data(lex, &remaining,
-						   &curr, &prev);
+				result = grow_data(lex, &remaining, &curr,
+						   &prev);
 				if (result != ISC_R_SUCCESS)
 					goto done;
 			}
@@ -710,7 +715,8 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 				state = lexstate_ccomment;
 				continue;
 			} else if (c == '/' &&
-			    (lex->comments & ISC_LEXCOMMENT_CPLUSPLUS) != 0) {
+				   (lex->comments & ISC_LEXCOMMENT_CPLUSPLUS) !=
+					   0) {
 				state = lexstate_eatline;
 				continue;
 			}
@@ -771,14 +777,15 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 					tokenp->value.as_textregion.base =
 						lex->data;
 					tokenp->value.as_textregion.length =
-						(unsigned int)
-						(lex->max_token - remaining);
+						(unsigned int)(lex->max_token -
+							       remaining);
 					no_comments = false;
 					done = true;
 				}
 			} else {
 				if (c == '\n' && !escaped &&
-			    (options & ISC_LEXOPT_QSTRINGMULTILINE) == 0) {
+				    (options & ISC_LEXOPT_QSTRINGMULTILINE) ==
+					    0) {
 					pushback(source, c);
 					result = ISC_R_UNBALANCEDQUOTES;
 					goto done;
@@ -824,8 +831,8 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 					tokenp->value.as_textregion.base =
 						lex->data;
 					tokenp->value.as_textregion.length =
-						(unsigned int) (lex->max_token -
-								remaining);
+						(unsigned int)(lex->max_token -
+							       remaining);
 					no_comments = false;
 					done = true;
 					break;
@@ -838,8 +845,8 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 				escaped = false;
 
 			if (remaining == 0U) {
-				result = grow_data(lex, &remaining,
-						   &curr, &prev);
+				result = grow_data(lex, &remaining, &curr,
+						   &prev);
 				if (result != ISC_R_SUCCESS)
 					goto done;
 			}
@@ -850,8 +857,7 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 			remaining--;
 			break;
 		default:
-			FATAL_ERROR(__FILE__, __LINE__,
-				    "Unexpected state %d",
+			FATAL_ERROR(__FILE__, __LINE__, "Unexpected state %d",
 				    state);
 			ISC_UNREACHABLE();
 		}
@@ -859,7 +865,7 @@ isc_lex_gettoken(isc_lex_t *lex, unsigned int options, isc_token_t *tokenp) {
 	} while (!done);
 
 	result = ISC_R_SUCCESS;
- done:
+done:
 #ifdef HAVE_FLOCKFILE
 	if (source->is_file)
 		funlockfile(source->input);
@@ -907,7 +913,7 @@ isc_result_t
 isc_lex_getoctaltoken(isc_lex_t *lex, isc_token_t *token, bool eol)
 {
 	unsigned int options = ISC_LEXOPT_EOL | ISC_LEXOPT_EOF |
-			       ISC_LEXOPT_DNSMULTILINE | ISC_LEXOPT_ESCAPE|
+			       ISC_LEXOPT_DNSMULTILINE | ISC_LEXOPT_ESCAPE |
 			       ISC_LEXOPT_NUMBER | ISC_LEXOPT_OCTAL;
 	isc_result_t result;
 
@@ -931,7 +937,8 @@ isc_lex_getoctaltoken(isc_lex_t *lex, isc_token_t *token, bool eol)
 }
 
 void
-isc_lex_ungettoken(isc_lex_t *lex, isc_token_t *tokenp) {
+isc_lex_ungettoken(isc_lex_t *lex, isc_token_t *tokenp)
+{
 	inputsource *source;
 	/*
 	 * Unget the current token.
@@ -969,12 +976,13 @@ isc_lex_getlasttokentext(isc_lex_t *lex, isc_token_t *tokenp, isc_region_t *r)
 	INSIST(source->ignored <= isc_buffer_consumedlength(source->pushback));
 	r->base = (unsigned char *)isc_buffer_base(source->pushback) +
 		  source->ignored;
-	r->length = isc_buffer_consumedlength(source->pushback) -
-		    source->ignored;
+	r->length =
+		isc_buffer_consumedlength(source->pushback) - source->ignored;
 }
 
 char *
-isc_lex_getsourcename(isc_lex_t *lex) {
+isc_lex_getsourcename(isc_lex_t *lex)
+{
 	inputsource *source;
 
 	REQUIRE(VALID_LEX(lex));
@@ -987,7 +995,8 @@ isc_lex_getsourcename(isc_lex_t *lex) {
 }
 
 unsigned long
-isc_lex_getsourceline(isc_lex_t *lex) {
+isc_lex_getsourceline(isc_lex_t *lex)
+{
 	inputsource *source;
 
 	REQUIRE(VALID_LEX(lex));
@@ -1000,7 +1009,8 @@ isc_lex_getsourceline(isc_lex_t *lex) {
 }
 
 isc_result_t
-isc_lex_setsourcename(isc_lex_t *lex, const char *name) {
+isc_lex_setsourcename(isc_lex_t *lex, const char *name)
+{
 	inputsource *source;
 	char *newname;
 
@@ -1018,7 +1028,8 @@ isc_lex_setsourcename(isc_lex_t *lex, const char *name) {
 }
 
 isc_result_t
-isc_lex_setsourceline(isc_lex_t *lex, unsigned long line) {
+isc_lex_setsourceline(isc_lex_t *lex, unsigned long line)
+{
 	inputsource *source;
 
 	REQUIRE(VALID_LEX(lex));
@@ -1032,7 +1043,8 @@ isc_lex_setsourceline(isc_lex_t *lex, unsigned long line) {
 }
 
 bool
-isc_lex_isfile(isc_lex_t *lex) {
+isc_lex_isfile(isc_lex_t *lex)
+{
 	inputsource *source;
 
 	REQUIRE(VALID_LEX(lex));

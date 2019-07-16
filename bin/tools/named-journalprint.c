@@ -9,8 +9,9 @@
  * information regarding copyright ownership.
  */
 
-
 /*! \file */
+
+#include <stdlib.h>
 
 #include <isc/log.h>
 #include <isc/mem.h>
@@ -22,13 +23,12 @@
 #include <dns/result.h>
 #include <dns/types.h>
 
-#include <stdlib.h>
-
 /*
  * Setup logging to use stderr.
  */
 static isc_result_t
-setup_logging(isc_mem_t *mctx, FILE *errout, isc_log_t **logp) {
+setup_logging(isc_mem_t *mctx, FILE *errout, isc_log_t **logp)
+{
 	isc_logdestination_t destination;
 	isc_logconfig_t *logconfig = NULL;
 	isc_log_t *log = NULL;
@@ -43,18 +43,18 @@ setup_logging(isc_mem_t *mctx, FILE *errout, isc_log_t **logp) {
 	destination.file.versions = ISC_LOG_ROLLNEVER;
 	destination.file.maximum_size = 0;
 	RUNTIME_CHECK(isc_log_createchannel(logconfig, "stderr",
-					    ISC_LOG_TOFILEDESC,
-					    ISC_LOG_DYNAMIC,
+					    ISC_LOG_TOFILEDESC, ISC_LOG_DYNAMIC,
 					    &destination, 0) == ISC_R_SUCCESS);
-	RUNTIME_CHECK(isc_log_usechannel(logconfig, "stderr",
-					 NULL, NULL) == ISC_R_SUCCESS);
+	RUNTIME_CHECK(isc_log_usechannel(logconfig, "stderr", NULL, NULL) ==
+		      ISC_R_SUCCESS);
 
 	*logp = log;
 	return (ISC_R_SUCCESS);
 }
 
 int
-main(int argc, char **argv) {
+main(int argc, char **argv)
+{
 	char *file;
 	isc_mem_t *mctx = NULL;
 	isc_result_t result;
@@ -62,7 +62,7 @@ main(int argc, char **argv) {
 
 	if (argc != 2) {
 		printf("usage: %s journal\n", argv[0]);
-		return(1);
+		return (1);
 	}
 
 	file = argv[1];
@@ -75,5 +75,5 @@ main(int argc, char **argv) {
 		fprintf(stderr, "%s\n", dns_result_totext(result));
 	isc_log_destroy(&lctx);
 	isc_mem_detach(&mctx);
-	return(result != ISC_R_SUCCESS ? 1 : 0);
+	return (result != ISC_R_SUCCESS ? 1 : 0);
 }

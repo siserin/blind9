@@ -28,6 +28,7 @@
 
 #ifdef HAVE_DNSTAP
 #include <fstrm.h>
+
 #include <protobuf-c/protobuf-c.h>
 #else
 struct fstrm_iothr_options;
@@ -75,16 +76,13 @@ struct fstrm_iothr_options;
 #define DNS_DTTYPE_UQ 0x1000
 #define DNS_DTTYPE_UR 0x2000
 
-#define DNS_DTTYPE_QUERY \
-	(DNS_DTTYPE_SQ|DNS_DTTYPE_CQ|DNS_DTTYPE_AQ|\
-	 DNS_DTTYPE_RQ|DNS_DTTYPE_FQ|DNS_DTTYPE_TQ|\
-	 DNS_DTTYPE_UQ)
-#define DNS_DTTYPE_RESPONSE \
-	(DNS_DTTYPE_SR|DNS_DTTYPE_CR|DNS_DTTYPE_AR|\
-	 DNS_DTTYPE_RR|DNS_DTTYPE_FR|DNS_DTTYPE_TR|\
-	 DNS_DTTYPE_UR)
-#define DNS_DTTYPE_ALL \
-	(DNS_DTTYPE_QUERY|DNS_DTTYPE_RESPONSE)
+#define DNS_DTTYPE_QUERY                                                       \
+	(DNS_DTTYPE_SQ | DNS_DTTYPE_CQ | DNS_DTTYPE_AQ | DNS_DTTYPE_RQ |       \
+	 DNS_DTTYPE_FQ | DNS_DTTYPE_TQ | DNS_DTTYPE_UQ)
+#define DNS_DTTYPE_RESPONSE                                                    \
+	(DNS_DTTYPE_SR | DNS_DTTYPE_CR | DNS_DTTYPE_AR | DNS_DTTYPE_RR |       \
+	 DNS_DTTYPE_FR | DNS_DTTYPE_TR | DNS_DTTYPE_UR)
+#define DNS_DTTYPE_ALL (DNS_DTTYPE_QUERY | DNS_DTTYPE_RESPONSE)
 
 typedef enum {
 	dns_dtmode_none = 0,
@@ -275,10 +273,9 @@ dns_dt_shutdown(void);
  */
 
 void
-dns_dt_send(dns_view_t *view, dns_dtmsgtype_t msgtype,
-	    isc_sockaddr_t *qaddr, isc_sockaddr_t *dstaddr,
-	    bool tcp, isc_region_t *zone, isc_time_t *qtime,
-	    isc_time_t *rtime, isc_buffer_t *buf);
+dns_dt_send(dns_view_t *view, dns_dtmsgtype_t msgtype, isc_sockaddr_t *qaddr,
+	    isc_sockaddr_t *dstaddr, bool tcp, isc_region_t *zone,
+	    isc_time_t *qtime, isc_time_t *rtime, isc_buffer_t *buf);
 /*%<
  * Sends a dnstap message to the log, if 'msgtype' is one of the message
  * types represented in 'view->dttypes'.
@@ -345,8 +342,8 @@ dns_dtdata_free(dns_dtdata_t **dp);
  */
 
 isc_result_t
-dns_dt_open(const char *filename, dns_dtmode_t mode,
-	    isc_mem_t *mctx, dns_dthandle_t **handlep);
+dns_dt_open(const char *filename, dns_dtmode_t mode, isc_mem_t *mctx,
+	    dns_dthandle_t **handlep);
 /*%<
  * Opens a dnstap framestream at 'filename' and stores a pointer to the
  * reader object in a dns_dthandle_t structure.

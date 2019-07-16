@@ -12,8 +12,8 @@
 /*! \file */
 
 #include <inttypes.h>
-#include <stdbool.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 #include <isc/buffer.h>
 #include <isc/mem.h>
@@ -23,7 +23,8 @@
 #include <isc/util.h>
 
 void
-isc__buffer_init(isc_buffer_t *b, void *base, unsigned int length) {
+isc__buffer_init(isc_buffer_t *b, void *base, unsigned int length)
+{
 	/*
 	 * Make 'b' refer to the 'length'-byte region starting at 'base'.
 	 * XXXDCL see the comment in buffer.h about base being const.
@@ -35,7 +36,8 @@ isc__buffer_init(isc_buffer_t *b, void *base, unsigned int length) {
 }
 
 void
-isc__buffer_initnull(isc_buffer_t *b) {
+isc__buffer_initnull(isc_buffer_t *b)
+{
 	/*
 	 * Initialize a new buffer which has no backing store.  This can
 	 * later be grown as needed and swapped in place.
@@ -45,7 +47,8 @@ isc__buffer_initnull(isc_buffer_t *b) {
 }
 
 void
-isc_buffer_reinit(isc_buffer_t *b, void *base, unsigned int length) {
+isc_buffer_reinit(isc_buffer_t *b, void *base, unsigned int length)
+{
 	/*
 	 * Re-initialize the buffer enough to reconfigure the base of the
 	 * buffer.  We will swap in the new buffer, after copying any
@@ -68,7 +71,8 @@ isc_buffer_reinit(isc_buffer_t *b, void *base, unsigned int length) {
 }
 
 void
-isc__buffer_invalidate(isc_buffer_t *b) {
+isc__buffer_invalidate(isc_buffer_t *b)
+{
 	/*
 	 * Make 'b' an invalid buffer.
 	 */
@@ -81,14 +85,16 @@ isc__buffer_invalidate(isc_buffer_t *b) {
 }
 
 void
-isc_buffer_setautorealloc(isc_buffer_t *b, bool enable) {
+isc_buffer_setautorealloc(isc_buffer_t *b, bool enable)
+{
 	REQUIRE(ISC_BUFFER_VALID(b));
 	REQUIRE(b->mctx != NULL);
 	b->autore = enable;
 }
 
 void
-isc__buffer_region(isc_buffer_t *b, isc_region_t *r) {
+isc__buffer_region(isc_buffer_t *b, isc_region_t *r)
+{
 	/*
 	 * Make 'r' refer to the region of 'b'.
 	 */
@@ -100,7 +106,8 @@ isc__buffer_region(isc_buffer_t *b, isc_region_t *r) {
 }
 
 void
-isc__buffer_usedregion(const isc_buffer_t *b, isc_region_t *r) {
+isc__buffer_usedregion(const isc_buffer_t *b, isc_region_t *r)
+{
 	/*
 	 * Make 'r' refer to the used region of 'b'.
 	 */
@@ -112,7 +119,8 @@ isc__buffer_usedregion(const isc_buffer_t *b, isc_region_t *r) {
 }
 
 void
-isc__buffer_availableregion(isc_buffer_t *b, isc_region_t *r) {
+isc__buffer_availableregion(isc_buffer_t *b, isc_region_t *r)
+{
 	/*
 	 * Make 'r' refer to the available region of 'b'.
 	 */
@@ -124,7 +132,8 @@ isc__buffer_availableregion(isc_buffer_t *b, isc_region_t *r) {
 }
 
 void
-isc__buffer_add(isc_buffer_t *b, unsigned int n) {
+isc__buffer_add(isc_buffer_t *b, unsigned int n)
+{
 	/*
 	 * Increase the 'used' region of 'b' by 'n' bytes.
 	 */
@@ -136,7 +145,8 @@ isc__buffer_add(isc_buffer_t *b, unsigned int n) {
 }
 
 void
-isc__buffer_subtract(isc_buffer_t *b, unsigned int n) {
+isc__buffer_subtract(isc_buffer_t *b, unsigned int n)
+{
 	/*
 	 * Decrease the 'used' region of 'b' by 'n' bytes.
 	 */
@@ -148,7 +158,8 @@ isc__buffer_subtract(isc_buffer_t *b, unsigned int n) {
 }
 
 void
-isc__buffer_clear(isc_buffer_t *b) {
+isc__buffer_clear(isc_buffer_t *b)
+{
 	/*
 	 * Make the used region empty.
 	 */
@@ -159,7 +170,8 @@ isc__buffer_clear(isc_buffer_t *b) {
 }
 
 void
-isc__buffer_consumedregion(isc_buffer_t *b, isc_region_t *r) {
+isc__buffer_consumedregion(isc_buffer_t *b, isc_region_t *r)
+{
 	/*
 	 * Make 'r' refer to the consumed region of 'b'.
 	 */
@@ -171,7 +183,8 @@ isc__buffer_consumedregion(isc_buffer_t *b, isc_region_t *r) {
 }
 
 void
-isc__buffer_remainingregion(isc_buffer_t *b, isc_region_t *r) {
+isc__buffer_remainingregion(isc_buffer_t *b, isc_region_t *r)
+{
 	/*
 	 * Make 'r' refer to the remaining region of 'b'.
 	 */
@@ -183,7 +196,8 @@ isc__buffer_remainingregion(isc_buffer_t *b, isc_region_t *r) {
 }
 
 void
-isc__buffer_activeregion(isc_buffer_t *b, isc_region_t *r) {
+isc__buffer_activeregion(isc_buffer_t *b, isc_region_t *r)
+{
 	/*
 	 * Make 'r' refer to the active region of 'b'.
 	 */
@@ -195,7 +209,8 @@ isc__buffer_activeregion(isc_buffer_t *b, isc_region_t *r) {
 }
 
 void
-isc__buffer_setactive(isc_buffer_t *b, unsigned int n) {
+isc__buffer_setactive(isc_buffer_t *b, unsigned int n)
+{
 	/*
 	 * Sets the end of the active region 'n' bytes after current.
 	 */
@@ -207,7 +222,8 @@ isc__buffer_setactive(isc_buffer_t *b, unsigned int n) {
 }
 
 void
-isc__buffer_first(isc_buffer_t *b) {
+isc__buffer_first(isc_buffer_t *b)
+{
 	/*
 	 * Make the consumed region empty.
 	 */
@@ -218,7 +234,8 @@ isc__buffer_first(isc_buffer_t *b) {
 }
 
 void
-isc__buffer_forward(isc_buffer_t *b, unsigned int n) {
+isc__buffer_forward(isc_buffer_t *b, unsigned int n)
+{
 	/*
 	 * Increase the 'consumed' region of 'b' by 'n' bytes.
 	 */
@@ -230,7 +247,8 @@ isc__buffer_forward(isc_buffer_t *b, unsigned int n) {
 }
 
 void
-isc__buffer_back(isc_buffer_t *b, unsigned int n) {
+isc__buffer_back(isc_buffer_t *b, unsigned int n)
+{
 	/*
 	 * Decrease the 'consumed' region of 'b' by 'n' bytes.
 	 */
@@ -242,7 +260,8 @@ isc__buffer_back(isc_buffer_t *b, unsigned int n) {
 }
 
 void
-isc_buffer_compact(isc_buffer_t *b) {
+isc_buffer_compact(isc_buffer_t *b)
+{
 	unsigned int length;
 	void *src;
 
@@ -269,7 +288,8 @@ isc_buffer_compact(isc_buffer_t *b) {
 }
 
 uint8_t
-isc_buffer_getuint8(isc_buffer_t *b) {
+isc_buffer_getuint8(isc_buffer_t *b)
+{
 	unsigned char *cp;
 	uint8_t result;
 
@@ -288,7 +308,8 @@ isc_buffer_getuint8(isc_buffer_t *b) {
 }
 
 void
-isc__buffer_putuint8(isc_buffer_t *b, uint8_t val) {
+isc__buffer_putuint8(isc_buffer_t *b, uint8_t val)
+{
 	isc_result_t result;
 	REQUIRE(ISC_BUFFER_VALID(b));
 	if (ISC_UNLIKELY(b->autore)) {
@@ -301,7 +322,8 @@ isc__buffer_putuint8(isc_buffer_t *b, uint8_t val) {
 }
 
 uint16_t
-isc_buffer_getuint16(isc_buffer_t *b) {
+isc_buffer_getuint16(isc_buffer_t *b)
+{
 	unsigned char *cp;
 	uint16_t result;
 
@@ -322,7 +344,8 @@ isc_buffer_getuint16(isc_buffer_t *b) {
 }
 
 void
-isc__buffer_putuint16(isc_buffer_t *b, uint16_t val) {
+isc__buffer_putuint16(isc_buffer_t *b, uint16_t val)
+{
 	isc_result_t result;
 	REQUIRE(ISC_BUFFER_VALID(b));
 	if (ISC_UNLIKELY(b->autore)) {
@@ -335,7 +358,8 @@ isc__buffer_putuint16(isc_buffer_t *b, uint16_t val) {
 }
 
 void
-isc__buffer_putuint24(isc_buffer_t *b, uint32_t val) {
+isc__buffer_putuint24(isc_buffer_t *b, uint32_t val)
+{
 	isc_result_t result;
 	REQUIRE(ISC_BUFFER_VALID(b));
 	if (ISC_UNLIKELY(b->autore)) {
@@ -348,7 +372,8 @@ isc__buffer_putuint24(isc_buffer_t *b, uint32_t val) {
 }
 
 uint32_t
-isc_buffer_getuint32(isc_buffer_t *b) {
+isc_buffer_getuint32(isc_buffer_t *b)
+{
 	unsigned char *cp;
 	uint32_t result;
 
@@ -371,7 +396,8 @@ isc_buffer_getuint32(isc_buffer_t *b) {
 }
 
 void
-isc__buffer_putuint32(isc_buffer_t *b, uint32_t val) {
+isc__buffer_putuint32(isc_buffer_t *b, uint32_t val)
+{
 	isc_result_t result;
 	REQUIRE(ISC_BUFFER_VALID(b));
 	if (ISC_UNLIKELY(b->autore)) {
@@ -384,7 +410,8 @@ isc__buffer_putuint32(isc_buffer_t *b, uint32_t val) {
 }
 
 uint64_t
-isc_buffer_getuint48(isc_buffer_t *b) {
+isc_buffer_getuint48(isc_buffer_t *b)
+{
 	unsigned char *cp;
 	uint64_t result;
 
@@ -409,7 +436,8 @@ isc_buffer_getuint48(isc_buffer_t *b) {
 }
 
 void
-isc__buffer_putuint48(isc_buffer_t *b, uint64_t val) {
+isc__buffer_putuint48(isc_buffer_t *b, uint64_t val)
+{
 	isc_result_t result;
 	uint16_t valhi;
 	uint32_t vallo;
@@ -443,7 +471,8 @@ isc__buffer_putmem(isc_buffer_t *b, const unsigned char *base,
 }
 
 void
-isc__buffer_putstr(isc_buffer_t *b, const char *source) {
+isc__buffer_putstr(isc_buffer_t *b, const char *source)
+{
 	unsigned int l;
 	unsigned char *cp;
 	isc_result_t result;
@@ -467,8 +496,9 @@ isc__buffer_putstr(isc_buffer_t *b, const char *source) {
 }
 
 void
-isc_buffer_putdecint(isc_buffer_t *b, int64_t v) {
-	unsigned int l=0;
+isc_buffer_putdecint(isc_buffer_t *b, int64_t v)
+{
+	unsigned int l = 0;
 	unsigned char *cp;
 	char buf[21];
 	isc_result_t result;
@@ -490,7 +520,8 @@ isc_buffer_putdecint(isc_buffer_t *b, int64_t v) {
 }
 
 isc_result_t
-isc_buffer_dup(isc_mem_t *mctx, isc_buffer_t **dstp, const isc_buffer_t *src) {
+isc_buffer_dup(isc_mem_t *mctx, isc_buffer_t **dstp, const isc_buffer_t *src)
+{
 	isc_buffer_t *dst = NULL;
 	isc_region_t region;
 	isc_result_t result;
@@ -511,7 +542,8 @@ isc_buffer_dup(isc_mem_t *mctx, isc_buffer_t **dstp, const isc_buffer_t *src) {
 }
 
 isc_result_t
-isc_buffer_copyregion(isc_buffer_t *b, const isc_region_t *r) {
+isc_buffer_copyregion(isc_buffer_t *b, const isc_region_t *r)
+{
 	isc_result_t result;
 
 	REQUIRE(ISC_BUFFER_VALID(b));
@@ -541,7 +573,7 @@ isc_buffer_allocate(isc_mem_t *mctx, isc_buffer_t **dynbuffer,
 		    unsigned int length)
 {
 	isc_buffer_t *dbuf;
-	unsigned char * bdata;
+	unsigned char *bdata;
 	REQUIRE(dynbuffer != NULL);
 	REQUIRE(*dynbuffer == NULL);
 
@@ -566,7 +598,8 @@ isc_buffer_allocate(isc_mem_t *mctx, isc_buffer_t **dynbuffer,
 }
 
 isc_result_t
-isc_buffer_reserve(isc_buffer_t **dynbuffer, unsigned int size) {
+isc_buffer_reserve(isc_buffer_t **dynbuffer, unsigned int size)
+{
 	unsigned char *bdata;
 	uint64_t len;
 
@@ -600,7 +633,7 @@ isc_buffer_reserve(isc_buffer_t **dynbuffer, unsigned int size) {
 	 * it doesn't remap pages, but does ordinary copy. So is
 	 * isc_mem_reallocate(), which has additional issues.
 	 */
-	bdata = isc_mem_get((*dynbuffer)->mctx, (unsigned int) len);
+	bdata = isc_mem_get((*dynbuffer)->mctx, (unsigned int)len);
 	if (bdata == NULL) {
 		return (ISC_R_NOMEMORY);
 	}
@@ -610,13 +643,14 @@ isc_buffer_reserve(isc_buffer_t **dynbuffer, unsigned int size) {
 		    (*dynbuffer)->length);
 
 	(*dynbuffer)->base = bdata;
-	(*dynbuffer)->length = (unsigned int) len;
+	(*dynbuffer)->length = (unsigned int)len;
 
 	return (ISC_R_SUCCESS);
 }
 
 void
-isc_buffer_free(isc_buffer_t **dynbuffer) {
+isc_buffer_free(isc_buffer_t **dynbuffer)
+{
 	isc_buffer_t *dbuf;
 	isc_mem_t *mctx;
 
@@ -625,7 +659,7 @@ isc_buffer_free(isc_buffer_t **dynbuffer) {
 	REQUIRE((*dynbuffer)->mctx != NULL);
 
 	dbuf = *dynbuffer;
-	*dynbuffer = NULL;	/* destroy external reference */
+	*dynbuffer = NULL; /* destroy external reference */
 	mctx = dbuf->mctx;
 	dbuf->mctx = NULL;
 
@@ -635,7 +669,8 @@ isc_buffer_free(isc_buffer_t **dynbuffer) {
 }
 
 isc_result_t
-isc_buffer_printf(isc_buffer_t *b, const char *format, ...) {
+isc_buffer_printf(isc_buffer_t *b, const char *format, ...)
+{
 	va_list ap;
 	int n;
 	isc_result_t result;

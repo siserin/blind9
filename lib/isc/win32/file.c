@@ -11,16 +11,13 @@
 
 #undef rename
 #include <errno.h>
-#include <limits.h>
+#include <fcntl.h>
 #include <inttypes.h>
+#include <io.h>
+#include <limits.h>
+#include <process.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <io.h>
-#include <process.h>
-
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/utime.h>
 
 #include <isc/file.h>
 #include <isc/md.h>
@@ -35,18 +32,22 @@
 
 #include "errno2result.h"
 
-static const char alphnum[] =
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+#include <sys/stat.h>
+#include <sys/utime.h>
+
+static const char alphnum[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv"
+			      "wxyz0123456789";
 
 /*
  * Emulate UNIX mkstemp, which returns an open FD to the new file
  *
  */
 static int
-gettemp(char *path, bool binary, int *doopen) {
+gettemp(char *path, bool binary, int *doopen)
+{
 	char *start, *trv;
 	struct stat sbuf;
-	int flags = O_CREAT|O_EXCL|O_RDWR;
+	int flags = O_CREAT | O_EXCL | O_RDWR;
 
 	if (binary)
 		flags |= _O_BINARY;
@@ -80,8 +81,8 @@ gettemp(char *path, bool binary, int *doopen) {
 
 	for (;;) {
 		if (doopen) {
-			if ((*doopen =
-			    open(path, flags, _S_IREAD | _S_IWRITE)) >= 0)
+			if ((*doopen = open(path, flags,
+					    _S_IREAD | _S_IWRITE)) >= 0)
 				return (1);
 			if (errno != EEXIST)
 				return (0);
@@ -107,7 +108,8 @@ gettemp(char *path, bool binary, int *doopen) {
 }
 
 static int
-mkstemp(char *path, bool binary) {
+mkstemp(char *path, bool binary)
+{
 	int fd;
 
 	return (gettemp(path, binary, &fd) ? fd : -1);
@@ -122,7 +124,8 @@ mkstemp(char *path, bool binary) {
  * annoying MP issues.   BTW, Win32 has stat().
  */
 static isc_result_t
-file_stats(const char *file, struct stat *stats) {
+file_stats(const char *file, struct stat *stats)
+{
 	isc_result_t result = ISC_R_SUCCESS;
 
 	REQUIRE(file != NULL);
@@ -135,7 +138,8 @@ file_stats(const char *file, struct stat *stats) {
 }
 
 static isc_result_t
-fd_stats(int fd, struct stat *stats) {
+fd_stats(int fd, struct stat *stats)
+{
 	isc_result_t result = ISC_R_SUCCESS;
 
 	REQUIRE(stats != NULL);
@@ -147,7 +151,8 @@ fd_stats(int fd, struct stat *stats) {
 }
 
 isc_result_t
-isc_file_getsizefd(int fd, off_t *size) {
+isc_file_getsizefd(int fd, off_t *size)
+{
 	isc_result_t result;
 	struct stat stats;
 
@@ -161,7 +166,8 @@ isc_file_getsizefd(int fd, off_t *size) {
 }
 
 isc_result_t
-isc_file_mode(const char *file, mode_t *modep) {
+isc_file_mode(const char *file, mode_t *modep)
+{
 	isc_result_t result;
 	struct stat stats;
 
@@ -181,7 +187,8 @@ isc_file_mode(const char *file, mode_t *modep) {
  */
 
 int
-isc_file_safemovefile(const char *oldname, const char *newname) {
+isc_file_safemovefile(const char *oldname, const char *newname)
+{
 	BOOL filestatus;
 	char buf[512];
 	struct stat sbuf;
@@ -238,7 +245,8 @@ isc_file_safemovefile(const char *oldname, const char *newname) {
 }
 
 isc_result_t
-isc_file_getmodtime(const char *file, isc_time_t *time) {
+isc_file_getmodtime(const char *file, isc_time_t *time)
+{
 	int fh;
 
 	REQUIRE(file != NULL);
@@ -247,11 +255,8 @@ isc_file_getmodtime(const char *file, isc_time_t *time) {
 	if ((fh = open(file, _O_RDONLY | _O_BINARY)) < 0)
 		return (isc__errno2result(errno));
 
-	if (!GetFileTime((HANDLE) _get_osfhandle(fh),
-			 NULL,
-			 NULL,
-			 &time->absolute))
-	{
+	if (!GetFileTime((HANDLE)_get_osfhandle(fh), NULL, NULL,
+			 &time->absolute)) {
 		close(fh);
 		errno = EINVAL;
 		return (isc__errno2result(errno));
@@ -261,7 +266,8 @@ isc_file_getmodtime(const char *file, isc_time_t *time) {
 }
 
 isc_result_t
-isc_file_getsize(const char *file, off_t *size) {
+isc_file_getsize(const char *file, off_t *size)
+{
 	isc_result_t result;
 	struct stat stats;
 
@@ -277,7 +283,8 @@ isc_file_getsize(const char *file, off_t *size) {
 }
 
 isc_result_t
-isc_file_settime(const char *file, isc_time_t *time) {
+isc_file_settime(const char *file, isc_time_t *time)
+{
 	int fh;
 
 	REQUIRE(file != NULL && time != NULL);
@@ -290,11 +297,8 @@ isc_file_settime(const char *file, isc_time_t *time) {
 	 * this call implies the new file times are not supported by the
 	 * underlying file system.
 	 */
-	if (!SetFileTime((HANDLE) _get_osfhandle(fh),
-			 NULL,
-			 &time->absolute,
-			 &time->absolute))
-	{
+	if (!SetFileTime((HANDLE)_get_osfhandle(fh), NULL, &time->absolute,
+			 &time->absolute)) {
 		close(fh);
 		errno = EINVAL;
 		return (isc__errno2result(errno));
@@ -302,14 +306,14 @@ isc_file_settime(const char *file, isc_time_t *time) {
 
 	close(fh);
 	return (ISC_R_SUCCESS);
-
 }
 
 #undef TEMPLATE
 #define TEMPLATE "XXXXXXXXXX.tmp" /* 14 characters. */
 
 isc_result_t
-isc_file_mktemplate(const char *path, char *buf, size_t buflen) {
+isc_file_mktemplate(const char *path, char *buf, size_t buflen)
+{
 	return (isc_file_template(path, TEMPLATE, buf, buflen));
 }
 
@@ -350,7 +354,8 @@ isc_file_template(const char *path, const char *templet, char *buf,
 }
 
 isc_result_t
-isc_file_renameunique(const char *file, char *templet) {
+isc_file_renameunique(const char *file, char *templet)
+{
 	int fd;
 	int res = 0;
 	isc_result_t result = ISC_R_SUCCESS;
@@ -375,7 +380,8 @@ isc_file_renameunique(const char *file, char *templet) {
 }
 
 static isc_result_t
-openuniquemode(char *templet, int mode, bool binary, FILE **fp) {
+openuniquemode(char *templet, int mode, bool binary, FILE **fp)
+{
 	int fd;
 	FILE *f;
 	isc_result_t result = ISC_R_SUCCESS;
@@ -409,41 +415,48 @@ openuniquemode(char *templet, int mode, bool binary, FILE **fp) {
 }
 
 isc_result_t
-isc_file_openuniqueprivate(char *templet, FILE **fp) {
+isc_file_openuniqueprivate(char *templet, FILE **fp)
+{
 	int mode = _S_IREAD | _S_IWRITE;
 	return (openuniquemode(templet, mode, false, fp));
 }
 
 isc_result_t
-isc_file_openunique(char *templet, FILE **fp) {
+isc_file_openunique(char *templet, FILE **fp)
+{
 	int mode = _S_IREAD | _S_IWRITE;
 	return (openuniquemode(templet, mode, false, fp));
 }
 
 isc_result_t
-isc_file_openuniquemode(char *templet, int mode, FILE **fp) {
+isc_file_openuniquemode(char *templet, int mode, FILE **fp)
+{
 	return (openuniquemode(templet, mode, false, fp));
 }
 
 isc_result_t
-isc_file_bopenuniqueprivate(char *templet, FILE **fp) {
+isc_file_bopenuniqueprivate(char *templet, FILE **fp)
+{
 	int mode = _S_IREAD | _S_IWRITE;
 	return (openuniquemode(templet, mode, true, fp));
 }
 
 isc_result_t
-isc_file_bopenunique(char *templet, FILE **fp) {
+isc_file_bopenunique(char *templet, FILE **fp)
+{
 	int mode = _S_IREAD | _S_IWRITE;
 	return (openuniquemode(templet, mode, true, fp));
 }
 
 isc_result_t
-isc_file_bopenuniquemode(char *templet, int mode, FILE **fp) {
+isc_file_bopenuniquemode(char *templet, int mode, FILE **fp)
+{
 	return (openuniquemode(templet, mode, true, fp));
 }
 
 isc_result_t
-isc_file_remove(const char *filename) {
+isc_file_remove(const char *filename)
+{
 	int r;
 
 	REQUIRE(filename != NULL);
@@ -456,7 +469,8 @@ isc_file_remove(const char *filename) {
 }
 
 isc_result_t
-isc_file_rename(const char *oldname, const char *newname) {
+isc_file_rename(const char *oldname, const char *newname)
+{
 	int r;
 
 	REQUIRE(oldname != NULL);
@@ -470,7 +484,8 @@ isc_file_rename(const char *oldname, const char *newname) {
 }
 
 bool
-isc_file_exists(const char *pathname) {
+isc_file_exists(const char *pathname)
+{
 	struct stat stats;
 
 	REQUIRE(pathname != NULL);
@@ -479,59 +494,62 @@ isc_file_exists(const char *pathname) {
 }
 
 isc_result_t
-isc_file_isplainfile(const char *filename) {
+isc_file_isplainfile(const char *filename)
+{
 	/*
 	 * This function returns success if filename is a plain file.
 	 */
 	struct stat filestat;
-	memset(&filestat,0,sizeof(struct stat));
+	memset(&filestat, 0, sizeof(struct stat));
 
 	if ((stat(filename, &filestat)) == -1)
-		return(isc__errno2result(errno));
+		return (isc__errno2result(errno));
 
-	if(! S_ISREG(filestat.st_mode))
-		return(ISC_R_INVALIDFILE);
+	if (!S_ISREG(filestat.st_mode))
+		return (ISC_R_INVALIDFILE);
 
-	return(ISC_R_SUCCESS);
+	return (ISC_R_SUCCESS);
 }
 
 isc_result_t
-isc_file_isplainfilefd(int fd) {
+isc_file_isplainfilefd(int fd)
+{
 	/*
 	 * This function returns success if filename is a plain file.
 	 */
 	struct stat filestat;
-	memset(&filestat,0,sizeof(struct stat));
+	memset(&filestat, 0, sizeof(struct stat));
 
 	if ((fstat(fd, &filestat)) == -1)
-		return(isc__errno2result(errno));
+		return (isc__errno2result(errno));
 
-	if(! S_ISREG(filestat.st_mode))
-		return(ISC_R_INVALIDFILE);
+	if (!S_ISREG(filestat.st_mode))
+		return (ISC_R_INVALIDFILE);
 
-	return(ISC_R_SUCCESS);
+	return (ISC_R_SUCCESS);
 }
 
 isc_result_t
-isc_file_isdirectory(const char *filename) {
+isc_file_isdirectory(const char *filename)
+{
 	/*
 	 * This function returns success if filename is a directory.
 	 */
 	struct stat filestat;
-	memset(&filestat,0,sizeof(struct stat));
+	memset(&filestat, 0, sizeof(struct stat));
 
 	if ((stat(filename, &filestat)) == -1)
-		return(isc__errno2result(errno));
+		return (isc__errno2result(errno));
 
-	if(! S_ISDIR(filestat.st_mode))
-		return(ISC_R_INVALIDFILE);
+	if (!S_ISDIR(filestat.st_mode))
+		return (ISC_R_INVALIDFILE);
 
-	return(ISC_R_SUCCESS);
+	return (ISC_R_SUCCESS);
 }
 
-
 bool
-isc_file_isabsolute(const char *filename) {
+isc_file_isabsolute(const char *filename)
+{
 	REQUIRE(filename != NULL);
 	/*
 	 * Look for c:\path\... style, c:/path/... or \\computer\shar\path...
@@ -547,13 +565,15 @@ isc_file_isabsolute(const char *filename) {
 }
 
 bool
-isc_file_iscurrentdir(const char *filename) {
+isc_file_iscurrentdir(const char *filename)
+{
 	REQUIRE(filename != NULL);
 	return (filename[0] == '.' && filename[1] == '\0');
 }
 
 bool
-isc_file_ischdiridempotent(const char *filename) {
+isc_file_ischdiridempotent(const char *filename)
+{
 	REQUIRE(filename != NULL);
 
 	if (isc_file_isabsolute(filename))
@@ -568,7 +588,8 @@ isc_file_ischdiridempotent(const char *filename) {
 }
 
 const char *
-isc_file_basename(const char *filename) {
+isc_file_basename(const char *filename)
+{
 	char *s;
 
 	REQUIRE(filename != NULL);
@@ -580,7 +601,8 @@ isc_file_basename(const char *filename) {
 }
 
 isc_result_t
-isc_file_progname(const char *filename, char *progname, size_t namelen) {
+isc_file_progname(const char *filename, char *progname, size_t namelen)
+{
 	const char *s;
 	const char *p;
 	size_t len;
@@ -621,14 +643,15 @@ isc_file_progname(const char *filename, char *progname, size_t namelen) {
 }
 
 isc_result_t
-isc_file_absolutepath(const char *filename, char *path, size_t pathlen) {
+isc_file_absolutepath(const char *filename, char *path, size_t pathlen)
+{
 	char *ptrname;
 	DWORD retval;
 
 	REQUIRE(filename != NULL);
 	REQUIRE(path != NULL);
 
-	retval = GetFullPathName(filename, (DWORD) pathlen, path, &ptrname);
+	retval = GetFullPathName(filename, (DWORD)pathlen, path, &ptrname);
 
 	/* Something went wrong in getting the path */
 	if (retval == 0)
@@ -640,7 +663,8 @@ isc_file_absolutepath(const char *filename, char *path, size_t pathlen) {
 }
 
 isc_result_t
-isc_file_truncate(const char *filename, isc_offset_t size) {
+isc_file_truncate(const char *filename, isc_offset_t size)
+{
 	int fh;
 
 	REQUIRE(filename != NULL && size >= 0);
@@ -648,7 +672,7 @@ isc_file_truncate(const char *filename, isc_offset_t size) {
 	if ((fh = open(filename, _O_RDWR | _O_BINARY)) < 0)
 		return (isc__errno2result(errno));
 
-	if(_chsize(fh, size) != 0) {
+	if (_chsize(fh, size) != 0) {
 		close(fh);
 		return (isc__errno2result(errno));
 	}
@@ -658,7 +682,8 @@ isc_file_truncate(const char *filename, isc_offset_t size) {
 }
 
 isc_result_t
-isc_file_safecreate(const char *filename, FILE **fp) {
+isc_file_safecreate(const char *filename, FILE **fp)
+{
 	isc_result_t result;
 	int flags;
 	struct stat sb;
@@ -695,7 +720,7 @@ isc_file_safecreate(const char *filename, FILE **fp) {
 
 isc_result_t
 isc_file_splitpath(isc_mem_t *mctx, const char *path, char **dirname,
-		   char const ** basename)
+		   char const **basename)
 {
 	char *dir;
 	const char *file, *slash;
@@ -736,8 +761,7 @@ isc_file_splitpath(isc_mem_t *mctx, const char *path, char **dirname,
 }
 
 void *
-isc_file_mmap(void *addr, size_t len, int prot,
-	      int flags, int fd, off_t offset)
+isc_file_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 {
 	void *buf;
 	ssize_t ret;
@@ -749,15 +773,15 @@ isc_file_mmap(void *addr, size_t len, int prot,
 
 	end = lseek(fd, 0, SEEK_END);
 	lseek(fd, offset, SEEK_SET);
-	if (end - offset < (off_t) len)
+	if (end - offset < (off_t)len)
 		len = end - offset;
 
 	buf = malloc(len);
 	if (buf == NULL)
 		return (NULL);
 
-	ret = read(fd, buf, (unsigned int) len);
-	if (ret != (ssize_t) len) {
+	ret = read(fd, buf, (unsigned int)len);
+	if (ret != (ssize_t)len) {
 		free(buf);
 		buf = NULL;
 	}
@@ -766,7 +790,8 @@ isc_file_mmap(void *addr, size_t len, int prot,
 }
 
 int
-isc_file_munmap(void *addr, size_t len) {
+isc_file_munmap(void *addr, size_t len)
+{
 	UNUSED(len);
 	free(addr);
 	return (0);
@@ -778,8 +803,8 @@ isc_file_munmap(void *addr, size_t len) {
 #endif
 
 static isc_result_t
-digest2hex(unsigned char *digest, unsigned int digestlen,
-	   char *hash, size_t hashlen)
+digest2hex(unsigned char *digest, unsigned int digestlen, char *hash,
+	   size_t hashlen)
 {
 	unsigned int i;
 	int ret;
@@ -825,8 +850,8 @@ isc_file_sanitize(const char *dir, const char *base, const char *ext,
 		return (ISC_R_NOSPACE);
 
 	/* Check whether the full-length SHA256 hash filename exists */
-	err = isc_md(ISC_MD_SHA256, (const unsigned char *)base,
-		     strlen(base), digest, &digestlen);
+	err = isc_md(ISC_MD_SHA256, (const unsigned char *)base, strlen(base),
+		     digest, &digestlen);
 	if (err != ISC_R_SUCCESS) {
 		return (err);
 	}
@@ -836,9 +861,9 @@ isc_file_sanitize(const char *dir, const char *base, const char *ext,
 		return (err);
 	}
 
-	snprintf(buf, sizeof(buf), "%s%s%s%s%s",
-		dir != NULL ? dir : "", dir != NULL ? "/" : "",
-		hash, ext != NULL ? "." : "", ext != NULL ? ext : "");
+	snprintf(buf, sizeof(buf), "%s%s%s%s%s", dir != NULL ? dir : "",
+		 dir != NULL ? "/" : "", hash, ext != NULL ? "." : "",
+		 ext != NULL ? ext : "");
 	if (isc_file_exists(buf)) {
 		strlcpy(path, buf, length);
 		return (ISC_R_SUCCESS);
@@ -846,9 +871,9 @@ isc_file_sanitize(const char *dir, const char *base, const char *ext,
 
 	/* Check for a truncated SHA256 hash filename */
 	hash[16] = '\0';
-	snprintf(buf, sizeof(buf), "%s%s%s%s%s",
-		dir != NULL ? dir : "", dir != NULL ? "/" : "",
-		hash, ext != NULL ? "." : "", ext != NULL ? ext : "");
+	snprintf(buf, sizeof(buf), "%s%s%s%s%s", dir != NULL ? dir : "",
+		 dir != NULL ? "/" : "", hash, ext != NULL ? "." : "",
+		 ext != NULL ? ext : "");
 	if (isc_file_exists(buf)) {
 		strlcpy(path, buf, length);
 		return (ISC_R_SUCCESS);
@@ -864,9 +889,9 @@ isc_file_sanitize(const char *dir, const char *base, const char *ext,
 		return (ISC_R_SUCCESS);
 	}
 
-	snprintf(buf, sizeof(buf), "%s%s%s%s%s",
-		dir != NULL ? dir : "", dir != NULL ? "/" : "",
-		base, ext != NULL ? "." : "", ext != NULL ? ext : "");
+	snprintf(buf, sizeof(buf), "%s%s%s%s%s", dir != NULL ? dir : "",
+		 dir != NULL ? "/" : "", base, ext != NULL ? "." : "",
+		 ext != NULL ? ext : "");
 	strlcpy(path, buf, length);
 	return (ISC_R_SUCCESS);
 }
@@ -875,7 +900,8 @@ isc_file_sanitize(const char *dir, const char *base, const char *ext,
  * Based on http://blog.aaronballman.com/2011/08/how-to-check-access-rights/
  */
 bool
-isc_file_isdirwritable(const char *path) {
+isc_file_isdirwritable(const char *path)
+{
 	DWORD length = 0;
 	HANDLE hToken = NULL;
 	PSECURITY_DESCRIPTOR security = NULL;
@@ -888,11 +914,11 @@ isc_file_isdirwritable(const char *path) {
 	/*
 	 * Figure out buffer size. GetFileSecurity() should not succeed.
 	 */
-	if (GetFileSecurity(path, OWNER_SECURITY_INFORMATION |
-				  GROUP_SECURITY_INFORMATION |
-				  DACL_SECURITY_INFORMATION,
-			    NULL, 0, &length))
-	{
+	if (GetFileSecurity(path,
+			    OWNER_SECURITY_INFORMATION |
+				    GROUP_SECURITY_INFORMATION |
+				    DACL_SECURITY_INFORMATION,
+			    NULL, 0, &length)) {
 		return (answer);
 	}
 
@@ -908,23 +934,22 @@ isc_file_isdirwritable(const char *path) {
 	/*
 	 * GetFileSecurity() should succeed.
 	 */
-	if (!GetFileSecurity(path, OWNER_SECURITY_INFORMATION |
-				   GROUP_SECURITY_INFORMATION |
-				   DACL_SECURITY_INFORMATION,
-			     security, length, &length))
-	{
+	if (!GetFileSecurity(path,
+			     OWNER_SECURITY_INFORMATION |
+				     GROUP_SECURITY_INFORMATION |
+				     DACL_SECURITY_INFORMATION,
+			     security, length, &length)) {
 		return (answer);
 	}
 
-	if (OpenProcessToken(GetCurrentProcess(), TOKEN_IMPERSONATE |
-			     TOKEN_QUERY | TOKEN_DUPLICATE |
-			     STANDARD_RIGHTS_READ, &hToken))
-	{
+	if (OpenProcessToken(GetCurrentProcess(),
+			     TOKEN_IMPERSONATE | TOKEN_QUERY | TOKEN_DUPLICATE |
+				     STANDARD_RIGHTS_READ,
+			     &hToken)) {
 		HANDLE hImpersonatedToken = NULL;
 
 		if (DuplicateToken(hToken, SecurityImpersonation,
-				   &hImpersonatedToken))
-		{
+				   &hImpersonatedToken)) {
 			GENERIC_MAPPING mapping;
 			PRIVILEGE_SET privileges = { 0 };
 			DWORD grantedAccess = 0;
@@ -941,8 +966,7 @@ isc_file_isdirwritable(const char *path) {
 			if (AccessCheck(security, hImpersonatedToken,
 					genericAccessRights, &mapping,
 					&privileges, &privilegesLength,
-					&grantedAccess, &result))
-			{
+					&grantedAccess, &result)) {
 				answer = result;
 			}
 			CloseHandle(hImpersonatedToken);

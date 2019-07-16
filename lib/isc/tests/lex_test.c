@@ -11,10 +11,9 @@
 
 #if HAVE_CMOCKA
 
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
-
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -29,7 +28,8 @@
 
 /* check handling of 0xff */
 static void
-lex_0xff(void **state) {
+lex_0xff(void **state)
+{
 	isc_mem_t *mctx = NULL;
 	isc_result_t result;
 	isc_lex_t *lex = NULL;
@@ -62,7 +62,8 @@ lex_0xff(void **state) {
 
 /* check setting of source line */
 static void
-lex_setline(void **state) {
+lex_setline(void **state)
+{
 	isc_mem_t *mctx = NULL;
 	isc_result_t result;
 	isc_lex_t *lex = NULL;
@@ -109,7 +110,8 @@ lex_setline(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test(lex_0xff),
 		cmocka_unit_test(lex_setline),
@@ -123,7 +125,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

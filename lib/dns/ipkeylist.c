@@ -20,7 +20,8 @@
 #include <dns/name.h>
 
 void
-dns_ipkeylist_init(dns_ipkeylist_t *ipkl) {
+dns_ipkeylist_init(dns_ipkeylist_t *ipkl)
+{
 	ipkl->count = 0;
 	ipkl->allocated = 0;
 	ipkl->addrs = NULL;
@@ -30,7 +31,8 @@ dns_ipkeylist_init(dns_ipkeylist_t *ipkl) {
 }
 
 void
-dns_ipkeylist_clear(isc_mem_t *mctx, dns_ipkeylist_t *ipkl) {
+dns_ipkeylist_clear(isc_mem_t *mctx, dns_ipkeylist_t *ipkl)
+{
 	uint32_t i;
 
 	REQUIRE(ipkl != NULL);
@@ -101,8 +103,8 @@ dns_ipkeylist_copy(isc_mem_t *mctx, const dns_ipkeylist_t *src,
 	if (src->keys != NULL) {
 		for (i = 0; i < src->count; i++) {
 			if (src->keys[i] != NULL) {
-				dst->keys[i] = isc_mem_get(mctx,
-							   sizeof(dns_name_t));
+				dst->keys[i] =
+					isc_mem_get(mctx, sizeof(dns_name_t));
 				if (dst->keys[i] == NULL) {
 					result = ISC_R_NOMEMORY;
 					goto cleanup_keys;
@@ -121,8 +123,8 @@ dns_ipkeylist_copy(isc_mem_t *mctx, const dns_ipkeylist_t *src,
 	if (src->labels != NULL) {
 		for (i = 0; i < src->count; i++) {
 			if (src->labels[i] != NULL) {
-				dst->labels[i] = isc_mem_get(mctx,
-							   sizeof(dns_name_t));
+				dst->labels[i] =
+					isc_mem_get(mctx, sizeof(dns_name_t));
 				if (dst->labels[i] == NULL) {
 					result = ISC_R_NOMEMORY;
 					goto cleanup_labels;
@@ -140,7 +142,7 @@ dns_ipkeylist_copy(isc_mem_t *mctx, const dns_ipkeylist_t *src,
 	dst->count = src->count;
 	return (ISC_R_SUCCESS);
 
-  cleanup_labels:
+cleanup_labels:
 	do {
 		if (dst->labels[i] != NULL) {
 			if (dns_name_dynamic(dst->labels[i]))
@@ -150,7 +152,7 @@ dns_ipkeylist_copy(isc_mem_t *mctx, const dns_ipkeylist_t *src,
 		}
 	} while (i-- > 0);
 
-  cleanup_keys:
+cleanup_keys:
 	do {
 		if (dst->keys[i] != NULL) {
 			if (dns_name_dynamic(dst->keys[i]))
@@ -164,7 +166,8 @@ dns_ipkeylist_copy(isc_mem_t *mctx, const dns_ipkeylist_t *src,
 }
 
 isc_result_t
-dns_ipkeylist_resize(isc_mem_t *mctx, dns_ipkeylist_t *ipkl, unsigned int n) {
+dns_ipkeylist_resize(isc_mem_t *mctx, dns_ipkeylist_t *ipkl, unsigned int n)
+{
 	isc_sockaddr_t *addrs = NULL;
 	isc_dscp_t *dscps = NULL;
 	dns_name_t **keys = NULL;

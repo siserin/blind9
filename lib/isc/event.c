@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 /*!
  * \file
  */
@@ -23,7 +22,8 @@
  ***/
 
 static void
-destroy(isc_event_t *event) {
+destroy(isc_event_t *event)
+{
 	isc_mem_t *mctx = event->ev_destroy_arg;
 
 	isc_mem_put(mctx, event, event->ev_size);
@@ -42,8 +42,8 @@ isc_event_allocate(isc_mem_t *mctx, void *sender, isc_eventtype_t type,
 	if (event == NULL)
 		return (NULL);
 
-	ISC_EVENT_INIT(event, size, 0, NULL, type, action, arg,
-		       sender, destroy, mctx);
+	ISC_EVENT_INIT(event, size, 0, NULL, type, action, arg, sender, destroy,
+		       mctx);
 
 	return (event);
 }
@@ -76,14 +76,15 @@ isc_event_constallocate(isc_mem_t *mctx, void *sender, isc_eventtype_t type,
 	 */
 	DE_CONST(arg, deconst_arg);
 
-	ISC_EVENT_INIT(event, size, 0, NULL, type, action, deconst_arg,
-		       sender, destroy, mctx);
+	ISC_EVENT_INIT(event, size, 0, NULL, type, action, deconst_arg, sender,
+		       destroy, mctx);
 
 	return (event);
 }
 
 void
-isc_event_free(isc_event_t **eventp) {
+isc_event_free(isc_event_t **eventp)
+{
 	isc_event_t *event;
 
 	REQUIRE(eventp != NULL);

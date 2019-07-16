@@ -11,11 +11,10 @@
 
 #if HAVE_CMOCKA
 
-#include <stdarg.h>
-#include <stddef.h>
 #include <setjmp.h>
-
+#include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -42,11 +41,14 @@ static dns_geoip_databases_t geoip;
 
 static MMDB_s geoip_country, geoip_city, geoip_as, geoip_isp, geoip_domain;
 
-static void load_geoip(const char *dir);
-static void close_geoip(void);
+static void
+load_geoip(const char *dir);
+static void
+close_geoip(void);
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -61,7 +63,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	close_geoip();
@@ -72,7 +75,8 @@ _teardown(void **state) {
 }
 
 static MMDB_s *
-open_geoip2(const char *dir, const char *dbfile, MMDB_s *mmdb) {
+open_geoip2(const char *dir, const char *dbfile, MMDB_s *mmdb)
+{
 	char pathbuf[PATH_MAX];
 	int ret;
 
@@ -86,9 +90,9 @@ open_geoip2(const char *dir, const char *dbfile, MMDB_s *mmdb) {
 }
 
 static void
-load_geoip(const char *dir) {
-	geoip.country = open_geoip2(dir, "GeoIP2-Country.mmdb",
-				     &geoip_country);
+load_geoip(const char *dir)
+{
+	geoip.country = open_geoip2(dir, "GeoIP2-Country.mmdb", &geoip_country);
 	geoip.city = open_geoip2(dir, "GeoIP2-City.mmdb", &geoip_city);
 	geoip.as = open_geoip2(dir, "GeoLite2-ASN.mmdb", &geoip_as);
 	geoip.isp = open_geoip2(dir, "GeoIP2-ISP.mmdb", &geoip_isp);
@@ -96,7 +100,8 @@ load_geoip(const char *dir) {
 }
 
 static void
-close_geoip(void) {
+close_geoip(void)
+{
 	MMDB_close(&geoip_country);
 	MMDB_close(&geoip_city);
 	MMDB_close(&geoip_as);
@@ -140,7 +145,8 @@ do_lookup_string_v6(const char *addr, dns_geoip_subtype_t subtype,
 
 /* GeoIP country matching */
 static void
-country(void **state) {
+country(void **state)
+{
 	bool match;
 
 	UNUSED(state);
@@ -152,21 +158,22 @@ country(void **state) {
 	match = do_lookup_string("10.53.0.1", dns_geoip_country_code, "AU");
 	assert_true(match);
 
-	match = do_lookup_string("10.53.0.1",
-				 dns_geoip_country_name, "Australia");
+	match = do_lookup_string("10.53.0.1", dns_geoip_country_name,
+				 "Australia");
 	assert_true(match);
 
 	match = do_lookup_string("192.0.2.128", dns_geoip_country_code, "O1");
 	assert_true(match);
 
-	match = do_lookup_string("192.0.2.128",
-				 dns_geoip_country_name, "Other");
+	match = do_lookup_string("192.0.2.128", dns_geoip_country_name,
+				 "Other");
 	assert_true(match);
 }
 
 /* GeoIP country (ipv6) matching */
 static void
-country_v6(void **state) {
+country_v6(void **state)
+{
 	bool match;
 
 	UNUSED(state);
@@ -186,7 +193,8 @@ country_v6(void **state) {
 
 /* GeoIP city (ipv4) matching */
 static void
-city(void **state) {
+city(void **state)
+{
 	bool match;
 
 	UNUSED(state);
@@ -195,38 +203,37 @@ city(void **state) {
 		skip();
 	}
 
-	match = do_lookup_string("10.53.0.1",
-				 dns_geoip_city_continentcode, "NA");
+	match = do_lookup_string("10.53.0.1", dns_geoip_city_continentcode,
+				 "NA");
 	assert_true(match);
 
-	match = do_lookup_string("10.53.0.1",
-				 dns_geoip_city_countrycode, "US");
+	match = do_lookup_string("10.53.0.1", dns_geoip_city_countrycode, "US");
 	assert_true(match);
 
-	match = do_lookup_string("10.53.0.1",
-				 dns_geoip_city_countryname, "United States");
+	match = do_lookup_string("10.53.0.1", dns_geoip_city_countryname,
+				 "United States");
 	assert_true(match);
 
-	match = do_lookup_string("10.53.0.1",
-				 dns_geoip_city_region, "CA");
+	match = do_lookup_string("10.53.0.1", dns_geoip_city_region, "CA");
 	assert_true(match);
 
-	match = do_lookup_string("10.53.0.1",
-				 dns_geoip_city_regionname, "California");
+	match = do_lookup_string("10.53.0.1", dns_geoip_city_regionname,
+				 "California");
 	assert_true(match);
 
-	match = do_lookup_string("10.53.0.1",
-				 dns_geoip_city_name, "Redwood City");
+	match = do_lookup_string("10.53.0.1", dns_geoip_city_name,
+				 "Redwood City");
 	assert_true(match);
 
-	match = do_lookup_string("10.53.0.1",
-				 dns_geoip_city_postalcode, "94063");
+	match = do_lookup_string("10.53.0.1", dns_geoip_city_postalcode,
+				 "94063");
 	assert_true(match);
 }
 
 /* GeoIP city (ipv6) matching */
 static void
-city_v6(void **state) {
+city_v6(void **state)
+{
 	bool match;
 
 	UNUSED(state);
@@ -267,7 +274,8 @@ city_v6(void **state) {
 
 /* GeoIP asnum matching */
 static void
-asnum(void **state) {
+asnum(void **state)
+{
 	bool match;
 
 	UNUSED(state);
@@ -282,7 +290,8 @@ asnum(void **state) {
 
 /* GeoIP isp matching */
 static void
-isp(void **state) {
+isp(void **state)
+{
 	bool match;
 
 	UNUSED(state);
@@ -298,7 +307,8 @@ isp(void **state) {
 
 /* GeoIP org matching */
 static void
-org(void **state) {
+org(void **state)
+{
 	bool match;
 
 	UNUSED(state);
@@ -314,7 +324,8 @@ org(void **state) {
 
 /* GeoIP domain matching */
 static void
-domain(void **state) {
+domain(void **state)
+{
 	bool match;
 
 	UNUSED(state);
@@ -323,14 +334,14 @@ domain(void **state) {
 		skip();
 	}
 
-	match = do_lookup_string("10.53.0.5",
-				 dns_geoip_domain_name, "five.es");
+	match = do_lookup_string("10.53.0.5", dns_geoip_domain_name, "five.es");
 	assert_true(match);
 }
 #endif /* HAVE_GEOIP2 */
 
 int
-main(void) {
+main(void)
+{
 #if defined(HAVE_GEOIP2)
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test_setup_teardown(country, _setup, _teardown),
@@ -354,7 +365,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

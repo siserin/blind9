@@ -32,26 +32,27 @@
 #include <isc/util.h>
 
 #include <dns/dispatch.h>
+#include <dns/events.h>
 #include <dns/fixedname.h>
 #include <dns/message.h>
 #include <dns/name.h>
-#include <dns/request.h>
-#include <dns/result.h>
-#include <dns/view.h>
-
-#include <dns/events.h>
 #include <dns/rdataset.h>
+#include <dns/request.h>
 #include <dns/resolver.h>
+#include <dns/result.h>
 #include <dns/types.h>
+#include <dns/view.h>
 
 #include <dst/result.h>
 
-#define CHECK(str, x) { \
-	if ((x) != ISC_R_SUCCESS) { \
-		fprintf(stderr, "I:%s: %s\n", (str), isc_result_totext(x)); \
-		exit(-1); \
-	} \
-}
+#define CHECK(str, x)                                                          \
+	{                                                                      \
+		if ((x) != ISC_R_SUCCESS) {                                    \
+			fprintf(stderr, "I:%s: %s\n", (str),                   \
+				isc_result_totext(x));                         \
+			exit(-1);                                              \
+		}                                                              \
+	}
 
 #define RUNCHECK(x) RUNTIME_CHECK((x) == ISC_R_SUCCESS)
 
@@ -66,7 +67,8 @@ static isc_sockaddr_t dstaddr;
 static int onfly;
 
 static void
-recvresponse(isc_task_t *task, isc_event_t *event) {
+recvresponse(isc_task_t *task, isc_event_t *event)
+{
 	dns_requestevent_t *reqev = (dns_requestevent_t *)event;
 	isc_result_t result;
 	dns_message_t *query, *response;
@@ -97,7 +99,7 @@ recvresponse(isc_task_t *task, isc_event_t *event) {
 		result = ISC_RESULTCLASS_DNSRCODE + response->rcode;
 		fprintf(stderr, "I:response rcode: %s\n",
 			isc_result_totext(result));
-			exit(-1);
+		exit(-1);
 	}
 	if (response->counts[DNS_SECTION_ANSWER] != 1U) {
 		fprintf(stderr, "I:response answer count (%u!=1)\n",
@@ -105,10 +107,9 @@ recvresponse(isc_task_t *task, isc_event_t *event) {
 	}
 
 	isc_buffer_init(&outbuf, output, sizeof(output));
-	result = dns_message_sectiontotext(response, DNS_SECTION_ANSWER,
-					   &dns_master_style_simple,
-					   DNS_MESSAGETEXTFLAG_NOCOMMENTS,
-					   &outbuf);
+	result = dns_message_sectiontotext(
+		response, DNS_SECTION_ANSWER, &dns_master_style_simple,
+		DNS_MESSAGETEXTFLAG_NOCOMMENTS, &outbuf);
 	CHECK("dns_message_sectiontotext", result);
 	printf("%.*s", (int)isc_buffer_usedlength(&outbuf),
 	       (char *)isc_buffer_base(&outbuf));
@@ -125,7 +126,8 @@ recvresponse(isc_task_t *task, isc_event_t *event) {
 }
 
 static isc_result_t
-sendquery(isc_task_t *task) {
+sendquery(isc_task_t *task)
+{
 	dns_request_t *request;
 	dns_message_t *message;
 	dns_name_t *qname;
@@ -174,20 +176,18 @@ sendquery(isc_task_t *task) {
 	dns_message_addname(message, qname, DNS_SECTION_QUESTION);
 
 	request = NULL;
-	result = dns_request_createvia(requestmgr, message,
-				       have_src ? &srcaddr : NULL, &dstaddr,
-				       -1,
-				       DNS_REQUESTOPT_TCP |
-				       DNS_REQUESTOPT_SHARE,
-				       NULL, TIMEOUT, 0, 0, task, recvresponse,
-				       message, &request);
+	result = dns_request_createvia(
+		requestmgr, message, have_src ? &srcaddr : NULL, &dstaddr, -1,
+		DNS_REQUESTOPT_TCP | DNS_REQUESTOPT_SHARE, NULL, TIMEOUT, 0, 0,
+		task, recvresponse, message, &request);
 	CHECK("dns_request_create", result);
 
 	return ISC_R_SUCCESS;
 }
 
 static void
-sendqueries(isc_task_t *task, isc_event_t *event) {
+sendqueries(isc_task_t *task, isc_event_t *event)
+{
 	isc_result_t result;
 
 	isc_event_free(&event);
@@ -202,7 +202,8 @@ sendqueries(isc_task_t *task, isc_event_t *event) {
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char *argv[])
+{
 	isc_sockaddr_t bind_any;
 	struct in_addr inaddr;
 	isc_result_t result;
@@ -237,8 +238,8 @@ main(int argc, char *argv[]) {
 			fprintf(stderr, "The -r option has been deprecated.\n");
 			break;
 		case '?':
-			fprintf(stderr, "%s: invalid argument '%c'",
-				argv[0], c);
+			fprintf(stderr, "%s: invalid argument '%c'", argv[0],
+				c);
 			break;
 		default:
 			break;
@@ -288,22 +289,18 @@ main(int argc, char *argv[]) {
 	dispatchmgr = NULL;
 	RUNCHECK(dns_dispatchmgr_create(mctx, &dispatchmgr));
 
-	attrs = DNS_DISPATCHATTR_UDP |
-		DNS_DISPATCHATTR_MAKEQUERY |
+	attrs = DNS_DISPATCHATTR_UDP | DNS_DISPATCHATTR_MAKEQUERY |
 		DNS_DISPATCHATTR_IPV4;
-	attrmask = DNS_DISPATCHATTR_UDP |
-		   DNS_DISPATCHATTR_TCP |
-		   DNS_DISPATCHATTR_IPV4 |
-		   DNS_DISPATCHATTR_IPV6;
+	attrmask = DNS_DISPATCHATTR_UDP | DNS_DISPATCHATTR_TCP |
+		   DNS_DISPATCHATTR_IPV4 | DNS_DISPATCHATTR_IPV6;
 	dispatchv4 = NULL;
 	RUNCHECK(dns_dispatch_getudp(dispatchmgr, socketmgr, taskmgr,
-				     have_src ? &srcaddr : &bind_any,
-				     4096, 4, 2, 3, 5,
-				     attrs, attrmask, &dispatchv4));
+				     have_src ? &srcaddr : &bind_any, 4096, 4,
+				     2, 3, 5, attrs, attrmask, &dispatchv4));
 	requestmgr = NULL;
 	RUNCHECK(dns_requestmgr_create(mctx, timermgr, socketmgr, taskmgr,
-					    dispatchmgr, dispatchv4, NULL,
-					    &requestmgr));
+				       dispatchmgr, dispatchv4, NULL,
+				       &requestmgr));
 
 	view = NULL;
 	RUNCHECK(dns_view_create(mctx, 0, "_test", &view));
@@ -337,4 +334,3 @@ main(int argc, char *argv[]) {
 
 	return (0);
 }
-

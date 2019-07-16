@@ -11,10 +11,10 @@
 
 #if HAVE_CMOCKA
 
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <setjmp.h>
 #include <string.h>
 
 #define UNIT_TESTING
@@ -27,7 +27,8 @@
 
 /* convert result to identifier string */
 static void
-isc_result_toid_test(void **state) {
+isc_result_toid_test(void **state)
+{
 	const char *id;
 
 	UNUSED(state);
@@ -41,7 +42,8 @@ isc_result_toid_test(void **state) {
 
 /* convert result to description string */
 static void
-isc_result_totext_test(void **state) {
+isc_result_totext_test(void **state)
+{
 	const char *str;
 
 	UNUSED(state);
@@ -55,7 +57,8 @@ isc_result_totext_test(void **state) {
 
 /* check tables are populated */
 static void
-tables(void **state) {
+tables(void **state)
+{
 	const char *str;
 	isc_result_t result;
 
@@ -66,13 +69,13 @@ tables(void **state) {
 	for (result = 0; result < ISC_R_NRESULTS; result++) {
 		str = isc_result_toid(result);
 		assert_non_null(str);
-		assert_string_not_equal(str,
-					"(result code text not available)");
+		assert_string_not_equal(str, "(result code text not "
+					     "available)");
 
 		str = isc_result_totext(result);
 		assert_non_null(str);
-		assert_string_not_equal(str,
-					"(result code text not available)");
+		assert_string_not_equal(str, "(result code text not "
+					     "available)");
 	}
 
 	str = isc_result_toid(result);
@@ -84,18 +87,16 @@ tables(void **state) {
 	assert_string_equal(str, "(result code text not available)");
 
 	for (result = ISC_RESULTCLASS_PK11;
-	     result < (ISC_RESULTCLASS_PK11 + PK11_R_NRESULTS);
-	     result++)
-	{
+	     result < (ISC_RESULTCLASS_PK11 + PK11_R_NRESULTS); result++) {
 		str = isc_result_toid(result);
 		assert_non_null(str);
-		assert_string_not_equal(str,
-					"(result code text not available)");
+		assert_string_not_equal(str, "(result code text not "
+					     "available)");
 
 		str = isc_result_totext(result);
 		assert_non_null(str);
-		assert_string_not_equal(str,
-					"(result code text not available)");
+		assert_string_not_equal(str, "(result code text not "
+					     "available)");
 	}
 
 	str = isc_result_toid(result);
@@ -108,7 +109,8 @@ tables(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test(isc_result_toid_test),
 		cmocka_unit_test(isc_result_totext_test),
@@ -123,7 +125,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

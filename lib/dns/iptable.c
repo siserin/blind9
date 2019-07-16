@@ -18,13 +18,15 @@
 
 #include <dns/acl.h>
 
-static void destroy_iptable(dns_iptable_t *dtab);
+static void
+destroy_iptable(dns_iptable_t *dtab);
 
 /*
  * Create a new IP table and the underlying radix structure
  */
 isc_result_t
-dns_iptable_create(isc_mem_t *mctx, dns_iptable_t **target) {
+dns_iptable_create(isc_mem_t *mctx, dns_iptable_t **target)
+{
 	isc_result_t result;
 	dns_iptable_t *tab;
 
@@ -44,7 +46,7 @@ dns_iptable_create(isc_mem_t *mctx, dns_iptable_t **target) {
 	*target = tab;
 	return (ISC_R_SUCCESS);
 
- cleanup:
+cleanup:
 	dns_iptable_detach(&tab);
 	return (result);
 }
@@ -72,7 +74,7 @@ dns_iptable_addprefix(dns_iptable_t *tab, const isc_netaddr_t *addr,
 	result = isc_radix_insert(tab->radix, &node, NULL, &pfx);
 	if (result != ISC_R_SUCCESS) {
 		isc_refcount_destroy(&pfx.refcount);
-		return(result);
+		return (result);
 	}
 
 	/* If a node already contains data, don't overwrite it */
@@ -89,7 +91,7 @@ dns_iptable_addprefix(dns_iptable_t *tab, const isc_netaddr_t *addr,
 		int fam = ISC_RADIX_FAMILY(&pfx);
 		if (node->data[fam] == NULL) {
 			node->data[fam] = pos ? &dns_iptable_pos
-						 : &dns_iptable_neg;
+					      : &dns_iptable_neg;
 		}
 	}
 
@@ -107,12 +109,13 @@ dns_iptable_merge(dns_iptable_t *tab, dns_iptable_t *source, bool pos)
 	isc_radix_node_t *node, *new_node;
 	int i, max_node = 0;
 
-	RADIX_WALK (source->radix->head, node) {
+	RADIX_WALK(source->radix->head, node)
+	{
 		new_node = NULL;
-		result = isc_radix_insert (tab->radix, &new_node, node, NULL);
+		result = isc_radix_insert(tab->radix, &new_node, node, NULL);
 
 		if (result != ISC_R_SUCCESS)
-			return(result);
+			return (result);
 
 		/*
 		 * If we're negating a nested ACL, then we should
@@ -124,28 +127,30 @@ dns_iptable_merge(dns_iptable_t *tab, dns_iptable_t *source, bool pos)
 		 */
 		for (i = 0; i < RADIX_FAMILIES; i++) {
 			if (!pos) {
-				if (node->data[i] &&
-				    *(bool *) node->data[i])
+				if (node->data[i] && *(bool *)node->data[i])
 					new_node->data[i] = &dns_iptable_neg;
 			}
 			if (node->node_num[i] > max_node)
 				max_node = node->node_num[i];
 		}
-	} RADIX_WALK_END;
+	}
+	RADIX_WALK_END;
 
 	tab->radix->num_added_node += max_node;
 	return (ISC_R_SUCCESS);
 }
 
 void
-dns_iptable_attach(dns_iptable_t *source, dns_iptable_t **target) {
+dns_iptable_attach(dns_iptable_t *source, dns_iptable_t **target)
+{
 	REQUIRE(DNS_IPTABLE_VALID(source));
 	isc_refcount_increment(&source->refcount);
 	*target = source;
 }
 
 void
-dns_iptable_detach(dns_iptable_t **tabp) {
+dns_iptable_detach(dns_iptable_t **tabp)
+{
 	REQUIRE(tabp != NULL && DNS_IPTABLE_VALID(*tabp));
 	dns_iptable_t *tab = *tabp;
 	*tabp = NULL;
@@ -157,8 +162,8 @@ dns_iptable_detach(dns_iptable_t **tabp) {
 }
 
 static void
-destroy_iptable(dns_iptable_t *dtab) {
-
+destroy_iptable(dns_iptable_t *dtab)
+{
 	REQUIRE(DNS_IPTABLE_VALID(dtab));
 
 	if (dtab->radix != NULL) {

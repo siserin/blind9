@@ -15,9 +15,9 @@
 
 #include <stdbool.h>
 
-#include <dns/types.h>
-
 #include <isc/types.h>
+
+#include <dns/types.h>
 
 ISC_LANG_BEGINDECLS
 

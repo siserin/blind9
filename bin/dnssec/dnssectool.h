@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 #ifndef DNSSECTOOL_H
 #define DNSSECTOOL_H 1
 
@@ -18,11 +17,13 @@
 
 #include <isc/log.h>
 #include <isc/stdtime.h>
+
 #include <dns/rdatastruct.h>
+
 #include <dst/dst.h>
 
 #ifndef PATH_MAX
-#define PATH_MAX 1024   /* WIN32, and others don't define this. */
+#define PATH_MAX 1024 /* WIN32, and others don't define this. */
 #endif
 
 /*! verbosity: set by -v option in each program, defined in dnssectool.c */
@@ -40,11 +41,11 @@ extern const char *program;
  */
 extern uint8_t dtype[8];
 
-typedef void (fatalcallback_t)(void);
+typedef void(fatalcallback_t)(void);
 
 ISC_PLATFORM_NORETURN_PRE void
 fatal(const char *format, ...)
-ISC_FORMAT_PRINTF(1, 2) ISC_PLATFORM_NORETURN_POST;
+	ISC_FORMAT_PRINTF(1, 2) ISC_PLATFORM_NORETURN_POST;
 
 void
 setfatalcallback(fatalcallback_t *callback);
@@ -60,7 +61,8 @@ version(const char *program) ISC_PLATFORM_NORETURN_POST;
 
 void
 sig_format(dns_rdata_rrsig_t *sig, char *cp, unsigned int size);
-#define SIG_FORMATSIZE (DNS_NAME_FORMATSIZE + DNS_SECALG_FORMATSIZE + sizeof("65535"))
+#define SIG_FORMATSIZE                                                         \
+	(DNS_NAME_FORMATSIZE + DNS_SECALG_FORMATSIZE + sizeof("65535"))
 
 void
 setup_logging(isc_mem_t *mctx, isc_log_t **logp);
@@ -68,11 +70,11 @@ setup_logging(isc_mem_t *mctx, isc_log_t **logp);
 void
 cleanup_logging(isc_log_t **logp);
 
-dns_ttl_t strtottl(const char *str);
+dns_ttl_t
+strtottl(const char *str);
 
 isc_stdtime_t
-strtotime(const char *str, int64_t now, int64_t base,
-	  bool *setp);
+strtotime(const char *str, int64_t now, int64_t base, bool *setp);
 
 dns_rdataclass_t
 strtoclass(const char *str);
@@ -100,8 +102,10 @@ bool
 isoptarg(const char *arg, char **argv, void (*usage)(void));
 
 #ifdef _WIN32
-void InitSockets(void);
-void DestroySockets(void);
+void
+InitSockets(void);
+void
+DestroySockets(void);
 #endif
 
 #endif /* DNSSEC_DNSSECTOOL_H */

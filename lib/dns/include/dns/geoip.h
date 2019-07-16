@@ -34,9 +34,9 @@
 #include <isc/netaddr.h>
 #include <isc/refcount.h>
 
+#include <dns/iptable.h>
 #include <dns/name.h>
 #include <dns/types.h>
-#include <dns/iptable.h>
 
 /***
  *** Types
@@ -87,11 +87,11 @@ typedef struct dns_geoip_elem {
 } dns_geoip_elem_t;
 
 struct dns_geoip_databases {
-	void *country;		/* GeoIP2-Country or GeoLite2-Country */
-	void *city;		/* GeoIP2-CIty or GeoLite2-City */
-	void *domain;		/* GeoIP2-Domain */
-	void *isp;		/* GeoIP2-ISP */
-	void *as;		/* GeoIP2-ASN or GeoLite2-ASN */
+	void *country; /* GeoIP2-Country or GeoLite2-Country */
+	void *city;    /* GeoIP2-CIty or GeoLite2-City */
+	void *domain;  /* GeoIP2-Domain */
+	void *isp;     /* GeoIP2-ISP */
+	void *as;      /* GeoIP2-ASN or GeoLite2-ASN */
 };
 
 /***

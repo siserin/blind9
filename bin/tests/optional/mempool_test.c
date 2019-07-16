@@ -15,7 +15,8 @@
 isc_mem_t *mctx;
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char *argv[])
+{
 	void *items1[50];
 	void *items2[50];
 	void *tmp;

@@ -11,14 +11,13 @@
 
 #if HAVE_CMOCKA
 
-#include <stdarg.h>
-#include <stddef.h>
-#include <setjmp.h>
-
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdio.h>
 #include <inttypes.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #define UNIT_TESTING
@@ -28,21 +27,22 @@
 #include <isc/buffer.h>
 #include <isc/util.h>
 
-#include <dns/name.h>
 #include <dns/fixedname.h>
 #include <dns/keytable.h>
+#include <dns/name.h>
 #include <dns/nta.h>
 #include <dns/rdataclass.h>
 #include <dns/rdatastruct.h>
 #include <dns/rootns.h>
 #include <dns/view.h>
 
-#include <dst/dst.h>
-
 #include "dnstest.h"
 
+#include <dst/dst.h>
+
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -54,7 +54,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	dns_test_end();
@@ -65,10 +66,20 @@ _teardown(void **state) {
 dns_keytable_t *keytable = NULL;
 dns_ntatable_t *ntatable = NULL;
 
-static const char *keystr1 = "BQEAAAABok+vaUC9neRv8yeT/FEGgN7svR8s7VBUVSBd8NsAiV8AlaAg O5FHar3JQd95i/puZos6Vi6at9/JBbN8qVmO2AuiXxVqfxMKxIcy+LEB 0Vw4NaSJ3N3uaVREso6aTSs98H/25MjcwLOr7SFfXA7bGhZatLtYY/xu kp6Km5hMfkE=";
+static const char *keystr1 = "BQEAAAABok+vaUC9neRv8yeT/"
+			     "FEGgN7svR8s7VBUVSBd8NsAiV8AlaAg "
+			     "O5FHar3JQd95i/puZos6Vi6at9/"
+			     "JBbN8qVmO2AuiXxVqfxMKxIcy+LEB "
+			     "0Vw4NaSJ3N3uaVREso6aTSs98H/"
+			     "25MjcwLOr7SFfXA7bGhZatLtYY/xu kp6Km5hMfkE=";
 static const dns_keytag_t keytag1 = 30591;
 
-static const char *keystr2 = "BQEAAAABwuHz9Cem0BJ0JQTO7C/a3McR6hMaufljs1dfG/inaJpYv7vH XTrAOm/MeKp+/x6eT4QLru0KoZkvZJnqTI8JyaFTw2OM/ItBfh/hL2lm Cft2O7n3MfeqYtvjPnY7dWghYW4sVfH7VVEGm958o9nfi79532Qeklxh x8pXWdeAaRU=";
+static const char *keystr2 = "BQEAAAABwuHz9Cem0BJ0JQTO7C/a3McR6hMaufljs1dfG/"
+			     "inaJpYv7vH "
+			     "XTrAOm/MeKp+/x6eT4QLru0KoZkvZJnqTI8JyaFTw2OM/"
+			     "ItBfh/hL2lm "
+			     "Cft2O7n3MfeqYtvjPnY7dWghYW4sVfH7VVEGm958o9nfi7953"
+			     "2Qeklxh x8pXWdeAaRU=";
 
 static dns_view_t *view = NULL;
 
@@ -84,7 +95,8 @@ static dns_view_t *view = NULL;
  * static data, and so is not thread safe.
  */
 static dns_name_t *
-str2name(const char *namestr) {
+str2name(const char *namestr)
+{
 	static dns_fixedname_t fname;
 	static dns_name_t *name;
 	static isc_buffer_t namebuf;
@@ -94,16 +106,16 @@ str2name(const char *namestr) {
 	DE_CONST(namestr, deconst_namestr); /* OK, since we don't modify it */
 	isc_buffer_init(&namebuf, deconst_namestr, strlen(deconst_namestr));
 	isc_buffer_add(&namebuf, strlen(namestr));
-	assert_int_equal(dns_name_fromtext(name, &namebuf, dns_rootname,
-					   0, NULL),
-			 ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_name_fromtext(name, &namebuf, dns_rootname, 0, NULL),
+		ISC_R_SUCCESS);
 
 	return (name);
 }
 
 static void
-create_key(uint16_t flags, uint8_t proto, uint8_t alg,
-	   const char *keynamestr, const char *keystr, dst_key_t **target)
+create_key(uint16_t flags, uint8_t proto, uint8_t alg, const char *keynamestr,
+	   const char *keystr, dst_key_t **target)
 {
 	dns_rdata_dnskey_t keystruct;
 	unsigned char keydata[4096];
@@ -140,7 +152,8 @@ create_key(uint16_t flags, uint8_t proto, uint8_t alg,
 
 /* Common setup: create a keytable and ntatable to test with a few keys */
 static void
-create_tables() {
+create_tables()
+{
 	isc_result_t result;
 	dst_key_t *key = NULL;
 	isc_stdtime_t now;
@@ -148,9 +161,11 @@ create_tables() {
 	result = dns_test_makeview("view", &view);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
-	assert_int_equal(dns_keytable_create(dt_mctx, &keytable), ISC_R_SUCCESS);
-	assert_int_equal(dns_ntatable_create(view, taskmgr, timermgr,
-					     &ntatable), ISC_R_SUCCESS);
+	assert_int_equal(dns_keytable_create(dt_mctx, &keytable),
+			 ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_ntatable_create(view, taskmgr, timermgr, &ntatable),
+		ISC_R_SUCCESS);
 
 	/* Add a normal key */
 	create_key(257, 3, 5, "example.com", keystr1, &key);
@@ -163,20 +178,21 @@ create_tables() {
 			 ISC_R_SUCCESS);
 
 	/* Add a null key */
-	assert_int_equal(dns_keytable_marksecure(keytable,
-						 str2name("null.example")),
+	assert_int_equal(dns_keytable_marksecure(keytable, str2name("null."
+								    "example")),
 			 ISC_R_SUCCESS);
 
 	/* Add a negative trust anchor, duration 1 hour */
 	isc_stdtime_get(&now);
 	assert_int_equal(dns_ntatable_add(ntatable,
-					  str2name("insecure.example"),
-					  false, now, 3600),
+					  str2name("insecure.example"), false,
+					  now, 3600),
 			 ISC_R_SUCCESS);
 }
 
 static void
-destroy_tables() {
+destroy_tables()
+{
 	if (ntatable != NULL) {
 		dns_ntatable_detach(&ntatable);
 	}
@@ -189,7 +205,8 @@ destroy_tables() {
 
 /* add keys to the keytable */
 static void
-add_test(void **state) {
+add_test(void **state)
+{
 	dst_key_t *key = NULL;
 	dns_keynode_t *keynode = NULL;
 	dns_keynode_t *next_keynode = NULL;
@@ -203,12 +220,12 @@ add_test(void **state) {
 	 * Get the keynode for the example.com key.  There's no other key for
 	 * the name, so nextkeynode() should return NOTFOUND.
 	 */
-	assert_int_equal(dns_keytable_find(keytable, str2name("example.com"),
-					   &keynode),
-			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						  &next_keynode),
-			 ISC_R_NOTFOUND);
+	assert_int_equal(
+		dns_keytable_find(keytable, str2name("example.com"), &keynode),
+		ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_nextkeynode(keytable, keynode, &next_keynode),
+		ISC_R_NOTFOUND);
 
 	/*
 	 * Try to add the same key.  This should have no effect, so
@@ -217,21 +234,21 @@ add_test(void **state) {
 	create_key(257, 3, 5, "example.com", keystr1, &key);
 	assert_int_equal(dns_keytable_add(keytable, false, false, &key),
 			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						  &next_keynode),
-			 ISC_R_NOTFOUND);
+	assert_int_equal(
+		dns_keytable_nextkeynode(keytable, keynode, &next_keynode),
+		ISC_R_NOTFOUND);
 
 	/* Add another key (different keydata) */
 	dns_keytable_detachkeynode(keytable, &keynode);
 	create_key(257, 3, 5, "example.com", keystr2, &key);
 	assert_int_equal(dns_keytable_add(keytable, false, false, &key),
 			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_find(keytable, str2name("example.com"),
-					   &keynode),
-			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						  &next_keynode),
-			 ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_find(keytable, str2name("example.com"), &keynode),
+		ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_nextkeynode(keytable, keynode, &next_keynode),
+		ISC_R_SUCCESS);
 	dns_keytable_detachkeynode(keytable, &next_keynode);
 	dns_keytable_detachkeynode(keytable, &keynode);
 
@@ -241,12 +258,12 @@ add_test(void **state) {
 	 * retrieved key is an initializing key, then mark it as trusted using
 	 * dns_keynode_trust() and ensure the latter works as expected.
 	 */
-	assert_int_equal(dns_keytable_find(keytable, str2name("managed.com"),
-					   &keynode),
-			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						  &next_keynode),
-			 ISC_R_NOTFOUND);
+	assert_int_equal(
+		dns_keytable_find(keytable, str2name("managed.com"), &keynode),
+		ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_nextkeynode(keytable, keynode, &next_keynode),
+		ISC_R_NOTFOUND);
 	assert_int_equal(dns_keynode_initial(keynode), true);
 	dns_keynode_trust(keynode);
 	assert_int_equal(dns_keynode_initial(keynode), false);
@@ -260,12 +277,12 @@ add_test(void **state) {
 	create_key(257, 3, 5, "managed.com", keystr2, &key);
 	assert_int_equal(dns_keytable_add(keytable, true, true, &key),
 			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_find(keytable, str2name("managed.com"),
-					   &keynode),
-			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						  &next_keynode),
-			 ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_find(keytable, str2name("managed.com"), &keynode),
+		ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_nextkeynode(keytable, keynode, &next_keynode),
+		ISC_R_SUCCESS);
 	assert_int_equal(dns_keynode_initial(keynode), true);
 	dns_keytable_detachkeynode(keytable, &next_keynode);
 	dns_keytable_detachkeynode(keytable, &keynode);
@@ -279,20 +296,20 @@ add_test(void **state) {
 	create_key(257, 3, 5, "managed.com", keystr2, &key);
 	assert_int_equal(dns_keytable_add(keytable, true, false, &key),
 			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_find(keytable, str2name("managed.com"),
-					   &keynode),
-			 ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_find(keytable, str2name("managed.com"), &keynode),
+		ISC_R_SUCCESS);
 	assert_int_equal(dns_keynode_initial(keynode), false);
-	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						  &next_keynode),
-			 ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_nextkeynode(keytable, keynode, &next_keynode),
+		ISC_R_SUCCESS);
 	dns_keytable_detachkeynode(keytable, &keynode);
 	keynode = next_keynode;
 	next_keynode = NULL;
 	assert_int_equal(dns_keynode_initial(keynode), false);
-	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						  &next_keynode),
-			 ISC_R_NOTFOUND);
+	assert_int_equal(
+		dns_keytable_nextkeynode(keytable, keynode, &next_keynode),
+		ISC_R_NOTFOUND);
 	dns_keytable_detachkeynode(keytable, &keynode);
 
 	/*
@@ -303,12 +320,12 @@ add_test(void **state) {
 	create_key(257, 3, 5, "two.com", keystr1, &key);
 	assert_int_equal(dns_keytable_add(keytable, true, true, &key),
 			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_find(keytable, str2name("two.com"),
-					   &keynode),
-			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						  &next_keynode),
-			 ISC_R_NOTFOUND);
+	assert_int_equal(
+		dns_keytable_find(keytable, str2name("two.com"), &keynode),
+		ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_nextkeynode(keytable, keynode, &next_keynode),
+		ISC_R_NOTFOUND);
 	assert_int_equal(dns_keynode_initial(keynode), true);
 	dns_keytable_detachkeynode(keytable, &keynode);
 
@@ -320,11 +337,12 @@ add_test(void **state) {
 	create_key(257, 3, 5, "two.com", keystr2, &key);
 	assert_int_equal(dns_keytable_add(keytable, true, false, &key),
 			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_find(keytable, str2name("two.com"),
-					   &keynode),
-			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						&next_keynode), ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_find(keytable, str2name("two.com"), &keynode),
+		ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_nextkeynode(keytable, keynode, &next_keynode),
+		ISC_R_SUCCESS);
 	assert_int_equal(dns_keynode_initial(keynode), false);
 	dns_keytable_detachkeynode(keytable, &next_keynode);
 	dns_keytable_detachkeynode(keytable, &keynode);
@@ -338,20 +356,20 @@ add_test(void **state) {
 	create_key(257, 3, 5, "two.com", keystr1, &key);
 	assert_int_equal(dns_keytable_add(keytable, true, false, &key),
 			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_find(keytable, str2name("two.com"),
-					   &keynode),
-			 ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_find(keytable, str2name("two.com"), &keynode),
+		ISC_R_SUCCESS);
 	assert_int_equal(dns_keynode_initial(keynode), false);
-	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						  &next_keynode),
-			 ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_nextkeynode(keytable, keynode, &next_keynode),
+		ISC_R_SUCCESS);
 	dns_keytable_detachkeynode(keytable, &keynode);
 	keynode = next_keynode;
 	next_keynode = NULL;
 	assert_int_equal(dns_keynode_initial(keynode), false);
-	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						  &next_keynode),
-			 ISC_R_NOTFOUND);
+	assert_int_equal(
+		dns_keytable_nextkeynode(keytable, keynode, &next_keynode),
+		ISC_R_NOTFOUND);
 	dns_keytable_detachkeynode(keytable, &keynode);
 
 	/*
@@ -364,10 +382,10 @@ add_test(void **state) {
 	create_key(257, 3, 5, "null.example", keystr2, &key);
 	assert_int_equal(dns_keytable_add(keytable, false, false, &key),
 			 ISC_R_SUCCESS);
-	assert_int_equal(dns_keytable_find(keytable, str2name("null.example"),
-					   &keynode),
-			 ISC_R_SUCCESS);
-	assert_int_equal(keynode, null_keynode); /* should be the same node */
+	assert_int_equal(
+		dns_keytable_find(keytable, str2name("null.example"), &keynode),
+		ISC_R_SUCCESS);
+	assert_int_equal(keynode, null_keynode);   /* should be the same node */
 	assert_non_null(dns_keynode_key(keynode)); /* now have a key */
 	dns_keytable_detachkeynode(keytable, &null_keynode);
 
@@ -378,17 +396,17 @@ add_test(void **state) {
 	 * (Note: this and above checks confirm that if a name has a null key
 	 * that's the only key for the name).
 	 */
-	assert_int_equal(dns_keytable_marksecure(keytable,
-						 str2name("null.example")),
+	assert_int_equal(dns_keytable_marksecure(keytable, str2name("null."
+								    "example")),
 			 ISC_R_SUCCESS);
 	assert_int_equal(dns_keytable_find(keytable, str2name("null.example"),
 					   &null_keynode),
 			 ISC_R_SUCCESS);
 	assert_int_equal(keynode, null_keynode);
 	assert_non_null(dns_keynode_key(keynode));
-	assert_int_equal(dns_keytable_nextkeynode(keytable, keynode,
-						  &next_keynode),
-			 ISC_R_NOTFOUND);
+	assert_int_equal(
+		dns_keytable_nextkeynode(keytable, keynode, &next_keynode),
+		ISC_R_NOTFOUND);
 	dns_keytable_detachkeynode(keytable, &null_keynode);
 
 	dns_keytable_detachkeynode(keytable, &keynode);
@@ -397,30 +415,29 @@ add_test(void **state) {
 
 /* delete keys from the keytable */
 static void
-delete_test(void **state) {
+delete_test(void **state)
+{
 	UNUSED(state);
 
 	create_tables();
 
 	/* dns_keytable_delete requires exact match */
-	assert_int_equal(dns_keytable_delete(keytable,
-					     str2name("example.org")),
+	assert_int_equal(dns_keytable_delete(keytable, str2name("example.org")),
 			 ISC_R_NOTFOUND);
-	assert_int_equal(dns_keytable_delete(keytable,
-					     str2name("s.example.com")),
+	assert_int_equal(dns_keytable_delete(keytable, str2name("s.example."
+								"com")),
 			 ISC_R_NOTFOUND);
-	assert_int_equal(dns_keytable_delete(keytable,
-					     str2name("example.com")),
+	assert_int_equal(dns_keytable_delete(keytable, str2name("example.com")),
 			 ISC_R_SUCCESS);
 
 	/* works also for nodes with a null key */
-	assert_int_equal(dns_keytable_delete(keytable,
-					     str2name("null.example")),
+	assert_int_equal(dns_keytable_delete(keytable, str2name("null."
+								"example")),
 			 ISC_R_SUCCESS);
 
 	/* or a negative trust anchor */
-	assert_int_equal(dns_ntatable_delete(ntatable,
-					     str2name("insecure.example")),
+	assert_int_equal(dns_ntatable_delete(ntatable, str2name("insecure."
+								"example")),
 			 ISC_R_SUCCESS);
 
 	destroy_tables();
@@ -428,7 +445,8 @@ delete_test(void **state) {
 
 /* delete key nodes from the keytable */
 static void
-deletekeynode_test(void **state) {
+deletekeynode_test(void **state)
+{
 	dst_key_t *key = NULL;
 
 	UNUSED(state);
@@ -463,8 +481,7 @@ deletekeynode_test(void **state) {
 			 ISC_R_SUCCESS);
 	assert_int_equal(dns_keytable_deletekeynode(keytable, key),
 			 ISC_R_NOTFOUND);
-	assert_int_equal(dns_keytable_delete(keytable,
-					     str2name("example.com")),
+	assert_int_equal(dns_keytable_delete(keytable, str2name("example.com")),
 			 ISC_R_NOTFOUND);
 	dst_key_free(&key);
 
@@ -484,7 +501,8 @@ deletekeynode_test(void **state) {
 
 /* check find-variant operations */
 static void
-find_test(void **state) {
+find_test(void **state)
+{
 	dns_keynode_t *keynode = NULL;
 	dns_fixedname_t fname;
 	dns_name_t *name;
@@ -497,22 +515,20 @@ find_test(void **state) {
 	 * dns_keytable_find() requires exact name match.  It matches node
 	 * that has a null key, too.
 	 */
-	assert_int_equal(dns_keytable_find(keytable, str2name("example.org"),
-					   &keynode),
-			 ISC_R_NOTFOUND);
+	assert_int_equal(
+		dns_keytable_find(keytable, str2name("example.org"), &keynode),
+		ISC_R_NOTFOUND);
 	assert_int_equal(dns_keytable_find(keytable,
 					   str2name("sub.example.com"),
 					   &keynode),
 			 ISC_R_NOTFOUND);
-	assert_int_equal(dns_keytable_find(keytable,
-					   str2name("example.com"),
-					   &keynode),
-			 ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_find(keytable, str2name("example.com"), &keynode),
+		ISC_R_SUCCESS);
 	dns_keytable_detachkeynode(keytable, &keynode);
-	assert_int_equal(dns_keytable_find(keytable,
-					   str2name("null.example"),
-					   &keynode),
-			 ISC_R_SUCCESS);
+	assert_int_equal(
+		dns_keytable_find(keytable, str2name("null.example"), &keynode),
+		ISC_R_SUCCESS);
 	assert_int_equal(dns_keynode_key(keynode), NULL);
 	dns_keytable_detachkeynode(keytable, &keynode);
 
@@ -521,23 +537,19 @@ find_test(void **state) {
 	 * nodes with a null key.
 	 */
 	name = dns_fixedname_initname(&fname);
-	assert_int_equal(dns_keytable_finddeepestmatch(keytable,
-						       str2name("example.com"),
-						       name),
+	assert_int_equal(dns_keytable_finddeepestmatch(
+				 keytable, str2name("example.com"), name),
 			 ISC_R_SUCCESS);
 	assert_true(dns_name_equal(name, str2name("example.com")));
-	assert_int_equal(dns_keytable_finddeepestmatch(keytable,
-					       str2name("s.example.com"),
-					       name),
+	assert_int_equal(dns_keytable_finddeepestmatch(
+				 keytable, str2name("s.example.com"), name),
 			 ISC_R_SUCCESS);
 	assert_true(dns_name_equal(name, str2name("example.com")));
-	assert_int_equal(dns_keytable_finddeepestmatch(keytable,
-						       str2name("example.org"),
-						       name),
+	assert_int_equal(dns_keytable_finddeepestmatch(
+				 keytable, str2name("example.org"), name),
 			 ISC_R_NOTFOUND);
-	assert_int_equal(dns_keytable_finddeepestmatch(keytable,
-						       str2name("null.example"),
-						       name),
+	assert_int_equal(dns_keytable_finddeepestmatch(
+				 keytable, str2name("null.example"), name),
 			 ISC_R_SUCCESS);
 	assert_true(dns_name_equal(name, str2name("null.example")));
 
@@ -547,28 +559,28 @@ find_test(void **state) {
 	 * PARTIALMATCH.  Same for a node with a null key.
 	 */
 	assert_int_equal(dns_keytable_findkeynode(keytable,
-						  str2name("example.org"),
-						  5, keytag1, &keynode),
+						  str2name("example.org"), 5,
+						  keytag1, &keynode),
 			 ISC_R_NOTFOUND);
 	assert_int_equal(dns_keytable_findkeynode(keytable,
 						  str2name("sub.example.com"),
 						  5, keytag1, &keynode),
 			 ISC_R_NOTFOUND);
 	assert_int_equal(dns_keytable_findkeynode(keytable,
-						  str2name("example.com"),
-						  4, keytag1, &keynode),
+						  str2name("example.com"), 4,
+						  keytag1, &keynode),
 			 DNS_R_PARTIALMATCH); /* different algorithm */
 	assert_int_equal(dns_keytable_findkeynode(keytable,
-						  str2name("example.com"),
-						  5, keytag1 + 1, &keynode),
+						  str2name("example.com"), 5,
+						  keytag1 + 1, &keynode),
 			 DNS_R_PARTIALMATCH); /* different keytag */
 	assert_int_equal(dns_keytable_findkeynode(keytable,
-						  str2name("null.example"),
-						  5, 0, &keynode),
+						  str2name("null.example"), 5,
+						  0, &keynode),
 			 DNS_R_PARTIALMATCH); /* null key */
 	assert_int_equal(dns_keytable_findkeynode(keytable,
-						  str2name("example.com"),
-						  5, keytag1, &keynode),
+						  str2name("example.com"), 5,
+						  keytag1, &keynode),
 			 ISC_R_SUCCESS); /* complete match */
 	dns_keytable_detachkeynode(keytable, &keynode);
 
@@ -577,11 +589,12 @@ find_test(void **state) {
 
 /* check issecuredomain() */
 static void
-issecuredomain_test(void **state) {
+issecuredomain_test(void **state)
+{
 	bool issecure;
 	const char **n;
-	const char *names[] = {"example.com", "sub.example.com",
-			       "null.example", "sub.null.example", NULL};
+	const char *names[] = { "example.com", "sub.example.com",
+				"null.example", "sub.null.example", NULL };
 
 	UNUSED(state);
 	create_tables();
@@ -594,8 +607,7 @@ issecuredomain_test(void **state) {
 	 */
 	for (n = names; *n != NULL; n++) {
 		assert_int_equal(dns_keytable_issecuredomain(keytable,
-							     str2name(*n),
-							     NULL,
+							     str2name(*n), NULL,
 							     &issecure),
 				 ISC_R_SUCCESS);
 		assert_true(issecure);
@@ -607,8 +619,7 @@ issecuredomain_test(void **state) {
 	 */
 	assert_int_equal(dns_keytable_issecuredomain(keytable,
 						     str2name("example.org"),
-						     NULL,
-						     &issecure),
+						     NULL, &issecure),
 			 ISC_R_SUCCESS);
 	assert_false(issecure);
 
@@ -617,7 +628,8 @@ issecuredomain_test(void **state) {
 
 /* check dns_keytable_dump() */
 static void
-dump_test(void **state) {
+dump_test(void **state)
+{
 	FILE *f = fopen("/dev/null", "w");
 
 	UNUSED(state);
@@ -636,7 +648,8 @@ dump_test(void **state) {
 
 /* check negative trust anchors */
 static void
-nta_test(void **state) {
+nta_test(void **state)
+{
 	isc_result_t result;
 	dst_key_t *key = NULL;
 	bool issecure, covered;
@@ -666,23 +679,22 @@ nta_test(void **state) {
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	isc_stdtime_get(&now);
-	result = dns_ntatable_add(ntatable,
-				  str2name("insecure.example"),
-				  false, now, 1);
+	result = dns_ntatable_add(ntatable, str2name("insecure.example"), false,
+				  now, 1);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	/* Should be secure */
 	result = dns_view_issecuredomain(myview,
-					 str2name("test.secure.example"),
-					 now, true, &covered, &issecure);
+					 str2name("test.secure.example"), now,
+					 true, &covered, &issecure);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	assert_false(covered);
 	assert_true(issecure);
 
 	/* Should not be secure */
 	result = dns_view_issecuredomain(myview,
-					 str2name("test.insecure.example"),
-					 now, true, &covered, &issecure);
+					 str2name("test.insecure.example"), now,
+					 true, &covered, &issecure);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	assert_true(covered);
 	assert_false(issecure);
@@ -712,8 +724,8 @@ nta_test(void **state) {
 	assert_false(covered);
 	assert_true(issecure);
 
-	result = dns_ntatable_add(ntatable, str2name("new.example"),
-				  false, now, 3600);
+	result = dns_ntatable_add(ntatable, str2name("new.example"), false, now,
+				  3600);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	result = dns_view_issecuredomain(myview, str2name("test.new.example"),
@@ -738,22 +750,18 @@ nta_test(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test_setup_teardown(add_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(delete_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(deletekeynode_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(find_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(issecuredomain_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(dump_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(nta_test,
-						_setup, _teardown),
+		cmocka_unit_test_setup_teardown(add_test, _setup, _teardown),
+		cmocka_unit_test_setup_teardown(delete_test, _setup, _teardown),
+		cmocka_unit_test_setup_teardown(deletekeynode_test, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(find_test, _setup, _teardown),
+		cmocka_unit_test_setup_teardown(issecuredomain_test, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(dump_test, _setup, _teardown),
+		cmocka_unit_test_setup_teardown(nta_test, _setup, _teardown),
 	};
 
 	return (cmocka_run_group_tests(tests, NULL, NULL));
@@ -764,7 +772,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

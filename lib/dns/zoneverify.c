@@ -17,6 +17,17 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <isc/base32.h>
+#include <isc/buffer.h>
+#include <isc/heap.h>
+#include <isc/iterated_hash.h>
+#include <isc/log.h>
+#include <isc/mem.h>
+#include <isc/region.h>
+#include <isc/result.h>
+#include <isc/types.h>
+#include <isc/util.h>
+
 #include <dns/db.h>
 #include <dns/dbiterator.h>
 #include <dns/dnssec.h>
@@ -40,51 +51,40 @@
 
 #include <dst/dst.h>
 
-#include <isc/base32.h>
-#include <isc/buffer.h>
-#include <isc/heap.h>
-#include <isc/iterated_hash.h>
-#include <isc/log.h>
-#include <isc/mem.h>
-#include <isc/region.h>
-#include <isc/result.h>
-#include <isc/types.h>
-#include <isc/util.h>
-
 typedef struct vctx {
-	isc_mem_t *		mctx;
-	dns_zone_t *		zone;
-	dns_db_t *		db;
-	dns_dbversion_t *	ver;
-	dns_name_t *		origin;
-	dns_keytable_t *	secroots;
-	bool		goodksk;
-	bool		goodzsk;
-	dns_rdataset_t		keyset;
-	dns_rdataset_t		keysigs;
-	dns_rdataset_t		soaset;
-	dns_rdataset_t		soasigs;
-	dns_rdataset_t		nsecset;
-	dns_rdataset_t		nsecsigs;
-	dns_rdataset_t		nsec3paramset;
-	dns_rdataset_t		nsec3paramsigs;
-	unsigned char		revoked_ksk[256];
-	unsigned char		revoked_zsk[256];
-	unsigned char		standby_ksk[256];
-	unsigned char		standby_zsk[256];
-	unsigned char		ksk_algorithms[256];
-	unsigned char		zsk_algorithms[256];
-	unsigned char		bad_algorithms[256];
-	unsigned char		act_algorithms[256];
-	isc_heap_t *		expected_chains;
-	isc_heap_t *		found_chains;
+	isc_mem_t *mctx;
+	dns_zone_t *zone;
+	dns_db_t *db;
+	dns_dbversion_t *ver;
+	dns_name_t *origin;
+	dns_keytable_t *secroots;
+	bool goodksk;
+	bool goodzsk;
+	dns_rdataset_t keyset;
+	dns_rdataset_t keysigs;
+	dns_rdataset_t soaset;
+	dns_rdataset_t soasigs;
+	dns_rdataset_t nsecset;
+	dns_rdataset_t nsecsigs;
+	dns_rdataset_t nsec3paramset;
+	dns_rdataset_t nsec3paramsigs;
+	unsigned char revoked_ksk[256];
+	unsigned char revoked_zsk[256];
+	unsigned char standby_ksk[256];
+	unsigned char standby_zsk[256];
+	unsigned char ksk_algorithms[256];
+	unsigned char zsk_algorithms[256];
+	unsigned char bad_algorithms[256];
+	unsigned char act_algorithms[256];
+	isc_heap_t *expected_chains;
+	isc_heap_t *found_chains;
 } vctx_t;
 
 struct nsec3_chain_fixed {
-	uint8_t		hash;
-	uint8_t		salt_length;
-	uint8_t		next_length;
-	uint16_t		iterations;
+	uint8_t hash;
+	uint8_t salt_length;
+	uint8_t next_length;
+	uint16_t iterations;
 	/*
 	 * The following non-fixed-length data is stored in memory after the
 	 * fields declared above for each NSEC3 chain element:
@@ -102,7 +102,8 @@ struct nsec3_chain_fixed {
  * respectively.
  */
 static void
-zoneverify_log_error(const vctx_t *vctx, const char *fmt, ...) {
+zoneverify_log_error(const vctx_t *vctx, const char *fmt, ...)
+{
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -121,7 +122,8 @@ zoneverify_log_error(const vctx_t *vctx, const char *fmt, ...) {
  * the variable arguments following it to stderr.
  */
 static void
-zoneverify_print(const vctx_t *vctx, const char *fmt, ...) {
+zoneverify_print(const vctx_t *vctx, const char *fmt, ...)
+{
 	va_list ap;
 
 	if (vctx->zone != NULL) {
@@ -162,7 +164,8 @@ is_delegation(const vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node,
  * 'node'; return false otherwise.
  */
 static bool
-has_dname(const vctx_t *vctx, dns_dbnode_t *node) {
+has_dname(const vctx_t *vctx, dns_dbnode_t *node)
+{
 	dns_rdataset_t dnameset;
 	isc_result_t result;
 
@@ -189,10 +192,8 @@ goodsig(const vctx_t *vctx, dns_rdata_t *sigrdata, const dns_name_t *name,
 	result = dns_rdata_tostruct(sigrdata, &sig, NULL);
 	RUNTIME_CHECK(result == ISC_R_SUCCESS);
 
-	for (result = dns_rdataset_first(keyrdataset);
-	     result == ISC_R_SUCCESS;
-	     result = dns_rdataset_next(keyrdataset))
-	{
+	for (result = dns_rdataset_first(keyrdataset); result == ISC_R_SUCCESS;
+	     result = dns_rdataset_next(keyrdataset)) {
 		dns_rdata_t rdata = DNS_RDATA_INIT;
 		dns_rdataset_current(keyrdataset, &rdata);
 		result = dns_rdata_tostruct(&rdata, &key, NULL);
@@ -204,13 +205,12 @@ goodsig(const vctx_t *vctx, dns_rdata_t *sigrdata, const dns_name_t *name,
 		}
 		if (sig.algorithm != key.algorithm ||
 		    sig.keyid != dst_key_id(dstkey) ||
-		    !dns_name_equal(&sig.signer, vctx->origin))
-		{
+		    !dns_name_equal(&sig.signer, vctx->origin)) {
 			dst_key_free(&dstkey);
 			continue;
 		}
-		result = dns_dnssec_verify(name, rdataset, dstkey, false,
-					   0, vctx->mctx, sigrdata, NULL);
+		result = dns_dnssec_verify(name, rdataset, dstkey, false, 0,
+					   vctx->mctx, sigrdata, NULL);
 		dst_key_free(&dstkey);
 		if (result == ISC_R_SUCCESS || result == DNS_R_FROMWILDCARD) {
 			return (true);
@@ -220,7 +220,8 @@ goodsig(const vctx_t *vctx, dns_rdata_t *sigrdata, const dns_name_t *name,
 }
 
 static bool
-nsec_bitmap_equal(dns_rdata_nsec_t *nsec, dns_rdata_t *rdata) {
+nsec_bitmap_equal(dns_rdata_nsec_t *nsec, dns_rdata_t *rdata)
+{
 	isc_result_t result;
 	dns_rdata_nsec_t tmpnsec;
 
@@ -250,8 +251,7 @@ verifynsec(const vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node,
 
 	dns_rdataset_init(&rdataset);
 	result = dns_db_findrdataset(vctx->db, node, vctx->ver,
-				     dns_rdatatype_nsec, 0, 0, &rdataset,
-				     NULL);
+				     dns_rdatatype_nsec, 0, 0, &rdataset, NULL);
 	if (result != ISC_R_SUCCESS) {
 		dns_name_format(name, namebuf, sizeof(namebuf));
 		zoneverify_log_error(vctx, "Missing NSEC record for %s",
@@ -315,7 +315,7 @@ verifynsec(const vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node,
 	*vresult = ISC_R_SUCCESS;
 	result = ISC_R_SUCCESS;
 
- done:
+done:
 	if (dns_rdataset_isassociated(&rdataset)) {
 		dns_rdataset_disassociate(&rdataset);
 	}
@@ -340,14 +340,11 @@ check_no_rrsig(const vctx_t *vctx, const dns_rdataset_t *rdataset,
 				     isc_result_totext(result));
 		return (result);
 	}
-	for (result = dns_rdatasetiter_first(rdsiter);
-	     result == ISC_R_SUCCESS;
-	     result = dns_rdatasetiter_next(rdsiter))
-	{
+	for (result = dns_rdatasetiter_first(rdsiter); result == ISC_R_SUCCESS;
+	     result = dns_rdatasetiter_next(rdsiter)) {
 		dns_rdatasetiter_current(rdsiter, &sigrdataset);
 		if (sigrdataset.type == dns_rdatatype_rrsig &&
-		    sigrdataset.covers == rdataset->type)
-		{
+		    sigrdataset.covers == rdataset->type) {
 			break;
 		}
 		dns_rdataset_disassociate(&sigrdataset);
@@ -369,7 +366,8 @@ check_no_rrsig(const vctx_t *vctx, const dns_rdataset_t *rdataset,
 }
 
 static bool
-chain_compare(void *arg1, void *arg2) {
+chain_compare(void *arg1, void *arg2)
+{
 	struct nsec3_chain_fixed *e1 = arg1, *e2 = arg2;
 	size_t len;
 
@@ -482,10 +480,8 @@ match_nsec3(const vctx_t *vctx, const dns_name_t *name,
 	/*
 	 * Find matching NSEC3 record.
 	 */
-	for (result = dns_rdataset_first(rdataset);
-	     result == ISC_R_SUCCESS;
-	     result = dns_rdataset_next(rdataset))
-	{
+	for (result = dns_rdataset_first(rdataset); result == ISC_R_SUCCESS;
+	     result = dns_rdataset_next(rdataset)) {
 		dns_rdata_t rdata = DNS_RDATA_INIT;
 		dns_rdataset_current(rdataset, &rdata);
 		result = dns_rdata_tostruct(&rdata, &nsec3, NULL);
@@ -495,8 +491,7 @@ match_nsec3(const vctx_t *vctx, const dns_name_t *name,
 		    nsec3.iterations == nsec3param->iterations &&
 		    nsec3.salt_length == nsec3param->salt_length &&
 		    memcmp(nsec3.salt, nsec3param->salt,
-			   nsec3param->salt_length) == 0)
-		{
+			   nsec3param->salt_length) == 0) {
 			break;
 		}
 	}
@@ -536,10 +531,8 @@ match_nsec3(const vctx_t *vctx, const dns_name_t *name,
 	 * Make sure there is only one NSEC3 record with this set of
 	 * parameters.
 	 */
-	for (result = dns_rdataset_next(rdataset);
-	     result == ISC_R_SUCCESS;
-	     result = dns_rdataset_next(rdataset))
-	{
+	for (result = dns_rdataset_next(rdataset); result == ISC_R_SUCCESS;
+	     result = dns_rdataset_next(rdataset)) {
 		dns_rdata_t rdata = DNS_RDATA_INIT;
 		dns_rdataset_current(rdataset, &rdata);
 		result = dns_rdata_tostruct(&rdata, &nsec3, NULL);
@@ -547,9 +540,8 @@ match_nsec3(const vctx_t *vctx, const dns_name_t *name,
 		if (nsec3.hash == nsec3param->hash &&
 		    nsec3.iterations == nsec3param->iterations &&
 		    nsec3.salt_length == nsec3param->salt_length &&
-		    memcmp(nsec3.salt, nsec3param->salt,
-			   nsec3.salt_length) == 0)
-		{
+		    memcmp(nsec3.salt, nsec3param->salt, nsec3.salt_length) ==
+			    0) {
 			dns_name_format(name, namebuf, sizeof(namebuf));
 			zoneverify_log_error(vctx,
 					     "Multiple NSEC3 records with the "
@@ -569,26 +561,24 @@ match_nsec3(const vctx_t *vctx, const dns_name_t *name,
 }
 
 static bool
-innsec3params(const dns_rdata_nsec3_t *nsec3, dns_rdataset_t *nsec3paramset) {
+innsec3params(const dns_rdata_nsec3_t *nsec3, dns_rdataset_t *nsec3paramset)
+{
 	dns_rdata_nsec3param_t nsec3param;
 	isc_result_t result;
 
 	for (result = dns_rdataset_first(nsec3paramset);
 	     result == ISC_R_SUCCESS;
-	     result = dns_rdataset_next(nsec3paramset))
-	{
+	     result = dns_rdataset_next(nsec3paramset)) {
 		dns_rdata_t rdata = DNS_RDATA_INIT;
 
 		dns_rdataset_current(nsec3paramset, &rdata);
 		result = dns_rdata_tostruct(&rdata, &nsec3param, NULL);
 		RUNTIME_CHECK(result == ISC_R_SUCCESS);
-		if (nsec3param.flags == 0 &&
-		    nsec3param.hash == nsec3->hash &&
+		if (nsec3param.flags == 0 && nsec3param.hash == nsec3->hash &&
 		    nsec3param.iterations == nsec3->iterations &&
 		    nsec3param.salt_length == nsec3->salt_length &&
-		    memcmp(nsec3param.salt, nsec3->salt,
-			   nsec3->salt_length) == 0)
-		{
+		    memcmp(nsec3param.salt, nsec3->salt, nsec3->salt_length) ==
+			    0) {
 			return (true);
 		}
 	}
@@ -607,8 +597,7 @@ record_found(const vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node,
 	isc_result_t result;
 
 	if (nsec3paramset == NULL ||
-	    !dns_rdataset_isassociated(nsec3paramset))
-	{
+	    !dns_rdataset_isassociated(nsec3paramset)) {
 		return (ISC_R_SUCCESS);
 	}
 
@@ -629,10 +618,8 @@ record_found(const vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node,
 		goto cleanup;
 	}
 
-	for (result = dns_rdataset_first(&rdataset);
-	     result == ISC_R_SUCCESS;
-	     result = dns_rdataset_next(&rdataset))
-	{
+	for (result = dns_rdataset_first(&rdataset); result == ISC_R_SUCCESS;
+	     result = dns_rdataset_next(&rdataset)) {
 		dns_rdata_t rdata = DNS_RDATA_INIT;
 		dns_rdataset_current(&rdataset, &rdata);
 		result = dns_rdata_tostruct(&rdata, &nsec3, NULL);
@@ -660,14 +647,13 @@ record_found(const vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node,
 	}
 	result = ISC_R_SUCCESS;
 
- cleanup:
+cleanup:
 	dns_rdataset_disassociate(&rdataset);
 	return (result);
 }
 
 static isc_result_t
-isoptout(const vctx_t *vctx, const dns_rdata_t *nsec3rdata,
-	 bool *optout)
+isoptout(const vctx_t *vctx, const dns_rdata_t *nsec3rdata, bool *optout)
 {
 	dns_rdataset_t rdataset;
 	dns_rdata_t rdata = DNS_RDATA_INIT;
@@ -721,7 +707,7 @@ isoptout(const vctx_t *vctx, const dns_rdata_t *nsec3rdata,
 	RUNTIME_CHECK(result == ISC_R_SUCCESS);
 	*optout = ((nsec3.flags & DNS_NSEC3FLAG_OPTOUT) != 0);
 
- done:
+done:
 	if (dns_rdataset_isassociated(&rdataset)) {
 		dns_rdataset_disassociate(&rdataset);
 	}
@@ -734,9 +720,9 @@ isoptout(const vctx_t *vctx, const dns_rdata_t *nsec3rdata,
 
 static isc_result_t
 verifynsec3(const vctx_t *vctx, const dns_name_t *name,
-	    const dns_rdata_t *rdata, bool delegation,
-	    bool empty, const unsigned char types[8192],
-	    unsigned int maxtype, isc_result_t *vresult)
+	    const dns_rdata_t *rdata, bool delegation, bool empty,
+	    const unsigned char types[8192], unsigned int maxtype,
+	    isc_result_t *vresult)
 {
 	char namebuf[DNS_NAME_FORMATSIZE];
 	char hashbuf[DNS_NAME_FORMATSIZE];
@@ -767,10 +753,9 @@ verifynsec3(const vctx_t *vctx, const dns_name_t *name,
 	}
 
 	dns_fixedname_init(&fixed);
-	result = dns_nsec3_hashname(&fixed, rawhash, &rhsize, name,
-				    vctx->origin, nsec3param.hash,
-				    nsec3param.iterations, nsec3param.salt,
-				    nsec3param.salt_length);
+	result = dns_nsec3_hashname(
+		&fixed, rawhash, &rhsize, name, vctx->origin, nsec3param.hash,
+		nsec3param.iterations, nsec3param.salt, nsec3param.salt_length);
 	if (result != ISC_R_SUCCESS) {
 		zoneverify_log_error(vctx, "dns_nsec3_hashname(): %s",
 				     isc_result_totext(result));
@@ -793,15 +778,13 @@ verifynsec3(const vctx_t *vctx, const dns_name_t *name,
 	}
 	if (result != ISC_R_SUCCESS &&
 	    (!delegation || (empty && !optout) ||
-	     (!empty && dns_nsec_isset(types, dns_rdatatype_ds))))
-	{
+	     (!empty && dns_nsec_isset(types, dns_rdatatype_ds)))) {
 		dns_name_format(name, namebuf, sizeof(namebuf));
 		dns_name_format(hashname, hashbuf, sizeof(hashbuf));
 		zoneverify_log_error(vctx, "Missing NSEC3 record for %s (%s)",
 				     namebuf, hashbuf);
-	} else if (result == ISC_R_NOTFOUND &&
-		   delegation && (!empty || optout))
-	{
+	} else if (result == ISC_R_NOTFOUND && delegation &&
+		   (!empty || optout)) {
 		result = ISC_R_SUCCESS;
 	} else if (result == ISC_R_SUCCESS) {
 		result = match_nsec3(vctx, name, &nsec3param, &rdataset, types,
@@ -815,7 +798,7 @@ verifynsec3(const vctx_t *vctx, const dns_name_t *name,
 	*vresult = result;
 	result = ISC_R_SUCCESS;
 
- done:
+done:
 	if (dns_rdataset_isassociated(&rdataset)) {
 		dns_rdataset_disassociate(&rdataset);
 	}
@@ -828,16 +811,15 @@ verifynsec3(const vctx_t *vctx, const dns_name_t *name,
 
 static isc_result_t
 verifynsec3s(const vctx_t *vctx, const dns_name_t *name,
-	     dns_rdataset_t *nsec3paramset, bool delegation,
-	     bool empty, const unsigned char types[8192],
-	     unsigned int maxtype, isc_result_t *vresult)
+	     dns_rdataset_t *nsec3paramset, bool delegation, bool empty,
+	     const unsigned char types[8192], unsigned int maxtype,
+	     isc_result_t *vresult)
 {
 	isc_result_t result;
 
 	for (result = dns_rdataset_first(nsec3paramset);
 	     result == ISC_R_SUCCESS;
-	     result = dns_rdataset_next(nsec3paramset))
-	{
+	     result = dns_rdataset_next(nsec3paramset)) {
 		dns_rdata_t rdata = DNS_RDATA_INIT;
 
 		dns_rdataset_current(nsec3paramset, &rdata);
@@ -876,14 +858,11 @@ verifyset(vctx_t *vctx, dns_rdataset_t *rdataset, const dns_name_t *name,
 				     isc_result_totext(result));
 		return (result);
 	}
-	for (result = dns_rdatasetiter_first(rdsiter);
-	     result == ISC_R_SUCCESS;
-	     result = dns_rdatasetiter_next(rdsiter))
-	{
+	for (result = dns_rdatasetiter_first(rdsiter); result == ISC_R_SUCCESS;
+	     result = dns_rdatasetiter_next(rdsiter)) {
 		dns_rdatasetiter_current(rdsiter, &sigrdataset);
 		if (sigrdataset.type == dns_rdatatype_rrsig &&
-		    sigrdataset.covers == rdataset->type)
-		{
+		    sigrdataset.covers == rdataset->type) {
 			break;
 		}
 		dns_rdataset_disassociate(&sigrdataset);
@@ -891,8 +870,8 @@ verifyset(vctx_t *vctx, dns_rdataset_t *rdataset, const dns_name_t *name,
 	if (result != ISC_R_SUCCESS) {
 		dns_name_format(name, namebuf, sizeof(namebuf));
 		dns_rdatatype_format(rdataset->type, typebuf, sizeof(typebuf));
-		zoneverify_log_error(vctx, "No signatures for %s/%s",
-				     namebuf, typebuf);
+		zoneverify_log_error(vctx, "No signatures for %s/%s", namebuf,
+				     typebuf);
 		for (i = 0; i < 256; i++) {
 			if (vctx->act_algorithms[i] != 0) {
 				vctx->bad_algorithms[i] = 1;
@@ -903,10 +882,8 @@ verifyset(vctx_t *vctx, dns_rdataset_t *rdataset, const dns_name_t *name,
 	}
 
 	memset(set_algorithms, 0, sizeof(set_algorithms));
-	for (result = dns_rdataset_first(&sigrdataset);
-	     result == ISC_R_SUCCESS;
-	     result = dns_rdataset_next(&sigrdataset))
-	{
+	for (result = dns_rdataset_first(&sigrdataset); result == ISC_R_SUCCESS;
+	     result = dns_rdataset_next(&sigrdataset)) {
 		dns_rdata_t rdata = DNS_RDATA_INIT;
 		dns_rdata_rrsig_t sig;
 
@@ -924,8 +901,7 @@ verifyset(vctx_t *vctx, dns_rdataset_t *rdataset, const dns_name_t *name,
 			continue;
 		}
 		if ((set_algorithms[sig.algorithm] != 0) ||
-		    (vctx->act_algorithms[sig.algorithm] == 0))
-		{
+		    (vctx->act_algorithms[sig.algorithm] == 0)) {
 			continue;
 		}
 		if (goodsig(vctx, &rdata, name, keyrdataset, rdataset)) {
@@ -937,14 +913,12 @@ verifyset(vctx_t *vctx, dns_rdataset_t *rdataset, const dns_name_t *name,
 	result = ISC_R_SUCCESS;
 
 	if (memcmp(set_algorithms, vctx->act_algorithms,
-		   sizeof(set_algorithms)))
-	{
+		   sizeof(set_algorithms))) {
 		dns_name_format(name, namebuf, sizeof(namebuf));
 		dns_rdatatype_format(rdataset->type, typebuf, sizeof(typebuf));
 		for (i = 0; i < 256; i++) {
 			if ((vctx->act_algorithms[i] != 0) &&
-			    (set_algorithms[i] == 0))
-			{
+			    (set_algorithms[i] == 0)) {
 				dns_secalg_format(i, algbuf, sizeof(algbuf));
 				zoneverify_log_error(vctx,
 						     "No correct %s signature "
@@ -955,7 +929,7 @@ verifyset(vctx_t *vctx, dns_rdataset_t *rdataset, const dns_name_t *name,
 		}
 	}
 
- done:
+done:
 	if (dns_rdataset_isassociated(&sigrdataset)) {
 		dns_rdataset_disassociate(&sigrdataset);
 	}
@@ -972,7 +946,8 @@ verifynode(vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node,
 {
 	unsigned char types[8192];
 	unsigned int maxtype = 0;
-	dns_rdataset_t rdataset; dns_rdatasetiter_t *rdsiter = NULL;
+	dns_rdataset_t rdataset;
+	dns_rdatasetiter_t *rdsiter = NULL;
 	isc_result_t result, tvresult = ISC_R_UNSET;
 
 	REQUIRE(vresult != NULL || (nsecset == NULL && nsec3paramset == NULL));
@@ -998,8 +973,7 @@ verifynode(vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node,
 		if (rdataset.type != dns_rdatatype_rrsig &&
 		    rdataset.type != dns_rdatatype_dnskey &&
 		    (!delegation || rdataset.type == dns_rdatatype_ds ||
-		     rdataset.type == dns_rdatatype_nsec))
-		{
+		     rdataset.type == dns_rdatatype_nsec)) {
 			result = verifyset(vctx, &rdataset, name, node,
 					   keyrdataset);
 			if (result != ISC_R_SUCCESS) {
@@ -1012,8 +986,7 @@ verifynode(vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node,
 				maxtype = rdataset.type;
 			}
 		} else if (rdataset.type != dns_rdatatype_rrsig &&
-			   rdataset.type != dns_rdatatype_dnskey)
-		{
+			   rdataset.type != dns_rdatatype_dnskey) {
 			if (rdataset.type == dns_rdatatype_ns) {
 				dns_nsec_setbit(types, rdataset.type, 1);
 			}
@@ -1050,9 +1023,7 @@ verifynode(vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node,
 		*vresult = tvresult;
 	}
 
-	if (nsec3paramset != NULL &&
-	    dns_rdataset_isassociated(nsec3paramset))
-	{
+	if (nsec3paramset != NULL && dns_rdataset_isassociated(nsec3paramset)) {
 		result = verifynsec3s(vctx, name, nsec3paramset, delegation,
 				      false, types, maxtype, &tvresult);
 		if (result != ISC_R_SUCCESS) {
@@ -1067,7 +1038,8 @@ verifynode(vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node,
 }
 
 static isc_result_t
-is_empty(const vctx_t *vctx, dns_dbnode_t *node, bool *empty) {
+is_empty(const vctx_t *vctx, dns_dbnode_t *node, bool *empty)
+{
 	dns_rdatasetiter_t *rdsiter = NULL;
 	isc_result_t result;
 
@@ -1086,15 +1058,15 @@ is_empty(const vctx_t *vctx, dns_dbnode_t *node, bool *empty) {
 }
 
 static isc_result_t
-check_no_nsec(const vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node) {
+check_no_nsec(const vctx_t *vctx, const dns_name_t *name, dns_dbnode_t *node)
+{
 	bool nsec_exists = false;
 	dns_rdataset_t rdataset;
 	isc_result_t result;
 
 	dns_rdataset_init(&rdataset);
 	result = dns_db_findrdataset(vctx->db, node, vctx->ver,
-				     dns_rdatatype_nsec, 0, 0, &rdataset,
-				     NULL);
+				     dns_rdatatype_nsec, 0, 0, &rdataset, NULL);
 	if (result != ISC_R_NOTFOUND) {
 		char namebuf[DNS_NAME_FORMATSIZE];
 		dns_name_format(name, namebuf, sizeof(namebuf));
@@ -1114,19 +1086,18 @@ static bool
 newchain(const struct nsec3_chain_fixed *first,
 	 const struct nsec3_chain_fixed *e)
 {
-	if (first->hash != e->hash ||
-	    first->iterations != e->iterations ||
+	if (first->hash != e->hash || first->iterations != e->iterations ||
 	    first->salt_length != e->salt_length ||
 	    first->next_length != e->next_length ||
-	    memcmp(first + 1, e + 1, first->salt_length) != 0)
-	{
+	    memcmp(first + 1, e + 1, first->salt_length) != 0) {
 		return (true);
 	}
 	return (false);
 }
 
 static void
-free_element(isc_mem_t *mctx, struct nsec3_chain_fixed *e) {
+free_element(isc_mem_t *mctx, struct nsec3_chain_fixed *e)
+{
 	size_t len;
 
 	len = sizeof(*e) + e->salt_length + 2 * e->next_length;
@@ -1134,7 +1105,8 @@ free_element(isc_mem_t *mctx, struct nsec3_chain_fixed *e) {
 }
 
 static void
-free_element_heap(void *element, void *uap) {
+free_element_heap(void *element, void *uap)
+{
 	struct nsec3_chain_fixed *e = (struct nsec3_chain_fixed *)element;
 	isc_mem_t *mctx = (isc_mem_t *)uap;
 
@@ -1183,7 +1155,8 @@ checknext(const vctx_t *vctx, const struct nsec3_chain_fixed *first,
 }
 
 static isc_result_t
-verify_nsec3_chains(const vctx_t *vctx, isc_mem_t *mctx) {
+verify_nsec3_chains(const vctx_t *vctx, isc_mem_t *mctx)
+{
 	isc_result_t result = ISC_R_SUCCESS;
 	struct nsec3_chain_fixed *e, *f = NULL;
 	struct nsec3_chain_fixed *first = NULL, *prev = NULL;
@@ -1204,10 +1177,11 @@ verify_nsec3_chains(const vctx_t *vctx, isc_mem_t *mctx) {
 				f = NULL;
 			} else {
 				if (result == ISC_R_SUCCESS) {
-					zoneverify_log_error(
-						vctx,
-						"Expected and found NSEC3 "
-						"chains not equal");
+					zoneverify_log_error(vctx, "Expected "
+								   "and found "
+								   "NSEC3 "
+								   "chains not "
+								   "equal");
 				}
 				result = ISC_R_FAILURE;
 				/*
@@ -1215,8 +1189,8 @@ verify_nsec3_chains(const vctx_t *vctx, isc_mem_t *mctx) {
 				 */
 				while (f != NULL && !chain_compare(e, f)) {
 					free_element(mctx, f);
-					f = isc_heap_element(
-						vctx->found_chains, 1);
+					f = isc_heap_element(vctx->found_chains,
+							     1);
 					if (f != NULL) {
 						isc_heap_delete(
 							vctx->found_chains, 1);
@@ -1229,9 +1203,9 @@ verify_nsec3_chains(const vctx_t *vctx, isc_mem_t *mctx) {
 				}
 			}
 		} else if (result == ISC_R_SUCCESS) {
-			zoneverify_log_error(vctx,
-					     "Expected and found NSEC3 chains "
-					     "not equal");
+			zoneverify_log_error(vctx, "Expected and found NSEC3 "
+						   "chains "
+						   "not equal");
 			result = ISC_R_FAILURE;
 		}
 		if (first == NULL || newchain(first, e)) {
@@ -1271,9 +1245,9 @@ verify_nsec3_chains(const vctx_t *vctx, isc_mem_t *mctx) {
 	do {
 		if (f != NULL) {
 			if (result == ISC_R_SUCCESS) {
-				zoneverify_log_error(vctx,
-						     "Expected and found "
-						     "NSEC3 chains not equal");
+				zoneverify_log_error(vctx, "Expected and found "
+							   "NSEC3 chains not "
+							   "equal");
 				result = ISC_R_FAILURE;
 			}
 			free_element(mctx, f);
@@ -1308,19 +1282,16 @@ verifyemptynodes(const vctx_t *vctx, const dns_name_t *name,
 	nlabels = dns_name_countlabels(name);
 
 	if (reln == dns_namereln_commonancestor ||
-	    reln == dns_namereln_contains)
-	{
+	    reln == dns_namereln_contains) {
 		dns_name_init(&suffix, NULL);
 		for (i = labels + 1; i < nlabels; i++) {
 			dns_name_getlabelsequence(name, nlabels - i, i,
 						  &suffix);
 			if (nsec3paramset != NULL &&
-			    dns_rdataset_isassociated(nsec3paramset))
-			{
-				result = verifynsec3s(vctx, &suffix,
-						      nsec3paramset,
-						      isdelegation, true,
-						      NULL, 0, &tvresult);
+			    dns_rdataset_isassociated(nsec3paramset)) {
+				result = verifynsec3s(
+					vctx, &suffix, nsec3paramset,
+					isdelegation, true, NULL, 0, &tvresult);
 				if (result != ISC_R_SUCCESS) {
 					return (result);
 				}
@@ -1379,7 +1350,8 @@ vctx_init(vctx_t *vctx, isc_mem_t *mctx, dns_zone_t *zone, dns_db_t *db,
 }
 
 static void
-vctx_destroy(vctx_t *vctx) {
+vctx_destroy(vctx_t *vctx)
+{
 	if (dns_rdataset_isassociated(&vctx->keyset)) {
 		dns_rdataset_disassociate(&vctx->keyset);
 	}
@@ -1411,7 +1383,8 @@ vctx_destroy(vctx_t *vctx) {
 }
 
 static isc_result_t
-check_apex_rrsets(vctx_t *vctx) {
+check_apex_rrsets(vctx_t *vctx)
+{
 	dns_dbnode_t *node = NULL;
 	isc_result_t result;
 
@@ -1424,86 +1397,78 @@ check_apex_rrsets(vctx_t *vctx) {
 	}
 
 	result = dns_db_findrdataset(vctx->db, node, vctx->ver,
-				     dns_rdatatype_dnskey, 0, 0,
-				     &vctx->keyset, &vctx->keysigs);
+				     dns_rdatatype_dnskey, 0, 0, &vctx->keyset,
+				     &vctx->keysigs);
 	if (result != ISC_R_SUCCESS) {
 		zoneverify_log_error(vctx, "Zone contains no DNSSEC keys");
 		goto done;
 	}
 
 	result = dns_db_findrdataset(vctx->db, node, vctx->ver,
-				     dns_rdatatype_soa, 0, 0,
-				     &vctx->soaset, &vctx->soasigs);
+				     dns_rdatatype_soa, 0, 0, &vctx->soaset,
+				     &vctx->soasigs);
 	if (result != ISC_R_SUCCESS) {
 		zoneverify_log_error(vctx, "Zone contains no SOA record");
 		goto done;
 	}
 
 	result = dns_db_findrdataset(vctx->db, node, vctx->ver,
-				     dns_rdatatype_nsec, 0, 0,
-				     &vctx->nsecset, &vctx->nsecsigs);
+				     dns_rdatatype_nsec, 0, 0, &vctx->nsecset,
+				     &vctx->nsecsigs);
 	if (result != ISC_R_SUCCESS && result != ISC_R_NOTFOUND) {
 		zoneverify_log_error(vctx, "NSEC lookup failed");
 		goto done;
 	}
 
-	result = dns_db_findrdataset(vctx->db, node, vctx->ver,
-				     dns_rdatatype_nsec3param, 0, 0,
-				     &vctx->nsec3paramset,
-				     &vctx->nsec3paramsigs);
+	result = dns_db_findrdataset(
+		vctx->db, node, vctx->ver, dns_rdatatype_nsec3param, 0, 0,
+		&vctx->nsec3paramset, &vctx->nsec3paramsigs);
 	if (result != ISC_R_SUCCESS && result != ISC_R_NOTFOUND) {
 		zoneverify_log_error(vctx, "NSEC3PARAM lookup failed");
 		goto done;
 	}
 
 	if (!dns_rdataset_isassociated(&vctx->keysigs)) {
-		zoneverify_log_error(vctx,
-				     "DNSKEY is not signed "
-				     "(keys offline or inactive?)");
+		zoneverify_log_error(vctx, "DNSKEY is not signed "
+					   "(keys offline or inactive?)");
 		result = ISC_R_FAILURE;
 		goto done;
 	}
 
 	if (!dns_rdataset_isassociated(&vctx->soasigs)) {
-		zoneverify_log_error(vctx,
-				     "SOA is not signed "
-				     "(keys offline or inactive?)");
+		zoneverify_log_error(vctx, "SOA is not signed "
+					   "(keys offline or inactive?)");
 		result = ISC_R_FAILURE;
 		goto done;
 	}
 
 	if (dns_rdataset_isassociated(&vctx->nsecset) &&
-	    !dns_rdataset_isassociated(&vctx->nsecsigs))
-	{
-		zoneverify_log_error(vctx,
-				     "NSEC is not signed "
-				     "(keys offline or inactive?)");
+	    !dns_rdataset_isassociated(&vctx->nsecsigs)) {
+		zoneverify_log_error(vctx, "NSEC is not signed "
+					   "(keys offline or inactive?)");
 		result = ISC_R_FAILURE;
 		goto done;
 	}
 
 	if (dns_rdataset_isassociated(&vctx->nsec3paramset) &&
-	    !dns_rdataset_isassociated(&vctx->nsec3paramsigs))
-	{
-		zoneverify_log_error(vctx,
-				     "NSEC3PARAM is not signed "
-				     "(keys offline or inactive?)");
+	    !dns_rdataset_isassociated(&vctx->nsec3paramsigs)) {
+		zoneverify_log_error(vctx, "NSEC3PARAM is not signed "
+					   "(keys offline or inactive?)");
 		result = ISC_R_FAILURE;
 		goto done;
 	}
 
 	if (!dns_rdataset_isassociated(&vctx->nsecset) &&
-	    !dns_rdataset_isassociated(&vctx->nsec3paramset))
-	{
-		zoneverify_log_error(vctx,
-				     "No valid NSEC/NSEC3 chain for testing");
+	    !dns_rdataset_isassociated(&vctx->nsec3paramset)) {
+		zoneverify_log_error(vctx, "No valid NSEC/NSEC3 chain for "
+					   "testing");
 		result = ISC_R_FAILURE;
 		goto done;
 	}
 
 	result = ISC_R_SUCCESS;
 
- done:
+done:
 	dns_db_detachnode(vctx->db, &node);
 
 	return (result);
@@ -1534,15 +1499,13 @@ check_dnskey_sigs(vctx_t *vctx, const dns_rdata_dnskey_t *dnskey,
 	goodkey = (is_ksk ? &vctx->goodksk : &vctx->goodzsk);
 
 	if (dns_dnssec_selfsigns(rdata, vctx->origin, &vctx->keyset,
-				 &vctx->keysigs, false, vctx->mctx))
-	{
+				 &vctx->keysigs, false, vctx->mctx)) {
 		if (active_keys[dnskey->algorithm] != 255) {
 			active_keys[dnskey->algorithm]++;
 		}
 	} else if (!is_ksk &&
 		   dns_dnssec_signs(rdata, vctx->origin, &vctx->soaset,
-				    &vctx->soasigs, false, vctx->mctx))
-	{
+				    &vctx->soasigs, false, vctx->mctx)) {
 		if (active_keys[dnskey->algorithm] != 255) {
 			active_keys[dnskey->algorithm]++;
 		}
@@ -1566,8 +1529,7 @@ check_dnskey_sigs(vctx_t *vctx, const dns_rdata_dnskey_t *dnskey,
 	/*
 	 * Look up the supplied key in the trust anchor table.
 	 */
-	result = dns_dnssec_keyfromrdata(vctx->origin, rdata, vctx->mctx,
-					 &key);
+	result = dns_dnssec_keyfromrdata(vctx->origin, rdata, vctx->mctx, &key);
 	if (result != ISC_R_SUCCESS) {
 		return (result);
 	}
@@ -1614,7 +1576,8 @@ check_dnskey_sigs(vctx_t *vctx, const dns_rdata_dnskey_t *dnskey,
  * algorithm in it (or, if -x was used, one self-signing KSK).
  */
 static isc_result_t
-check_dnskey(vctx_t *vctx) {
+check_dnskey(vctx_t *vctx)
+{
 	dns_rdata_t rdata = DNS_RDATA_INIT;
 	dns_rdata_dnskey_t dnskey;
 	isc_result_t result;
@@ -1622,8 +1585,7 @@ check_dnskey(vctx_t *vctx) {
 
 	for (result = dns_rdataset_first(&vctx->keyset);
 	     result == ISC_R_SUCCESS;
-	     result = dns_rdataset_next(&vctx->keyset))
-	{
+	     result = dns_rdataset_next(&vctx->keyset)) {
 		dns_rdataset_current(&vctx->keyset, &rdata);
 		result = dns_rdata_tostruct(&rdata, &dnskey, NULL);
 		RUNTIME_CHECK(result == ISC_R_SUCCESS);
@@ -1634,10 +1596,8 @@ check_dnskey(vctx_t *vctx) {
 		} else if ((dnskey.flags & DNS_KEYFLAG_REVOKE) != 0) {
 			if ((dnskey.flags & DNS_KEYFLAG_KSK) != 0 &&
 			    !dns_dnssec_selfsigns(&rdata, vctx->origin,
-						  &vctx->keyset,
-						  &vctx->keysigs, false,
-						  vctx->mctx))
-			{
+						  &vctx->keyset, &vctx->keysigs,
+						  false, vctx->mctx)) {
 				char namebuf[DNS_NAME_FORMATSIZE];
 				char buffer[1024];
 				isc_buffer_t buf;
@@ -1648,26 +1608,24 @@ check_dnskey(vctx_t *vctx) {
 				result = dns_rdata_totext(&rdata, NULL, &buf);
 				if (result != ISC_R_SUCCESS) {
 					zoneverify_log_error(
-						vctx,
-						"dns_rdata_totext: %s",
+						vctx, "dns_rdata_totext: %s",
 						isc_result_totext(result));
 					return (ISC_R_FAILURE);
 				}
 				zoneverify_log_error(
 					vctx,
 					"revoked KSK is not self signed:\n"
-					"%s DNSKEY %.*s", namebuf,
+					"%s DNSKEY %.*s",
+					namebuf,
 					(int)isc_buffer_usedlength(&buf),
 					buffer);
 				return (ISC_R_FAILURE);
 			}
 			if ((dnskey.flags & DNS_KEYFLAG_KSK) != 0 &&
-			    vctx->revoked_ksk[dnskey.algorithm] != 255)
-			{
+			    vctx->revoked_ksk[dnskey.algorithm] != 255) {
 				vctx->revoked_ksk[dnskey.algorithm]++;
 			} else if ((dnskey.flags & DNS_KEYFLAG_KSK) == 0 &&
-				   vctx->revoked_zsk[dnskey.algorithm] != 255)
-			{
+				   vctx->revoked_zsk[dnskey.algorithm] != 255) {
 				vctx->revoked_zsk[dnskey.algorithm]++;
 			}
 		} else {
@@ -1687,14 +1645,16 @@ determine_active_algorithms(vctx_t *vctx, bool ignore_kskflag,
 	char algbuf[DNS_SECALG_FORMATSIZE];
 	int i;
 
-	zoneverify_print(vctx,
-			 "Verifying the zone using the following algorithms:");
+	zoneverify_print(vctx, "Verifying the zone using the following "
+			       "algorithms:");
 
 	for (i = 0; i < 256; i++) {
 		if (ignore_kskflag) {
 			vctx->act_algorithms[i] =
 				(vctx->ksk_algorithms[i] != 0 ||
-				 vctx->zsk_algorithms[i] != 0) ? 1 : 0;
+				 vctx->zsk_algorithms[i] != 0)
+					? 1
+					: 0;
 		} else {
 			vctx->act_algorithms[i] =
 				vctx->ksk_algorithms[i] != 0 ? 1 : 0;
@@ -1716,16 +1676,15 @@ determine_active_algorithms(vctx_t *vctx, bool ignore_kskflag,
 		 * the algorithm as bad if this is not met.
 		 */
 		if ((vctx->ksk_algorithms[i] != 0) ==
-		    (vctx->zsk_algorithms[i] != 0))
-		{
+		    (vctx->zsk_algorithms[i] != 0)) {
 			continue;
 		}
 		dns_secalg_format(i, algbuf, sizeof(algbuf));
-		zoneverify_log_error(vctx,
-				     "Missing %s for algorithm %s",
-				     (vctx->ksk_algorithms[i] != 0)
-					? "ZSK"
-					: "self-signed KSK",
+		zoneverify_log_error(vctx, "Missing %s for algorithm %s",
+				     (vctx->ksk_algorithms[i] != 0) ? "ZSK"
+								    : "self-"
+								      "signed "
+								      "KSK",
 				     algbuf);
 		vctx->bad_algorithms[i] = 1;
 	}
@@ -1736,7 +1695,8 @@ determine_active_algorithms(vctx_t *vctx, bool ignore_kskflag,
  * present in the DNSKEY RRset.
  */
 static isc_result_t
-verify_nodes(vctx_t *vctx, isc_result_t *vresult) {
+verify_nodes(vctx_t *vctx, isc_result_t *vresult)
+{
 	dns_fixedname_t fname, fnextname, fprevname, fzonecut;
 	dns_name_t *name, *nextname, *prevname, *zonecut;
 	dns_dbnode_t *node = NULL, *nextnode;
@@ -1787,10 +1747,10 @@ verify_nodes(vctx_t *vctx, isc_result_t *vresult) {
 			if (result == ISC_R_NOMORE) {
 				done = true;
 			} else if (result != ISC_R_SUCCESS) {
-				zoneverify_log_error(
-					vctx,
-					"dns_dbiterator_next(): %s",
-					isc_result_totext(result));
+				zoneverify_log_error(vctx,
+						     "dns_dbiterator_next(): "
+						     "%s",
+						     isc_result_totext(result));
 				goto done;
 			}
 			continue;
@@ -1810,21 +1770,19 @@ verify_nodes(vctx_t *vctx, isc_result_t *vresult) {
 			result = dns_dbiterator_current(dbiter, &nextnode,
 							nextname);
 			if (result != ISC_R_SUCCESS &&
-			    result != DNS_R_NEWORIGIN)
-			{
-				zoneverify_log_error(
-					vctx,
-					"dns_dbiterator_current(): %s",
-					isc_result_totext(result));
+			    result != DNS_R_NEWORIGIN) {
+				zoneverify_log_error(vctx,
+						     "dns_dbiterator_current():"
+						     " %s",
+						     isc_result_totext(result));
 				dns_db_detachnode(vctx->db, &node);
 				goto done;
 			}
 			if (!dns_name_issubdomain(nextname, vctx->origin) ||
 			    (zonecut != NULL &&
-			     dns_name_issubdomain(nextname, zonecut)))
-			{
-				result = check_no_nsec(vctx, nextname,
-						       nextnode);
+			     dns_name_issubdomain(nextname, zonecut))) {
+				result =
+					check_no_nsec(vctx, nextname, nextnode);
 				if (result != ISC_R_SUCCESS) {
 					dns_db_detachnode(vctx->db, &node);
 					dns_db_detachnode(vctx->db, &nextnode);
@@ -1871,10 +1829,9 @@ verify_nodes(vctx_t *vctx, isc_result_t *vresult) {
 			*vresult = tvresult;
 		}
 		if (prevname != NULL) {
-			result = verifyemptynodes(vctx, name, prevname,
-						  isdelegation,
-						  &vctx->nsec3paramset,
-						  &tvresult);
+			result = verifyemptynodes(
+				vctx, name, prevname, isdelegation,
+				&vctx->nsec3paramset, &tvresult);
 			if (result != ISC_R_SUCCESS) {
 				dns_db_detachnode(vctx->db, &node);
 				goto done;
@@ -1898,10 +1855,8 @@ verify_nodes(vctx_t *vctx, isc_result_t *vresult) {
 		return (result);
 	}
 
-	for (result = dns_dbiterator_first(dbiter);
-	     result == ISC_R_SUCCESS;
-	     result = dns_dbiterator_next(dbiter))
-	{
+	for (result = dns_dbiterator_first(dbiter); result == ISC_R_SUCCESS;
+	     result = dns_dbiterator_next(dbiter)) {
 		result = dns_dbiterator_current(dbiter, &node, name);
 		if (result != ISC_R_SUCCESS && result != DNS_R_NEWORIGIN) {
 			zoneverify_log_error(vctx,
@@ -1926,14 +1881,15 @@ verify_nodes(vctx_t *vctx, isc_result_t *vresult) {
 
 	result = ISC_R_SUCCESS;
 
- done:
+done:
 	dns_dbiterator_destroy(&dbiter);
 
 	return (result);
 }
 
 static isc_result_t
-check_bad_algorithms(const vctx_t *vctx) {
+check_bad_algorithms(const vctx_t *vctx)
+{
 	char algbuf[DNS_SECALG_FORMATSIZE];
 	bool first = true;
 	int i;
@@ -1943,9 +1899,9 @@ check_bad_algorithms(const vctx_t *vctx) {
 			continue;
 		}
 		if (first) {
-			zoneverify_print(vctx,
-					 "The zone is not fully signed for "
-					 "the following algorithms:");
+			zoneverify_print(vctx, "The zone is not fully signed "
+					       "for "
+					       "the following algorithms:");
 		}
 		dns_secalg_format(i, algbuf, sizeof(algbuf));
 		zoneverify_print(vctx, " %s", algbuf);
@@ -1960,7 +1916,8 @@ check_bad_algorithms(const vctx_t *vctx) {
 }
 
 static void
-print_summary(const vctx_t *vctx, bool keyset_kskonly) {
+print_summary(const vctx_t *vctx, bool keyset_kskonly)
+{
 	char algbuf[DNS_SECALG_FORMATSIZE];
 	int i;
 
@@ -1971,8 +1928,7 @@ print_summary(const vctx_t *vctx, bool keyset_kskonly) {
 		    (vctx->revoked_ksk[i] == 0) &&
 		    (vctx->zsk_algorithms[i] == 0) &&
 		    (vctx->standby_zsk[i] == 0) &&
-		    (vctx->revoked_zsk[i] == 0))
-		{
+		    (vctx->revoked_zsk[i] == 0)) {
 			continue;
 		}
 		dns_secalg_format(i, algbuf, sizeof(algbuf));
@@ -1980,14 +1936,12 @@ print_summary(const vctx_t *vctx, bool keyset_kskonly) {
 				 "Algorithm: %s: KSKs: "
 				 "%u active, %u stand-by, %u revoked\n",
 				 algbuf, vctx->ksk_algorithms[i],
-				 vctx->standby_ksk[i],
-				 vctx->revoked_ksk[i]);
+				 vctx->standby_ksk[i], vctx->revoked_ksk[i]);
 		zoneverify_print(vctx,
 				 "%*sZSKs: "
 				 "%u active, %u %s, %u revoked\n",
 				 (int)strlen(algbuf) + 13, "",
-				 vctx->zsk_algorithms[i],
-				 vctx->standby_zsk[i],
+				 vctx->zsk_algorithms[i], vctx->standby_zsk[i],
 				 keyset_kskonly ? "present" : "stand-by",
 				 vctx->revoked_zsk[i]);
 	}
@@ -1996,8 +1950,7 @@ print_summary(const vctx_t *vctx, bool keyset_kskonly) {
 isc_result_t
 dns_zoneverify_dnssec(dns_zone_t *zone, dns_db_t *db, dns_dbversion_t *ver,
 		      dns_name_t *origin, dns_keytable_t *secroots,
-		      isc_mem_t *mctx, bool ignore_kskflag,
-		      bool keyset_kskonly)
+		      isc_mem_t *mctx, bool ignore_kskflag, bool keyset_kskonly)
 {
 	const char *keydesc = (secroots == NULL ? "self-signed" : "trusted");
 	isc_result_t result, vresult = ISC_R_UNSET;
@@ -2064,7 +2017,7 @@ dns_zoneverify_dnssec(dns_zone_t *zone, dns_db_t *db, dns_dbversion_t *ver,
 		print_summary(&vctx, keyset_kskonly);
 	}
 
- done:
+done:
 	vctx_destroy(&vctx);
 
 	return (result);

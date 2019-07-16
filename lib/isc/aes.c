@@ -9,18 +9,17 @@
  * information regarding copyright ownership.
  */
 
-
 /*! \file isc/aes.c */
 
-#include <isc/assertions.h>
 #include <isc/aes.h>
+#include <isc/assertions.h>
 #include <isc/platform.h>
 #include <isc/string.h>
 #include <isc/types.h>
 #include <isc/util.h>
 
-#include <openssl/opensslv.h>
 #include <openssl/evp.h>
+#include <openssl/opensslv.h>
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 #define EVP_CIPHER_CTX_new() &(_context), EVP_CIPHER_CTX_init(&_context)
@@ -41,8 +40,8 @@ isc_aes128_crypt(const unsigned char *key, const unsigned char *in,
 	RUNTIME_CHECK(c != NULL);
 	RUNTIME_CHECK(EVP_EncryptInit(c, EVP_aes_128_ecb(), key, NULL) == 1);
 	EVP_CIPHER_CTX_set_padding(c, 0);
-	RUNTIME_CHECK(EVP_EncryptUpdate(c, out, &len, in,
-					ISC_AES_BLOCK_LENGTH) == 1);
+	RUNTIME_CHECK(
+		EVP_EncryptUpdate(c, out, &len, in, ISC_AES_BLOCK_LENGTH) == 1);
 	RUNTIME_CHECK(len == ISC_AES_BLOCK_LENGTH);
 	EVP_CIPHER_CTX_free(c);
 }
@@ -61,8 +60,8 @@ isc_aes192_crypt(const unsigned char *key, const unsigned char *in,
 	RUNTIME_CHECK(c != NULL);
 	RUNTIME_CHECK(EVP_EncryptInit(c, EVP_aes_192_ecb(), key, NULL) == 1);
 	EVP_CIPHER_CTX_set_padding(c, 0);
-	RUNTIME_CHECK(EVP_EncryptUpdate(c, out, &len, in,
-					ISC_AES_BLOCK_LENGTH) == 1);
+	RUNTIME_CHECK(
+		EVP_EncryptUpdate(c, out, &len, in, ISC_AES_BLOCK_LENGTH) == 1);
 	RUNTIME_CHECK(len == ISC_AES_BLOCK_LENGTH);
 	EVP_CIPHER_CTX_free(c);
 }
@@ -81,8 +80,8 @@ isc_aes256_crypt(const unsigned char *key, const unsigned char *in,
 	RUNTIME_CHECK(c != NULL);
 	RUNTIME_CHECK(EVP_EncryptInit(c, EVP_aes_256_ecb(), key, NULL) == 1);
 	EVP_CIPHER_CTX_set_padding(c, 0);
-	RUNTIME_CHECK(EVP_EncryptUpdate(c, out, &len, in,
-					ISC_AES_BLOCK_LENGTH) == 1);
+	RUNTIME_CHECK(
+		EVP_EncryptUpdate(c, out, &len, in, ISC_AES_BLOCK_LENGTH) == 1);
 	RUNTIME_CHECK(len == ISC_AES_BLOCK_LENGTH);
 	EVP_CIPHER_CTX_free(c);
 }

@@ -13,16 +13,17 @@
 #error This program requires the LMDB library.
 #endif
 
+#include <lmdb.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <lmdb.h>
-
-#include <dns/view.h>
 
 #include <isc/print.h>
 
+#include <dns/view.h>
+
 int
-main (int argc, char *argv[]) {
+main(int argc, char *argv[])
+{
 	int status;
 	const char *path;
 	MDB_env *env = NULL;
@@ -75,21 +76,20 @@ main (int argc, char *argv[]) {
 
 	for (status = mdb_cursor_get(cursor, &key, &data, MDB_FIRST);
 	     status == MDB_SUCCESS;
-	     status = mdb_cursor_get(cursor, &key, &data, MDB_NEXT))
-	{
+	     status = mdb_cursor_get(cursor, &key, &data, MDB_NEXT)) {
 		if (key.mv_data == NULL || key.mv_size == 0 ||
-		    data.mv_data == NULL || data.mv_size == 0)
-		{
+		    data.mv_data == NULL || data.mv_size == 0) {
 			fprintf(stderr,
 				"named-nzd2nzf: empty column found in "
-				"database '%s'", path);
+				"database '%s'",
+				path);
 			exit(1);
 		}
 
 		/* zone zonename { config; }; */
-		printf("zone \"%.*s\" %.*s;\n",
-		       (int) key.mv_size, (char *) key.mv_data,
-		       (int) data.mv_size, (char *) data.mv_data);
+		printf("zone \"%.*s\" %.*s;\n", (int)key.mv_size,
+		       (char *)key.mv_data, (int)data.mv_size,
+		       (char *)data.mv_data);
 	}
 
 	mdb_cursor_close(cursor);

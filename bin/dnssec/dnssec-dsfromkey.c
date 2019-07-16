@@ -50,14 +50,15 @@
 const char *program = "dnssec-dsfromkey";
 
 static dns_rdataclass_t rdclass;
-static dns_fixedname_t	fixed;
-static dns_name_t	*name = NULL;
-static isc_mem_t	*mctx = NULL;
-static uint32_t	ttl;
-static bool	emitttl = false;
+static dns_fixedname_t fixed;
+static dns_name_t *name = NULL;
+static isc_mem_t *mctx = NULL;
+static uint32_t ttl;
+static bool emitttl = false;
 
 static isc_result_t
-initname(char *setname) {
+initname(char *setname)
+{
 	isc_result_t result;
 	isc_buffer_t buf;
 
@@ -70,7 +71,8 @@ initname(char *setname) {
 }
 
 static void
-db_load_from_stream(dns_db_t *db, FILE *fp) {
+db_load_from_stream(dns_db_t *db, FILE *fp)
+{
 	isc_result_t result;
 	dns_rdatacallbacks_t callbacks;
 
@@ -79,8 +81,8 @@ db_load_from_stream(dns_db_t *db, FILE *fp) {
 	if (result != ISC_R_SUCCESS)
 		fatal("dns_db_beginload failed: %s", isc_result_totext(result));
 
-	result = dns_master_loadstream(fp, name, name, rdclass, 0,
-				       &callbacks, mctx);
+	result = dns_master_loadstream(fp, name, name, rdclass, 0, &callbacks,
+				       mctx);
 	if (result != ISC_R_SUCCESS)
 		fatal("can't load from input: %s", isc_result_totext(result));
 
@@ -90,16 +92,17 @@ db_load_from_stream(dns_db_t *db, FILE *fp) {
 }
 
 static isc_result_t
-loadset(const char *filename, dns_rdataset_t *rdataset) {
-	isc_result_t	 result;
-	dns_db_t	 *db = NULL;
-	dns_dbnode_t	 *node = NULL;
+loadset(const char *filename, dns_rdataset_t *rdataset)
+{
+	isc_result_t result;
+	dns_db_t *db = NULL;
+	dns_dbnode_t *node = NULL;
 	char setname[DNS_NAME_FORMATSIZE];
 
 	dns_name_format(name, setname, sizeof(setname));
 
-	result = dns_db_create(mctx, "rbt", name, dns_dbtype_zone,
-			       rdclass, 0, NULL, &db);
+	result = dns_db_create(mctx, "rbt", name, dns_dbtype_zone, rdclass, 0,
+			       NULL, &db);
 	if (result != ISC_R_SUCCESS)
 		fatal("can't create database");
 
@@ -117,8 +120,8 @@ loadset(const char *filename, dns_rdataset_t *rdataset) {
 	if (result != ISC_R_SUCCESS)
 		fatal("can't find %s node in %s", setname, filename);
 
-	result = dns_db_findrdataset(db, node, NULL, dns_rdatatype_dnskey,
-				     0, 0, rdataset, NULL);
+	result = dns_db_findrdataset(db, node, NULL, dns_rdatatype_dnskey, 0, 0,
+				     rdataset, NULL);
 
 	if (result == ISC_R_NOTFOUND)
 		fatal("no DNSKEY RR for %s in %s", setname, filename);
@@ -133,10 +136,11 @@ loadset(const char *filename, dns_rdataset_t *rdataset) {
 }
 
 static isc_result_t
-loadkeyset(char *dirname, dns_rdataset_t *rdataset) {
-	isc_result_t	 result;
-	char		 filename[PATH_MAX + 1];
-	isc_buffer_t	 buf;
+loadkeyset(char *dirname, dns_rdataset_t *rdataset)
+{
+	isc_result_t result;
+	char filename[PATH_MAX + 1];
+	isc_buffer_t buf;
 
 	dns_rdataset_init(rdataset);
 
@@ -167,20 +171,20 @@ static void
 loadkey(char *filename, unsigned char *key_buf, unsigned int key_buf_size,
 	dns_rdata_t *rdata)
 {
-	isc_result_t  result;
-	dst_key_t     *key = NULL;
-	isc_buffer_t  keyb;
-	isc_region_t  r;
+	isc_result_t result;
+	dst_key_t *key = NULL;
+	isc_buffer_t keyb;
+	isc_region_t r;
 
 	dns_rdata_init(rdata);
 
 	isc_buffer_init(&keyb, key_buf, key_buf_size);
 
-	result = dst_key_fromnamedfile(filename, NULL, DST_TYPE_PUBLIC,
-				       mctx, &key);
+	result = dst_key_fromnamedfile(filename, NULL, DST_TYPE_PUBLIC, mctx,
+				       &key);
 	if (result != ISC_R_SUCCESS)
-		fatal("can't load %s.key: %s",
-		      filename, isc_result_totext(result));
+		fatal("can't load %s.key: %s", filename,
+		      isc_result_totext(result));
 
 	if (verbose > 2) {
 		char keystr[DST_KEY_FORMATSIZE];
@@ -194,8 +198,8 @@ loadkey(char *filename, unsigned char *key_buf, unsigned int key_buf_size,
 		fatal("can't decode key");
 
 	isc_buffer_usedregion(&keyb, &r);
-	dns_rdata_fromregion(rdata, dst_key_class(key),
-			     dns_rdatatype_dnskey, &r);
+	dns_rdata_fromregion(rdata, dst_key_class(key), dns_rdatatype_dnskey,
+			     &r);
 
 	rdclass = dst_key_class(key);
 
@@ -211,9 +215,9 @@ static void
 logkey(dns_rdata_t *rdata)
 {
 	isc_result_t result;
-	dst_key_t    *key = NULL;
+	dst_key_t *key = NULL;
 	isc_buffer_t buf;
-	char	     keystr[DST_KEY_FORMATSIZE];
+	char keystr[DST_KEY_FORMATSIZE];
 
 	isc_buffer_init(&buf, rdata->data, rdata->length);
 	isc_buffer_add(&buf, rdata->length);
@@ -228,8 +232,8 @@ logkey(dns_rdata_t *rdata)
 }
 
 static void
-emit(dns_dsdigest_t dt, bool showall, char *lookaside,
-     bool cds, dns_rdata_t *rdata)
+emit(dns_dsdigest_t dt, bool showall, char *lookaside, bool cds,
+     dns_rdata_t *rdata)
 {
 	isc_result_t result;
 	unsigned char buf[DNS_DS_BUFFERSIZE];
@@ -274,7 +278,7 @@ emit(dns_dsdigest_t dt, bool showall, char *lookaside,
 		}
 	}
 
-	result = dns_rdata_tofmttext(&ds, (dns_name_t *) NULL, 0, 0, 0, "",
+	result = dns_rdata_tofmttext(&ds, (dns_name_t *)NULL, 0, 0, 0, "",
 				     &textb);
 
 	if (result != ISC_R_SUCCESS)
@@ -306,10 +310,11 @@ emit(dns_dsdigest_t dt, bool showall, char *lookaside,
 }
 
 static void
-emits(bool showall, char *lookaside, bool cds, dns_rdata_t *rdata) {
+emits(bool showall, char *lookaside, bool cds, dns_rdata_t *rdata)
+{
 	unsigned i, n;
 
-	n = sizeof(dtype)/sizeof(dtype[0]);
+	n = sizeof(dtype) / sizeof(dtype[0]);
 	for (i = 0; i < n; i++) {
 		if (dtype[i] != 0) {
 			emit(dtype[i], showall, lookaside, cds, rdata);
@@ -321,47 +326,54 @@ ISC_PLATFORM_NORETURN_PRE static void
 usage(void) ISC_PLATFORM_NORETURN_POST;
 
 static void
-usage(void) {
+usage(void)
+{
 	fprintf(stderr, "Usage:\n");
-	fprintf(stderr,	"    %s [options] keyfile\n\n", program);
+	fprintf(stderr, "    %s [options] keyfile\n\n", program);
 	fprintf(stderr, "    %s [options] -f zonefile [zonename]\n\n", program);
 	fprintf(stderr, "    %s [options] -s dnsname\n\n", program);
 	fprintf(stderr, "    %s [-h|-V]\n\n", program);
 	fprintf(stderr, "Version: %s\n", VERSION);
 	fprintf(stderr, "Options:\n"
-"    -1: digest algorithm SHA-1\n"
-"    -2: digest algorithm SHA-256\n"
-"    -a algorithm: digest algorithm (SHA-1, SHA-256 or SHA-384)\n"
-"    -A: include all keys in DS set, not just KSKs (-f only)\n"
-"    -c class: rdata class for DS set (default IN) (-f or -s only)\n"
-"    -C: print CDS records\n"
-"    -f zonefile: read keys from a zone file\n"
-"    -h: print help information\n"
-"    -K directory: where to find key or keyset files\n"
-"    -l zone: print DLV records in the given lookaside zone\n"
-"    -s: read keys from keyset-<dnsname> file\n"
-"    -T: TTL of output records (omitted by default)\n"
-"    -v level: verbosity\n"
-"    -V: print version information\n");
+			"    -1: digest algorithm SHA-1\n"
+			"    -2: digest algorithm SHA-256\n"
+			"    -a algorithm: digest algorithm (SHA-1, SHA-256 or "
+			"SHA-384)\n"
+			"    -A: include all keys in DS set, not just KSKs (-f "
+			"only)\n"
+			"    -c class: rdata class for DS set (default IN) (-f "
+			"or -s "
+			"only)\n"
+			"    -C: print CDS records\n"
+			"    -f zonefile: read keys from a zone file\n"
+			"    -h: print help information\n"
+			"    -K directory: where to find key or keyset files\n"
+			"    -l zone: print DLV records in the given lookaside "
+			"zone\n"
+			"    -s: read keys from keyset-<dnsname> file\n"
+			"    -T: TTL of output records (omitted by default)\n"
+			"    -v level: verbosity\n"
+			"    -V: print version information\n");
 	fprintf(stderr, "Output: DS, DLV, or CDS RRs\n");
 
-	exit (-1);
+	exit(-1);
 }
 
 int
-main(int argc, char **argv) {
-	char		*classname = NULL;
-	char		*filename = NULL, *dir = NULL, *namestr;
-	char		*lookaside = NULL;
-	char		*endp;
-	int		ch;
-	bool		cds = false;
-	bool		usekeyset = false;
-	bool		showall = false;
-	isc_result_t	result;
-	isc_log_t	*log = NULL;
-	dns_rdataset_t	rdataset;
-	dns_rdata_t	rdata;
+main(int argc, char **argv)
+{
+	char *classname = NULL;
+	char *filename = NULL, *dir = NULL, *namestr;
+	char *lookaside = NULL;
+	char *endp;
+	int ch;
+	bool cds = false;
+	bool usekeyset = false;
+	bool showall = false;
+	isc_result_t result;
+	isc_log_t *log = NULL;
+	dns_rdataset_t rdataset;
+	dns_rdata_t rdata;
 
 	dns_rdata_init(&rdata);
 
@@ -406,8 +418,10 @@ main(int argc, char **argv) {
 			classname = isc_commandline_argument;
 			break;
 		case 'd':
-			fprintf(stderr, "%s: the -d option is deprecated; "
-					"use -K\n", program);
+			fprintf(stderr,
+				"%s: the -d option is deprecated; "
+				"use -K\n",
+				program);
 			/* fall through */
 		case 'K':
 			dir = isc_commandline_argument;
@@ -454,8 +468,8 @@ main(int argc, char **argv) {
 			version(program);
 
 		default:
-			fprintf(stderr, "%s: unhandled option -%c\n",
-				program, isc_commandline_option);
+			fprintf(stderr, "%s: unhandled option -%c\n", program,
+				isc_commandline_option);
 			exit(1);
 		}
 	}
@@ -519,8 +533,7 @@ main(int argc, char **argv) {
 
 		for (result = dns_rdataset_first(&rdataset);
 		     result == ISC_R_SUCCESS;
-		     result = dns_rdataset_next(&rdataset))
-		{
+		     result = dns_rdataset_next(&rdataset)) {
 			dns_rdata_init(&rdata);
 			dns_rdataset_current(&rdataset, &rdata);
 
@@ -533,8 +546,8 @@ main(int argc, char **argv) {
 	} else {
 		unsigned char key_buf[DST_KEY_MAXSIZE];
 
-		loadkey(argv[isc_commandline_index], key_buf,
-			DST_KEY_MAXSIZE, &rdata);
+		loadkey(argv[isc_commandline_index], key_buf, DST_KEY_MAXSIZE,
+			&rdata);
 
 		emits(showall, lookaside, cds, &rdata);
 	}

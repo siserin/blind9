@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 #ifndef ISC_THREAD_H
 #define ISC_THREAD_H 1
 
@@ -27,8 +26,8 @@
 ISC_LANG_BEGINDECLS
 
 typedef pthread_t isc_thread_t;
-typedef void * isc_threadresult_t;
-typedef void * isc_threadarg_t;
+typedef void *isc_threadresult_t;
+typedef void *isc_threadarg_t;
 typedef isc_threadresult_t (*isc_threadfunc_t)(isc_threadarg_t);
 typedef pthread_key_t isc_thread_key_t;
 
@@ -49,12 +48,10 @@ isc_thread_setaffinity(int cpu);
 
 /* XXX We could do fancier error handling... */
 
-#define isc_thread_join(t, rp) \
-	((pthread_join((t), (rp)) == 0) ? \
-	 ISC_R_SUCCESS : ISC_R_UNEXPECTED)
+#define isc_thread_join(t, rp)                                                 \
+	((pthread_join((t), (rp)) == 0) ? ISC_R_SUCCESS : ISC_R_UNEXPECTED)
 
-#define isc_thread_self \
-	(unsigned long)pthread_self
+#define isc_thread_self (unsigned long)pthread_self
 
 #define isc_thread_key_create pthread_key_create
 #define isc_thread_key_getspecific pthread_getspecific

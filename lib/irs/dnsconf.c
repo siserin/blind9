@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 /*! \file */
 
 #include <inttypes.h>
@@ -21,17 +20,17 @@
 #include <isc/mem.h>
 #include <isc/util.h>
 
-#include <isccfg/dnsconf.h>
-
 #include <dns/fixedname.h>
 #include <dns/name.h>
 #include <dns/rdata.h>
 #include <dns/rdatastruct.h>
 
+#include <isccfg/dnsconf.h>
+
 #include <irs/dnsconf.h>
 
-#define IRS_DNSCONF_MAGIC		ISC_MAGIC('D', 'c', 'f', 'g')
-#define IRS_DNSCONF_VALID(c)		ISC_MAGIC_VALID(c, IRS_DNSCONF_MAGIC)
+#define IRS_DNSCONF_MAGIC ISC_MAGIC('D', 'c', 'f', 'g')
+#define IRS_DNSCONF_VALID(c) ISC_MAGIC_VALID(c, IRS_DNSCONF_MAGIC)
 
 /*!
  * configuration data structure
@@ -62,12 +61,9 @@ configure_key(isc_mem_t *mctx, const cfg_obj_t *key, irs_dnsconf_t *conf,
 	irs_dnsconf_dnskey_t *keyent = NULL;
 
 	flags = cfg_obj_asuint32(cfg_tuple_get(key, "flags"));
-	proto = cfg_obj_asuint32(cfg_tuple_get(key,
-					       "protocol"));
-	alg = cfg_obj_asuint32(cfg_tuple_get(key,
-					     "algorithm"));
-	keynamestr = cfg_obj_asstring(cfg_tuple_get(key,
-						    "name"));
+	proto = cfg_obj_asuint32(cfg_tuple_get(key, "protocol"));
+	alg = cfg_obj_asuint32(cfg_tuple_get(key, "algorithm"));
+	keynamestr = cfg_obj_asstring(cfg_tuple_get(key, "name"));
 
 	keystruct.common.rdclass = rdclass;
 	keystruct.common.rdtype = dns_rdatatype_dnskey;
@@ -87,14 +83,12 @@ configure_key(isc_mem_t *mctx, const cfg_obj_t *key, irs_dnsconf_t *conf,
 	keystruct.protocol = (uint8_t)proto;
 	keystruct.algorithm = (uint8_t)alg;
 
-	isc_buffer_init(&keydatabuf_base, keydata,
-			sizeof(keydata));
+	isc_buffer_init(&keydatabuf_base, keydata, sizeof(keydata));
 	isc_buffer_init(&rrdatabuf, rrdata, sizeof(rrdata));
 
 	/* Configure key value */
 	keystr = cfg_obj_asstring(cfg_tuple_get(key, "key"));
-	result = isc_base64_decodestring(keystr,
-					 &keydatabuf_base);
+	result = isc_base64_decodestring(keystr, &keydatabuf_base);
 	if (result != ISC_R_SUCCESS) {
 		return (result);
 	}
@@ -103,14 +97,13 @@ configure_key(isc_mem_t *mctx, const cfg_obj_t *key, irs_dnsconf_t *conf,
 	keystruct.data = r.base;
 
 	result = dns_rdata_fromstruct(NULL, keystruct.common.rdclass,
-				      keystruct.common.rdtype,
-				      &keystruct, &rrdatabuf);
+				      keystruct.common.rdtype, &keystruct,
+				      &rrdatabuf);
 	if (result != ISC_R_SUCCESS) {
 		return (result);
 	}
 	isc_buffer_usedregion(&rrdatabuf, &r);
-	result = isc_buffer_allocate(mctx, &keydatabuf,
-				     r.length);
+	result = isc_buffer_allocate(mctx, &keydatabuf, r.length);
 	if (result != ISC_R_SUCCESS) {
 		return (result);
 	}
@@ -121,11 +114,10 @@ configure_key(isc_mem_t *mctx, const cfg_obj_t *key, irs_dnsconf_t *conf,
 
 	/* Configure key name */
 	keyname_base = dns_fixedname_initname(&fkeyname);
-	isc_buffer_constinit(&namebuf, keynamestr,
-			     strlen(keynamestr));
+	isc_buffer_constinit(&namebuf, keynamestr, strlen(keynamestr));
 	isc_buffer_add(&namebuf, strlen(keynamestr));
-	result = dns_name_fromtext(keyname_base, &namebuf,
-				   dns_rootname, 0, NULL);
+	result = dns_name_fromtext(keyname_base, &namebuf, dns_rootname, 0,
+				   NULL);
 	if (result != ISC_R_SUCCESS) {
 		return (result);
 	}
@@ -152,7 +144,7 @@ configure_key(isc_mem_t *mctx, const cfg_obj_t *key, irs_dnsconf_t *conf,
 
 	ISC_LIST_APPEND(conf->trusted_keylist, keyent, link);
 
- cleanup:
+cleanup:
 	if (keydatabuf != NULL) {
 		isc_buffer_free(&keydatabuf);
 	}
@@ -172,15 +164,11 @@ configure_keygroup(irs_dnsconf_t *conf, const cfg_obj_t *keys,
 	const cfg_listelt_t *element, *element2;
 	isc_mem_t *mctx = conf->mctx;
 
-	for (element = cfg_list_first(keys);
-	     element != NULL;
-	     element = cfg_list_next(element))
-	{
+	for (element = cfg_list_first(keys); element != NULL;
+	     element = cfg_list_next(element)) {
 		keylist = cfg_listelt_value(element);
-		for (element2 = cfg_list_first(keylist);
-		     element2 != NULL;
-		     element2 = cfg_list_next(element2))
-		{
+		for (element2 = cfg_list_first(keylist); element2 != NULL;
+		     element2 = cfg_list_next(element2)) {
 			key = cfg_listelt_value(element2);
 			result = configure_key(mctx, key, conf, rdclass);
 			if (result != ISC_R_SUCCESS) {
@@ -262,14 +250,13 @@ irs_dnsconf_load(isc_mem_t *mctx, const char *filename, irs_dnsconf_t **confp)
 	if (result != ISC_R_SUCCESS)
 		goto cleanup;
 
-	result = cfg_parse_file(parser, filename, &cfg_type_dnsconf,
-				&cfgobj);
+	result = cfg_parse_file(parser, filename, &cfg_type_dnsconf, &cfgobj);
 	if (result != ISC_R_SUCCESS)
 		goto cleanup;
 
 	result = configure_dnsseckeys(conf, cfgobj, dns_rdataclass_in);
 
- cleanup:
+cleanup:
 	if (parser != NULL) {
 		if (cfgobj != NULL)
 			cfg_obj_destroy(parser, &cfgobj);
@@ -287,7 +274,8 @@ irs_dnsconf_load(isc_mem_t *mctx, const char *filename, irs_dnsconf_t **confp)
 }
 
 void
-irs_dnsconf_destroy(irs_dnsconf_t **confp) {
+irs_dnsconf_destroy(irs_dnsconf_t **confp)
+{
 	irs_dnsconf_t *conf;
 	irs_dnsconf_dnskey_t *keyent;
 
@@ -310,7 +298,8 @@ irs_dnsconf_destroy(irs_dnsconf_t **confp) {
 }
 
 irs_dnsconf_dnskeylist_t *
-irs_dnsconf_gettrustedkeys(irs_dnsconf_t *conf) {
+irs_dnsconf_gettrustedkeys(irs_dnsconf_t *conf)
+{
 	REQUIRE(IRS_DNSCONF_VALID(conf));
 
 	return (&conf->trusted_keylist);

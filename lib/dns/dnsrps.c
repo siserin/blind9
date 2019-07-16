@@ -37,18 +37,18 @@ static void *librpz_handle;
 #define RPSDB_MAGIC ISC_MAGIC('R', 'P', 'Z', 'F')
 #define VALID_RPSDB(rpsdb) ((rpsdb)->common.impmagic == RPSDB_MAGIC)
 
-#define RD_DB(r)	((r)->private1)
-#define RD_CUR_RR(r)	((r)->private2)
-#define RD_NEXT_RR(r)	((r)->resign)
-#define RD_COUNT(r)	((r)->privateuint4)
+#define RD_DB(r) ((r)->private1)
+#define RD_CUR_RR(r) ((r)->private2)
+#define RD_NEXT_RR(r) ((r)->resign)
+#define RD_COUNT(r) ((r)->privateuint4)
 
 typedef struct {
-	dns_rdatasetiter_t	common;
-	dns_rdatatype_t		type;
-	dns_rdataclass_t	class;
-	uint32_t		ttl;
-	uint			count;
-	librpz_idx_t		next_rr;
+	dns_rdatasetiter_t common;
+	dns_rdatatype_t type;
+	dns_rdataclass_t class;
+	uint32_t ttl;
+	uint count;
+	librpz_idx_t next_rr;
 } rpsdb_rdatasetiter_t;
 
 static dns_dbmethods_t rpsdb_db_methods;
@@ -60,28 +60,32 @@ static librpz_clist_t *clist;
 static isc_mutex_t dnsrps_mutex;
 
 static void
-dnsrps_lock(void *mutex0) {
+dnsrps_lock(void *mutex0)
+{
 	isc_mutex_t *mutex = mutex0;
 
 	LOCK(mutex);
 }
 
 static void
-dnsrps_unlock(void *mutex0) {
+dnsrps_unlock(void *mutex0)
+{
 	isc_mutex_t *mutex = mutex0;
 
 	UNLOCK(mutex);
 }
 
 static void
-dnsrps_mutex_destroy(void *mutex0) {
+dnsrps_mutex_destroy(void *mutex0)
+{
 	isc_mutex_t *mutex = mutex0;
 
 	isc_mutex_destroy(mutex);
 }
 
 static void
-dnsrps_log_fnc(librpz_log_level_t level, void *ctxt, const char *buf) {
+dnsrps_log_fnc(librpz_log_level_t level, void *ctxt, const char *buf)
+{
 	int isc_level;
 
 	UNUSED(ctxt);
@@ -92,26 +96,26 @@ dnsrps_log_fnc(librpz_log_level_t level, void *ctxt, const char *buf) {
 	    level <= librpz->log_level_val(LIBRPZ_LOG_INVALID))
 		level = LIBRPZ_LOG_TRACE1;
 
-	switch(level) {
+	switch (level) {
 	case LIBRPZ_LOG_FATAL:
-	case LIBRPZ_LOG_ERROR:		/* errors */
+	case LIBRPZ_LOG_ERROR: /* errors */
 	default:
 		isc_level = DNS_RPZ_ERROR_LEVEL;
 		break;
 
-	case LIBRPZ_LOG_TRACE1:		/* big events such as dnsrpzd starts */
+	case LIBRPZ_LOG_TRACE1: /* big events such as dnsrpzd starts */
 		isc_level = DNS_RPZ_INFO_LEVEL;
 		break;
 
-	case LIBRPZ_LOG_TRACE2:		/* smaller dnsrpzd zone transfers */
+	case LIBRPZ_LOG_TRACE2: /* smaller dnsrpzd zone transfers */
 		isc_level = DNS_RPZ_DEBUG_LEVEL1;
 		break;
 
-	case LIBRPZ_LOG_TRACE3:		/* librpz hits */
+	case LIBRPZ_LOG_TRACE3: /* librpz hits */
 		isc_level = DNS_RPZ_DEBUG_LEVEL2;
 		break;
 
-	case LIBRPZ_LOG_TRACE4:		/* librpz lookups */
+	case LIBRPZ_LOG_TRACE4: /* librpz lookups */
 		isc_level = DNS_RPZ_DEBUG_LEVEL3;
 		break;
 	}
@@ -124,7 +128,8 @@ dnsrps_log_fnc(librpz_log_level_t level, void *ctxt, const char *buf) {
  *	This is not thread safe, but it is called by a single thread.
  */
 isc_result_t
-dns_dnsrps_server_create(void) {
+dns_dnsrps_server_create(void)
+{
 	librpz_emsg_t emsg;
 
 	INSIST(clist == NULL);
@@ -134,8 +139,8 @@ dns_dnsrps_server_create(void) {
 	/*
 	 * Notice if librpz is available.
 	 */
-	librpz = librpz_lib_open(&librpz_lib_open_emsg,
-				 &librpz_handle, DNSRPS_LIBRPZ_PATH);
+	librpz = librpz_lib_open(&librpz_lib_open_emsg, &librpz_handle,
+				 DNSRPS_LIBRPZ_PATH);
 	/*
 	 * Stop now without complaining if librpz is not available.
 	 * Complain later if and when librpz is needed for a view with
@@ -165,7 +170,8 @@ dns_dnsrps_server_create(void) {
  *	This is not thread safe.
  */
 void
-dns_dnsrps_server_destroy(void) {
+dns_dnsrps_server_destroy(void)
+{
 	if (clist != NULL)
 		librpz->clist_detach(&clist);
 
@@ -185,15 +191,15 @@ dns_dnsrps_server_destroy(void) {
  * Ready dnsrps for a view.
  */
 isc_result_t
-dns_dnsrps_view_init(dns_rpz_zones_t *new, char *rps_cstr) {
+dns_dnsrps_view_init(dns_rpz_zones_t *new, char *rps_cstr)
+{
 	librpz_emsg_t emsg;
 
-	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RPZ,
-		      DNS_LOGMODULE_RBTDB, DNS_RPZ_DEBUG_LEVEL3,
-		      "dnsrps configuration \"%s\"", rps_cstr);
+	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RPZ, DNS_LOGMODULE_RBTDB,
+		      DNS_RPZ_DEBUG_LEVEL3, "dnsrps configuration \"%s\"",
+		      rps_cstr);
 
-	new->rps_client = librpz->client_create(&emsg, clist,
-						 rps_cstr, false);
+	new->rps_client = librpz->client_create(&emsg, clist, rps_cstr, false);
 	if (new->rps_client == NULL) {
 		isc_log_write(dns_lctx, DNS_LOGCATEGORY_RPZ,
 			      DNS_LOGMODULE_RBTDB, DNS_RPZ_ERROR_LEVEL,
@@ -210,7 +216,8 @@ dns_dnsrps_view_init(dns_rpz_zones_t *new, char *rps_cstr) {
  * Connect to and start the dnsrps daemon, dnsrpzd.
  */
 isc_result_t
-dns_dnsrps_connect(dns_rpz_zones_t *rpzs) {
+dns_dnsrps_connect(dns_rpz_zones_t *rpzs)
+{
 	librpz_emsg_t emsg;
 
 	if (rpzs == NULL || !rpzs->p.dnsrps_enabled)
@@ -257,8 +264,8 @@ dns_dnsrps_rewrite_init(librpz_emsg_t *emsg, dns_rpz_st_t *st,
 	}
 	memset(rpsdb, 0, sizeof(*rpsdb));
 
-	if (!librpz->rsp_create(emsg, &rpsdb->rsp, NULL,
-				rpzs->rps_client, have_rd, false)) {
+	if (!librpz->rsp_create(emsg, &rpsdb->rsp, NULL, rpzs->rps_client,
+				have_rd, false)) {
 		isc_mem_put(mctx, rpsdb, sizeof(*rpsdb));
 		return (DNS_R_SERVFAIL);
 	}
@@ -285,7 +292,8 @@ dns_dnsrps_rewrite_init(librpz_emsg_t *emsg, dns_rpz_st_t *st,
  * Convert a dnsrps policy to a classic BIND9 RPZ policy.
  */
 dns_rpz_policy_t
-dns_dnsrps_2policy(librpz_policy_t rps_policy) {
+dns_dnsrps_2policy(librpz_policy_t rps_policy)
+{
 	switch (rps_policy) {
 	case LIBRPZ_POLICY_UNDEFINED:
 		return (DNS_RPZ_POLICY_MISS);
@@ -316,7 +324,8 @@ dns_dnsrps_2policy(librpz_policy_t rps_policy) {
  * Convert a dnsrps trigger to a classic BIND9 RPZ rewrite or trigger type.
  */
 dns_rpz_type_t
-dns_dnsrps_trig2type(librpz_trig_t trig) {
+dns_dnsrps_trig2type(librpz_trig_t trig)
+{
 	switch (trig) {
 	case LIBRPZ_TRIG_BAD:
 	default:
@@ -338,7 +347,8 @@ dns_dnsrps_trig2type(librpz_trig_t trig) {
  * Convert a classic BIND9 RPZ rewrite or trigger type to a librpz trigger type.
  */
 librpz_trig_t
-dns_dnsrps_type2trig(dns_rpz_type_t type) {
+dns_dnsrps_type2trig(dns_rpz_type_t type)
+{
 	switch (type) {
 	case DNS_RPZ_TYPE_BAD:
 	default:
@@ -357,7 +367,8 @@ dns_dnsrps_type2trig(dns_rpz_type_t type) {
 }
 
 static void
-rpsdb_attach(dns_db_t *source, dns_db_t **targetp) {
+rpsdb_attach(dns_db_t *source, dns_db_t **targetp)
+{
 	rpsdb_t *rpsdb = (rpsdb_t *)source;
 
 	REQUIRE(VALID_RPSDB(rpsdb));
@@ -370,7 +381,8 @@ rpsdb_attach(dns_db_t *source, dns_db_t **targetp) {
 }
 
 static void
-rpsdb_detach(dns_db_t **dbp) {
+rpsdb_detach(dns_db_t **dbp)
+{
 	rpsdb_t *rpsdb = (rpsdb_t *)*dbp;
 
 	REQUIRE(VALID_RPSDB(rpsdb));
@@ -390,13 +402,13 @@ rpsdb_detach(dns_db_t **dbp) {
 }
 
 static void
-rpsdb_attachnode(dns_db_t *db, dns_dbnode_t *source, dns_dbnode_t **targetp) {
+rpsdb_attachnode(dns_db_t *db, dns_dbnode_t *source, dns_dbnode_t **targetp)
+{
 	rpsdb_t *rpsdb = (rpsdb_t *)db;
 
 	REQUIRE(VALID_RPSDB(rpsdb));
 	REQUIRE(targetp != NULL && *targetp == NULL);
-	REQUIRE(source == &rpsdb->origin_node ||
-		source == &rpsdb->data_node);
+	REQUIRE(source == &rpsdb->origin_node || source == &rpsdb->data_node);
 
 	/*
 	 * Simple count because only one thread uses a rpsdb_t.
@@ -406,7 +418,8 @@ rpsdb_attachnode(dns_db_t *db, dns_dbnode_t *source, dns_dbnode_t **targetp) {
 }
 
 static void
-rpsdb_detachnode(dns_db_t *db, dns_dbnode_t **targetp) {
+rpsdb_detachnode(dns_db_t *db, dns_dbnode_t **targetp)
+{
 	rpsdb_t *rpsdb = (rpsdb_t *)db;
 
 	REQUIRE(VALID_RPSDB(rpsdb));
@@ -450,7 +463,7 @@ rpsdb_bind_rdataset(dns_rdataset_t *rdataset, uint count, librpz_idx_t next_rr,
 {
 	dns_db_t *dbp;
 
-	INSIST(rdataset->methods == NULL);  /* We must be disassociated. */
+	INSIST(rdataset->methods == NULL); /* We must be disassociated. */
 	REQUIRE(type != dns_rdatatype_none);
 
 	rdataset->methods = &rpsdb_rdataset_methods;
@@ -466,17 +479,18 @@ rpsdb_bind_rdataset(dns_rdataset_t *rdataset, uint count, librpz_idx_t next_rr,
 }
 
 static isc_result_t
-rpsdb_bind_soa(dns_rdataset_t *rdataset, rpsdb_t *rpsdb) {
+rpsdb_bind_soa(dns_rdataset_t *rdataset, rpsdb_t *rpsdb)
+{
 	uint32_t ttl;
 	librpz_emsg_t emsg;
 
-	if (!librpz->rsp_soa(&emsg, &ttl, NULL, NULL,
-			     &rpsdb->result, rpsdb->rsp)) {
+	if (!librpz->rsp_soa(&emsg, &ttl, NULL, NULL, &rpsdb->result,
+			     rpsdb->rsp)) {
 		librpz->log(LIBRPZ_LOG_ERROR, NULL, "%s", emsg.c);
 		return (DNS_R_SERVFAIL);
 	}
 	rpsdb_bind_rdataset(rdataset, 1, LIBRPZ_IDX_BAD, dns_rdatatype_soa,
-			     dns_rdataclass_in, ttl, rpsdb);
+			    dns_rdataclass_in, ttl, rpsdb);
 	return (ISC_R_SUCCESS);
 }
 
@@ -583,8 +597,8 @@ rpsdb_findrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 	} while (foundtype != dns_rdatatype_none);
 	if (count == 0)
 		return (DNS_R_NXRRSET);
-	rpsdb_bind_rdataset(rdataset, count, rpsdb->result.next_rr,
-			     type, class, ttl, rpsdb);
+	rpsdb_bind_rdataset(rdataset, count, rpsdb->result.next_rr, type, class,
+			    ttl, rpsdb);
 	return (ISC_R_SUCCESS);
 }
 
@@ -610,8 +624,8 @@ rpsdb_finddb(dns_db_t *db, const dns_name_t *name, dns_dbversion_t *version,
 	result = dns_name_copy(name, foundname, NULL);
 	if (result != ISC_R_SUCCESS)
 		return (result);
-	return (rpsdb_findrdataset(db, *nodep, NULL, type, 0, 0,
-				    rdataset, sigrdataset));
+	return (rpsdb_findrdataset(db, *nodep, NULL, type, 0, 0, rdataset,
+				   sigrdataset));
 }
 
 static isc_result_t
@@ -643,14 +657,16 @@ rpsdb_allrdatasets(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 }
 
 static bool
-rpsdb_issecure(dns_db_t *db) {
+rpsdb_issecure(dns_db_t *db)
+{
 	UNUSED(db);
 
 	return (false);
 }
 
 static isc_result_t
-rpsdb_getoriginnode(dns_db_t *db, dns_dbnode_t **nodep) {
+rpsdb_getoriginnode(dns_db_t *db, dns_dbnode_t **nodep)
+{
 	rpsdb_t *rpsdb = (rpsdb_t *)db;
 
 	REQUIRE(VALID_RPSDB(rpsdb));
@@ -661,7 +677,8 @@ rpsdb_getoriginnode(dns_db_t *db, dns_dbnode_t **nodep) {
 }
 
 static void
-rpsdb_rdataset_disassociate(dns_rdataset_t *rdataset) {
+rpsdb_rdataset_disassociate(dns_rdataset_t *rdataset)
+{
 	dns_db_t *db;
 
 	/*
@@ -678,7 +695,8 @@ rpsdb_rdataset_disassociate(dns_rdataset_t *rdataset) {
 }
 
 static isc_result_t
-rpsdb_rdataset_next(dns_rdataset_t *rdataset) {
+rpsdb_rdataset_next(dns_rdataset_t *rdataset)
+{
 	rpsdb_t *rpsdb;
 	uint16_t type;
 	dns_rdataclass_t class;
@@ -703,8 +721,8 @@ rpsdb_rdataset_next(dns_rdataset_t *rdataset) {
 		if (RD_NEXT_RR(rdataset) == LIBRPZ_IDX_NULL)
 			return (ISC_R_NOMORE);
 		RD_NEXT_RR(rdataset) = LIBRPZ_IDX_NULL;
-		if (!librpz->rsp_soa(&emsg, NULL, &rr, NULL,
-				     &rpsdb->result, rpsdb->rsp)) {
+		if (!librpz->rsp_soa(&emsg, NULL, &rr, NULL, &rpsdb->result,
+				     rpsdb->rsp)) {
 			librpz->log(LIBRPZ_LOG_ERROR, NULL, "%s", emsg.c);
 			return (DNS_R_SERVFAIL);
 		}
@@ -720,8 +738,7 @@ rpsdb_rdataset_next(dns_rdataset_t *rdataset) {
 			librpz->log(LIBRPZ_LOG_ERROR, NULL, "%s", emsg.c);
 			return (DNS_R_SERVFAIL);
 		}
-		if (rdataset->type == type &&
-		    rdataset->rdclass == class) {
+		if (rdataset->type == type && rdataset->rdclass == class) {
 			RD_CUR_RR(rdataset) = rr;
 			RD_NEXT_RR(rdataset) = rpsdb->result.next_rr;
 			return (ISC_R_SUCCESS);
@@ -733,7 +750,8 @@ rpsdb_rdataset_next(dns_rdataset_t *rdataset) {
 }
 
 static isc_result_t
-rpsdb_rdataset_first(dns_rdataset_t *rdataset) {
+rpsdb_rdataset_first(dns_rdataset_t *rdataset)
+{
 	rpsdb_t *rpsdb;
 	librpz_emsg_t emsg;
 
@@ -758,7 +776,8 @@ rpsdb_rdataset_first(dns_rdataset_t *rdataset) {
 }
 
 static void
-rpsdb_rdataset_current(dns_rdataset_t *rdataset, dns_rdata_t *rdata) {
+rpsdb_rdataset_current(dns_rdataset_t *rdataset, dns_rdata_t *rdata)
+{
 	rpsdb_t *rpsdb;
 	librpz_rr_t *rr;
 	isc_region_t r;
@@ -774,7 +793,8 @@ rpsdb_rdataset_current(dns_rdataset_t *rdataset, dns_rdata_t *rdata) {
 }
 
 static void
-rpsdb_rdataset_clone(dns_rdataset_t *source, dns_rdataset_t *target) {
+rpsdb_rdataset_clone(dns_rdataset_t *source, dns_rdataset_t *target)
+{
 	rpsdb_t *rpsdb;
 	dns_db_t *dbp;
 
@@ -791,7 +811,8 @@ rpsdb_rdataset_clone(dns_rdataset_t *source, dns_rdataset_t *target) {
 }
 
 static unsigned int
-rpsdb_rdataset_count(dns_rdataset_t *rdataset) {
+rpsdb_rdataset_count(dns_rdataset_t *rdataset)
+{
 	rpsdb_t *rpsdb;
 
 	rpsdb = RD_DB(rdataset);
@@ -801,7 +822,8 @@ rpsdb_rdataset_count(dns_rdataset_t *rdataset) {
 }
 
 static void
-rpsdb_rdatasetiter_destroy(dns_rdatasetiter_t **iteratorp) {
+rpsdb_rdatasetiter_destroy(dns_rdatasetiter_t **iteratorp)
+{
 	rpsdb_t *rpsdb;
 	dns_rdatasetiter_t *iterator;
 	isc_mem_t *mctx;
@@ -817,7 +839,8 @@ rpsdb_rdatasetiter_destroy(dns_rdatasetiter_t **iteratorp) {
 }
 
 static isc_result_t
-rpsdb_rdatasetiter_next(dns_rdatasetiter_t *iter) {
+rpsdb_rdatasetiter_next(dns_rdatasetiter_t *iter)
+{
 	rpsdb_t *rpsdb;
 	rpsdb_rdatasetiter_t *rpsdb_iter;
 	dns_rdatatype_t next_type, type;
@@ -846,8 +869,8 @@ rpsdb_rdatasetiter_next(dns_rdatasetiter_t *iter) {
 	next_class = dns_rdataclass_reserved0;
 	next_type = dns_rdatatype_none;
 	for (;;) {
-		if (!librpz->rsp_rr(&emsg, &type, &class, &ttl,
-				    NULL, &rpsdb->result, rpsdb->qname->ndata,
+		if (!librpz->rsp_rr(&emsg, &type, &class, &ttl, NULL,
+				    &rpsdb->result, rpsdb->qname->ndata,
 				    rpsdb->qname->length, rpsdb->rsp)) {
 			librpz->log(LIBRPZ_LOG_ERROR, NULL, "%s", emsg.c);
 			return (DNS_R_SERVFAIL);
@@ -865,8 +888,7 @@ rpsdb_rdatasetiter_next(dns_rdatasetiter_t *iter) {
 		if (rpsdb_iter->class > class ||
 		    (rpsdb_iter->class = class && rpsdb_iter->type >= type))
 			continue;
-		if (next_type == dns_rdatatype_none ||
-		    next_class > class ||
+		if (next_type == dns_rdatatype_none || next_class > class ||
 		    (next_class == class && next_type > type)) {
 			/*
 			 * This is the first of a subsequent class and type.
@@ -883,7 +905,8 @@ rpsdb_rdatasetiter_next(dns_rdatasetiter_t *iter) {
 }
 
 static isc_result_t
-rpsdb_rdatasetiter_first(dns_rdatasetiter_t *iterator) {
+rpsdb_rdatasetiter_first(dns_rdatasetiter_t *iterator)
+{
 	rpsdb_t *rpsdb;
 	rpsdb_rdatasetiter_t *rpsdb_iter;
 
@@ -908,61 +931,60 @@ rpsdb_rdatasetiter_current(dns_rdatasetiter_t *iterator,
 	rpsdb_iter = (rpsdb_rdatasetiter_t *)iterator;
 	REQUIRE(rpsdb_iter->type != dns_rdatatype_none);
 
-	rpsdb_bind_rdataset(rdataset,
-			     rpsdb_iter->count, rpsdb_iter->next_rr,
-			     rpsdb_iter->type, rpsdb_iter->class,
-			     rpsdb_iter->ttl, rpsdb);
+	rpsdb_bind_rdataset(rdataset, rpsdb_iter->count, rpsdb_iter->next_rr,
+			    rpsdb_iter->type, rpsdb_iter->class,
+			    rpsdb_iter->ttl, rpsdb);
 }
 
 static dns_dbmethods_t rpsdb_db_methods = {
 	rpsdb_attach,
 	rpsdb_detach,
-	NULL,			/* beginload */
-	NULL,			/* endload */
-	NULL,			/* serialize */
-	NULL,			/* dump */
-	NULL,			/* currentversion */
-	NULL,			/* newversion */
-	NULL,			/* attachversion */
-	NULL,			/* closeversion */
+	NULL, /* beginload */
+	NULL, /* endload */
+	NULL, /* serialize */
+	NULL, /* dump */
+	NULL, /* currentversion */
+	NULL, /* newversion */
+	NULL, /* attachversion */
+	NULL, /* closeversion */
 	rpsdb_findnode,
 	rpsdb_finddb,
-	NULL,			/* findzonecut*/
+	NULL, /* findzonecut*/
 	rpsdb_attachnode,
 	rpsdb_detachnode,
-	NULL,			/* expirenode */
-	NULL,			/* printnode */
-	NULL,			/* createiterator */
+	NULL, /* expirenode */
+	NULL, /* printnode */
+	NULL, /* createiterator */
 	rpsdb_findrdataset,
 	rpsdb_allrdatasets,
-	NULL,			/* addrdataset */
-	NULL,			/* subtractrdataset */
-	NULL,			/* deleterdataset */
+	NULL, /* addrdataset */
+	NULL, /* subtractrdataset */
+	NULL, /* deleterdataset */
 	rpsdb_issecure,
-	NULL,			/* nodecount */
-	NULL,			/* ispersistent */
-	NULL,			/* overmem */
-	NULL,			/* settask */
+	NULL, /* nodecount */
+	NULL, /* ispersistent */
+	NULL, /* overmem */
+	NULL, /* settask */
 	rpsdb_getoriginnode,
-	NULL,			/* transfernode */
-	NULL,			/* getnsec3parameters */
-	NULL,			/* findnsec3node */
-	NULL,			/* setsigningtime */
-	NULL,			/* getsigningtime */
-	NULL,			/* resigned */
-	NULL,			/* isdnssec */
-	NULL,			/* getrrsetstats */
-	NULL,			/* rpz_attach */
-	NULL,			/* rpz_ready */
-	NULL,			/* findnodeext */
-	NULL,			/* findext */
-	NULL,			/* setcachestats */
-	NULL,			/* hashsize */
-	NULL,			/* nodefullname */
-	NULL,			/* getsize */
-	NULL,			/* setservestalettl */
-	NULL,			/* getservestalettl */
-	NULL			/* setgluecachestats */
+	NULL, /* transfernode */
+	NULL, /* getnsec3parameters */
+	NULL, /* findnsec3node */
+	NULL, /* setsigningtime */
+	NULL, /* getsigningtime */
+	NULL, /* resigned */
+	NULL, /* isdnssec */
+	NULL, /* getrrsetstats */
+	NULL, /* rpz_attach */
+	NULL, /* rpz_ready */
+	NULL, /* findnodeext */
+	NULL, /* findext */
+	NULL, /* setcachestats */
+	NULL, /* hashsize */
+	NULL, /* nodefullname */
+	NULL, /* getsize */
+	NULL, /* setservestalettl */
+	NULL, /* getservestalettl */
+	NULL  /* setgluecachestats */
 };
 
 static dns_rdatasetmethods_t rpsdb_rdataset_methods = {
@@ -985,10 +1007,8 @@ static dns_rdatasetmethods_t rpsdb_rdataset_methods = {
 };
 
 static dns_rdatasetitermethods_t rpsdb_rdatasetiter_methods = {
-	rpsdb_rdatasetiter_destroy,
-	rpsdb_rdatasetiter_first,
-	rpsdb_rdatasetiter_next,
-	rpsdb_rdatasetiter_current
+	rpsdb_rdatasetiter_destroy, rpsdb_rdatasetiter_first,
+	rpsdb_rdatasetiter_next, rpsdb_rdatasetiter_current
 };
 
 #endif /* USE_DNSRPS */

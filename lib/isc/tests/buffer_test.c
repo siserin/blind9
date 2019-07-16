@@ -11,13 +11,12 @@
 
 #if HAVE_CMOCKA
 
-#include <stdarg.h>
-#include <stddef.h>
-#include <setjmp.h>
-
 #include <fcntl.h>
 #include <limits.h>
+#include <setjmp.h>
+#include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -35,7 +34,8 @@
 #include "isctest.h"
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -47,7 +47,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	isc_test_end();
@@ -57,7 +58,8 @@ _teardown(void **state) {
 
 /* reserve space in dynamic buffers */
 static void
-isc_buffer_reserve_test(void **state) {
+isc_buffer_reserve_test(void **state)
+{
 	isc_result_t result;
 	isc_buffer_t *b;
 
@@ -125,7 +127,8 @@ isc_buffer_reserve_test(void **state) {
 
 /* dynamic buffer automatic reallocation */
 static void
-isc_buffer_dynamic_test(void **state) {
+isc_buffer_dynamic_test(void **state)
+{
 	isc_result_t result;
 	isc_buffer_t *b;
 	size_t last_length = 10;
@@ -146,42 +149,42 @@ isc_buffer_dynamic_test(void **state) {
 	for (i = 0; i < 1000; i++) {
 		isc_buffer_putstr(b, "thisisa24charslongstring");
 	}
-	assert_true(b->length-last_length >= 1000*24);
-	last_length+=1000*24;
+	assert_true(b->length - last_length >= 1000 * 24);
+	last_length += 1000 * 24;
 
 	for (i = 0; i < 10000; i++) {
 		isc_buffer_putuint8(b, 1);
 	}
 
-	assert_true(b->length-last_length >= 10000*1);
-	last_length += 10000*1;
+	assert_true(b->length - last_length >= 10000 * 1);
+	last_length += 10000 * 1;
 
 	for (i = 0; i < 10000; i++) {
 		isc_buffer_putuint16(b, 1);
 	}
 
-	assert_true(b->length-last_length >= 10000*2);
+	assert_true(b->length - last_length >= 10000 * 2);
 
-	last_length += 10000*2;
+	last_length += 10000 * 2;
 	for (i = 0; i < 10000; i++) {
 		isc_buffer_putuint24(b, 1);
 	}
-	assert_true(b->length-last_length >= 10000*3);
+	assert_true(b->length - last_length >= 10000 * 3);
 
-	last_length+=10000*3;
+	last_length += 10000 * 3;
 
 	for (i = 0; i < 10000; i++) {
 		isc_buffer_putuint32(b, 1);
 	}
-	assert_true(b->length-last_length >= 10000*4);
-
+	assert_true(b->length - last_length >= 10000 * 4);
 
 	isc_buffer_free(&b);
 }
 
 /* copy a region into a buffer */
 static void
-isc_buffer_copyregion_test(void **state) {
+isc_buffer_copyregion_test(void **state)
+{
 	unsigned char data[] = { 0x11, 0x22, 0x33, 0x44 };
 	isc_buffer_t *b = NULL;
 	isc_result_t result;
@@ -220,7 +223,8 @@ isc_buffer_copyregion_test(void **state) {
 
 /* sprintf() into a buffer */
 static void
-isc_buffer_printf_test(void **state) {
+isc_buffer_printf_test(void **state)
+{
 	unsigned int used, prev_used;
 	const char *empty_fmt;
 	isc_result_t result;
@@ -327,16 +331,17 @@ isc_buffer_printf_test(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test_setup_teardown(isc_buffer_reserve_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(isc_buffer_dynamic_test,
-						_setup, _teardown),
+		cmocka_unit_test_setup_teardown(isc_buffer_reserve_test, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(isc_buffer_dynamic_test, _setup,
+						_teardown),
 		cmocka_unit_test_setup_teardown(isc_buffer_copyregion_test,
 						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(isc_buffer_printf_test,
-						_setup, _teardown),
+		cmocka_unit_test_setup_teardown(isc_buffer_printf_test, _setup,
+						_teardown),
 	};
 
 	return (cmocka_run_group_tests(tests, NULL, NULL));
@@ -347,7 +352,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

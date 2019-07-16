@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 #ifndef ISCCFG_LOG_H
 #define ISCCFG_LOG_H 1
 
@@ -21,9 +20,9 @@
 LIBISCCFG_EXTERNAL_DATA extern isc_logcategory_t cfg_categories[];
 LIBISCCFG_EXTERNAL_DATA extern isc_logmodule_t cfg_modules[];
 
-#define CFG_LOGCATEGORY_CONFIG	(&cfg_categories[0])
+#define CFG_LOGCATEGORY_CONFIG (&cfg_categories[0])
 
-#define CFG_LOGMODULE_PARSER	(&cfg_modules[0])
+#define CFG_LOGMODULE_PARSER (&cfg_modules[0])
 
 ISC_LANG_BEGINDECLS
 

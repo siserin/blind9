@@ -29,8 +29,8 @@
 #include <irs/dnsconf.h>
 #include <irs/resconf.h>
 
-#define IRS_CONTEXT_MAGIC		ISC_MAGIC('I', 'R', 'S', 'c')
-#define IRS_CONTEXT_VALID(c)		ISC_MAGIC_VALID(c, IRS_CONTEXT_MAGIC)
+#define IRS_CONTEXT_MAGIC ISC_MAGIC('I', 'R', 'S', 'c')
+#define IRS_CONTEXT_VALID(c) ISC_MAGIC_VALID(c, IRS_CONTEXT_MAGIC)
 
 #ifndef RESOLV_CONF
 /*% location of resolve.conf */
@@ -47,28 +47,26 @@ static isc_mutex_t thread_key_mutex;
 static isc_thread_key_t irs_context_key;
 static isc_once_t once = ISC_ONCE_INIT;
 
-
 struct irs_context {
 	/*
 	 * An IRS context is a thread-specific object, and does not need to
 	 * be locked.
 	 */
-	unsigned int			magic;
-	isc_mem_t			*mctx;
-	isc_appctx_t			*actx;
-	isc_taskmgr_t			*taskmgr;
-	isc_task_t			*task;
-	isc_socketmgr_t			*socketmgr;
-	isc_timermgr_t			*timermgr;
-	dns_client_t			*dnsclient;
-	irs_resconf_t			*resconf;
-	irs_dnsconf_t			*dnsconf;
+	unsigned int magic;
+	isc_mem_t *mctx;
+	isc_appctx_t *actx;
+	isc_taskmgr_t *taskmgr;
+	isc_task_t *task;
+	isc_socketmgr_t *socketmgr;
+	isc_timermgr_t *timermgr;
+	dns_client_t *dnsclient;
+	irs_resconf_t *resconf;
+	irs_dnsconf_t *dnsconf;
 };
 
 static void
-ctxs_destroy(isc_mem_t **mctxp, isc_appctx_t **actxp,
-	     isc_taskmgr_t **taskmgrp, isc_socketmgr_t **socketmgrp,
-	     isc_timermgr_t **timermgrp)
+ctxs_destroy(isc_mem_t **mctxp, isc_appctx_t **actxp, isc_taskmgr_t **taskmgrp,
+	     isc_socketmgr_t **socketmgrp, isc_timermgr_t **timermgrp)
 {
 	if (taskmgrp != NULL)
 		isc_taskmgr_destroy(taskmgrp);
@@ -87,9 +85,8 @@ ctxs_destroy(isc_mem_t **mctxp, isc_appctx_t **actxp,
 }
 
 static isc_result_t
-ctxs_init(isc_mem_t **mctxp, isc_appctx_t **actxp,
-	  isc_taskmgr_t **taskmgrp, isc_socketmgr_t **socketmgrp,
-	  isc_timermgr_t **timermgrp)
+ctxs_init(isc_mem_t **mctxp, isc_appctx_t **actxp, isc_taskmgr_t **taskmgrp,
+	  isc_socketmgr_t **socketmgrp, isc_timermgr_t **timermgrp)
 {
 	isc_result_t result;
 
@@ -115,14 +112,15 @@ ctxs_init(isc_mem_t **mctxp, isc_appctx_t **actxp,
 
 	return (ISC_R_SUCCESS);
 
- fail:
+fail:
 	ctxs_destroy(mctxp, actxp, taskmgrp, socketmgrp, timermgrp);
 
 	return (result);
 }
 
 static void
-free_specific_context(void *arg) {
+free_specific_context(void *arg)
+{
 	irs_context_t *context = arg;
 
 	irs_context_destroy(&context);
@@ -131,12 +129,14 @@ free_specific_context(void *arg) {
 }
 
 static void
-thread_key_mutex_init(void) {
+thread_key_mutex_init(void)
+{
 	isc_mutex_init(&thread_key_mutex);
 }
 
 static isc_result_t
-thread_key_init(void) {
+thread_key_init(void)
+{
 	isc_result_t result;
 
 	result = isc_once_do(&once, thread_key_mutex_init);
@@ -160,7 +160,8 @@ thread_key_init(void) {
 }
 
 isc_result_t
-irs_context_get(irs_context_t **contextp) {
+irs_context_get(irs_context_t **contextp)
+{
 	irs_context_t *context;
 	isc_result_t result;
 
@@ -188,7 +189,8 @@ irs_context_get(irs_context_t **contextp) {
 }
 
 isc_result_t
-irs_context_create(irs_context_t **contextp) {
+irs_context_create(irs_context_t **contextp)
+{
 	isc_result_t result;
 	irs_context_t *context;
 	isc_appctx_t *actx = NULL;
@@ -235,8 +237,8 @@ irs_context_create(irs_context_t **contextp) {
 		goto fail;
 
 	/* Create a DNS client object */
-	result = dns_client_createx(mctx, actx, taskmgr, socketmgr, timermgr,
-				    0, &client, NULL, NULL);
+	result = dns_client_createx(mctx, actx, taskmgr, socketmgr, timermgr, 0,
+				    &client, NULL, NULL);
 	if (result != ISC_R_SUCCESS)
 		goto fail;
 	context->dnsclient = client;
@@ -257,8 +259,7 @@ irs_context_create(irs_context_t **contextp) {
 	if (result != ISC_R_SUCCESS)
 		goto fail;
 	trustedkeys = irs_dnsconf_gettrustedkeys(context->dnsconf);
-	for (trustedkey = ISC_LIST_HEAD(*trustedkeys);
-	     trustedkey != NULL;
+	for (trustedkey = ISC_LIST_HEAD(*trustedkeys); trustedkey != NULL;
 	     trustedkey = ISC_LIST_NEXT(trustedkey, link)) {
 		result = dns_client_addtrustedkey(client, dns_rdataclass_in,
 						  trustedkey->keyname,
@@ -272,7 +273,7 @@ irs_context_create(irs_context_t **contextp) {
 
 	return (ISC_R_SUCCESS);
 
-  fail:
+fail:
 	if (context->task != NULL)
 		isc_task_detach(&context->task);
 	if (context->resconf != NULL)
@@ -288,7 +289,8 @@ irs_context_create(irs_context_t **contextp) {
 }
 
 void
-irs_context_destroy(irs_context_t **contextp) {
+irs_context_destroy(irs_context_t **contextp)
+{
 	irs_context_t *context;
 
 	REQUIRE(contextp != NULL);
@@ -313,56 +315,64 @@ irs_context_destroy(irs_context_t **contextp) {
 }
 
 isc_mem_t *
-irs_context_getmctx(irs_context_t *context) {
+irs_context_getmctx(irs_context_t *context)
+{
 	REQUIRE(IRS_CONTEXT_VALID(context));
 
 	return (context->mctx);
 }
 
 isc_appctx_t *
-irs_context_getappctx(irs_context_t *context) {
+irs_context_getappctx(irs_context_t *context)
+{
 	REQUIRE(IRS_CONTEXT_VALID(context));
 
 	return (context->actx);
 }
 
 isc_taskmgr_t *
-irs_context_gettaskmgr(irs_context_t *context) {
+irs_context_gettaskmgr(irs_context_t *context)
+{
 	REQUIRE(IRS_CONTEXT_VALID(context));
 
 	return (context->taskmgr);
 }
 
 isc_timermgr_t *
-irs_context_gettimermgr(irs_context_t *context) {
+irs_context_gettimermgr(irs_context_t *context)
+{
 	REQUIRE(IRS_CONTEXT_VALID(context));
 
 	return (context->timermgr);
 }
 
 isc_task_t *
-irs_context_gettask(irs_context_t *context) {
+irs_context_gettask(irs_context_t *context)
+{
 	REQUIRE(IRS_CONTEXT_VALID(context));
 
 	return (context->task);
 }
 
 dns_client_t *
-irs_context_getdnsclient(irs_context_t *context) {
+irs_context_getdnsclient(irs_context_t *context)
+{
 	REQUIRE(IRS_CONTEXT_VALID(context));
 
 	return (context->dnsclient);
 }
 
 irs_resconf_t *
-irs_context_getresconf(irs_context_t *context) {
+irs_context_getresconf(irs_context_t *context)
+{
 	REQUIRE(IRS_CONTEXT_VALID(context));
 
 	return (context->resconf);
 }
 
 irs_dnsconf_t *
-irs_context_getdnsconf(irs_context_t *context) {
+irs_context_getdnsconf(irs_context_t *context)
+{
 	REQUIRE(IRS_CONTEXT_VALID(context));
 
 	return (context->dnsconf);

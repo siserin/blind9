@@ -53,10 +53,8 @@ named_zone_reusable(dns_zone_t *zone, const cfg_obj_t *zconfig);
  */
 
 isc_result_t
-named_zone_configure_writeable_dlz(dns_dlzdb_t *dlzdatabase,
-				   dns_zone_t *zone,
-				   dns_rdataclass_t rdclass,
-				   dns_name_t *name);
+named_zone_configure_writeable_dlz(dns_dlzdb_t *dlzdatabase, dns_zone_t *zone,
+				   dns_rdataclass_t rdclass, dns_name_t *name);
 /*%>
  * configure a DLZ zone, setting up the database methods and calling
  * postload to load the origin values

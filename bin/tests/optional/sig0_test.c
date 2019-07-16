@@ -23,9 +23,9 @@
 #include <isc/mutex.h>
 #include <isc/net.h>
 #include <isc/print.h>
+#include <isc/socket.h>
 #include <isc/task.h>
 #include <isc/timer.h>
-#include <isc/socket.h>
 #include <isc/util.h>
 
 #include <dns/dnssec.h>
@@ -40,15 +40,16 @@
 #include <dns/result.h>
 #include <dns/types.h>
 
-#include <dst/result.h>
 #include <dst/dst.h>
+#include <dst/result.h>
 
-#define CHECK(str, x) { \
-	if ((x) != ISC_R_SUCCESS) { \
-		printf("%s: %s\n", (str), isc_result_totext(x)); \
-		exit(-1); \
-	} \
-}
+#define CHECK(str, x)                                                          \
+	{                                                                      \
+		if ((x) != ISC_R_SUCCESS) {                                    \
+			printf("%s: %s\n", (str), isc_result_totext(x));       \
+			exit(-1);                                              \
+		}                                                              \
+	}
 
 isc_mutex_t lock;
 dst_key_t *key;
@@ -66,7 +67,8 @@ isc_buffer_t outbuf;
 static const dns_master_style_t *style = &dns_master_style_debug;
 
 static void
-senddone(isc_task_t *task, isc_event_t *event) {
+senddone(isc_task_t *task, isc_event_t *event)
+{
 	isc_socketevent_t *sevent = (isc_socketevent_t *)event;
 
 	REQUIRE(sevent != NULL);
@@ -79,7 +81,8 @@ senddone(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-recvdone(isc_task_t *task, isc_event_t *event) {
+recvdone(isc_task_t *task, isc_event_t *event)
+{
 	isc_socketevent_t *sevent = (isc_socketevent_t *)event;
 	isc_buffer_t source;
 	isc_result_t result;
@@ -117,7 +120,8 @@ recvdone(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-buildquery(void) {
+buildquery(void)
+{
 	isc_result_t result;
 	dns_rdataset_t *question = NULL;
 	dns_name_t *qname = NULL;
@@ -137,8 +141,7 @@ buildquery(void) {
 
 	result = dns_message_gettemprdataset(query, &question);
 	CHECK("dns_message_gettemprdataset", result);
-	dns_rdataset_makequestion(question, dns_rdataclass_in,
-				  dns_rdatatype_a);
+	dns_rdataset_makequestion(question, dns_rdataclass_in, dns_rdatatype_a);
 	result = dns_message_gettempname(query, &qname);
 	CHECK("dns_message_gettempname", result);
 	isc_buffer_init(&namesrc, nametext, strlen(nametext));
@@ -178,8 +181,8 @@ buildquery(void) {
 	isc_sockaddr_any(&sa);
 	result = isc_socket_bind(s, &sa, 0);
 	CHECK("isc_socket_bind", result);
-	result = isc_socket_sendto(s, &r, task1, senddone, NULL, &address,
-				   NULL);
+	result =
+		isc_socket_sendto(s, &r, task1, senddone, NULL, &address, NULL);
 	CHECK("isc_socket_sendto", result);
 
 	inr.base = rdata;
@@ -190,7 +193,8 @@ buildquery(void) {
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char *argv[])
+{
 	bool verbose = false;
 	isc_socketmgr_t *socketmgr;
 	isc_timermgr_t *timermgr;
@@ -239,9 +243,8 @@ main(int argc, char *argv[]) {
 	RUNTIME_CHECK(isc_log_create(mctx, &lctx, &logconfig) == ISC_R_SUCCESS);
 
 	s = NULL;
-	RUNTIME_CHECK(isc_socket_create(socketmgr, PF_INET,
-					isc_sockettype_udp, &s) ==
-		      ISC_R_SUCCESS);
+	RUNTIME_CHECK(isc_socket_create(socketmgr, PF_INET, isc_sockettype_udp,
+					&s) == ISC_R_SUCCESS);
 
 	inaddr.s_addr = htonl(INADDR_LOOPBACK);
 	isc_sockaddr_fromin(&address, &inaddr, port);
@@ -254,8 +257,8 @@ main(int argc, char *argv[]) {
 
 	key = NULL;
 	result = dst_key_fromfile(name, 33180, DNS_KEYALG_RSASHA1,
-				  DST_TYPE_PUBLIC | DST_TYPE_PRIVATE,
-				  NULL, mctx, &key);
+				  DST_TYPE_PUBLIC | DST_TYPE_PRIVATE, NULL,
+				  mctx, &key);
 	CHECK("dst_key_fromfile", result);
 
 	buildquery();

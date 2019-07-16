@@ -9,14 +9,13 @@
  * information regarding copyright ownership.
  */
 
-
 /*! \file */
 
 #include <string.h>
 
 #include <isc/buffer.h>
-#include <isc/region.h>
 #include <isc/md.h>
+#include <isc/region.h>
 #include <isc/util.h>
 
 #include <dns/ds.h>
@@ -115,8 +114,8 @@ dns_ds_buildrdata(dns_name_t *owner, dns_rdata_t *key,
 	ds.digest = digest;
 	ds.length = digestlen;
 
-	ret = dns_rdata_fromstruct(rdata, key->rdclass, dns_rdatatype_ds,
-				   &ds, &b);
+	ret = dns_rdata_fromstruct(rdata, key->rdclass, dns_rdatatype_ds, &ds,
+				   &b);
 end:
 	if (md != NULL) {
 		isc_md_free(md);

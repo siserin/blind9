@@ -11,34 +11,31 @@
 
 #if HAVE_CMOCKA
 
-#include <stdarg.h>
-#include <stddef.h>
 #include <setjmp.h>
-
-#include <stdlib.h>
+#include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #define UNIT_TESTING
 #include <cmocka.h>
 
-#include <isc/util.h>
-
 #include <isc/file.h>
 #include <isc/hex.h>
-#include <isc/util.h>
 #include <isc/stdio.h>
 #include <isc/string.h>
+#include <isc/util.h>
+
+#include "../dst_internal.h"
+#include "dnstest.h"
 
 #include <dst/dst.h>
 #include <dst/result.h>
 
-#include "../dst_internal.h"
-
-#include "dnstest.h"
-
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -50,7 +47,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	dns_test_end();
@@ -60,7 +58,8 @@ _teardown(void **state) {
 
 /* Read sig in file at path to buf. Check signature ineffability */
 static isc_result_t
-sig_fromfile(const char *path, isc_buffer_t *buf) {
+sig_fromfile(const char *path, isc_buffer_t *buf)
+{
 	isc_result_t result;
 	size_t rval, len;
 	FILE *fp = NULL;
@@ -95,7 +94,7 @@ sig_fromfile(const char *path, isc_buffer_t *buf) {
 			--len;
 			continue;
 		} else if (len < 2U) {
-		       goto err;
+			goto err;
 		}
 		if (('0' <= *p) && (*p <= '9')) {
 			val = *p - '0';
@@ -123,7 +122,7 @@ sig_fromfile(const char *path, isc_buffer_t *buf) {
 
 	result = ISC_R_SUCCESS;
 
- err:
+err:
 	isc_mem_put(dt_mctx, data, size + 1);
 	return (result);
 }
@@ -177,8 +176,8 @@ check_sig(const char *datapath, const char *sigpath, const char *keyname,
 	isc_buffer_add(&b, strlen(keyname));
 	result = dns_name_fromtext(name, &b, dns_rootname, 0, NULL);
 	assert_int_equal(result, ISC_R_SUCCESS);
-	result = dst_key_fromfile(name, id, alg, type, "testdata/dst",
-				  dt_mctx, &key);
+	result = dst_key_fromfile(name, id, alg, type, "testdata/dst", dt_mctx,
+				  &key);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	isc_buffer_init(&databuf, data, (unsigned int)size);
@@ -209,8 +208,8 @@ check_sig(const char *datapath, const char *sigpath, const char *keyname,
 
 	if (expect && result != ISC_R_SUCCESS) {
 		isc_result_t result2;
-		result2 = dst_context_create(key, dt_mctx, DNS_LOGCATEGORY_GENERAL,
-					    false, 0, &ctx);
+		result2 = dst_context_create(
+			key, dt_mctx, DNS_LOGCATEGORY_GENERAL, false, 0, &ctx);
 		assert_int_equal(result2, ISC_R_SUCCESS);
 
 		result2 = dst_context_adddata(ctx, &datareg);
@@ -248,7 +247,8 @@ check_sig(const char *datapath, const char *sigpath, const char *keyname,
 }
 
 static void
-sig_test(void **state) {
+sig_test(void **state)
+{
 	UNUSED(state);
 
 	struct {
@@ -259,48 +259,34 @@ sig_test(void **state) {
 		dns_secalg_t alg;
 		bool expect;
 	} testcases[] = {
-		{
-			"testdata/dst/test1.data",
-			"testdata/dst/test1.ecdsa256sig",
-			"test.", 49130, DST_ALG_ECDSA256, true
-		},
-		{
-			"testdata/dst/test1.data",
-			"testdata/dst/test1.rsasha256sig",
-			"test.", 11349, DST_ALG_RSASHA256, true
-		},
-		{
-			/* wrong sig */
-			"testdata/dst/test1.data",
-			"testdata/dst/test1.ecdsa256sig",
-			"test.", 11349, DST_ALG_RSASHA256, false
-		},
-		{
-			/* wrong data */
-			"testdata/dst/test2.data",
-			"testdata/dst/test1.ecdsa256sig",
-			"test.", 49130, DST_ALG_ECDSA256, false
-		},
+		{ "testdata/dst/test1.data", "testdata/dst/test1.ecdsa256sig",
+		  "test.", 49130, DST_ALG_ECDSA256, true },
+		{ "testdata/dst/test1.data", "testdata/dst/test1.rsasha256sig",
+		  "test.", 11349, DST_ALG_RSASHA256, true },
+		{ /* wrong sig */
+		  "testdata/dst/test1.data", "testdata/dst/test1.ecdsa256sig",
+		  "test.", 11349, DST_ALG_RSASHA256, false },
+		{ /* wrong data */
+		  "testdata/dst/test2.data", "testdata/dst/test1.ecdsa256sig",
+		  "test.", 49130, DST_ALG_ECDSA256, false },
 	};
 	unsigned int i;
 
-	for (i = 0; i < (sizeof(testcases)/sizeof(testcases[0])); i++) {
+	for (i = 0; i < (sizeof(testcases) / sizeof(testcases[0])); i++) {
 		if (!dst_algorithm_supported(testcases[i].alg)) {
 			continue;
 		}
 
-		check_sig(testcases[i].datapath,
-			  testcases[i].sigpath,
-			  testcases[i].keyname,
-			  testcases[i].keyid,
-			  testcases[i].alg,
-			  DST_TYPE_PRIVATE|DST_TYPE_PUBLIC,
+		check_sig(testcases[i].datapath, testcases[i].sigpath,
+			  testcases[i].keyname, testcases[i].keyid,
+			  testcases[i].alg, DST_TYPE_PRIVATE | DST_TYPE_PUBLIC,
 			  testcases[i].expect);
 	}
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test_setup_teardown(sig_test, _setup, _teardown),
 	};
@@ -313,7 +299,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

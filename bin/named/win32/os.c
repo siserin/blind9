@@ -9,34 +9,31 @@
  * information regarding copyright ownership.
  */
 
-#include <stdarg.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <io.h>
 #include <process.h>
-#include <fcntl.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <syslog.h>
 
+#include <isc/ntpaths.h>
 #include <isc/print.h>
 #include <isc/result.h>
 #include <isc/string.h>
-#include <isc/ntpaths.h>
 #include <isc/util.h>
 #include <isc/win32os.h>
 
-#include <named/main.h>
-#include <named/log.h>
-#include <named/os.h>
 #include <named/globals.h>
+#include <named/log.h>
+#include <named/main.h>
 #include <named/ntservice.h>
-
+#include <named/os.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 static char *lockfile = NULL;
 static char *pidfile = NULL;
@@ -45,11 +42,12 @@ static int lockfilefd = -1;
 
 static BOOL Initialized = FALSE;
 
-static char *version_error =
-	"named requires Windows 2000 Service Pack 2 or later to run correctly";
+static char *version_error = "named requires Windows 2000 Service Pack 2 or "
+			     "later to run correctly";
 
 void
-named_paths_init(void) {
+named_paths_init(void)
+{
 	if (!Initialized)
 		isc_ntpaths_init();
 
@@ -70,11 +68,11 @@ named_paths_init(void) {
  * warn when it isn't.
  */
 static void
-version_check(const char *progname) {
-
+version_check(const char *progname)
+{
 	if ((isc_win32os_versioncheck(4, 0, 0, 0) >= 0) &&
 	    (isc_win32os_versioncheck(5, 0, 0, 0) < 0))
-		return;	/* No problem with Version 4.0 */
+		return; /* No problem with Version 4.0 */
 	if (isc_win32os_versioncheck(5, 0, 2, 0) < 0)
 		if (ntservice_isservice())
 			NTReportError(progname, version_error);
@@ -83,7 +81,8 @@ version_check(const char *progname) {
 }
 
 static void
-setup_syslog(const char *progname) {
+setup_syslog(const char *progname)
+{
 	int options;
 
 	options = LOG_PID;
@@ -95,7 +94,8 @@ setup_syslog(const char *progname) {
 }
 
 void
-named_os_init(const char *progname) {
+named_os_init(const char *progname)
+{
 	named_paths_init();
 	setup_syslog(progname);
 	/*
@@ -112,7 +112,8 @@ named_os_init(const char *progname) {
 }
 
 void
-named_os_daemonize(void) {
+named_os_daemonize(void)
+{
 	/*
 	 * Try to set stdin, stdout, and stderr to /dev/null, but press
 	 * on even if it fails.
@@ -134,14 +135,15 @@ named_os_daemonize(void) {
 }
 
 void
-named_os_opendevnull(void) {
+named_os_opendevnull(void)
+{
 	devnullfd = open("NUL", O_RDWR, 0);
 }
 
 void
-named_os_closedevnull(void) {
-	if (devnullfd != _fileno(stdin) &&
-	    devnullfd != _fileno(stdout) &&
+named_os_closedevnull(void)
+{
+	if (devnullfd != _fileno(stdin) && devnullfd != _fileno(stdout) &&
 	    devnullfd != _fileno(stderr)) {
 		close(devnullfd);
 		devnullfd = -1;
@@ -149,34 +151,41 @@ named_os_closedevnull(void) {
 }
 
 void
-named_os_chroot(const char *root) {
+named_os_chroot(const char *root)
+{
 	if (root != NULL)
 		named_main_earlyfatal("chroot(): isn't supported by Win32 API");
 }
 
 void
-named_os_inituserinfo(const char *username) {
+named_os_inituserinfo(const char *username)
+{
 }
 
 void
-named_os_changeuser(void) {
+named_os_changeuser(void)
+{
 }
 
 unsigned int
-ns_os_uid(void) {
+ns_os_uid(void)
+{
 	return (0);
 }
 
 void
-named_os_adjustnofile(void) {
+named_os_adjustnofile(void)
+{
 }
 
 void
-named_os_minprivs(void) {
+named_os_minprivs(void)
+{
 }
 
 static int
-safe_open(const char *filename, int mode, bool append) {
+safe_open(const char *filename, int mode, bool append)
+{
 	int fd;
 	struct stat sb;
 
@@ -187,16 +196,17 @@ safe_open(const char *filename, int mode, bool append) {
 		return (-1);
 
 	if (append)
-		fd = open(filename, O_WRONLY|O_CREAT|O_APPEND, mode);
+		fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, mode);
 	else {
 		(void)unlink(filename);
-		fd = open(filename, O_WRONLY|O_CREAT|O_EXCL, mode);
+		fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, mode);
 	}
 	return (fd);
 }
 
 static void
-cleanup_pidfile(void) {
+cleanup_pidfile(void)
+{
 	if (pidfile != NULL) {
 		(void)unlink(pidfile);
 		free(pidfile);
@@ -205,7 +215,8 @@ cleanup_pidfile(void) {
 }
 
 static void
-cleanup_lockfile(void) {
+cleanup_lockfile(void)
+{
 	if (lockfilefd != -1) {
 		close(lockfilefd);
 		lockfilefd = -1;
@@ -222,7 +233,8 @@ cleanup_lockfile(void) {
 }
 
 FILE *
-named_os_openfile(const char *filename, int mode, bool switch_user) {
+named_os_openfile(const char *filename, int mode, bool switch_user)
+{
 	char strbuf[ISC_STRERRORSIZE];
 	FILE *fp;
 	int fd;
@@ -248,7 +260,8 @@ named_os_openfile(const char *filename, int mode, bool switch_user) {
 }
 
 void
-named_os_writepidfile(const char *filename, bool first_time) {
+named_os_writepidfile(const char *filename, bool first_time)
+{
 	FILE *pidlockfile;
 	pid_t pid;
 	char strbuf[ISC_STRERRORSIZE];
@@ -272,9 +285,8 @@ named_os_writepidfile(const char *filename, bool first_time) {
 		return;
 	}
 
-	pidlockfile = named_os_openfile(filename,
-					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH,
-					false);
+	pidlockfile = named_os_openfile(
+		filename, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH, false);
 	if (pidlockfile == NULL) {
 		free(pidfile);
 		pidfile = NULL;
@@ -299,7 +311,8 @@ named_os_writepidfile(const char *filename, bool first_time) {
 }
 
 bool
-named_os_issingleton(const char *filename) {
+named_os_issingleton(const char *filename)
+{
 	char strbuf[ISC_STRERRORSIZE];
 	OVERLAPPED o;
 
@@ -321,7 +334,7 @@ named_os_issingleton(const char *filename) {
 	 * files. We can't use that here.
 	 */
 	lockfilefd = open(filename, O_WRONLY | O_CREAT,
-			  S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+			  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	if (lockfilefd == -1) {
 		cleanup_lockfile();
 		return (false);
@@ -329,9 +342,9 @@ named_os_issingleton(const char *filename) {
 
 	memset(&o, 0, sizeof(o));
 	/* Expect ERROR_LOCK_VIOLATION if already locked */
-	if (!LockFileEx((HANDLE) _get_osfhandle(lockfilefd),
-			LOCKFILE_EXCLUSIVE_LOCK | LOCKFILE_FAIL_IMMEDIATELY,
-			0, 0, 1, &o)) {
+	if (!LockFileEx((HANDLE)_get_osfhandle(lockfilefd),
+			LOCKFILE_EXCLUSIVE_LOCK | LOCKFILE_FAIL_IMMEDIATELY, 0,
+			0, 1, &o)) {
 		cleanup_lockfile();
 		return (false);
 	}
@@ -339,23 +352,24 @@ named_os_issingleton(const char *filename) {
 	return (true);
 }
 
-
 void
-named_os_shutdown(void) {
+named_os_shutdown(void)
+{
 	closelog();
 	cleanup_pidfile();
 
 	if (lockfilefd != -1) {
-		(void) UnlockFile((HANDLE) _get_osfhandle(lockfilefd),
-				  0, 0, 0, 1);
+		(void)UnlockFile((HANDLE)_get_osfhandle(lockfilefd), 0, 0, 0,
+				 1);
 	}
 	cleanup_lockfile();
 
-	ntservice_shutdown();	/* This MUST be the last thing done */
+	ntservice_shutdown(); /* This MUST be the last thing done */
 }
 
 isc_result_t
-named_os_gethostname(char *buf, size_t len) {
+named_os_gethostname(char *buf, size_t len)
+{
 	int n;
 
 	n = gethostname(buf, (int)len);
@@ -363,20 +377,23 @@ named_os_gethostname(char *buf, size_t len) {
 }
 
 void
-named_os_shutdownmsg(char *command, isc_buffer_t *text) {
+named_os_shutdownmsg(char *command, isc_buffer_t *text)
+{
 	UNUSED(command);
 	UNUSED(text);
 }
 
 void
-named_os_tzset(void) {
+named_os_tzset(void)
+{
 #ifdef HAVE_TZSET
 	tzset();
 #endif
 }
 
 void
-named_os_started(void) {
+named_os_started(void)
+{
 	ntservice_init();
 }
 
@@ -384,7 +401,8 @@ static char unamebuf[BUFSIZ];
 static char *unamep = NULL;
 
 static void
-getuname(void) {
+getuname(void)
+{
 	DWORD fvilen;
 	char *fvi;
 	VS_FIXEDFILEINFO *ffi;
@@ -407,8 +425,8 @@ getuname(void) {
 	}
 	ffi = NULL;
 	ffilen = 0;
-	if ((VerQueryValue(fvi, "\\", &ffi, &ffilen) == 0) ||
-	    (ffi == NULL) || (ffilen == 0)) {
+	if ((VerQueryValue(fvi, "\\", &ffi, &ffilen) == 0) || (ffi == NULL) ||
+	    (ffilen == 0)) {
 		goto err;
 	}
 	memset(&sysinfo, 0, sizeof(sysinfo));
@@ -436,10 +454,9 @@ getuname(void) {
 		 (ffi->dwProductVersionMS >> 16) & 0xffff,
 		 ffi->dwProductVersionMS & 0xffff,
 		 (ffi->dwProductVersionLS >> 16) & 0xffff,
-		 ffi->dwProductVersionLS & 0xffff,
-		 arch);
+		 ffi->dwProductVersionLS & 0xffff, arch);
 
-    err:
+err:
 	if (fvi != NULL) {
 		free(fvi);
 	}
@@ -451,7 +468,8 @@ getuname(void) {
  * so we had to switch to the recommended way to get the Windows version.
  */
 char *
-named_os_uname(void) {
+named_os_uname(void)
+{
 	if (unamep == NULL)
 		getuname();
 	return (unamep);

@@ -29,10 +29,11 @@
 #include <isc/timer.h>
 #include <isc/util.h>
 
+#include <dns/result.h>
+
 #include <isccfg/namedconf.h>
 
 #include <bind9/check.h>
-
 #include <isccc/alist.h>
 #include <isccc/cc.h>
 #include <isccc/ccmsg.h>
@@ -41,9 +42,6 @@
 #include <isccc/sexpr.h>
 #include <isccc/symtab.h>
 #include <isccc/util.h>
-
-#include <dns/result.h>
-
 #include <named/config.h>
 #include <named/control.h>
 #include <named/log.h>
@@ -65,57 +63,60 @@ typedef struct controllistener controllistener_t;
 typedef ISC_LIST(controllistener_t) controllistenerlist_t;
 
 struct controlkey {
-	char *				keyname;
-	uint32_t			algorithm;
-	isc_region_t			secret;
-	ISC_LINK(controlkey_t)		link;
+	char *keyname;
+	uint32_t algorithm;
+	isc_region_t secret;
+	ISC_LINK(controlkey_t) link;
 };
 
 struct controlconnection {
-	isc_socket_t *			sock;
-	isccc_ccmsg_t			ccmsg;
-	bool			ccmsg_valid;
-	bool			sending;
-	isc_timer_t *			timer;
-	isc_buffer_t *			buffer;
-	controllistener_t *		listener;
-	uint32_t			nonce;
-	ISC_LINK(controlconnection_t)	link;
+	isc_socket_t *sock;
+	isccc_ccmsg_t ccmsg;
+	bool ccmsg_valid;
+	bool sending;
+	isc_timer_t *timer;
+	isc_buffer_t *buffer;
+	controllistener_t *listener;
+	uint32_t nonce;
+	ISC_LINK(controlconnection_t) link;
 };
 
 struct controllistener {
-	named_controls_t *		controls;
-	isc_mem_t *			mctx;
-	isc_task_t *			task;
-	isc_sockaddr_t			address;
-	isc_socket_t *			sock;
-	dns_acl_t *			acl;
-	bool			listening;
-	bool			exiting;
-	controlkeylist_t		keys;
-	controlconnectionlist_t		connections;
-	isc_sockettype_t		type;
-	uint32_t			perm;
-	uint32_t			owner;
-	uint32_t			group;
-	bool			readonly;
-	ISC_LINK(controllistener_t)	link;
+	named_controls_t *controls;
+	isc_mem_t *mctx;
+	isc_task_t *task;
+	isc_sockaddr_t address;
+	isc_socket_t *sock;
+	dns_acl_t *acl;
+	bool listening;
+	bool exiting;
+	controlkeylist_t keys;
+	controlconnectionlist_t connections;
+	isc_sockettype_t type;
+	uint32_t perm;
+	uint32_t owner;
+	uint32_t group;
+	bool readonly;
+	ISC_LINK(controllistener_t) link;
 };
 
 struct named_controls {
-	named_server_t			*server;
-	controllistenerlist_t 		listeners;
-	bool			shuttingdown;
-	isccc_symtab_t			*symtab;
+	named_server_t *server;
+	controllistenerlist_t listeners;
+	bool shuttingdown;
+	isccc_symtab_t *symtab;
 };
 
-static void control_newconn(isc_task_t *task, isc_event_t *event);
-static void control_recvmessage(isc_task_t *task, isc_event_t *event);
+static void
+control_newconn(isc_task_t *task, isc_event_t *event);
+static void
+control_recvmessage(isc_task_t *task, isc_event_t *event);
 
 #define CLOCKSKEW 300
 
 static void
-free_controlkey(controlkey_t *key, isc_mem_t *mctx) {
+free_controlkey(controlkey_t *key, isc_mem_t *mctx)
+{
 	if (key->keyname != NULL)
 		isc_mem_free(mctx, key->keyname);
 	if (key->secret.base != NULL)
@@ -124,7 +125,8 @@ free_controlkey(controlkey_t *key, isc_mem_t *mctx) {
 }
 
 static void
-free_controlkeylist(controlkeylist_t *keylist, isc_mem_t *mctx) {
+free_controlkeylist(controlkeylist_t *keylist, isc_mem_t *mctx)
+{
 	while (!ISC_LIST_EMPTY(*keylist)) {
 		controlkey_t *key = ISC_LIST_HEAD(*keylist);
 		ISC_LIST_UNLINK(*keylist, key, link);
@@ -133,7 +135,8 @@ free_controlkeylist(controlkeylist_t *keylist, isc_mem_t *mctx) {
 }
 
 static void
-free_listener(controllistener_t *listener) {
+free_listener(controllistener_t *listener)
+{
 	INSIST(listener->exiting);
 	INSIST(!listener->listening);
 	INSIST(ISC_LIST_EMPTY(listener->connections));
@@ -150,15 +153,16 @@ free_listener(controllistener_t *listener) {
 }
 
 static void
-maybe_free_listener(controllistener_t *listener) {
-	if (listener->exiting &&
-	    !listener->listening &&
+maybe_free_listener(controllistener_t *listener)
+{
+	if (listener->exiting && !listener->listening &&
 	    ISC_LIST_EMPTY(listener->connections))
 		free_listener(listener);
 }
 
 static void
-maybe_free_connection(controlconnection_t *conn) {
+maybe_free_connection(controlconnection_t *conn)
+{
 	controllistener_t *listener = conn->listener;
 
 	if (conn->buffer != NULL)
@@ -188,7 +192,8 @@ maybe_free_connection(controlconnection_t *conn) {
 }
 
 static void
-shutdown_listener(controllistener_t *listener) {
+shutdown_listener(controllistener_t *listener)
+{
 	controlconnection_t *conn;
 	controlconnection_t *next;
 
@@ -207,10 +212,8 @@ shutdown_listener(controllistener_t *listener) {
 		listener->exiting = true;
 	}
 
-	for (conn = ISC_LIST_HEAD(listener->connections);
-	     conn != NULL;
-	     conn = next)
-	{
+	for (conn = ISC_LIST_HEAD(listener->connections); conn != NULL;
+	     conn = next) {
 		next = ISC_LIST_NEXT(conn, link);
 		maybe_free_connection(conn);
 	}
@@ -223,7 +226,8 @@ shutdown_listener(controllistener_t *listener) {
 }
 
 static bool
-address_ok(isc_sockaddr_t *sockaddr, dns_acl_t *acl) {
+address_ok(isc_sockaddr_t *sockaddr, dns_acl_t *acl)
+{
 	dns_aclenv_t *env =
 		ns_interfacemgr_getaclenv(named_g_server->interfacemgr);
 	isc_netaddr_t netaddr;
@@ -237,10 +241,10 @@ address_ok(isc_sockaddr_t *sockaddr, dns_acl_t *acl) {
 }
 
 static isc_result_t
-control_accept(controllistener_t *listener) {
+control_accept(controllistener_t *listener)
+{
 	isc_result_t result;
-	result = isc_socket_accept(listener->sock,
-				   listener->task,
+	result = isc_socket_accept(listener->sock, listener->task,
 				   control_newconn, listener);
 	if (result != ISC_R_SUCCESS)
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
@@ -252,7 +256,8 @@ control_accept(controllistener_t *listener) {
 }
 
 static isc_result_t
-control_listen(controllistener_t *listener) {
+control_listen(controllistener_t *listener)
+{
 	isc_result_t result;
 
 	result = isc_socket_listen(listener->sock, 0);
@@ -264,13 +269,15 @@ control_listen(controllistener_t *listener) {
 }
 
 static void
-control_next(controllistener_t *listener) {
+control_next(controllistener_t *listener)
+{
 	(void)control_accept(listener);
 }
 
 static void
-control_senddone(isc_task_t *task, isc_event_t *event) {
-	isc_socketevent_t *sevent = (isc_socketevent_t *) event;
+control_senddone(isc_task_t *task, isc_event_t *event)
+{
+	isc_socketevent_t *sevent = (isc_socketevent_t *)event;
 	controlconnection_t *conn = event->ev_arg;
 	controllistener_t *listener = conn->listener;
 	isc_socket_t *sock = (isc_socket_t *)sevent->ev_sender;
@@ -283,8 +290,7 @@ control_senddone(isc_task_t *task, isc_event_t *event) {
 	conn->sending = false;
 
 	if (sevent->result != ISC_R_SUCCESS &&
-	    sevent->result != ISC_R_CANCELED)
-	{
+	    sevent->result != ISC_R_CANCELED) {
 		char socktext[ISC_SOCKADDR_FORMATSIZE];
 		isc_sockaddr_t peeraddr;
 
@@ -307,7 +313,8 @@ control_senddone(isc_task_t *task, isc_event_t *event) {
 }
 
 static inline void
-log_invalid(isccc_ccmsg_t *ccmsg, isc_result_t result) {
+log_invalid(isccc_ccmsg_t *ccmsg, isc_result_t result)
+{
 	char socktext[ISC_SOCKADDR_FORMATSIZE];
 	isc_sockaddr_t peeraddr;
 
@@ -315,12 +322,13 @@ log_invalid(isccc_ccmsg_t *ccmsg, isc_result_t result) {
 	isc_sockaddr_format(&peeraddr, socktext, sizeof(socktext));
 	isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
 		      NAMED_LOGMODULE_CONTROL, ISC_LOG_ERROR,
-		      "invalid command from %s: %s",
-		      socktext, isc_result_totext(result));
+		      "invalid command from %s: %s", socktext,
+		      isc_result_totext(result));
 }
 
 static void
-control_recvmessage(isc_task_t *task, isc_event_t *event) {
+control_recvmessage(isc_task_t *task, isc_event_t *event)
+{
 	controlconnection_t *conn = NULL;
 	controllistener_t *listener = NULL;
 	controlkey_t *key = NULL;
@@ -361,10 +369,8 @@ control_recvmessage(isc_task_t *task, isc_event_t *event) {
 
 	request = NULL;
 
-	for (key = ISC_LIST_HEAD(listener->keys);
-	     key != NULL;
-	     key = ISC_LIST_NEXT(key, link))
-	{
+	for (key = ISC_LIST_HEAD(listener->keys); key != NULL;
+	     key = ISC_LIST_NEXT(key, link)) {
 		isccc_region_t ccregion;
 
 		ccregion.rstart = isc_buffer_base(&conn->ccmsg.buffer);
@@ -375,8 +381,8 @@ control_recvmessage(isc_task_t *task, isc_event_t *event) {
 		memmove(secret.rstart, key->secret.base, key->secret.length);
 		secret.rend = secret.rstart + key->secret.length;
 		algorithm = key->algorithm;
-		result = isccc_cc_fromwire(&ccregion, &request,
-					   algorithm, &secret);
+		result = isccc_cc_fromwire(&ccregion, &request, algorithm,
+					   &secret);
 		if (result == ISC_R_SUCCESS)
 			break;
 		isc_mem_put(listener->mctx, secret.rstart, REGION_SIZE(secret));
@@ -494,8 +500,8 @@ control_recvmessage(isc_task_t *task, isc_event_t *event) {
 		goto cleanup_response;
 
 	if (conn->buffer == NULL) {
-		result = isc_buffer_allocate(listener->mctx,
-					     &conn->buffer, 2 * 2048);
+		result = isc_buffer_allocate(listener->mctx, &conn->buffer,
+					     2 * 2048);
 		if (result != ISC_R_SUCCESS)
 			goto cleanup_response;
 	}
@@ -525,16 +531,16 @@ control_recvmessage(isc_task_t *task, isc_event_t *event) {
 	isc_buffer_free(&text);
 	return;
 
- cleanup_response:
+cleanup_response:
 	isccc_sexpr_free(&response);
 
- cleanup_request:
+cleanup_request:
 	isccc_sexpr_free(&request);
 	isc_mem_put(listener->mctx, secret.rstart, REGION_SIZE(secret));
 	if (text != NULL)
 		isc_buffer_free(&text);
 
- cleanup:
+cleanup:
 	isc_socket_detach(&conn->sock);
 	isccc_ccmsg_invalidate(&conn->ccmsg);
 	conn->ccmsg_valid = false;
@@ -543,7 +549,8 @@ control_recvmessage(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-control_timeout(isc_task_t *task, isc_event_t *event) {
+control_timeout(isc_task_t *task, isc_event_t *event)
+{
 	controlconnection_t *conn = event->ev_arg;
 
 	UNUSED(task);
@@ -555,7 +562,8 @@ control_timeout(isc_task_t *task, isc_event_t *event) {
 }
 
 static isc_result_t
-newconnection(controllistener_t *listener, isc_socket_t *sock) {
+newconnection(controllistener_t *listener, isc_socket_t *sock)
+{
 	controlconnection_t *conn;
 	isc_interval_t interval;
 	isc_result_t result;
@@ -575,9 +583,9 @@ newconnection(controllistener_t *listener, isc_socket_t *sock) {
 	conn->buffer = NULL;
 	conn->timer = NULL;
 	isc_interval_set(&interval, 60, 0);
-	result = isc_timer_create(named_g_timermgr, isc_timertype_once,
-				  NULL, &interval, listener->task,
-				  control_timeout, conn, &conn->timer);
+	result = isc_timer_create(named_g_timermgr, isc_timertype_once, NULL,
+				  &interval, listener->task, control_timeout,
+				  conn, &conn->timer);
 	if (result != ISC_R_SUCCESS)
 		goto cleanup;
 
@@ -593,7 +601,7 @@ newconnection(controllistener_t *listener, isc_socket_t *sock) {
 	ISC_LIST_APPEND(listener->connections, conn, link);
 	return (ISC_R_SUCCESS);
 
- cleanup:
+cleanup:
 	if (conn->buffer != NULL)
 		isc_buffer_free(&conn->buffer);
 	isccc_ccmsg_invalidate(&conn->ccmsg);
@@ -609,7 +617,8 @@ newconnection(controllistener_t *listener, isc_socket_t *sock) {
 }
 
 static void
-control_newconn(isc_task_t *task, isc_event_t *event) {
+control_newconn(isc_task_t *task, isc_event_t *event)
+{
 	isc_socket_newconnev_t *nevent = (isc_socket_newconnev_t *)event;
 	controllistener_t *listener = event->ev_arg;
 	isc_socket_t *sock;
@@ -649,27 +658,26 @@ control_newconn(isc_task_t *task, isc_event_t *event) {
 		isc_sockaddr_format(&peeraddr, socktext, sizeof(socktext));
 		isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
 			      NAMED_LOGMODULE_CONTROL, ISC_LOG_WARNING,
-			      "dropped command channel from %s: %s",
-			      socktext, isc_result_totext(result));
+			      "dropped command channel from %s: %s", socktext,
+			      isc_result_totext(result));
 		isc_socket_detach(&sock);
 		goto restart;
 	}
 
- restart:
+restart:
 	control_next(listener);
- cleanup:
+cleanup:
 	isc_event_free(&event);
 }
 
 static void
-controls_shutdown(named_controls_t *controls) {
+controls_shutdown(named_controls_t *controls)
+{
 	controllistener_t *listener;
 	controllistener_t *next;
 
-	for (listener = ISC_LIST_HEAD(controls->listeners);
-	     listener != NULL;
-	     listener = next)
-	{
+	for (listener = ISC_LIST_HEAD(controls->listeners); listener != NULL;
+	     listener = next) {
 		/*
 		 * This is asynchronous.  As listeners shut down, they will
 		 * call their callbacks.
@@ -680,7 +688,8 @@ controls_shutdown(named_controls_t *controls) {
 }
 
 void
-named_controls_shutdown(named_controls_t *controls) {
+named_controls_shutdown(named_controls_t *controls)
+{
 	controls_shutdown(controls);
 	controls->shuttingdown = true;
 }
@@ -693,10 +702,8 @@ cfgkeylist_find(const cfg_obj_t *keylist, const char *keyname,
 	const char *str;
 	const cfg_obj_t *obj;
 
-	for (element = cfg_list_first(keylist);
-	     element != NULL;
-	     element = cfg_list_next(element))
-	{
+	for (element = cfg_list_first(keylist); element != NULL;
+	     element = cfg_list_next(element)) {
 		obj = cfg_listelt_value(element);
 		str = cfg_obj_asstring(cfg_map_getname(obj));
 		if (strcasecmp(str, keyname) == 0)
@@ -719,10 +726,8 @@ controlkeylist_fromcfg(const cfg_obj_t *keylist, isc_mem_t *mctx,
 	const cfg_obj_t *obj;
 	controlkey_t *key;
 
-	for (element = cfg_list_first(keylist);
-	     element != NULL;
-	     element = cfg_list_next(element))
-	{
+	for (element = cfg_list_first(keylist); element != NULL;
+	     element = cfg_list_next(element)) {
 		obj = cfg_listelt_value(element);
 		str = cfg_obj_asstring(obj);
 		newstr = isc_mem_strdup(mctx, str);
@@ -741,7 +746,7 @@ controlkeylist_fromcfg(const cfg_obj_t *keylist, isc_mem_t *mctx,
 	}
 	return (ISC_R_SUCCESS);
 
- cleanup:
+cleanup:
 	if (newstr != NULL)
 		isc_mem_free(mctx, newstr);
 	free_controlkeylist(keyids, mctx);
@@ -787,8 +792,8 @@ register_keys(const cfg_obj_t *control, const cfg_obj_t *keylist,
 			secretstr = cfg_obj_asstring(secretobj);
 
 			if (named_config_getkeyalgorithm2(algstr, NULL,
-					  &algtype, NULL) != ISC_R_SUCCESS)
-			{
+							  &algtype, NULL) !=
+			    ISC_R_SUCCESS) {
 				cfg_obj_log(control, named_g_lctx,
 					    ISC_LOG_WARNING,
 					    "unsupported algorithm '%s' in "
@@ -817,13 +822,14 @@ register_keys(const cfg_obj_t *control, const cfg_obj_t *keylist,
 			}
 
 			keyid->secret.length = isc_buffer_usedlength(&b);
-			keyid->secret.base = isc_mem_get(mctx,
-							 keyid->secret.length);
+			keyid->secret.base =
+				isc_mem_get(mctx, keyid->secret.length);
 			if (keyid->secret.base == NULL) {
 				cfg_obj_log(keydef, named_g_lctx,
 					    ISC_LOG_WARNING,
-					   "couldn't register key '%s': "
-					   "out of memory", keyid->keyname);
+					    "couldn't register key '%s': "
+					    "out of memory",
+					    keyid->keyname);
 				ISC_LIST_UNLINK(*keyids, keyid, link);
 				free_controlkey(keyid, mctx);
 				break;
@@ -834,15 +840,16 @@ register_keys(const cfg_obj_t *control, const cfg_obj_t *keylist,
 	}
 }
 
-#define CHECK(x) \
-	do { \
-		 result = (x); \
-		 if (result != ISC_R_SUCCESS) \
-			goto cleanup; \
+#define CHECK(x)                                                               \
+	do {                                                                   \
+		result = (x);                                                  \
+		if (result != ISC_R_SUCCESS)                                   \
+			goto cleanup;                                          \
 	} while (0)
 
 static isc_result_t
-get_rndckey(isc_mem_t *mctx, controlkeylist_t *keyids) {
+get_rndckey(isc_mem_t *mctx, controlkeylist_t *keyids)
+{
 	isc_result_t result;
 	cfg_parser_t *pctx = NULL;
 	cfg_obj_t *config = NULL;
@@ -858,20 +865,20 @@ get_rndckey(isc_mem_t *mctx, controlkeylist_t *keyids) {
 
 	isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
 		      NAMED_LOGMODULE_CONTROL, ISC_LOG_INFO,
-		      "configuring command channel from '%s'",
-		      named_g_keyfile);
-	if (! isc_file_exists(named_g_keyfile))
+		      "configuring command channel from '%s'", named_g_keyfile);
+	if (!isc_file_exists(named_g_keyfile))
 		return (ISC_R_FILENOTFOUND);
 
 	CHECK(cfg_parser_create(mctx, named_g_lctx, &pctx));
-	CHECK(cfg_parse_file(pctx, named_g_keyfile, &cfg_type_rndckey, &config));
+	CHECK(cfg_parse_file(pctx, named_g_keyfile, &cfg_type_rndckey,
+			     &config));
 	CHECK(cfg_map_get(config, "key", &key));
 
 	keyid = isc_mem_get(mctx, sizeof(*keyid));
 	if (keyid == NULL)
 		CHECK(ISC_R_NOMEMORY);
-	keyid->keyname = isc_mem_strdup(mctx,
-					cfg_obj_asstring(cfg_map_getname(key)));
+	keyid->keyname =
+		isc_mem_strdup(mctx, cfg_obj_asstring(cfg_map_getname(key)));
 	keyid->secret.base = NULL;
 	keyid->secret.length = 0;
 	keyid->algorithm = DST_ALG_UNKNOWN;
@@ -888,10 +895,9 @@ get_rndckey(isc_mem_t *mctx, controlkeylist_t *keyids) {
 	algstr = cfg_obj_asstring(algobj);
 	secretstr = cfg_obj_asstring(secretobj);
 
-	if (named_config_getkeyalgorithm2(algstr, NULL,
-					  &algtype, NULL) != ISC_R_SUCCESS) {
-		cfg_obj_log(key, named_g_lctx,
-			    ISC_LOG_WARNING,
+	if (named_config_getkeyalgorithm2(algstr, NULL, &algtype, NULL) !=
+	    ISC_R_SUCCESS) {
+		cfg_obj_log(key, named_g_lctx, ISC_LOG_WARNING,
 			    "unsupported algorithm '%s' in "
 			    "key '%s' for use with command "
 			    "channel",
@@ -911,21 +917,20 @@ get_rndckey(isc_mem_t *mctx, controlkeylist_t *keyids) {
 	}
 
 	keyid->secret.length = isc_buffer_usedlength(&b);
-	keyid->secret.base = isc_mem_get(mctx,
-					 keyid->secret.length);
+	keyid->secret.base = isc_mem_get(mctx, keyid->secret.length);
 	if (keyid->secret.base == NULL) {
 		cfg_obj_log(key, named_g_lctx, ISC_LOG_WARNING,
-			   "couldn't register key '%s': "
-			   "out of memory", keyid->keyname);
+			    "couldn't register key '%s': "
+			    "out of memory",
+			    keyid->keyname);
 		CHECK(ISC_R_NOMEMORY);
 	}
-	memmove(keyid->secret.base, isc_buffer_base(&b),
-		keyid->secret.length);
+	memmove(keyid->secret.base, isc_buffer_base(&b), keyid->secret.length);
 	ISC_LIST_APPEND(*keyids, keyid, link);
 	keyid = NULL;
 	result = ISC_R_SUCCESS;
 
-  cleanup:
+cleanup:
 	if (keyid != NULL)
 		free_controlkey(keyid, mctx);
 	if (config != NULL)
@@ -978,8 +983,7 @@ update_listener(named_controls_t *cp, controllistener_t **listenerp,
 	controlkeylist_t keys;
 	isc_result_t result = ISC_R_SUCCESS;
 
-	for (listener = ISC_LIST_HEAD(cp->listeners);
-	     listener != NULL;
+	for (listener = ISC_LIST_HEAD(cp->listeners); listener != NULL;
 	     listener = ISC_LIST_NEXT(listener, link))
 		if (isc_sockaddr_equal(addr, &listener->address))
 			break;
@@ -1017,8 +1021,8 @@ update_listener(named_controls_t *cp, controllistener_t **listenerp,
 		INSIST(global_keylist != NULL);
 
 		ISC_LIST_INIT(keys);
-		result = controlkeylist_fromcfg(control_keylist,
-						listener->mctx, &keys);
+		result = controlkeylist_fromcfg(control_keylist, listener->mctx,
+						&keys);
 		if (result == ISC_R_SUCCESS) {
 			free_controlkeylist(&listener->keys, listener->mctx);
 			listener->keys = keys;
@@ -1089,7 +1093,7 @@ update_listener(named_controls_t *cp, controllistener_t **listenerp,
 
 	if (result == ISC_R_SUCCESS && type == isc_sockettype_unix) {
 		uint32_t perm, owner, group;
-		perm  = cfg_obj_asuint32(cfg_tuple_get(control, "perm"));
+		perm = cfg_obj_asuint32(cfg_tuple_get(control, "perm"));
 		owner = cfg_obj_asuint32(cfg_tuple_get(control, "owner"));
 		group = cfg_obj_asuint32(cfg_tuple_get(control, "group"));
 		result = ISC_R_SUCCESS;
@@ -1104,7 +1108,8 @@ update_listener(named_controls_t *cp, controllistener_t **listenerp,
 		} else if (control != NULL)
 			cfg_obj_log(control, named_g_lctx, ISC_LOG_WARNING,
 				    "couldn't update ownership/permission for "
-				    "command channel %s", socktext);
+				    "command channel %s",
+				    socktext);
 	}
 
 	*listenerp = listener;
@@ -1182,8 +1187,8 @@ add_listener(named_controls_t *cp, controllistener_t **listenerp,
 							&listener->keys);
 			if (result == ISC_R_SUCCESS)
 				register_keys(control, global_keylist,
-					      &listener->keys,
-					      listener->mctx, socktext);
+					      &listener->keys, listener->mctx,
+					      socktext);
 		} else
 			result = get_rndckey(mctx, &listener->keys);
 
@@ -1224,12 +1229,12 @@ add_listener(named_controls_t *cp, controllistener_t **listenerp,
 					 ISC_SOCKET_REUSEADDRESS);
 
 	if (result == ISC_R_SUCCESS && type == isc_sockettype_unix) {
-		listener->perm = cfg_obj_asuint32(cfg_tuple_get(control,
-								"perm"));
-		listener->owner = cfg_obj_asuint32(cfg_tuple_get(control,
-								 "owner"));
-		listener->group = cfg_obj_asuint32(cfg_tuple_get(control,
-								 "group"));
+		listener->perm = cfg_obj_asuint32(cfg_tuple_get(control, "per"
+									 "m"));
+		listener->owner = cfg_obj_asuint32(cfg_tuple_get(control, "owne"
+									  "r"));
+		listener->group = cfg_obj_asuint32(cfg_tuple_get(control, "grou"
+									  "p"));
 		result = isc_socket_permunix(&listener->address, listener->perm,
 					     listener->owner, listener->group);
 	}
@@ -1293,8 +1298,7 @@ named_controls_configure(named_controls_t *cp, const cfg_obj_t *config,
 	 * address-in-use error.
 	 */
 	if (controlslist != NULL) {
-		for (element = cfg_list_first(controlslist);
-		     element != NULL;
+		for (element = cfg_list_first(controlslist); element != NULL;
 		     element = cfg_list_next(element)) {
 			const cfg_obj_t *controls;
 			const cfg_obj_t *inetcontrols = NULL;
@@ -1321,8 +1325,8 @@ named_controls_configure(named_controls_t *cp, const cfg_obj_t *config,
 				obj = cfg_tuple_get(control, "address");
 				addr = *cfg_obj_assockaddr(obj);
 				if (isc_sockaddr_getport(&addr) == 0)
-					isc_sockaddr_setport(&addr,
-						     NAMED_CONTROL_PORT);
+					isc_sockaddr_setport(
+						&addr, NAMED_CONTROL_PORT);
 
 				isc_sockaddr_format(&addr, socktext,
 						    sizeof(socktext));
@@ -1343,8 +1347,8 @@ named_controls_configure(named_controls_t *cp, const cfg_obj_t *config,
 					 * Remove the listener from the old
 					 * list, so it won't be shut down.
 					 */
-					ISC_LIST_UNLINK(cp->listeners,
-							listener, link);
+					ISC_LIST_UNLINK(cp->listeners, listener,
+							link);
 				else
 					/*
 					 * This is a new listener.
@@ -1355,12 +1359,11 @@ named_controls_configure(named_controls_t *cp, const cfg_obj_t *config,
 						     isc_sockettype_tcp);
 
 				if (listener != NULL)
-					ISC_LIST_APPEND(new_listeners,
-							listener, link);
+					ISC_LIST_APPEND(new_listeners, listener,
+							link);
 			}
 		}
-		for (element = cfg_list_first(controlslist);
-		     element != NULL;
+		for (element = cfg_list_first(controlslist); element != NULL;
 		     element = cfg_list_next(element)) {
 			const cfg_obj_t *controls;
 			const cfg_obj_t *unixcontrols = NULL;
@@ -1386,16 +1389,17 @@ named_controls_configure(named_controls_t *cp, const cfg_obj_t *config,
 				control = cfg_listelt_value(element2);
 
 				path = cfg_tuple_get(control, "path");
-				result = isc_sockaddr_frompath(&addr,
-						      cfg_obj_asstring(path));
+				result = isc_sockaddr_frompath(
+					&addr, cfg_obj_asstring(path));
 				if (result != ISC_R_SUCCESS) {
-					isc_log_write(named_g_lctx,
-					      NAMED_LOGCATEGORY_GENERAL,
-					      NAMED_LOGMODULE_CONTROL,
-					      ISC_LOG_DEBUG(9),
-					      "control channel '%s': %s",
-					      cfg_obj_asstring(path),
-					      isc_result_totext(result));
+					isc_log_write(
+						named_g_lctx,
+						NAMED_LOGCATEGORY_GENERAL,
+						NAMED_LOGMODULE_CONTROL,
+						ISC_LOG_DEBUG(9),
+						"control channel '%s': %s",
+						cfg_obj_asstring(path),
+						isc_result_totext(result));
 					continue;
 				}
 
@@ -1416,8 +1420,8 @@ named_controls_configure(named_controls_t *cp, const cfg_obj_t *config,
 					 * Remove the listener from the old
 					 * list, so it won't be shut down.
 					 */
-					ISC_LIST_UNLINK(cp->listeners,
-							listener, link);
+					ISC_LIST_UNLINK(cp->listeners, listener,
+							link);
 				else
 					/*
 					 * This is a new listener.
@@ -1428,8 +1432,8 @@ named_controls_configure(named_controls_t *cp, const cfg_obj_t *config,
 						     isc_sockettype_unix);
 
 				if (listener != NULL)
-					ISC_LIST_APPEND(new_listeners,
-							listener, link);
+					ISC_LIST_APPEND(new_listeners, listener,
+							link);
 			}
 		}
 	} else {
@@ -1448,35 +1452,32 @@ named_controls_configure(named_controls_t *cp, const cfg_obj_t *config,
 			} else {
 				if (isc_net_probeipv6() != ISC_R_SUCCESS)
 					continue;
-				isc_sockaddr_fromin6(&addr,
-						     &in6addr_loopback, 0);
+				isc_sockaddr_fromin6(&addr, &in6addr_loopback,
+						     0);
 			}
 			isc_sockaddr_setport(&addr, NAMED_CONTROL_PORT);
 
 			isc_sockaddr_format(&addr, socktext, sizeof(socktext));
 
-			update_listener(cp, &listener, NULL, NULL,
-					&addr, NULL, socktext,
-					isc_sockettype_tcp);
+			update_listener(cp, &listener, NULL, NULL, &addr, NULL,
+					socktext, isc_sockettype_tcp);
 
 			if (listener != NULL)
 				/*
 				 * Remove the listener from the old
 				 * list, so it won't be shut down.
 				 */
-				ISC_LIST_UNLINK(cp->listeners,
-						listener, link);
+				ISC_LIST_UNLINK(cp->listeners, listener, link);
 			else
 				/*
 				 * This is a new listener.
 				 */
-				add_listener(cp, &listener, NULL, NULL,
-					     &addr, NULL, socktext,
+				add_listener(cp, &listener, NULL, NULL, &addr,
+					     NULL, socktext,
 					     isc_sockettype_tcp);
 
 			if (listener != NULL)
-				ISC_LIST_APPEND(new_listeners,
-						listener, link);
+				ISC_LIST_APPEND(new_listeners, listener, link);
 		}
 	}
 
@@ -1498,7 +1499,8 @@ named_controls_configure(named_controls_t *cp, const cfg_obj_t *config,
 }
 
 isc_result_t
-named_controls_create(named_server_t *server, named_controls_t **ctrlsp) {
+named_controls_create(named_server_t *server, named_controls_t **ctrlsp)
+{
 	isc_mem_t *mctx = server->mctx;
 	isc_result_t result;
 	named_controls_t *controls = isc_mem_get(mctx, sizeof(*controls));
@@ -1519,7 +1521,8 @@ named_controls_create(named_server_t *server, named_controls_t **ctrlsp) {
 }
 
 void
-named_controls_destroy(named_controls_t **ctrlsp) {
+named_controls_destroy(named_controls_t **ctrlsp)
+{
 	named_controls_t *controls = *ctrlsp;
 
 	REQUIRE(ISC_LIST_EMPTY(controls->listeners));

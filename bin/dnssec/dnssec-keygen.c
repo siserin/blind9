@@ -39,8 +39,6 @@
 #include <isc/string.h>
 #include <isc/util.h>
 
-#include <pk11/site.h>
-
 #include <dns/dnssec.h>
 #include <dns/fixedname.h>
 #include <dns/keyvalues.h>
@@ -51,6 +49,7 @@
 #include <dns/secalg.h>
 
 #include <dst/dst.h>
+#include <pk11/site.h>
 
 #if USE_PKCS11
 #include <pk11/result.h>
@@ -65,10 +64,12 @@ const char *program = "dnssec-keygen";
 ISC_PLATFORM_NORETURN_PRE static void
 usage(void) ISC_PLATFORM_NORETURN_POST;
 
-static void progress(int p);
+static void
+progress(int p);
 
 static void
-usage(void) {
+usage(void)
+{
 	fprintf(stderr, "Usage:\n");
 	fprintf(stderr, "    %s [options] name\n\n", program);
 	fprintf(stderr, "Version: %s\n", VERSION);
@@ -94,14 +95,16 @@ usage(void) {
 	fprintf(stderr, "        (key size defaults are set according to\n"
 			"        algorithm and usage (ZSK or KSK)\n");
 	fprintf(stderr, "    -n <nametype>: ZONE | HOST | ENTITY | "
-					    "USER | OTHER\n");
+			"USER | OTHER\n");
 	fprintf(stderr, "        (DNSKEY generation defaults to ZONE)\n");
 	fprintf(stderr, "    -c <class>: (default: IN)\n");
 	fprintf(stderr, "    -d <digest bits> (0 => max, default)\n");
 	fprintf(stderr, "    -E <engine>:\n");
 #if USE_PKCS11
-	fprintf(stderr, "        path to PKCS#11 provider library "
-				"(default is %s)\n", PK11_LIB_LOCATION);
+	fprintf(stderr,
+		"        path to PKCS#11 provider library "
+		"(default is %s)\n",
+		PK11_LIB_LOCATION);
 #else
 	fprintf(stderr, "        name of an OpenSSL engine to use\n");
 #endif
@@ -124,32 +127,32 @@ usage(void) {
 	fprintf(stderr, "    -V: print version information\n");
 	fprintf(stderr, "Timing options:\n");
 	fprintf(stderr, "    -P date/[+-]offset/none: set key publication date "
-						"(default: now)\n");
+			"(default: now)\n");
 	fprintf(stderr, "    -P sync date/[+-]offset/none: set CDS and CDNSKEY "
-						"publication date\n");
+			"publication date\n");
 	fprintf(stderr, "    -A date/[+-]offset/none: set key activation date "
-						"(default: now)\n");
+			"(default: now)\n");
 	fprintf(stderr, "    -R date/[+-]offset/none: set key "
-						"revocation date\n");
+			"revocation date\n");
 	fprintf(stderr, "    -I date/[+-]offset/none: set key "
-						"inactivation date\n");
+			"inactivation date\n");
 	fprintf(stderr, "    -D date/[+-]offset/none: set key deletion date\n");
 	fprintf(stderr, "    -D sync date/[+-]offset/none: set CDS and CDNSKEY "
-						"deletion date\n");
+			"deletion date\n");
 
 	fprintf(stderr, "    -G: generate key only; do not set -P or -A\n");
 	fprintf(stderr, "    -C: generate a backward-compatible key, omitting "
 			"all dates\n");
 	fprintf(stderr, "    -S <key>: generate a successor to an existing "
-				      "key\n");
+			"key\n");
 	fprintf(stderr, "    -i <interval>: prepublication interval for "
-					   "successor key "
-					   "(default: 30 days)\n");
+			"successor key "
+			"(default: 30 days)\n");
 	fprintf(stderr, "Output:\n");
 	fprintf(stderr, "     K<name>+<alg>+<id>.key, "
 			"K<name>+<alg>+<id>.private\n");
 
-	exit (-1);
+	exit(-1);
 }
 
 static void
@@ -173,57 +176,58 @@ progress(int p)
 	default:
 		break;
 	}
-	(void) putc(c, stderr);
-	(void) fflush(stderr);
+	(void)putc(c, stderr);
+	(void)fflush(stderr);
 }
 
 int
-main(int argc, char **argv) {
-	char		*algname = NULL, *freeit = NULL;
-	char		*nametype = NULL, *type = NULL;
-	char		*classname = NULL;
-	char		*endp;
-	dst_key_t	*key = NULL;
-	dns_fixedname_t	fname;
-	dns_name_t	*name;
-	uint16_t	flags = 0, kskflag = 0, revflag = 0;
-	dns_secalg_t	alg;
-	bool	conflict = false, null_key = false;
-	bool	oldstyle = false;
-	isc_mem_t	*mctx = NULL;
-	int		ch, generator = 0, param = 0;
-	int		protocol = -1, size = -1, signatory = 0;
-	isc_result_t	ret;
+main(int argc, char **argv)
+{
+	char *algname = NULL, *freeit = NULL;
+	char *nametype = NULL, *type = NULL;
+	char *classname = NULL;
+	char *endp;
+	dst_key_t *key = NULL;
+	dns_fixedname_t fname;
+	dns_name_t *name;
+	uint16_t flags = 0, kskflag = 0, revflag = 0;
+	dns_secalg_t alg;
+	bool conflict = false, null_key = false;
+	bool oldstyle = false;
+	isc_mem_t *mctx = NULL;
+	int ch, generator = 0, param = 0;
+	int protocol = -1, size = -1, signatory = 0;
+	isc_result_t ret;
 	isc_textregion_t r;
-	char		filename[255];
-	const char	*directory = NULL;
-	const char	*predecessor = NULL;
-	dst_key_t	*prevkey = NULL;
-	isc_buffer_t	buf;
-	isc_log_t	*log = NULL;
-	const char	*engine = NULL;
+	char filename[255];
+	const char *directory = NULL;
+	const char *predecessor = NULL;
+	dst_key_t *prevkey = NULL;
+	isc_buffer_t buf;
+	isc_log_t *log = NULL;
+	const char *engine = NULL;
 	dns_rdataclass_t rdclass;
-	int		options = DST_TYPE_PRIVATE | DST_TYPE_PUBLIC;
-	int		dbits = 0;
-	dns_ttl_t	ttl = 0;
-	bool	use_nsec3 = false;
-	isc_stdtime_t	publish = 0, activate = 0, revokekey = 0;
-	isc_stdtime_t	inactive = 0, deltime = 0;
-	isc_stdtime_t	now;
-	int		prepub = -1;
-	bool	setpub = false, setact = false;
-	bool	setrev = false, setinact = false;
-	bool	setdel = false, setttl = false;
-	bool	unsetpub = false, unsetact = false;
-	bool	unsetrev = false, unsetinact = false;
-	bool	unsetdel = false;
-	bool	genonly = false;
-	bool	quiet = false;
-	bool	show_progress = false;
-	unsigned char	c;
-	isc_stdtime_t	syncadd = 0, syncdel = 0;
-	bool	setsyncadd = false;
-	bool	setsyncdel = false;
+	int options = DST_TYPE_PRIVATE | DST_TYPE_PUBLIC;
+	int dbits = 0;
+	dns_ttl_t ttl = 0;
+	bool use_nsec3 = false;
+	isc_stdtime_t publish = 0, activate = 0, revokekey = 0;
+	isc_stdtime_t inactive = 0, deltime = 0;
+	isc_stdtime_t now;
+	int prepub = -1;
+	bool setpub = false, setact = false;
+	bool setrev = false, setinact = false;
+	bool setdel = false, setttl = false;
+	bool unsetpub = false, unsetact = false;
+	bool unsetrev = false, unsetinact = false;
+	bool unsetdel = false;
+	bool genonly = false;
+	bool quiet = false;
+	bool show_progress = false;
+	unsigned char c;
+	isc_stdtime_t syncadd = 0, syncdel = 0;
+	bool setsyncadd = false;
+	bool setsyncdel = false;
 
 	if (argc == 1)
 		usage();
@@ -238,8 +242,9 @@ main(int argc, char **argv) {
 	/*
 	 * Process memory debugging argument first.
 	 */
-#define CMDLINE_FLAGS "3A:a:b:Cc:D:d:E:eFf:Gg:hI:i:K:L:m:n:P:p:qR:r:S:s:T:t:" \
-		      "v:V"
+#define CMDLINE_FLAGS                                                          \
+	"3A:a:b:Cc:D:d:E:eFf:Gg:hI:i:K:L:m:n:P:p:qR:r:S:s:T:t:"                \
+	"v:V"
 	while ((ch = isc_commandline_parse(argc, argv, CMDLINE_FLAGS)) != -1) {
 		switch (ch) {
 		case 'm':
@@ -265,7 +270,7 @@ main(int argc, char **argv) {
 	isc_stdtime_get(&now);
 
 	while ((ch = isc_commandline_parse(argc, argv, CMDLINE_FLAGS)) != -1) {
-	    switch (ch) {
+		switch (ch) {
 		case '3':
 			use_nsec3 = true;
 			break;
@@ -292,9 +297,8 @@ main(int argc, char **argv) {
 			engine = isc_commandline_argument;
 			break;
 		case 'e':
-			fprintf(stderr,
-				"phased-out option -e "
-				"(was 'use (RSA) large exponent')\n");
+			fprintf(stderr, "phased-out option -e "
+					"(was 'use (RSA) large exponent')\n");
 			break;
 		case 'f':
 			c = (unsigned char)(isc_commandline_argument[0]);
@@ -307,8 +311,7 @@ main(int argc, char **argv) {
 				      isc_commandline_argument);
 			break;
 		case 'g':
-			generator = strtol(isc_commandline_argument,
-					   &endp, 10);
+			generator = strtol(isc_commandline_argument, &endp, 10);
 			if (*endp != '\0' || generator <= 0)
 				fatal("-g requires a positive number");
 			break;
@@ -316,8 +319,8 @@ main(int argc, char **argv) {
 			directory = isc_commandline_argument;
 			ret = try_dir(directory);
 			if (ret != ISC_R_SUCCESS)
-				fatal("cannot open directory %s: %s",
-				      directory, isc_result_totext(ret));
+				fatal("cannot open directory %s: %s", directory,
+				      isc_result_totext(ret));
 			break;
 		case 'L':
 			ttl = strtottl(isc_commandline_argument);
@@ -342,8 +345,7 @@ main(int argc, char **argv) {
 			      "System random data is always used.\n");
 			break;
 		case 's':
-			signatory = strtol(isc_commandline_argument,
-					   &endp, 10);
+			signatory = strtol(isc_commandline_argument, &endp, 10);
 			if (*endp != '\0' || signatory < 0 || signatory > 15)
 				fatal("-s must be followed by a number "
 				      "[0..15]");
@@ -351,8 +353,8 @@ main(int argc, char **argv) {
 		case 'T':
 			if (strcasecmp(isc_commandline_argument, "KEY") == 0)
 				options |= DST_TYPE_KEY;
-			else if (strcasecmp(isc_commandline_argument,
-				 "DNSKEY") == 0)
+			else if (strcasecmp(isc_commandline_argument, "DNSKE"
+								      "Y") == 0)
 				/* default behavior */
 				;
 			else
@@ -382,39 +384,39 @@ main(int argc, char **argv) {
 					      "once");
 
 				syncadd = strtotime(isc_commandline_argument,
-						   now, now, &setsyncadd);
+						    now, now, &setsyncadd);
 				break;
 			}
 			(void)isoptarg("dnskey", argv, usage);
 			if (setpub || unsetpub)
 				fatal("-P specified more than once");
 
-			publish = strtotime(isc_commandline_argument,
-					    now, now, &setpub);
+			publish = strtotime(isc_commandline_argument, now, now,
+					    &setpub);
 			unsetpub = !setpub;
 			break;
 		case 'A':
 			if (setact || unsetact)
 				fatal("-A specified more than once");
 
-			activate = strtotime(isc_commandline_argument,
-					     now, now, &setact);
+			activate = strtotime(isc_commandline_argument, now, now,
+					     &setact);
 			unsetact = !setact;
 			break;
 		case 'R':
 			if (setrev || unsetrev)
 				fatal("-R specified more than once");
 
-			revokekey = strtotime(isc_commandline_argument,
-					   now, now, &setrev);
+			revokekey = strtotime(isc_commandline_argument, now,
+					      now, &setrev);
 			unsetrev = !setrev;
 			break;
 		case 'I':
 			if (setinact || unsetinact)
 				fatal("-I specified more than once");
 
-			inactive = strtotime(isc_commandline_argument,
-					     now, now, &setinact);
+			inactive = strtotime(isc_commandline_argument, now, now,
+					     &setinact);
 			unsetinact = !setinact;
 			break;
 		case 'D':
@@ -425,15 +427,15 @@ main(int argc, char **argv) {
 					      "once");
 
 				syncdel = strtotime(isc_commandline_argument,
-						   now, now, &setsyncdel);
+						    now, now, &setsyncdel);
 				break;
 			}
 			(void)isoptarg("dnskey", argv, usage);
 			if (setdel || unsetdel)
 				fatal("-D specified more than once");
 
-			deltime = strtotime(isc_commandline_argument,
-					    now, now, &setdel);
+			deltime = strtotime(isc_commandline_argument, now, now,
+					    &setdel);
 			unsetdel = !setdel;
 			break;
 		case 'S':
@@ -459,8 +461,8 @@ main(int argc, char **argv) {
 			version(program);
 
 		default:
-			fprintf(stderr, "%s: unhandled option -%c\n",
-				program, isc_commandline_option);
+			fprintf(stderr, "%s: unhandled option -%c\n", program,
+				isc_commandline_option);
 			exit(1);
 		}
 	}
@@ -470,8 +472,7 @@ main(int argc, char **argv) {
 
 	ret = dst_lib_init(mctx, engine);
 	if (ret != ISC_R_SUCCESS)
-		fatal("could not initialize dst: %s",
-		      isc_result_totext(ret));
+		fatal("could not initialize dst: %s", isc_result_totext(ret));
 
 	setup_logging(mctx, &log);
 
@@ -527,7 +528,8 @@ main(int argc, char **argv) {
 				break;
 			default:
 				fatal("%s is incompatible with NSEC3; "
-				      "do not use the -3 option", algname);
+				      "do not use the -3 option",
+				      algname);
 			}
 		}
 
@@ -556,9 +558,11 @@ main(int argc, char **argv) {
 			case DST_ALG_RSASHA512:
 				size = 2048;
 				if (verbose > 0) {
-					fprintf(stderr, "key size not "
-							"specified; defaulting"
-							" to %d\n", size);
+					fprintf(stderr,
+						"key size not "
+						"specified; defaulting"
+						" to %d\n",
+						size);
 				}
 				break;
 			case DST_ALG_ECDSA256:
@@ -624,8 +628,8 @@ main(int argc, char **argv) {
 					    DST_TYPE_PUBLIC | DST_TYPE_PRIVATE,
 					    mctx, &prevkey);
 		if (ret != ISC_R_SUCCESS)
-			fatal("Invalid keyfile %s: %s",
-			      predecessor, isc_result_totext(ret));
+			fatal("Invalid keyfile %s: %s", predecessor,
+			      isc_result_totext(ret));
 		if (!dst_key_isprivate(prevkey))
 			fatal("%s is not a private key", predecessor);
 
@@ -645,13 +649,15 @@ main(int argc, char **argv) {
 		if (ret != ISC_R_SUCCESS)
 			fatal("Key %s has no activation date.\n\t"
 			      "You must use dnssec-settime -A to set one "
-			      "before generating a successor.", keystr);
+			      "before generating a successor.",
+			      keystr);
 
 		ret = dst_key_gettime(prevkey, DST_TIME_INACTIVE, &activate);
 		if (ret != ISC_R_SUCCESS)
 			fatal("Key %s has no inactivation date.\n\t"
 			      "You must use dnssec-settime -I to set one "
-			      "before generating a successor.", keystr);
+			      "before generating a successor.",
+			      keystr);
 
 		publish = activate - prepub;
 		if (publish < now)
@@ -661,15 +667,18 @@ main(int argc, char **argv) {
 			      "Either change the inactivation date with "
 			      "dnssec-settime -I,\n\t"
 			      "or use the -i option to set a shorter "
-			      "prepublication interval.", keystr);
+			      "prepublication interval.",
+			      keystr);
 
 		ret = dst_key_gettime(prevkey, DST_TIME_DELETE, &when);
 		if (ret != ISC_R_SUCCESS)
-			fprintf(stderr, "%s: WARNING: Key %s has no removal "
-					"date;\n\t it will remain in the zone "
-					"indefinitely after rollover.\n\t "
-					"You can use dnssec-settime -D to "
-					"change this.\n", program, keystr);
+			fprintf(stderr,
+				"%s: WARNING: Key %s has no removal "
+				"date;\n\t it will remain in the zone "
+				"indefinitely after rollover.\n\t "
+				"You can use dnssec-settime -D to "
+				"change this.\n",
+				program, keystr);
 
 		setpub = setact = true;
 	}
@@ -709,12 +718,12 @@ main(int argc, char **argv) {
 	if (nametype == NULL) {
 		if ((options & DST_TYPE_KEY) != 0) /* KEY */
 			fatal("no nametype specified");
-		flags |= DNS_KEYOWNER_ZONE;	/* DNSKEY */
+		flags |= DNS_KEYOWNER_ZONE; /* DNSKEY */
 	} else if (strcasecmp(nametype, "zone") == 0)
 		flags |= DNS_KEYOWNER_ZONE;
-	else if ((options & DST_TYPE_KEY) != 0)	{ /* KEY */
+	else if ((options & DST_TYPE_KEY) != 0) { /* KEY */
 		if (strcasecmp(nametype, "host") == 0 ||
-			 strcasecmp(nametype, "entity") == 0)
+		    strcasecmp(nametype, "entity") == 0)
 			flags |= DNS_KEYOWNER_ENTITY;
 		else if (strcasecmp(nametype, "user") == 0)
 			flags |= DNS_KEYOWNER_USER;
@@ -728,7 +737,7 @@ main(int argc, char **argv) {
 	if (directory == NULL)
 		directory = ".";
 
-	if ((options & DST_TYPE_KEY) != 0)  /* KEY */
+	if ((options & DST_TYPE_KEY) != 0) /* KEY */
 		flags |= signatory;
 	else if ((flags & DNS_KEYOWNER_ZONE) != 0) { /* DNSKEY */
 		flags |= kskflag;
@@ -749,13 +758,12 @@ main(int argc, char **argv) {
 	}
 
 	if ((flags & DNS_KEYFLAG_OWNERMASK) == DNS_KEYOWNER_ZONE &&
-	    alg == DNS_KEYALG_DH)
-	{
+	    alg == DNS_KEYALG_DH) {
 		fatal("a key with algorithm '%s' cannot be a zone key",
 		      algname);
 	}
 
-	switch(alg) {
+	switch (alg) {
 	case DNS_KEYALG_RSASHA1:
 	case DNS_KEYALG_NSEC3RSASHA1:
 	case DNS_KEYALG_RSASHA256:
@@ -801,8 +809,8 @@ main(int argc, char **argv) {
 			char algstr[DNS_SECALG_FORMATSIZE];
 			dns_name_format(name, namestr, sizeof(namestr));
 			dns_secalg_format(alg, algstr, sizeof(algstr));
-			fatal("failed to generate key %s/%s: %s\n",
-			      namestr, algstr, isc_result_totext(ret));
+			fatal("failed to generate key %s/%s: %s\n", namestr,
+			      algstr, isc_result_totext(ret));
 			/* NOTREACHED */
 			exit(-1);
 		}
@@ -848,12 +856,14 @@ main(int argc, char **argv) {
 
 			if (setrev) {
 				if (kskflag == 0)
-					fprintf(stderr, "%s: warning: Key is "
+					fprintf(stderr,
+						"%s: warning: Key is "
 						"not flagged as a KSK, but -R "
 						"was used. Revoking a ZSK is "
 						"legal, but undefined.\n",
 						program);
-				dst_key_settime(key, DST_TIME_REVOKE, revokekey);
+				dst_key_settime(key, DST_TIME_REVOKE,
+						revokekey);
 			}
 
 			if (setinact)
@@ -862,7 +872,8 @@ main(int argc, char **argv) {
 
 			if (setdel) {
 				if (setinact && deltime < inactive)
-					fprintf(stderr, "%s: warning: Key is "
+					fprintf(stderr,
+						"%s: warning: Key is "
 						"scheduled to be deleted "
 						"before it is scheduled to be "
 						"made inactive.\n",
@@ -879,10 +890,9 @@ main(int argc, char **argv) {
 						syncdel);
 
 		} else {
-			if (setpub || setact || setrev || setinact ||
-			    setdel || unsetpub || unsetact ||
-			    unsetrev || unsetinact || unsetdel || genonly ||
-			    setsyncadd || setsyncdel)
+			if (setpub || setact || setrev || setinact || setdel ||
+			    unsetpub || unsetact || unsetrev || unsetinact ||
+			    unsetdel || genonly || setsyncadd || setsyncdel)
 				fatal("cannot use -C together with "
 				      "-P, -A, -R, -I, -D, or -G options");
 			/*
@@ -910,8 +920,8 @@ main(int argc, char **argv) {
 
 			if (verbose > 0) {
 				isc_buffer_clear(&buf);
-				ret = dst_key_buildfilename(key, 0,
-							    directory, &buf);
+				ret = dst_key_buildfilename(key, 0, directory,
+							    &buf);
 				if (ret == ISC_R_SUCCESS)
 					fprintf(stderr,
 						"%s: %s already exists, or "

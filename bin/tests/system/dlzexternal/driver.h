@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 /*
  * This header includes the declarations of entry points.
  */

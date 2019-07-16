@@ -4,6 +4,8 @@
  * Copyright (C) 2009-2015  Red Hat ; see COPYRIGHT for license
  */
 
+#include "syncptr.h"
+
 #include <isc/event.h>
 #include <isc/eventclass.h>
 #include <isc/netaddr.h>
@@ -17,7 +19,6 @@
 #include <dns/zone.h>
 
 #include "instance.h"
-#include "syncptr.h"
 #include "util.h"
 
 /* Almost random value. See eventclass.h */
@@ -45,7 +46,8 @@ struct syncptrevent {
  *
  */
 static void
-syncptr_write(isc_task_t *task, isc_event_t *event) {
+syncptr_write(isc_task_t *task, isc_event_t *event)
+{
 	syncptrevent_t *pevent = (syncptrevent_t *)event;
 	dns_dbversion_t *version = NULL;
 	dns_db_t *db = NULL;
@@ -105,8 +107,8 @@ cleanup:
  * 			  does not exist or is not managed by this driver.
  */
 static isc_result_t
-syncptr_find_zone(sample_instance_t *inst, dns_rdata_t *rdata,
-		  dns_name_t *name, dns_zone_t **zone)
+syncptr_find_zone(sample_instance_t *inst, dns_rdata_t *rdata, dns_name_t *name,
+		  dns_zone_t **zone)
 {
 	isc_result_t result;
 	isc_netaddr_t isc_ip; /* internal net address representation */
@@ -160,8 +162,7 @@ syncptr_find_zone(sample_instance_t *inst, dns_rdata_t *rdata,
 	/* Make sure that the zone is managed by this driver. */
 	if (*zone != inst->zone1 && *zone != inst->zone2) {
 		dns_zone_detach(zone);
-		log_write(ISC_LOG_INFO,
-			  "syncptr_find_zone: zone not managed");
+		log_write(ISC_LOG_INFO, "syncptr_find_zone: zone not managed");
 		result = ISC_R_NOTFOUND;
 	}
 
@@ -192,8 +193,8 @@ cleanup:
  * 			 memory allocation error, etc.
  */
 static isc_result_t
-syncptr(sample_instance_t *inst, dns_name_t *name,
-	dns_rdata_t *addr_rdata, dns_ttl_t ttl, dns_diffop_t op)
+syncptr(sample_instance_t *inst, dns_name_t *name, dns_rdata_t *addr_rdata,
+	dns_ttl_t ttl, dns_diffop_t op)
 {
 	isc_result_t result;
 	isc_mem_t *mctx = inst->mctx;
@@ -209,10 +210,9 @@ syncptr(sample_instance_t *inst, dns_name_t *name,
 	DNS_RDATACOMMON_INIT(&ptr_struct, dns_rdatatype_ptr, dns_rdataclass_in);
 	dns_name_init(&ptr_struct.ptr, NULL);
 
-	pevent = (syncptrevent_t *)isc_event_allocate(inst->mctx, inst,
-						      SYNCPTR_WRITE_EVENT,
-						      syncptr_write, NULL,
-						      sizeof(syncptrevent_t));
+	pevent = (syncptrevent_t *)isc_event_allocate(
+		inst->mctx, inst, SYNCPTR_WRITE_EVENT, syncptr_write, NULL,
+		sizeof(syncptrevent_t));
 	if (pevent == NULL) {
 		result = ISC_R_NOMEMORY;
 		goto cleanup;
@@ -233,12 +233,10 @@ syncptr(sample_instance_t *inst, dns_name_t *name,
 	/* Reverse zone is managed by this driver, prepare PTR record */
 	pevent->zone = NULL;
 	dns_zone_attach(ptr_zone, &pevent->zone);
-	result = dns_name_copy(name,
-			       dns_fixedname_name(&pevent->ptr_target_name),
-			       NULL);
+	result = dns_name_copy(
+		name, dns_fixedname_name(&pevent->ptr_target_name), NULL);
 	if (result != ISC_R_SUCCESS) {
-		log_write(ISC_LOG_ERROR,
-			  "syncptr: dns_name_copy -> %s\n",
+		log_write(ISC_LOG_ERROR, "syncptr: dns_name_copy -> %s\n",
 			  isc_result_totext(result));
 		goto cleanup;
 	}
@@ -295,14 +293,13 @@ cleanup:
  * 			 the rdata
  */
 isc_result_t
-syncptrs(sample_instance_t *inst, dns_name_t *name,
-	 dns_rdataset_t *rdataset, dns_diffop_t op)
+syncptrs(sample_instance_t *inst, dns_name_t *name, dns_rdataset_t *rdataset,
+	 dns_diffop_t op)
 {
 	isc_result_t result;
 	dns_rdata_t rdata = DNS_RDATA_INIT;
 
-	for (result = dns_rdataset_first(rdataset);
-	     result == ISC_R_SUCCESS;
+	for (result = dns_rdataset_first(rdataset); result == ISC_R_SUCCESS;
 	     result = dns_rdataset_next(rdataset)) {
 		dns_rdataset_current(rdataset, &rdata);
 		result = syncptr(inst, name, &rdata, rdataset->ttl, op);

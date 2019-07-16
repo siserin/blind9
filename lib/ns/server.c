@@ -17,20 +17,21 @@
 #include <isc/stats.h>
 #include <isc/util.h>
 
-#include <dns/tkey.h>
 #include <dns/stats.h>
+#include <dns/tkey.h>
 
 #include <ns/query.h>
 #include <ns/server.h>
 #include <ns/stats.h>
 
-#define SCTX_MAGIC		ISC_MAGIC('S','c','t','x')
-#define SCTX_VALID(s)		ISC_MAGIC_VALID(s, SCTX_MAGIC)
+#define SCTX_MAGIC ISC_MAGIC('S', 'c', 't', 'x')
+#define SCTX_VALID(s) ISC_MAGIC_VALID(s, SCTX_MAGIC)
 
-#define CHECKFATAL(op) 						\
-	do { result = (op);					\
-		RUNTIME_CHECK(result == ISC_R_SUCCESS);		\
-	} while (0)						\
+#define CHECKFATAL(op)                                                         \
+	do {                                                                   \
+		result = (op);                                                 \
+		RUNTIME_CHECK(result == ISC_R_SUCCESS);                        \
+	} while (0)
 
 isc_result_t
 ns_server_create(isc_mem_t *mctx, ns_matchview_t matchingview,
@@ -113,7 +114,8 @@ ns_server_create(isc_mem_t *mctx, ns_matchview_t matchingview,
 }
 
 void
-ns_server_attach(ns_server_t *src, ns_server_t **dest) {
+ns_server_attach(ns_server_t *src, ns_server_t **dest)
+{
 	REQUIRE(SCTX_VALID(src));
 	REQUIRE(dest != NULL && *dest == NULL);
 
@@ -123,7 +125,8 @@ ns_server_attach(ns_server_t *src, ns_server_t **dest) {
 }
 
 void
-ns_server_detach(ns_server_t **sctxp) {
+ns_server_detach(ns_server_t **sctxp)
+{
 	ns_server_t *sctx;
 
 	REQUIRE(sctxp != NULL && SCTX_VALID(*sctxp));
@@ -187,7 +190,8 @@ ns_server_detach(ns_server_t **sctxp) {
 }
 
 isc_result_t
-ns_server_setserverid(ns_server_t *sctx, const char *serverid) {
+ns_server_setserverid(ns_server_t *sctx, const char *serverid)
+{
 	REQUIRE(SCTX_VALID(sctx));
 
 	if (sctx->server_id != NULL) {
@@ -223,8 +227,8 @@ ns_server_gettimeouts(ns_server_t *sctx, unsigned int *initial,
 		      unsigned int *advertised)
 {
 	REQUIRE(SCTX_VALID(sctx));
-	REQUIRE(initial != NULL && idle != NULL &&
-		keepalive != NULL && advertised != NULL);
+	REQUIRE(initial != NULL && idle != NULL && keepalive != NULL &&
+		advertised != NULL);
 
 	*initial = sctx->initialtimo;
 	*idle = sctx->idletimo;
@@ -233,8 +237,7 @@ ns_server_gettimeouts(ns_server_t *sctx, unsigned int *initial,
 }
 
 void
-ns_server_setoption(ns_server_t *sctx, unsigned int option,
-		    bool value)
+ns_server_setoption(ns_server_t *sctx, unsigned int option, bool value)
 {
 	REQUIRE(SCTX_VALID(sctx));
 	if (value) {
@@ -245,7 +248,8 @@ ns_server_setoption(ns_server_t *sctx, unsigned int option,
 }
 
 bool
-ns_server_getoption(ns_server_t *sctx, unsigned int option) {
+ns_server_getoption(ns_server_t *sctx, unsigned int option)
+{
 	REQUIRE(SCTX_VALID(sctx));
 
 	return ((sctx->options & option) != 0);

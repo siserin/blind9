@@ -117,29 +117,29 @@ static struct afd {
 	int a_af;
 	size_t a_addrlen;
 	size_t a_socklen;
-} afdl [] = {
+} afdl[] = {
 	/*!
 	 * First entry is linked last...
 	 */
 	{ AF_INET, sizeof(struct in_addr), sizeof(struct sockaddr_in) },
 	{ AF_INET6, sizeof(struct in6_addr), sizeof(struct sockaddr_in6) },
-	{0, 0, 0},
+	{ 0, 0, 0 },
 };
 
 /*!
  * The test against 0 is there to keep the Solaris compiler
  * from complaining about "end-of-loop code not reached".
  */
-#define ERR(code) \
-	do { result = (code);			\
-		if (result != 0) goto cleanup;	\
+#define ERR(code)                                                              \
+	do {                                                                   \
+		result = (code);                                               \
+		if (result != 0)                                               \
+			goto cleanup;                                          \
 	} while (0)
 
 int
-getnameinfo(const struct sockaddr *sa, socklen_t salen,
-	    char *host, socklen_t hostlen,
-	    char *serv, socklen_t servlen,
-	    int flags)
+getnameinfo(const struct sockaddr *sa, socklen_t salen, char *host,
+	    socklen_t hostlen, char *serv, socklen_t servlen, int flags)
 {
 	struct afd *afd = NULL;
 	struct servent *sp;
@@ -155,8 +155,8 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen,
 	unsigned char pfx;
 #endif
 	char numserv[sizeof("65000")];
-	char numaddr[sizeof("abcd:abcd:abcd:abcd:abcd:abcd:255.255.255.255")
-		    + 1 + sizeof("4294967295")];
+	char numaddr[sizeof("abcd:abcd:abcd:abcd:abcd:abcd:255.255.255.255") +
+		     1 + sizeof("4294967295")];
 	const char *proto;
 	int result = SUCCESS;
 
@@ -177,7 +177,7 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen,
 		}
 	ERR(EAI_FAMILY);
 
- found:
+found:
 	if (salen != afd->a_socklen)
 		ERR(EAI_FAIL);
 
@@ -241,8 +241,8 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen,
 		 * means that the caller does not want the result.
 		 */
 	} else if ((flags & NI_NUMERICHOST) != 0) {
-		if (inet_ntop(afd->a_af, addr, numaddr, sizeof(numaddr))
-		    == NULL)
+		if (inet_ntop(afd->a_af, addr, numaddr, sizeof(numaddr)) ==
+		    NULL)
 			ERR(EAI_SYSTEM);
 #if defined(IRS_HAVE_SIN6_SCOPE_ID)
 		if (afd->a_af == AF_INET6 &&
@@ -258,11 +258,12 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen,
 #endif
 			if (stringscope == NULL) {
 				snprintf(p, sizeof(numaddr) - (p - numaddr),
-				    "%%%u",
-				    ((const struct sockaddr_in6 *)sa)->sin6_scope_id);
+					 "%%%u",
+					 ((const struct sockaddr_in6 *)sa)
+						 ->sin6_scope_id);
 			} else {
 				snprintf(p, sizeof(numaddr) - (p - numaddr),
-				    "%%%s", stringscope);
+					 "%%%s", stringscope);
 			}
 		}
 #endif
@@ -297,11 +298,9 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen,
 
 		/* Get the PTR RRset */
 		ISC_LIST_INIT(answerlist);
-		iresult = dns_client_resolve(client, ptrname,
-					     dns_rdataclass_in,
-					     dns_rdatatype_ptr,
-					     DNS_CLIENTRESOPT_ALLOWRUN,
-					     &answerlist);
+		iresult = dns_client_resolve(
+			client, ptrname, dns_rdataclass_in, dns_rdatatype_ptr,
+			DNS_CLIENTRESOPT_ALLOWRUN, &answerlist);
 		switch (iresult) {
 		case ISC_R_SUCCESS:
 		/*
@@ -357,9 +356,8 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen,
 
 					isc_buffer_init(&b, hoststr,
 							sizeof(hoststr));
-					iresult =
-						dns_name_totext(&rdata_ptr.ptr,
-								true, &b);
+					iresult = dns_name_totext(
+						&rdata_ptr.ptr, true, &b);
 					dns_rdata_freestruct(&rdata_ptr);
 					if (iresult == ISC_R_SUCCESS) {
 						/*
@@ -373,7 +371,6 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen,
 							&b, &hostregion);
 						goto ptrfound;
 					}
-
 				}
 			}
 		}
@@ -387,8 +384,7 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen,
 			}
 			if (hostregion.length + 1 > hostlen)
 				ERR(EAI_OVERFLOW);
-			snprintf(host, hostlen, "%.*s",
-				 (int)hostregion.length,
+			snprintf(host, hostlen, "%.*s", (int)hostregion.length,
 				 (char *)hostregion.base);
 		} else {
 			if ((flags & NI_NAMEREQD) != 0)
@@ -403,6 +399,6 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen,
 	}
 	result = SUCCESS;
 
- cleanup:
+cleanup:
 	return (result);
 }

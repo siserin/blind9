@@ -11,10 +11,9 @@
 
 #if HAVE_CMOCKA
 
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
-
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -30,7 +29,8 @@
 #include "dnstest.h"
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -42,7 +42,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	dns_test_end();
@@ -52,7 +53,8 @@ _teardown(void **state) {
 
 /* test trimming of rdataset TTLs */
 static void
-trimttl(void **state) {
+trimttl(void **state)
+{
 	dns_rdataset_t rdataset, sigrdataset;
 	dns_rdata_rrsig_t rrsig;
 	isc_stdtime_t ttltimenow, ttltimeexpire;
@@ -70,8 +72,7 @@ trimttl(void **state) {
 	rrsig.timeexpire = ttltimeexpire;
 	rrsig.originalttl = 1000;
 
-	dns_rdataset_trimttl(&rdataset, &sigrdataset, &rrsig, ttltimenow,
-			     true);
+	dns_rdataset_trimttl(&rdataset, &sigrdataset, &rrsig, ttltimenow, true);
 	assert_int_equal(rdataset.ttl, 800);
 	assert_int_equal(sigrdataset.ttl, 800);
 
@@ -80,8 +81,7 @@ trimttl(void **state) {
 	rrsig.timeexpire = ttltimenow - 200;
 	rrsig.originalttl = 1000;
 
-	dns_rdataset_trimttl(&rdataset, &sigrdataset, &rrsig, ttltimenow,
-			     true);
+	dns_rdataset_trimttl(&rdataset, &sigrdataset, &rrsig, ttltimenow, true);
 	assert_int_equal(rdataset.ttl, 120);
 	assert_int_equal(sigrdataset.ttl, 120);
 
@@ -100,8 +100,7 @@ trimttl(void **state) {
 	rrsig.timeexpire = ttltimeexpire;
 	rrsig.originalttl = 1000;
 
-	dns_rdataset_trimttl(&rdataset, &sigrdataset, &rrsig, ttltimenow,
-			     true);
+	dns_rdataset_trimttl(&rdataset, &sigrdataset, &rrsig, ttltimenow, true);
 	assert_int_equal(rdataset.ttl, 800);
 	assert_int_equal(sigrdataset.ttl, 800);
 
@@ -110,8 +109,7 @@ trimttl(void **state) {
 	rrsig.timeexpire = ttltimenow - 200;
 	rrsig.originalttl = 1000;
 
-	dns_rdataset_trimttl(&rdataset, &sigrdataset, &rrsig, ttltimenow,
-			     true);
+	dns_rdataset_trimttl(&rdataset, &sigrdataset, &rrsig, ttltimenow, true);
 	assert_int_equal(rdataset.ttl, 120);
 	assert_int_equal(sigrdataset.ttl, 120);
 
@@ -127,7 +125,8 @@ trimttl(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test_setup_teardown(trimttl, _setup, _teardown),
 	};
@@ -140,7 +139,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

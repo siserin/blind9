@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 /*! \file */
 
 #include <stdbool.h>
@@ -24,11 +23,11 @@
  ***/
 
 struct isc_taskpool {
-	isc_mem_t *			mctx;
-	isc_taskmgr_t *			tmgr;
-	unsigned int			ntasks;
-	unsigned int			quantum;
-	isc_task_t **			tasks;
+	isc_mem_t *mctx;
+	isc_taskmgr_t *tmgr;
+	unsigned int ntasks;
+	unsigned int quantum;
+	isc_task_t **tasks;
 };
 
 /***
@@ -64,9 +63,8 @@ alloc_pool(isc_taskmgr_t *tmgr, isc_mem_t *mctx, unsigned int ntasks,
 }
 
 isc_result_t
-isc_taskpool_create(isc_taskmgr_t *tmgr, isc_mem_t *mctx,
-		    unsigned int ntasks, unsigned int quantum,
-		    isc_taskpool_t **poolp)
+isc_taskpool_create(isc_taskmgr_t *tmgr, isc_mem_t *mctx, unsigned int ntasks,
+		    unsigned int quantum, isc_taskpool_t **poolp)
 {
 	unsigned int i;
 	isc_taskpool_t *pool = NULL;
@@ -94,12 +92,14 @@ isc_taskpool_create(isc_taskmgr_t *tmgr, isc_mem_t *mctx,
 }
 
 void
-isc_taskpool_gettask(isc_taskpool_t *pool, isc_task_t **targetp) {
+isc_taskpool_gettask(isc_taskpool_t *pool, isc_task_t **targetp)
+{
 	isc_task_attach(pool->tasks[isc_random_uniform(pool->ntasks)], targetp);
 }
 
 int
-isc_taskpool_size(isc_taskpool_t *pool) {
+isc_taskpool_size(isc_taskpool_t *pool)
+{
 	REQUIRE(pool != NULL);
 	return (pool->ntasks);
 }
@@ -120,8 +120,8 @@ isc_taskpool_expand(isc_taskpool_t **sourcep, unsigned int size,
 		unsigned int i;
 
 		/* Allocate a new pool structure */
-		result = alloc_pool(pool->tmgr, pool->mctx, size,
-				    pool->quantum, &newpool);
+		result = alloc_pool(pool->tmgr, pool->mctx, size, pool->quantum,
+				    &newpool);
 		if (result != ISC_R_SUCCESS)
 			return (result);
 
@@ -152,7 +152,8 @@ isc_taskpool_expand(isc_taskpool_t **sourcep, unsigned int size,
 }
 
 void
-isc_taskpool_destroy(isc_taskpool_t **poolp) {
+isc_taskpool_destroy(isc_taskpool_t **poolp)
+{
 	unsigned int i;
 	isc_taskpool_t *pool = *poolp;
 	for (i = 0; i < pool->ntasks; i++) {
@@ -166,7 +167,8 @@ isc_taskpool_destroy(isc_taskpool_t **poolp) {
 }
 
 void
-isc_taskpool_setprivilege(isc_taskpool_t *pool, bool priv) {
+isc_taskpool_setprivilege(isc_taskpool_t *pool, bool priv)
+{
 	unsigned int i;
 
 	REQUIRE(pool != NULL);

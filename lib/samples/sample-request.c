@@ -10,15 +10,13 @@
  */
 
 #ifndef WIN32
-#include <sys/types.h>
-#include <sys/socket.h>
-
-#include <netinet/in.h>
-
-#include <arpa/inet.h>
-
 #include <netdb.h>
 #include <unistd.h>
+
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #endif
 
 #include <stdio.h>
@@ -57,7 +55,8 @@ ISC_PLATFORM_NORETURN_PRE static void
 usage(void) ISC_PLATFORM_NORETURN_POST;
 
 static void
-usage(void) {
+usage(void)
+{
 	fprintf(stderr, "sample-request [-t RRtype] server_address hostname\n");
 
 	exit(1);
@@ -107,7 +106,7 @@ make_querymessage(dns_message_t *message, const char *namestr,
 
 	return (ISC_R_SUCCESS);
 
- cleanup:
+cleanup:
 	if (qname != NULL)
 		dns_message_puttempname(message, &qname);
 	if (qrdataset != NULL)
@@ -117,7 +116,8 @@ make_querymessage(dns_message_t *message, const char *namestr,
 }
 
 static void
-print_section(dns_message_t *message, int section, isc_buffer_t *buf) {
+print_section(dns_message_t *message, int section, isc_buffer_t *buf)
+{
 	isc_result_t result;
 	isc_region_t r;
 
@@ -131,12 +131,13 @@ print_section(dns_message_t *message, int section, isc_buffer_t *buf) {
 
 	return;
 
- fail:
+fail:
 	fprintf(stderr, "failed to convert a section\n");
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char *argv[])
+{
 	int ch, i, gaierror;
 	struct addrinfo hints, *res;
 	isc_textregion_t tr;
@@ -154,8 +155,7 @@ main(int argc, char *argv[]) {
 			tr.length = strlen(isc_commandline_argument);
 			result = dns_rdatatype_fromtext(&type, &tr);
 			if (result != ISC_R_SUCCESS) {
-				fprintf(stderr,
-					"invalid RRtype: %s\n",
+				fprintf(stderr, "invalid RRtype: %s\n",
 					isc_commandline_argument);
 				exit(1);
 			}
@@ -231,8 +231,8 @@ main(int argc, char *argv[]) {
 	}
 
 	/* Send request and wait for a response */
-	result = dns_client_request(client, qmessage, rmessage, &sa, 0, 0,
-				    NULL, 60, 0, 3);
+	result = dns_client_request(client, qmessage, rmessage, &sa, 0, 0, NULL,
+				    60, 0, 3);
 	if (result != ISC_R_SUCCESS) {
 		fprintf(stderr, "failed to get a response: %s\n",
 			dns_result_totext(result));

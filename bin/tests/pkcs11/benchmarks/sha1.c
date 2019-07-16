@@ -33,13 +33,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 /* sha1 [-m module] [-s $slot] [-n count] */
 
 /*! \file */
 
-#include <stdio.h>
 #include <inttypes.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -62,7 +61,8 @@
 #define CLOCK_REALTIME 0
 #endif
 
-static int clock_gettime(int32_t id, struct timespec *tp);
+static int
+clock_gettime(int32_t id, struct timespec *tp);
 
 static int
 clock_gettime(int32_t id, struct timespec *tp)
@@ -76,7 +76,7 @@ clock_gettime(int32_t id, struct timespec *tp)
 	if (result)
 		return (result);
 	tp->tv_sec = tv.tv_sec;
-	tp->tv_nsec = (long) tv.tv_usec * 1000;
+	tp->tv_nsec = (long)tv.tv_usec * 1000;
 	return (result);
 }
 #endif
@@ -84,7 +84,8 @@ clock_gettime(int32_t id, struct timespec *tp)
 CK_BYTE buf[1024];
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char *argv[])
+{
 	isc_result_t result;
 	CK_RV rv;
 	CK_SLOT_ID slot = 0;
@@ -114,8 +115,7 @@ main(int argc, char *argv[]) {
 			count = atoi(isc_commandline_argument);
 			break;
 		case ':':
-			fprintf(stderr,
-				"Option -%c requires an operand\n",
+			fprintf(stderr, "Option -%c requires an operand\n",
 				isc_commandline_option);
 			errflg++;
 			break;
@@ -129,8 +129,7 @@ main(int argc, char *argv[]) {
 
 	if (errflg) {
 		fprintf(stderr, "Usage:\n");
-		fprintf(stderr,
-			"\tssha1 [-m module] [-s slot] [-n count]\n");
+		fprintf(stderr, "\tssha1 [-m module] [-s slot] [-n count]\n");
 		exit(1);
 	}
 
@@ -140,10 +139,9 @@ main(int argc, char *argv[]) {
 	if (lib_name != NULL)
 		pk11_set_lib_name(lib_name);
 
-	result = pk11_get_session(&pctx, op_type, false, false,
-				  false, NULL, slot);
-	if ((result != ISC_R_SUCCESS) &&
-	    (result != PK11_R_NORANDOMSERVICE) &&
+	result = pk11_get_session(&pctx, op_type, false, false, false, NULL,
+				  slot);
+	if ((result != ISC_R_SUCCESS) && (result != PK11_R_NORANDOMSERVICE) &&
 	    (result != PK11_R_NOAESSERVICE)) {
 		fprintf(stderr, "Error initializing PKCS#11: %s\n",
 			isc_result_totext(result));
@@ -171,13 +169,11 @@ main(int argc, char *argv[]) {
 		goto exit_session;
 	}
 
-
 	for (i = 0; i < count; i++) {
 		/* Digest buffer */
 		rv = pkcs_C_DigestUpdate(hSession, buf, len);
 		if (rv != CKR_OK) {
-			fprintf(stderr,
-				"C_DigestUpdate[%u]: Error = 0x%.8lX\n",
+			fprintf(stderr, "C_DigestUpdate[%u]: Error = 0x%.8lX\n",
 				i, rv);
 			error = 1;
 			break;
@@ -201,16 +197,17 @@ main(int argc, char *argv[]) {
 		endtime.tv_sec -= 1;
 		endtime.tv_nsec += 1000000000;
 	}
-	printf("%uK digested bytes in %ld.%09lds\n", i,
-	       endtime.tv_sec, endtime.tv_nsec);
+	printf("%uK digested bytes in %ld.%09lds\n", i, endtime.tv_sec,
+	       endtime.tv_nsec);
 	if (i > 0)
 		printf("%g digested bytes/s\n",
-		       1024 * i / ((double) endtime.tv_sec +
-				   (double) endtime.tv_nsec / 1000000000.));
+		       1024 * i /
+			       ((double)endtime.tv_sec +
+				(double)endtime.tv_nsec / 1000000000.));
 
-    exit_session:
+exit_session:
 	pk11_return_session(&pctx);
-	(void) pk11_finalize();
+	(void)pk11_finalize();
 
 	exit(error);
 }

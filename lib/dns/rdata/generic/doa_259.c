@@ -14,8 +14,8 @@
 
 #define RRTYPE_DOA_ATTRIBUTES (0)
 
-static inline isc_result_t
-fromtext_doa(ARGS_FROMTEXT) {
+static inline isc_result_t fromtext_doa(ARGS_FROMTEXT)
+{
 	isc_token_t token;
 
 	REQUIRE(type == dns_rdatatype_doa);
@@ -69,8 +69,8 @@ fromtext_doa(ARGS_FROMTEXT) {
 	}
 }
 
-static inline isc_result_t
-totext_doa(ARGS_TOTEXT) {
+static inline isc_result_t totext_doa(ARGS_TOTEXT)
+{
 	char buf[sizeof("4294967295 ")];
 	isc_region_t region;
 	uint32_t n;
@@ -123,8 +123,8 @@ totext_doa(ARGS_TOTEXT) {
 	}
 }
 
-static inline isc_result_t
-fromwire_doa(ARGS_FROMWIRE) {
+static inline isc_result_t fromwire_doa(ARGS_FROMWIRE)
+{
 	isc_region_t region;
 
 	UNUSED(rdclass);
@@ -154,8 +154,8 @@ fromwire_doa(ARGS_FROMWIRE) {
 	return (mem_tobuffer(target, region.base, region.length));
 }
 
-static inline isc_result_t
-towire_doa(ARGS_TOWIRE) {
+static inline isc_result_t towire_doa(ARGS_TOWIRE)
+{
 	isc_region_t region;
 
 	UNUSED(cctx);
@@ -168,8 +168,8 @@ towire_doa(ARGS_TOWIRE) {
 	return (mem_tobuffer(target, region.base, region.length));
 }
 
-static inline int
-compare_doa(ARGS_COMPARE) {
+static inline int compare_doa(ARGS_COMPARE)
+{
 	isc_region_t r1;
 	isc_region_t r2;
 
@@ -186,8 +186,8 @@ compare_doa(ARGS_COMPARE) {
 	return (isc_region_compare(&r1, &r2));
 }
 
-static inline isc_result_t
-fromstruct_doa(ARGS_FROMSTRUCT) {
+static inline isc_result_t fromstruct_doa(ARGS_FROMSTRUCT)
+{
 	dns_rdata_doa_t *doa = source;
 
 	REQUIRE(type == dns_rdatatype_doa);
@@ -203,8 +203,8 @@ fromstruct_doa(ARGS_FROMSTRUCT) {
 	return (mem_tobuffer(target, doa->data, doa->data_len));
 }
 
-static inline isc_result_t
-tostruct_doa(ARGS_TOSTRUCT) {
+static inline isc_result_t tostruct_doa(ARGS_TOSTRUCT)
+{
 	dns_rdata_doa_t *doa = target;
 	isc_region_t region;
 
@@ -284,8 +284,8 @@ cleanup:
 	return (ISC_R_NOMEMORY);
 }
 
-static inline void
-freestruct_doa(ARGS_FREESTRUCT) {
+static inline void freestruct_doa(ARGS_FREESTRUCT)
+{
 	dns_rdata_doa_t *doa = source;
 
 	REQUIRE(source != NULL);
@@ -305,8 +305,8 @@ freestruct_doa(ARGS_FREESTRUCT) {
 	doa->mctx = NULL;
 }
 
-static inline isc_result_t
-additionaldata_doa(ARGS_ADDLDATA) {
+static inline isc_result_t additionaldata_doa(ARGS_ADDLDATA)
+{
 	UNUSED(rdata);
 	UNUSED(add);
 	UNUSED(arg);
@@ -316,8 +316,8 @@ additionaldata_doa(ARGS_ADDLDATA) {
 	return (ISC_R_SUCCESS);
 }
 
-static inline isc_result_t
-digest_doa(ARGS_DIGEST) {
+static inline isc_result_t digest_doa(ARGS_DIGEST)
+{
 	isc_region_t r;
 
 	REQUIRE(rdata->type == dns_rdatatype_doa);
@@ -327,8 +327,8 @@ digest_doa(ARGS_DIGEST) {
 	return ((digest)(arg, &r));
 }
 
-static inline bool
-checkowner_doa(ARGS_CHECKOWNER) {
+static inline bool checkowner_doa(ARGS_CHECKOWNER)
+{
 	UNUSED(name);
 	UNUSED(type);
 	UNUSED(rdclass);
@@ -339,8 +339,8 @@ checkowner_doa(ARGS_CHECKOWNER) {
 	return (true);
 }
 
-static inline bool
-checknames_doa(ARGS_CHECKNAMES) {
+static inline bool checknames_doa(ARGS_CHECKNAMES)
+{
 	UNUSED(rdata);
 	UNUSED(owner);
 	UNUSED(bad);
@@ -350,9 +350,9 @@ checknames_doa(ARGS_CHECKNAMES) {
 	return (true);
 }
 
-static inline int
-casecompare_doa(ARGS_COMPARE) {
+static inline int casecompare_doa(ARGS_COMPARE)
+{
 	return (compare_doa(rdata1, rdata2));
 }
 
-#endif	/* RDATA_GENERIC_DOA_259_C */
+#endif /* RDATA_GENERIC_DOA_259_C */

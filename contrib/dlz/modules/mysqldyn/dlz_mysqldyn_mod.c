@@ -40,26 +40,25 @@
  * See README for database schema and usage details.
  */
 
+#include <ifaddrs.h>
+#include <inttypes.h>
+#include <netdb.h>
+#include <pthread.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 #include <unistd.h>
+
+#include <dlz_list.h>
+#include <dlz_minimal.h>
+#include <dlz_pthread.h>
+#include <mysql/errmsg.h>
+#include <mysql/mysql.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <netinet/in.h>
-#include <inttypes.h>
-#include <pthread.h>
-#include <netdb.h>
-#include <ifaddrs.h>
-
-#include <mysql/mysql.h>
-#include <mysql/errmsg.h>
-
-#include <dlz_minimal.h>
-#include <dlz_list.h>
-#include <dlz_pthread.h>
 
 /*
  * The SQL queries that will be used for lookups and updates are defined
@@ -74,9 +73,9 @@
  * Get the NS RRset for a zone
  * Arguments: zone-name
  */
-#define Q_GETNS \
-	"SELECT d.data FROM ZoneData d, Zones z " \
-	"WHERE UPPER(d.type) = 'NS' AND LOWER(z.domain) = LOWER('%s') " \
+#define Q_GETNS                                                                \
+	"SELECT d.data FROM ZoneData d, Zones z "                              \
+	"WHERE UPPER(d.type) = 'NS' AND LOWER(z.domain) = LOWER('%s') "        \
 	"AND z.id = d.zone_id"
 
 /*
@@ -89,58 +88,56 @@
  * Find a specific zone
  * Arguments: zone-name
  */
-#define Q_FINDZONE \
-	"SELECT id FROM Zones WHERE LOWER(domain) = LOWER('%s')"
+#define Q_FINDZONE "SELECT id FROM Zones WHERE LOWER(domain) = LOWER('%s')"
 
 /*
  * Get SOA data from zone apex
  * Arguments: zone-name
  */
-#define Q_GETSOA \
-	"SELECT host, admin, serial, refresh, retry, expire, minimum, ttl " \
+#define Q_GETSOA                                                               \
+	"SELECT host, admin, serial, refresh, retry, expire, minimum, ttl "    \
 	"FROM Zones WHERE LOWER(domain) = LOWER('%s')"
 
 /*
  * Get other data from zone apex
  * Arguments: zone-name, zone-name (repeated)
  */
-#define Q_GETAPEX \
-	"SELECT d.type, d.data, d.ttl FROM ZoneData d, Zones z " \
-	"WHERE LOWER(z.domain) = LOWER('%s') AND z.id = d.zone_id " \
-	"AND LOWER(d.name) IN (LOWER('%s'), '', '@') "\
+#define Q_GETAPEX                                                              \
+	"SELECT d.type, d.data, d.ttl FROM ZoneData d, Zones z "               \
+	"WHERE LOWER(z.domain) = LOWER('%s') AND z.id = d.zone_id "            \
+	"AND LOWER(d.name) IN (LOWER('%s'), '', '@') "                         \
 	"ORDER BY UPPER(d.type) ASC"
 
 /*
  * Get data from non-apex nodes
  * Arguments: zone-name, node-name (relative to zone name)
  */
-#define Q_GETNODE \
-	"SELECT d.type, d.data, d.ttl FROM ZoneData d, Zones z " \
-	"WHERE LOWER(z.domain) = LOWER('%s') AND z.id = d.zone_id " \
-	"AND LOWER(d.name) = LOWER('%s') " \
+#define Q_GETNODE                                                              \
+	"SELECT d.type, d.data, d.ttl FROM ZoneData d, Zones z "               \
+	"WHERE LOWER(z.domain) = LOWER('%s') AND z.id = d.zone_id "            \
+	"AND LOWER(d.name) = LOWER('%s') "                                     \
 	"ORDER BY UPPER(d.type) ASC"
 
 /*
  * Get all data from a zone, for AXFR
  * Arguments: zone-name
  */
-#define Q_GETALL \
-	"SELECT d.name, d.type, d.data, d.ttl FROM ZoneData d, Zones z " \
+#define Q_GETALL                                                               \
+	"SELECT d.name, d.type, d.data, d.ttl FROM ZoneData d, Zones z "       \
 	"WHERE LOWER(z.domain) = LOWER('%s') AND z.id = d.zone_id"
 
 /*
  * Get SOA serial number for a zone.
  * Arguments: zone-name
  */
-#define Q_GETSERIAL \
-	"SELECT serial FROM Zones WHERE domain = '%s'"
+#define Q_GETSERIAL "SELECT serial FROM Zones WHERE domain = '%s'"
 
 /*
  * Determine whether a zone is writeable, and if so, retrieve zone_id
  * Arguments: zone-name
  */
-#define Q_WRITEABLE \
-	"SELECT id FROM Zones WHERE " \
+#define Q_WRITEABLE                                                            \
+	"SELECT id FROM Zones WHERE "                                          \
 	"LOWER(domain) = LOWER('%s') AND writeable = 1"
 
 /*
@@ -148,16 +145,15 @@
  * Arguments: zone-id (from Q_WRITEABLE), node-name (relative to zone-name),
  * 	      rrtype, rdata text, TTL (in text format)
  */
-#define I_DATA \
-	"INSERT INTO ZoneData (zone_id, name, type, data, ttl) " \
+#define I_DATA                                                                 \
+	"INSERT INTO ZoneData (zone_id, name, type, data, ttl) "               \
 	"VALUES (%s, LOWER('%s'), UPPER('%s'), '%s', %s)"
 
 /*
  * Update SOA serial number for a zone
  * Arguments: new serial number (in text format), zone-id (from Q_WRITEABLE)
  */
-#define U_SERIAL \
-	"UPDATE Zones SET serial = %s WHERE id = %s"
+#define U_SERIAL "UPDATE Zones SET serial = %s WHERE id = %s"
 
 /*
  * Delete a specific record (non-SOA) from a zone
@@ -165,9 +161,9 @@
  * Arguments: node-name (relative to zone-name), zone-id (from Q_WRITEABLE),
  * 	      rrtype, rdata text, TTL (in text format).
  */
-#define D_RECORD \
-	"DELETE FROM ZoneData WHERE zone_id = %s AND " \
-	"LOWER(name) = LOWER('%s') AND UPPER(type) = UPPER('%s') AND " \
+#define D_RECORD                                                               \
+	"DELETE FROM ZoneData WHERE zone_id = %s AND "                         \
+	"LOWER(name) = LOWER('%s') AND UPPER(type) = UPPER('%s') AND "         \
 	"data = '%s' AND ttl = %s"
 
 /*
@@ -175,8 +171,8 @@
  * Arguments: node-name (relative to zone-name), zone-id (from Q_WRITEABLE),
  * 	      rrtype.
  */
-#define D_RRSET \
-	"DELETE FROM ZoneData WHERE zone_id = %s AND " \
+#define D_RRSET                                                                \
+	"DELETE FROM ZoneData WHERE zone_id = %s AND "                         \
 	"LOWER(name) = LOWER('%s') AND UPPER(type) = UPPER('%s')"
 
 /*
@@ -255,7 +251,8 @@ static const char *modname = "dlz_mysqldyn";
  * Local functions
  */
 static bool
-db_connect(mysql_data_t *state, mysql_instance_t *dbi) {
+db_connect(mysql_data_t *state, mysql_instance_t *dbi)
+{
 	MYSQL *conn;
 	/*
 	 * Make sure this thread has been through 'init'
@@ -266,12 +263,11 @@ db_connect(mysql_data_t *state, mysql_instance_t *dbi) {
 		return (true);
 
 	if (state->log != NULL)
-		state->log(ISC_LOG_INFO, "%s: init connection %d ",
-			   modname, dbi->id);
+		state->log(ISC_LOG_INFO, "%s: init connection %d ", modname,
+			   dbi->id);
 
-	conn = mysql_real_connect(dbi->sock, state->db_host,
-				  state->db_user, state->db_pass,
-				  state->db_name, 0, NULL,
+	conn = mysql_real_connect(dbi->sock, state->db_host, state->db_user,
+				  state->db_pass, state->db_name, 0, NULL,
 				  CLIENT_REMEMBER_OPTIONS);
 	if (conn == NULL) {
 		if (state->log != NULL)
@@ -288,7 +284,8 @@ db_connect(mysql_data_t *state, mysql_instance_t *dbi) {
 }
 
 static mysql_instance_t *
-get_dbi(mysql_data_t *state) {
+get_dbi(mysql_data_t *state)
+{
 	int i;
 
 	/*
@@ -313,13 +310,14 @@ get_dbi(mysql_data_t *state) {
  * of string 'original'
  */
 static char *
-sanitize(mysql_instance_t *dbi, const char *original) {
+sanitize(mysql_instance_t *dbi, const char *original)
+{
 	char *s;
 
 	if (original == NULL)
 		return (NULL);
 
-	s = (char *) malloc((strlen(original) * 2) + 1);
+	s = (char *)malloc((strlen(original) * 2) + 1);
 	if (s != NULL) {
 		memset(s, 0, (strlen(original) * 2) + 1);
 
@@ -335,7 +333,8 @@ sanitize(mysql_instance_t *dbi, const char *original) {
  * and add the string length to the running total pointed to by 'len'.
  */
 static isc_result_t
-additem(mysql_arglist_t *arglist, char **s, size_t *len) {
+additem(mysql_arglist_t *arglist, char **s, size_t *len)
+{
 	mysql_arg_t *item;
 
 	item = malloc(sizeof(*item));
@@ -362,8 +361,8 @@ additem(mysql_arglist_t *arglist, char **s, size_t *len) {
  * otherwise we use the existing one.
  */
 static char *
-build_query(mysql_data_t *state, mysql_instance_t *dbi,
-	    const char *command, ...)
+build_query(mysql_data_t *state, mysql_instance_t *dbi, const char *command,
+	    ...)
 {
 	isc_result_t result;
 	bool localdbi = false;
@@ -437,19 +436,16 @@ build_query(mysql_data_t *state, mysql_instance_t *dbi,
 		goto fail;
 
 	*query = '\0';
-	for (item = DLZ_LIST_HEAD(arglist);
-	     item != NULL;
+	for (item = DLZ_LIST_HEAD(arglist); item != NULL;
 	     item = DLZ_LIST_NEXT(item, link))
 		if (item->arg != NULL)
 			strcat(query, item->arg);
 
- fail:
+fail:
 	va_end(ap1);
 
-	for (item = DLZ_LIST_HEAD(arglist);
-	     item != NULL;
-	     item = DLZ_LIST_NEXT(item, link))
-	{
+	for (item = DLZ_LIST_HEAD(arglist); item != NULL;
+	     item = DLZ_LIST_NEXT(item, link)) {
 		if (item->arg != NULL)
 			free(item->arg);
 		free(item);
@@ -458,7 +454,7 @@ build_query(mysql_data_t *state, mysql_instance_t *dbi,
 	if (tmp != NULL)
 		free(tmp);
 	if (querystr != NULL)
-		free (querystr);
+		free(querystr);
 
 	if (dbi != NULL && localdbi)
 		dlz_mutex_unlock(&dbi->mutex);
@@ -468,7 +464,8 @@ build_query(mysql_data_t *state, mysql_instance_t *dbi,
 
 /* Does this name end in a dot? */
 static bool
-isrelative(const char *s) {
+isrelative(const char *s)
+{
 	if (s == NULL || s[strlen(s) - 1] == '.')
 		return (false);
 	return (true);
@@ -476,7 +473,8 @@ isrelative(const char *s) {
 
 /* Return a dot if 's' doesn't already end with one */
 static inline const char *
-dot(const char *s) {
+dot(const char *s)
+{
 	return (isrelative(s) ? "." : "");
 }
 
@@ -486,7 +484,8 @@ dot(const char *s) {
  * enough space).
  */
 static void
-fqhn(const char *name, const char *zone, char *dest) {
+fqhn(const char *name, const char *zone, char *dest)
+{
 	if (dest == NULL)
 		return;
 
@@ -505,12 +504,13 @@ fqhn(const char *name, const char *zone, char *dest) {
  * removes labels matching 'zone' from the end of 'name'.
  */
 static char *
-relname(const char *name, const char *zone) {
+relname(const char *name, const char *zone)
+{
 	size_t nlen, zlen;
 	const char *p;
 	char *new;
 
-	new = (char *) malloc(strlen(name) + 1);
+	new = (char *)malloc(strlen(name) + 1);
 	if (new == NULL)
 		return (NULL);
 
@@ -527,9 +527,7 @@ relname(const char *name, const char *zone) {
 
 	p = name + nlen - zlen;
 	if (strcasecmp(p, zone) != 0 &&
-	    (zone[zlen - 1] != '.' ||
-	     strncasecmp(p, zone, zlen - 1) != 0))
-	{
+	    (zone[zlen - 1] != '.' || strncasecmp(p, zone, zlen - 1) != 0)) {
 		strcpy(new, name);
 		return (new);
 	}
@@ -540,7 +538,8 @@ relname(const char *name, const char *zone) {
 }
 
 static isc_result_t
-validate_txn(mysql_data_t *state, mysql_transaction_t *txn) {
+validate_txn(mysql_data_t *state, mysql_transaction_t *txn)
+{
 	isc_result_t result = ISC_R_FAILURE;
 	mysql_transaction_t *txp;
 
@@ -560,7 +559,8 @@ validate_txn(mysql_data_t *state, mysql_transaction_t *txn) {
 }
 
 static isc_result_t
-db_execute(mysql_data_t *state, mysql_instance_t *dbi, const char *query) {
+db_execute(mysql_data_t *state, mysql_instance_t *dbi, const char *query)
+{
 	int ret;
 
 	/* Make sure this instance is connected.  */
@@ -570,21 +570,21 @@ db_execute(mysql_data_t *state, mysql_instance_t *dbi, const char *query) {
 	ret = mysql_real_query(dbi->sock, query, strlen(query));
 	if (ret != 0) {
 		if (state->debug && state->log != NULL)
-			state->log(ISC_LOG_ERROR,
-				   "%s: query '%s' failed: %s",
+			state->log(ISC_LOG_ERROR, "%s: query '%s' failed: %s",
 				   modname, query, mysql_error(dbi->sock));
 		return (ISC_R_FAILURE);
 	}
 
 	if (state->debug && state->log != NULL)
-		state->log(ISC_LOG_INFO, "%s: execute(%d) %s",
-			   modname, dbi->id, query);
+		state->log(ISC_LOG_INFO, "%s: execute(%d) %s", modname, dbi->id,
+			   query);
 
 	return (ISC_R_SUCCESS);
 }
 
 static MYSQL_RES *
-db_query(mysql_data_t *state, mysql_instance_t *dbi, const char *query) {
+db_query(mysql_data_t *state, mysql_instance_t *dbi, const char *query)
+{
 	isc_result_t result;
 	bool localdbi = false;
 	MYSQL_RES *res = NULL;
@@ -612,17 +612,16 @@ db_query(mysql_data_t *state, mysql_instance_t *dbi, const char *query) {
 	if (res == NULL) {
 		if (state->log != NULL)
 			state->log(ISC_LOG_ERROR,
-				   "%s: unable to store result: %s",
-				   modname, mysql_error(dbi->sock));
+				   "%s: unable to store result: %s", modname,
+				   mysql_error(dbi->sock));
 		goto fail;
 	}
 
 	if (state->debug && state->log != NULL)
-		state->log(ISC_LOG_INFO,
-			   "%s: query(%d) returned %d rows",
+		state->log(ISC_LOG_INFO, "%s: query(%d) returned %d rows",
 			   modname, dbi->id, mysql_num_rows(res));
 
- fail:
+fail:
 	if (dbi != NULL && localdbi)
 		dlz_mutex_unlock(&dbi->mutex);
 	return (res);
@@ -642,9 +641,10 @@ db_query(mysql_data_t *state, mysql_instance_t *dbi, const char *query) {
  * values to the 'on the wire' packet values.
  */
 static unsigned char *
-make_notify(const char *zone, int *packetlen) {
+make_notify(const char *zone, int *packetlen)
+{
 	int i, j;
-	unsigned char *packet = (unsigned char *) malloc(strlen(zone) + 18);
+	unsigned char *packet = (unsigned char *)malloc(strlen(zone) + 18);
 
 	if (packet == NULL)
 		return (NULL);
@@ -675,7 +675,8 @@ make_notify(const char *zone, int *packetlen) {
 	/* Make the question into labels */
 	j = 12;
 	while (packet[j]) {
-		for (i = j + 1; packet[i] != '\0' && packet[i] != '.'; i++);
+		for (i = j + 1; packet[i] != '\0' && packet[i] != '.'; i++)
+			;
 		packet[j] = i - j - 1;
 		j = i;
 	}
@@ -694,7 +695,8 @@ make_notify(const char *zone, int *packetlen) {
 }
 
 static void
-send_notify(struct sockaddr_in *addr, const unsigned char *p, const int plen) {
+send_notify(struct sockaddr_in *addr, const unsigned char *p, const int plen)
+{
 	int s;
 
 	addr->sin_family = AF_INET;
@@ -712,7 +714,8 @@ send_notify(struct sockaddr_in *addr, const unsigned char *p, const int plen) {
  * Generate and send a DNS NOTIFY packet
  */
 static void
-notify(mysql_data_t *state, const char *zone, int sn) {
+notify(mysql_data_t *state, const char *zone, int sn)
+{
 	MYSQL_RES *res;
 	MYSQL_ROW row;
 	char *query;
@@ -725,7 +728,7 @@ notify(mysql_data_t *state, const char *zone, int sn) {
 	/* Get the name servers from the NS rrset */
 	query = build_query(state, NULL, Q_GETNS, zone);
 	res = db_query(state, NULL, query);
-	free (query);
+	free(query);
 	if (res == NULL)
 		return;
 
@@ -767,7 +770,7 @@ notify(mysql_data_t *state, const char *zone, int sn) {
 				continue;
 
 			/* Get local address into a string */
-			sin = (struct sockaddr_in *) ifa->ifa_addr;
+			sin = (struct sockaddr_in *)ifa->ifa_addr;
 			addrp = &sin->sin_addr;
 			inet_ntop(AF_INET, addrp, ifaddr, INET_ADDRSTRLEN);
 
@@ -796,13 +799,13 @@ notify(mysql_data_t *state, const char *zone, int sn) {
  * used in the dlz_{add,sub,del}rdataset functions below.
  */
 static mysql_record_t *
-makerecord(mysql_data_t *state, const char *name, const char *rdatastr) {
+makerecord(mysql_data_t *state, const char *name, const char *rdatastr)
+{
 	mysql_record_t *new_record;
 	char *real_name, *dclass, *type, *data, *ttlstr, *buf;
 	dns_ttl_t ttlvalue;
 
-	new_record = (mysql_record_t *)
-		malloc(sizeof(mysql_record_t));
+	new_record = (mysql_record_t *)malloc(sizeof(mysql_record_t));
 
 	if (new_record == NULL) {
 		if (state->log != NULL)
@@ -857,7 +860,7 @@ makerecord(mysql_data_t *state, const char *name, const char *rdatastr) {
 	free(buf);
 	return (new_record);
 
- error:
+error:
 	free(buf);
 	free(new_record);
 	return (NULL);
@@ -867,7 +870,8 @@ makerecord(mysql_data_t *state, const char *name, const char *rdatastr) {
  * Remember a helper function from the bind9 dlz_dlopen driver
  */
 static void
-b9_add_helper(mysql_data_t *state, const char *helper_name, void *ptr) {
+b9_add_helper(mysql_data_t *state, const char *helper_name, void *ptr)
+{
 	if (strcmp(helper_name, "log") == 0)
 		state->log = (log_t *)ptr;
 	if (strcmp(helper_name, "putrr") == 0)
@@ -886,7 +890,8 @@ b9_add_helper(mysql_data_t *state, const char *helper_name, void *ptr) {
  * Return the version of the API
  */
 int
-dlz_version(unsigned int *flags) {
+dlz_version(unsigned int *flags)
+{
 	UNUSED(flags);
 	*flags |= DNS_SDLZFLAG_THREADSAFE;
 	return (DLZ_DLOPEN_VERSION);
@@ -896,8 +901,8 @@ dlz_version(unsigned int *flags) {
  * Called to initialize the driver
  */
 isc_result_t
-dlz_create(const char *dlzname, unsigned int argc, char *argv[],
-	   void **dbdata, ...)
+dlz_create(const char *dlzname, unsigned int argc, char *argv[], void **dbdata,
+	   ...)
 {
 	mysql_data_t *state;
 	const char *helper_name;
@@ -926,7 +931,8 @@ dlz_create(const char *dlzname, unsigned int argc, char *argv[],
 		if (state->log != NULL)
 			state->log(ISC_LOG_ERROR,
 				   "%s: missing args <dbname> "
-				   "[<dbhost> [<user> <pass>]]", modname);
+				   "[<dbhost> [<user> <pass>]]",
+				   modname);
 		dlz_destroy(state);
 		return (ISC_R_FAILURE);
 	}
@@ -948,15 +954,12 @@ dlz_create(const char *dlzname, unsigned int argc, char *argv[],
 	}
 
 	if (state->log != NULL)
-		state->log(ISC_LOG_INFO,
-			   "%s: DB=%s, Host=%s, User=%s",
-			   modname, state->db_name,
-			   state->db_host, state->db_user);
+		state->log(ISC_LOG_INFO, "%s: DB=%s, Host=%s, User=%s", modname,
+			   state->db_name, state->db_host, state->db_user);
 
 	/*
 	 * Assign the 'state' to dbdata so we get it in our callbacks
 	 */
-
 
 	dlz_mutex_lock(&state->tx_mutex);
 
@@ -972,10 +975,9 @@ dlz_create(const char *dlzname, unsigned int argc, char *argv[],
 			state->db[n].connected = 0;
 			state->db[n].sock = mysql_init(NULL);
 			mysql_options(state->db[n].sock,
-				      MYSQL_READ_DEFAULT_GROUP,
-				      modname);
-			mysql_options(state->db[n].sock,
-				      MYSQL_OPT_RECONNECT, &opt);
+				      MYSQL_READ_DEFAULT_GROUP, modname);
+			mysql_options(state->db[n].sock, MYSQL_OPT_RECONNECT,
+				      &opt);
 			dlz_mutex_unlock(&state->db[n].mutex);
 		}
 
@@ -997,7 +999,8 @@ dlz_create(const char *dlzname, unsigned int argc, char *argv[],
  * Shut down the backend
  */
 void
-dlz_destroy(void *dbdata) {
+dlz_destroy(void *dbdata)
+{
 	mysql_data_t *state = (mysql_data_t *)dbdata;
 	int i;
 
@@ -1007,7 +1010,7 @@ dlz_destroy(void *dbdata) {
 	for (i = 0; i < MAX_DBI; i++) {
 		if (state->db[i].sock) {
 			mysql_close(state->db[i].sock);
-			state->db[i].sock=NULL;
+			state->db[i].sock = NULL;
 		}
 	}
 	free(state->db_name);
@@ -1022,8 +1025,7 @@ dlz_destroy(void *dbdata) {
  * See if we handle a given zone
  */
 isc_result_t
-dlz_findzonedb(void *dbdata, const char *name,
-	       dns_clientinfomethods_t *methods,
+dlz_findzonedb(void *dbdata, const char *name, dns_clientinfomethods_t *methods,
 	       dns_clientinfo_t *clientinfo)
 {
 	isc_result_t result = ISC_R_SUCCESS;
@@ -1068,15 +1070,15 @@ dlz_lookup(const char *zone, const char *name, void *dbdata,
 
 	if (state->putrr == NULL) {
 		if (state->log != NULL)
-			state->log(ISC_LOG_ERROR,
-				   "%s: dlz_lookup - no putrr", modname);
+			state->log(ISC_LOG_ERROR, "%s: dlz_lookup - no putrr",
+				   modname);
 		return (ISC_R_NOTIMPLEMENTED);
 	}
 
 	/* Are we okay to try to find the txn version?  */
 	if (clientinfo != NULL &&
 	    clientinfo->version >= DNS_CLIENTINFO_VERSION) {
-		txn = (mysql_transaction_t *) clientinfo->dbversion;
+		txn = (mysql_transaction_t *)clientinfo->dbversion;
 		if (txn != NULL && validate_txn(state, txn) == ISC_R_SUCCESS)
 			dbi = txn->dbi;
 		if (dbi != NULL) {
@@ -1087,12 +1089,12 @@ dlz_lookup(const char *zone, const char *name, void *dbdata,
 	}
 
 	if (strcmp(name, "@") == 0) {
-		real_name = (char *) malloc(strlen(zone) + 1);
+		real_name = (char *)malloc(strlen(zone) + 1);
 		if (real_name == NULL)
 			return (ISC_R_NOMEMORY);
 		strcpy(real_name, zone);
 	} else {
-		real_name = (char *) malloc(strlen(name) + 1);
+		real_name = (char *)malloc(strlen(name) + 1);
 		if (real_name == NULL)
 			return (ISC_R_NOMEMORY);
 		strcpy(real_name, name);
@@ -1110,7 +1112,7 @@ dlz_lookup(const char *zone, const char *name, void *dbdata,
 		}
 
 		res = db_query(state, dbi, query);
-		free (query);
+		free(query);
 
 		if (res == NULL) {
 			free(real_name);
@@ -1126,9 +1128,9 @@ dlz_lookup(const char *zone, const char *name, void *dbdata,
 			fqhn(row[1], zone, admin);
 
 			/* zone admin serial refresh retry expire min */
-			sprintf(data, "%s%s %s%s %s %s %s %s %s",
-				host, dot(host), admin, dot(admin),
-				row[2], row[3], row[4], row[5], row[6]);
+			sprintf(data, "%s%s %s%s %s %s %s %s %s", host,
+				dot(host), admin, dot(admin), row[2], row[3],
+				row[4], row[5], row[6]);
 
 			result = state->putrr(lookup, "soa", ttl, data);
 			if (result != ISC_R_SUCCESS) {
@@ -1169,10 +1171,8 @@ dlz_lookup(const char *zone, const char *name, void *dbdata,
 	}
 
 	if (state->debug && state->log != NULL)
-		state->log(ISC_LOG_INFO,
-			   "%s: dlz_lookup %s/%s/%s - (%d rows)",
-			   modname, name, real_name, zone,
-			   mysql_num_rows(res));
+		state->log(ISC_LOG_INFO, "%s: dlz_lookup %s/%s/%s - (%d rows)",
+			   modname, name, real_name, zone, mysql_num_rows(res));
 
 	mysql_free_result(res);
 	free(real_name);
@@ -1187,12 +1187,13 @@ dlz_lookup(const char *zone, const char *name, void *dbdata,
  * See if a zone transfer is allowed
  */
 isc_result_t
-dlz_allowzonexfr(void *dbdata, const char *name, const char *client) {
+dlz_allowzonexfr(void *dbdata, const char *name, const char *client)
+{
 	mysql_data_t *state = (mysql_data_t *)dbdata;
 
 	if (state->debug && state->log != NULL)
-		state->log(ISC_LOG_INFO,
-			   "dlz_allowzonexfr: %s %s", name, client);
+		state->log(ISC_LOG_INFO, "dlz_allowzonexfr: %s %s", name,
+			   client);
 
 	/* Just say yes for all our zones */
 	return (dlz_findzonedb(dbdata, name, NULL, NULL));
@@ -1202,7 +1203,8 @@ dlz_allowzonexfr(void *dbdata, const char *name, const char *client) {
  * Perform a zone transfer
  */
 isc_result_t
-dlz_allnodes(const char *zone, void *dbdata, dns_sdlzallnodes_t *allnodes) {
+dlz_allnodes(const char *zone, void *dbdata, dns_sdlzallnodes_t *allnodes)
+{
 	isc_result_t result = ISC_R_SUCCESS;
 	mysql_data_t *state = (mysql_data_t *)dbdata;
 	MYSQL_RES *res;
@@ -1235,8 +1237,8 @@ dlz_allnodes(const char *zone, void *dbdata, dns_sdlzallnodes_t *allnodes) {
 
 		sscanf(row[3], "%d", &ttl);
 		fqhn(row[0], zone, hostname);
-		result = state->putnamedrr(allnodes, hostname,
-					   row[1], ttl, row[2]);
+		result = state->putnamedrr(allnodes, hostname, row[1], ttl,
+					   row[2]);
 		if (result != ISC_R_SUCCESS)
 			break;
 	}
@@ -1249,9 +1251,10 @@ dlz_allnodes(const char *zone, void *dbdata, dns_sdlzallnodes_t *allnodes) {
  * Start a transaction
  */
 isc_result_t
-dlz_newversion(const char *zone, void *dbdata, void **versionp) {
+dlz_newversion(const char *zone, void *dbdata, void **versionp)
+{
 	isc_result_t result = ISC_R_FAILURE;
-	mysql_data_t *state = (mysql_data_t *) dbdata;
+	mysql_data_t *state = (mysql_data_t *)dbdata;
 	MYSQL_RES *res;
 	MYSQL_ROW row;
 	char *query;
@@ -1286,8 +1289,9 @@ dlz_newversion(const char *zone, void *dbdata, void **versionp) {
 		if (strcmp(txn->zone, zone) == 0) {
 			if (state->log != NULL)
 				state->log(ISC_LOG_ERROR,
-				   "%s: transaction already "
-				   "started for zone %s", modname, zone);
+					   "%s: transaction already "
+					   "started for zone %s",
+					   modname, zone);
 			dlz_mutex_unlock(&state->tx_mutex);
 			return (ISC_R_FAILURE);
 		}
@@ -1296,8 +1300,7 @@ dlz_newversion(const char *zone, void *dbdata, void **versionp) {
 	/*
 	 * Create new transaction
 	 */
-	newtx = (mysql_transaction_t *)
-		malloc(sizeof(mysql_transaction_t));
+	newtx = (mysql_transaction_t *)malloc(sizeof(mysql_transaction_t));
 	newtx->zone = strdup(zone);
 	newtx->zone_id = strdup(zone_id);
 	newtx->dbi = get_dbi(state);
@@ -1323,10 +1326,10 @@ dlz_newversion(const char *zone, void *dbdata, void **versionp) {
 	if (state->debug && (state->log != NULL))
 		state->log(ISC_LOG_INFO, "%s: New tx %x", modname, newtx);
 
- cleanup:
+cleanup:
 	dlz_mutex_unlock(&state->tx_mutex);
 	if (result == ISC_R_SUCCESS) {
-		*versionp = (void *) newtx;
+		*versionp = (void *)newtx;
 	} else {
 		dlz_mutex_unlock(&state->tx_mutex);
 		free(newtx->zone);
@@ -1341,8 +1344,7 @@ dlz_newversion(const char *zone, void *dbdata, void **versionp) {
  * End a transaction
  */
 void
-dlz_closeversion(const char *zone, bool commit,
-		 void *dbdata, void **versionp)
+dlz_closeversion(const char *zone, bool commit, void *dbdata, void **versionp)
 {
 	isc_result_t result;
 	mysql_data_t *state = (mysql_data_t *)dbdata;
@@ -1467,7 +1469,7 @@ dlz_closeversion(const char *zone, bool commit,
 #if DLZ_DLOPEN_VERSION < 3
 isc_result_t
 dlz_configure(dns_view_t *view, void *dbdata)
-#else /* DLZ_DLOPEN_VERSION >= 3 */
+#else  /* DLZ_DLOPEN_VERSION >= 3 */
 isc_result_t
 dlz_configure(dns_view_t *view, dns_dlzdb_t *dlzdb, void *dbdata)
 #endif /* DLZ_DLOPEN_VERSION */
@@ -1524,8 +1526,8 @@ dlz_configure(dns_view_t *view, dns_dlzdb_t *dlzdb, void *dbdata)
 	mysql_free_result(res);
 
 	if (state->debug && state->log != NULL)
-		state->log(ISC_LOG_INFO,
-			   "%s: configured %d zones", modname, count);
+		state->log(ISC_LOG_INFO, "%s: configured %d zones", modname,
+			   count);
 	return (ISC_R_SUCCESS);
 }
 
@@ -1546,15 +1548,14 @@ dlz_ssumatch(const char *signer, const char *name, const char *tcpaddr,
 	UNUSED(key);
 
 	if (state->debug && state->log != NULL)
-		state->log(ISC_LOG_INFO,
-			   "%s: allowing update of %s by key %s",
+		state->log(ISC_LOG_INFO, "%s: allowing update of %s by key %s",
 			   modname, name, signer);
 	return (true);
 }
 
 isc_result_t
-dlz_addrdataset(const char *name, const char *rdatastr,
-		void *dbdata, void *version)
+dlz_addrdataset(const char *name, const char *rdatastr, void *dbdata,
+		void *version)
 {
 	mysql_data_t *state = (mysql_data_t *)dbdata;
 	mysql_transaction_t *txn = (mysql_transaction_t *)version;
@@ -1570,8 +1571,8 @@ dlz_addrdataset(const char *name, const char *rdatastr,
 		return (ISC_R_NOMEMORY);
 
 	if (state->debug && (state->log != NULL))
-		state->log(ISC_LOG_INFO, "%s: add (%x) %s (as %s) %s",
-			   modname, version, name, new_name, rdatastr);
+		state->log(ISC_LOG_INFO, "%s: add (%x) %s (as %s) %s", modname,
+			   version, name, new_name, rdatastr);
 
 	record = makerecord(state, new_name, rdatastr);
 	free(new_name);
@@ -1580,9 +1581,8 @@ dlz_addrdataset(const char *name, const char *rdatastr,
 
 	/* Write out data to database */
 	if (strcasecmp(record->type, "SOA") != 0) {
-		query = build_query(state, txn->dbi, I_DATA,
-				    txn->zone_id, record->name,
-				    record->type, record->data,
+		query = build_query(state, txn->dbi, I_DATA, txn->zone_id,
+				    record->name, record->type, record->data,
 				    record->ttl);
 		if (query == NULL) {
 			result = ISC_R_FAILURE;
@@ -1608,14 +1608,14 @@ dlz_addrdataset(const char *name, const char *rdatastr,
 		free(query);
 	}
 
- cleanup:
+cleanup:
 	free(record);
 	return (result);
 }
 
 isc_result_t
-dlz_subrdataset(const char *name, const char *rdatastr,
-		void *dbdata, void *version)
+dlz_subrdataset(const char *name, const char *rdatastr, void *dbdata,
+		void *version)
 {
 	mysql_data_t *state = (mysql_data_t *)dbdata;
 	mysql_transaction_t *txn = (mysql_transaction_t *)version;
@@ -1631,8 +1631,8 @@ dlz_subrdataset(const char *name, const char *rdatastr,
 		return (ISC_R_NOMEMORY);
 
 	if (state->debug && (state->log != NULL))
-		state->log(ISC_LOG_INFO, "%s: sub (%x) %s %s",
-			   modname, version, name, rdatastr);
+		state->log(ISC_LOG_INFO, "%s: sub (%x) %s %s", modname, version,
+			   name, rdatastr);
 
 	record = makerecord(state, new_name, rdatastr);
 	free(new_name);
@@ -1644,9 +1644,8 @@ dlz_subrdataset(const char *name, const char *rdatastr,
 	if (strcasecmp(record->type, "SOA") == 0)
 		result = ISC_R_SUCCESS;
 	else {
-		query = build_query(state, txn->dbi, D_RECORD,
-				    txn->zone_id, record->name,
-				    record->type, record->data,
+		query = build_query(state, txn->dbi, D_RECORD, txn->zone_id,
+				    record->name, record->type, record->data,
 				    record->ttl);
 		if (query == NULL) {
 			result = ISC_R_NOMEMORY;
@@ -1657,14 +1656,13 @@ dlz_subrdataset(const char *name, const char *rdatastr,
 		free(query);
 	}
 
- cleanup:
+cleanup:
 	free(record);
 	return (result);
 }
 
 isc_result_t
-dlz_delrdataset(const char *name, const char *type,
-		void *dbdata, void *version)
+dlz_delrdataset(const char *name, const char *type, void *dbdata, void *version)
 {
 	mysql_data_t *state = (mysql_data_t *)dbdata;
 	mysql_transaction_t *txn = (mysql_transaction_t *)version;
@@ -1679,11 +1677,11 @@ dlz_delrdataset(const char *name, const char *type,
 		return (ISC_R_NOMEMORY);
 
 	if (state->debug && (state->log != NULL))
-		state->log(ISC_LOG_INFO, "%s: del (%x) %s %s",
-			   modname, version, name, type);
+		state->log(ISC_LOG_INFO, "%s: del (%x) %s %s", modname, version,
+			   name, type);
 
-	query = build_query(state, txn->dbi, D_RRSET,
-			    txn->zone_id, new_name, type);
+	query = build_query(state, txn->dbi, D_RRSET, txn->zone_id, new_name,
+			    type);
 	if (query == NULL) {
 		result = ISC_R_NOMEMORY;
 		goto cleanup;
@@ -1692,7 +1690,7 @@ dlz_delrdataset(const char *name, const char *type,
 	result = db_execute(state, txn->dbi, query);
 	free(query);
 
- cleanup:
+cleanup:
 	free(new_name);
 	return (result);
 }

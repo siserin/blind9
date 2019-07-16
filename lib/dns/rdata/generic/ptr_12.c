@@ -14,8 +14,8 @@
 
 #define RRTYPE_PTR_ATTRIBUTES (0)
 
-static inline isc_result_t
-fromtext_ptr(ARGS_FROMTEXT) {
+static inline isc_result_t fromtext_ptr(ARGS_FROMTEXT)
+{
 	isc_token_t token;
 	dns_name_t name;
 	isc_buffer_t buffer;
@@ -47,8 +47,8 @@ fromtext_ptr(ARGS_FROMTEXT) {
 	return (ISC_R_SUCCESS);
 }
 
-static inline isc_result_t
-totext_ptr(ARGS_TOTEXT) {
+static inline isc_result_t totext_ptr(ARGS_TOTEXT)
+{
 	isc_region_t region;
 	dns_name_t name;
 	dns_name_t prefix;
@@ -68,8 +68,8 @@ totext_ptr(ARGS_TOTEXT) {
 	return (dns_name_totext(&prefix, sub, target));
 }
 
-static inline isc_result_t
-fromwire_ptr(ARGS_FROMWIRE) {
+static inline isc_result_t fromwire_ptr(ARGS_FROMWIRE)
+{
 	dns_name_t name;
 
 	REQUIRE(type == dns_rdatatype_ptr);
@@ -83,8 +83,8 @@ fromwire_ptr(ARGS_FROMWIRE) {
 	return (dns_name_fromwire(&name, source, dctx, options, target));
 }
 
-static inline isc_result_t
-towire_ptr(ARGS_TOWIRE) {
+static inline isc_result_t towire_ptr(ARGS_TOWIRE)
+{
 	dns_name_t name;
 	dns_offsets_t offsets;
 	isc_region_t region;
@@ -101,8 +101,8 @@ towire_ptr(ARGS_TOWIRE) {
 	return (dns_name_towire(&name, cctx, target));
 }
 
-static inline int
-compare_ptr(ARGS_COMPARE) {
+static inline int compare_ptr(ARGS_COMPARE)
+{
 	dns_name_t name1;
 	dns_name_t name2;
 	isc_region_t region1;
@@ -126,8 +126,8 @@ compare_ptr(ARGS_COMPARE) {
 	return (dns_name_rdatacompare(&name1, &name2));
 }
 
-static inline isc_result_t
-fromstruct_ptr(ARGS_FROMSTRUCT) {
+static inline isc_result_t fromstruct_ptr(ARGS_FROMSTRUCT)
+{
 	dns_rdata_ptr_t *ptr = source;
 	isc_region_t region;
 
@@ -143,8 +143,8 @@ fromstruct_ptr(ARGS_FROMSTRUCT) {
 	return (isc_buffer_copyregion(target, &region));
 }
 
-static inline isc_result_t
-tostruct_ptr(ARGS_TOSTRUCT) {
+static inline isc_result_t tostruct_ptr(ARGS_TOSTRUCT)
+{
 	isc_region_t region;
 	dns_rdata_ptr_t *ptr = target;
 	dns_name_t name;
@@ -166,8 +166,8 @@ tostruct_ptr(ARGS_TOSTRUCT) {
 	return (ISC_R_SUCCESS);
 }
 
-static inline void
-freestruct_ptr(ARGS_FREESTRUCT) {
+static inline void freestruct_ptr(ARGS_FREESTRUCT)
+{
 	dns_rdata_ptr_t *ptr = source;
 
 	REQUIRE(source != NULL);
@@ -180,8 +180,8 @@ freestruct_ptr(ARGS_FREESTRUCT) {
 	ptr->mctx = NULL;
 }
 
-static inline isc_result_t
-additionaldata_ptr(ARGS_ADDLDATA) {
+static inline isc_result_t additionaldata_ptr(ARGS_ADDLDATA)
+{
 	REQUIRE(rdata->type == dns_rdatatype_ptr);
 
 	UNUSED(rdata);
@@ -191,8 +191,8 @@ additionaldata_ptr(ARGS_ADDLDATA) {
 	return (ISC_R_SUCCESS);
 }
 
-static inline isc_result_t
-digest_ptr(ARGS_DIGEST) {
+static inline isc_result_t digest_ptr(ARGS_DIGEST)
+{
 	isc_region_t r;
 	dns_name_t name;
 
@@ -205,9 +205,8 @@ digest_ptr(ARGS_DIGEST) {
 	return (dns_name_digest(&name, digest, arg));
 }
 
-static inline bool
-checkowner_ptr(ARGS_CHECKOWNER) {
-
+static inline bool checkowner_ptr(ARGS_CHECKOWNER)
+{
 	REQUIRE(type == dns_rdatatype_ptr);
 
 	UNUSED(name);
@@ -218,30 +217,30 @@ checkowner_ptr(ARGS_CHECKOWNER) {
 	return (true);
 }
 
-static unsigned char ip6_arpa_data[]  = "\003IP6\004ARPA";
+static unsigned char ip6_arpa_data[] = "\003IP6\004ARPA";
 static unsigned char ip6_arpa_offsets[] = { 0, 4, 9 };
 static const dns_name_t ip6_arpa =
 	DNS_NAME_INITABSOLUTE(ip6_arpa_data, ip6_arpa_offsets);
 
-static unsigned char ip6_int_data[]  = "\003IP6\003INT";
+static unsigned char ip6_int_data[] = "\003IP6\003INT";
 static unsigned char ip6_int_offsets[] = { 0, 4, 8 };
 static const dns_name_t ip6_int =
 	DNS_NAME_INITABSOLUTE(ip6_int_data, ip6_int_offsets);
 
-static unsigned char in_addr_arpa_data[]  = "\007IN-ADDR\004ARPA";
+static unsigned char in_addr_arpa_data[] = "\007IN-ADDR\004ARPA";
 static unsigned char in_addr_arpa_offsets[] = { 0, 8, 13 };
 static const dns_name_t in_addr_arpa =
 	DNS_NAME_INITABSOLUTE(in_addr_arpa_data, in_addr_arpa_offsets);
 
-static inline bool
-checknames_ptr(ARGS_CHECKNAMES) {
+static inline bool checknames_ptr(ARGS_CHECKNAMES)
+{
 	isc_region_t region;
 	dns_name_t name;
 
 	REQUIRE(rdata->type == dns_rdatatype_ptr);
 
 	if (rdata->rdclass != dns_rdataclass_in)
-	    return (true);
+		return (true);
 
 	if (dns_name_isdnssd(owner))
 		return (true);
@@ -261,8 +260,8 @@ checknames_ptr(ARGS_CHECKNAMES) {
 	return (true);
 }
 
-static inline int
-casecompare_ptr(ARGS_COMPARE) {
+static inline int casecompare_ptr(ARGS_COMPARE)
+{
 	return (compare_ptr(rdata1, rdata2));
 }
-#endif	/* RDATA_GENERIC_PTR_12_C */
+#endif /* RDATA_GENERIC_PTR_12_C */

@@ -9,14 +9,13 @@
  * information regarding copyright ownership.
  */
 
-
 #ifndef ISC_NETADDR_H
 #define ISC_NETADDR_H 1
 
 /*! \file isc/netaddr.h */
 
-#include <stdbool.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 #include <isc/lang.h>
 #include <isc/net.h>
@@ -91,7 +90,7 @@ isc_netaddr_format(const isc_netaddr_t *na, char *array, unsigned int size);
  * The resulting string is guaranteed to be null-terminated.
  */
 
-#define ISC_NETADDR_FORMATSIZE \
+#define ISC_NETADDR_FORMATSIZE                                                 \
 	sizeof("xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:XXX.XXX.XXX.XXX%SSSSSSSSSS")
 /*%<
  * Minimum size of array to pass to isc_netaddr_format().

@@ -21,7 +21,8 @@
 #include <dns/result.h>
 
 static void
-print_wirename(isc_region_t *name) {
+print_wirename(isc_region_t *name)
+{
 	unsigned char *ccurr, *cend;
 
 	if (name->length == 0) {
@@ -36,7 +37,8 @@ print_wirename(isc_region_t *name) {
 }
 
 static void
-print_name(dns_name_t *name) {
+print_name(dns_name_t *name)
+{
 	isc_result_t result;
 	isc_buffer_t source;
 	isc_region_t r;
@@ -58,7 +60,8 @@ print_name(dns_name_t *name) {
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char *argv[])
+{
 	char s[1000];
 	isc_result_t result;
 	dns_fixedname_t wname, wname2, oname, compname, downname;
@@ -143,8 +146,8 @@ main(int argc, char *argv[]) {
 			isc_buffer_init(&source, argv[1], len);
 			isc_buffer_add(&source, len);
 			comp = dns_fixedname_initname(&compname);
-			result = dns_name_fromtext(comp, &source, origin,
-						   0, NULL);
+			result = dns_name_fromtext(comp, &source, origin, 0,
+						   NULL);
 			if (result != 0) {
 				fprintf(stderr,
 					"dns_name_fromtext() failed: %s\n",
@@ -209,10 +212,9 @@ main(int argc, char *argv[]) {
 			if (got_name) {
 				printf("Concatenating.\n");
 				result = dns_name_concatenate(
-						   dns_fixedname_name(&wname),
-						   dns_fixedname_name(&wname2),
-						   dns_fixedname_name(&wname2),
-						   NULL);
+					dns_fixedname_name(&wname),
+					dns_fixedname_name(&wname2),
+					dns_fixedname_name(&wname2), NULL);
 				name = dns_fixedname_name(&wname2);
 				if (result == ISC_R_SUCCESS) {
 					if (check_absolute &&
@@ -235,7 +237,8 @@ main(int argc, char *argv[]) {
 						print_wirename(&r);
 						printf("%u labels, "
 						       "%u bytes.\n",
-						   dns_name_countlabels(name),
+						       dns_name_countlabels(
+							       name),
 						       r.length);
 					}
 				} else
@@ -274,8 +277,7 @@ main(int argc, char *argv[]) {
 				dns_name_toregion(down, &r);
 				print_wirename(&r);
 				printf("%u labels, %u bytes.\n",
-				       dns_name_countlabels(down),
-				       r.length);
+				       dns_name_countlabels(down), r.length);
 			}
 			isc_buffer_init(&source, s, sizeof(s));
 			print_name(down);

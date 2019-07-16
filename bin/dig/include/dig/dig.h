@@ -17,10 +17,6 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include <dns/rdatalist.h>
-
-#include <dst/dst.h>
-
 #include <isc/buffer.h>
 #include <isc/bufferlist.h>
 #include <isc/formatcheck.h>
@@ -32,12 +28,16 @@
 #include <isc/sockaddr.h>
 #include <isc/socket.h>
 
+#include <dns/rdatalist.h>
+
+#include <dst/dst.h>
+
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #endif
 
 #define MXSERV 20
-#define MXNAME (DNS_NAME_MAXTEXT+1)
+#define MXNAME (DNS_NAME_MAXTEXT + 1)
 #define MXRD 32
 /*% Buffer Size */
 #define BUFSIZE 512
@@ -82,66 +82,29 @@ typedef struct dig_server dig_server_t;
 typedef ISC_LIST(dig_server_t) dig_serverlist_t;
 typedef struct dig_searchlist dig_searchlist_t;
 
-#define DIG_QUERY_MAGIC		ISC_MAGIC('D','i','g','q')
+#define DIG_QUERY_MAGIC ISC_MAGIC('D', 'i', 'g', 'q')
 
-#define DIG_VALID_QUERY(x)	ISC_MAGIC_VALID((x), DIG_QUERY_MAGIC)
-
+#define DIG_VALID_QUERY(x) ISC_MAGIC_VALID((x), DIG_QUERY_MAGIC)
 
 /*% The dig_lookup structure */
 struct dig_lookup {
-	bool
-		pending, /*%< Pending a successful answer */
-		waiting_connect,
-		doing_xfr,
-		ns_search_only, /*%< dig +nssearch, host -C */
+	bool pending, /*%< Pending a successful answer */
+		waiting_connect, doing_xfr, ns_search_only, /*%< dig +nssearch,
+							       host -C */
 		identify, /*%< Append an "on server <foo>" message */
 		identify_previous_line, /*% Prepend a "Nameserver <foo>:"
-					   message, with newline and tab */
-		ignore,
-		recurse,
-		aaonly,
-		adflag,
-		cdflag,
-		raflag,
-		tcflag,
-		zflag,
-		trace, /*% dig +trace */
+				       message, with newline and tab */
+		ignore, recurse, aaonly, adflag, cdflag, raflag, tcflag, zflag,
+		trace,      /*% dig +trace */
 		trace_root, /*% initial query for either +trace or +nssearch */
-		tcp_mode,
-		tcp_mode_set,
-		comments,
-		stats,
-		section_question,
-		section_answer,
-		section_authority,
-		section_additional,
-		servfail_stops,
-		new_search,
-		need_search,
-		done_as_is,
-		besteffort,
-		dnssec,
-		expire,
-		sendcookie,
-		seenbadcookie,
-		badcookie,
-		nsid,   /*% Name Server ID (RFC 5001) */
-		tcp_keepalive,
-		header_only,
-		ednsneg,
-		mapped,
-		print_unknown_format,
-		multiline,
-		nottl,
-		noclass,
-		onesoa,
-		use_usec,
-		nocrypto,
-		ttlunits,
-		idnin,
-		idnout,
-		expandaaaa,
-		qr;
+		tcp_mode, tcp_mode_set, comments, stats, section_question,
+		section_answer, section_authority, section_additional,
+		servfail_stops, new_search, need_search, done_as_is, besteffort,
+		dnssec, expire, sendcookie, seenbadcookie, badcookie,
+		nsid, /*% Name Server ID (RFC 5001) */
+		tcp_keepalive, header_only, ednsneg, mapped,
+		print_unknown_format, multiline, nottl, noclass, onesoa,
+		use_usec, nocrypto, ttlunits, idnin, idnout, expandaaaa, qr;
 	char textname[MXNAME]; /*% Name we're going to be looking up */
 	char cmdline[MXNAME];
 	dns_rdatatype_t rdtype;
@@ -193,16 +156,9 @@ struct dig_lookup {
 struct dig_query {
 	unsigned int magic;
 	dig_lookup_t *lookup;
-	bool waiting_connect,
-		pending_free,
-		waiting_senddone,
-		first_pass,
-		first_soa_rcvd,
-		second_rr_rcvd,
-		first_repeat_rcvd,
-		recv_made,
-		warn_id,
-		timedout;
+	bool waiting_connect, pending_free, waiting_senddone, first_pass,
+		first_soa_rcvd, second_rr_rcvd, first_repeat_rcvd, recv_made,
+		warn_id, timedout;
 	uint32_t first_rr_serial;
 	uint32_t second_rr_serial;
 	uint32_t msg_count;
@@ -210,12 +166,8 @@ struct dig_query {
 	bool ixfr_axfr;
 	char *servname;
 	char *userarg;
-	isc_buffer_t recvbuf,
-		lengthbuf,
-		tmpsendbuf,
-		sendbuf;
-	char *recvspace, *tmpsendspace,
-		lengthspace[4];
+	isc_buffer_t recvbuf, lengthbuf, tmpsendbuf, sendbuf;
+	char *recvspace, *tmpsendspace, lengthspace[4];
 	isc_socket_t *sock;
 	ISC_LINK(dig_query_t) link;
 	ISC_LINK(dig_query_t) clink;
@@ -249,8 +201,8 @@ extern dig_serverlist_t server_list;
 extern dig_searchlistlist_t search_list;
 extern unsigned int extrabytes;
 
-extern bool check_ra, have_ipv4, have_ipv6, specified_source,
-	usesearch, showsearch;
+extern bool check_ra, have_ipv4, have_ipv6, specified_source, usesearch,
+	showsearch;
 extern in_port_t port;
 extern unsigned int timeout;
 extern isc_mem_t *mctx;
@@ -291,14 +243,13 @@ get_reverse(char *reverse, size_t len, char *value, bool strict);
 
 ISC_PLATFORM_NORETURN_PRE void
 fatal(const char *format, ...)
-ISC_FORMAT_PRINTF(1, 2) ISC_PLATFORM_NORETURN_POST;
+	ISC_FORMAT_PRINTF(1, 2) ISC_PLATFORM_NORETURN_POST;
 
 void
 warn(const char *format, ...) ISC_FORMAT_PRINTF(1, 2);
 
 ISC_PLATFORM_NORETURN_PRE void
-digexit(void)
-ISC_PLATFORM_NORETURN_POST;
+digexit(void) ISC_PLATFORM_NORETURN_POST;
 
 void
 debug(const char *format, ...) ISC_FORMAT_PRINTF(1, 2);
@@ -331,12 +282,10 @@ void
 setup_system(bool ipv4only, bool ipv6only);
 
 isc_result_t
-parse_uint(uint32_t *uip, const char *value, uint32_t max,
-	   const char *desc);
+parse_uint(uint32_t *uip, const char *value, uint32_t max, const char *desc);
 
 isc_result_t
-parse_xint(uint32_t *uip, const char *value, uint32_t max,
-	   const char *desc);
+parse_xint(uint32_t *uip, const char *value, uint32_t max, const char *desc);
 
 isc_result_t
 parse_netprefix(isc_sockaddr_t **sap, const char *value);
@@ -363,8 +312,7 @@ void
 set_nameserver(char *opt);
 
 void
-clone_server_list(dig_serverlist_t src,
-		  dig_serverlist_t *dest);
+clone_server_list(dig_serverlist_t src, dig_serverlist_t *dest);
 
 void
 cancel_all(void);
@@ -379,33 +327,33 @@ set_search_domain(char *domain);
  * Routines to be defined in dig.c, host.c, and nslookup.c. and
  * then assigned to the appropriate function pointer
  */
-extern isc_result_t
-(*dighost_printmessage)(dig_query_t *query, dns_message_t *msg, bool headers);
+extern isc_result_t (*dighost_printmessage)(dig_query_t *query,
+					    dns_message_t *msg, bool headers);
 /*%<
  * Print the final result of the lookup.
  */
 
-extern void
-(*dighost_received)(unsigned int bytes, isc_sockaddr_t *from, dig_query_t *query);
+extern void (*dighost_received)(unsigned int bytes, isc_sockaddr_t *from,
+				dig_query_t *query);
 /*%<
  * Print a message about where and when the response
  * was received from, like the final comment in the
  * output of "dig".
  */
 
-extern void
-(*dighost_trying)(char *frm, dig_lookup_t *lookup);
+extern void (*dighost_trying)(char *frm, dig_lookup_t *lookup);
 
-extern void
-(*dighost_shutdown)(void);
+extern void (*dighost_shutdown)(void);
 
-extern void
-(*dighost_pre_exit_hook)(void);
+extern void (*dighost_pre_exit_hook)(void);
 
-void save_opt(dig_lookup_t *lookup, char *code, char *value);
+void
+save_opt(dig_lookup_t *lookup, char *code, char *value);
 
-void setup_file_key(void);
-void setup_text_key(void);
+void
+setup_file_key(void);
+void
+setup_text_key(void);
 
 /*
  * Routines exported from dig.c for use by dig for iOS

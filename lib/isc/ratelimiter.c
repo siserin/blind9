@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 /*! \file */
 
 #include <inttypes.h>
@@ -30,17 +29,17 @@ typedef enum {
 } isc_ratelimiter_state_t;
 
 struct isc_ratelimiter {
-	isc_mem_t *		mctx;
-	isc_mutex_t		lock;
-	int			refs;
-	isc_task_t *		task;
-	isc_timer_t *		timer;
-	isc_interval_t		interval;
-	uint32_t		pertic;
-	bool		pushpop;
-	isc_ratelimiter_state_t	state;
-	isc_event_t		shutdownevent;
-	ISC_LIST(isc_event_t)	pending;
+	isc_mem_t *mctx;
+	isc_mutex_t lock;
+	int refs;
+	isc_task_t *task;
+	isc_timer_t *timer;
+	isc_interval_t interval;
+	uint32_t pertic;
+	bool pushpop;
+	isc_ratelimiter_state_t state;
+	isc_event_t shutdownevent;
+	ISC_LIST(isc_event_t) pending;
 };
 
 #define ISC_RATELIMITEREVENT_SHUTDOWN (ISC_EVENTCLASS_RATELIMITER + 1)
@@ -74,9 +73,8 @@ isc_ratelimiter_create(isc_mem_t *mctx, isc_timermgr_t *timermgr,
 
 	isc_mutex_init(&rl->lock);
 
-	result = isc_timer_create(timermgr, isc_timertype_inactive,
-				  NULL, NULL, rl->task, ratelimiter_tick,
-				  rl, &rl->timer);
+	result = isc_timer_create(timermgr, isc_timertype_inactive, NULL, NULL,
+				  rl->task, ratelimiter_tick, rl, &rl->timer);
 	if (result != ISC_R_SUCCESS)
 		goto free_mutex;
 
@@ -86,9 +84,8 @@ isc_ratelimiter_create(isc_mem_t *mctx, isc_timermgr_t *timermgr,
 	 */
 	rl->refs++;
 
-	ISC_EVENT_INIT(&rl->shutdownevent,
-		       sizeof(isc_event_t),
-		       0, NULL, ISC_RATELIMITEREVENT_SHUTDOWN,
+	ISC_EVENT_INIT(&rl->shutdownevent, sizeof(isc_event_t), 0, NULL,
+		       ISC_RATELIMITEREVENT_SHUTDOWN,
 		       ratelimiter_shutdowncomplete, rl, rl, NULL, NULL);
 
 	*ratelimiterp = rl;
@@ -101,7 +98,8 @@ free_mutex:
 }
 
 isc_result_t
-isc_ratelimiter_setinterval(isc_ratelimiter_t *rl, isc_interval_t *interval) {
+isc_ratelimiter_setinterval(isc_ratelimiter_t *rl, isc_interval_t *interval)
+{
 	isc_result_t result = ISC_R_SUCCESS;
 
 	REQUIRE(rl != NULL);
@@ -121,8 +119,8 @@ isc_ratelimiter_setinterval(isc_ratelimiter_t *rl, isc_interval_t *interval) {
 }
 
 void
-isc_ratelimiter_setpertic(isc_ratelimiter_t *rl, uint32_t pertic) {
-
+isc_ratelimiter_setpertic(isc_ratelimiter_t *rl, uint32_t pertic)
+{
 	REQUIRE(rl != NULL);
 
 	if (pertic == 0)
@@ -131,8 +129,8 @@ isc_ratelimiter_setpertic(isc_ratelimiter_t *rl, uint32_t pertic) {
 }
 
 void
-isc_ratelimiter_setpushpop(isc_ratelimiter_t *rl, bool pushpop) {
-
+isc_ratelimiter_setpushpop(isc_ratelimiter_t *rl, bool pushpop)
+{
 	REQUIRE(rl != NULL);
 
 	rl->pushpop = pushpop;
@@ -178,7 +176,8 @@ isc_ratelimiter_enqueue(isc_ratelimiter_t *rl, isc_task_t *task,
 }
 
 isc_result_t
-isc_ratelimiter_dequeue(isc_ratelimiter_t *rl, isc_event_t *event) {
+isc_ratelimiter_dequeue(isc_ratelimiter_t *rl, isc_event_t *event)
+{
 	isc_result_t result = ISC_R_SUCCESS;
 
 	REQUIRE(rl != NULL);
@@ -195,7 +194,8 @@ isc_ratelimiter_dequeue(isc_ratelimiter_t *rl, isc_event_t *event) {
 }
 
 static void
-ratelimiter_tick(isc_task_t *task, isc_event_t *event) {
+ratelimiter_tick(isc_task_t *task, isc_event_t *event)
+{
 	isc_result_t result = ISC_R_SUCCESS;
 	isc_ratelimiter_t *rl = (isc_ratelimiter_t *)event->ev_arg;
 	isc_event_t *p;
@@ -221,11 +221,11 @@ ratelimiter_tick(isc_task_t *task, isc_event_t *event) {
 			 * waste resources by having it fire periodically.
 			 */
 			result = isc_timer_reset(rl->timer,
-						 isc_timertype_inactive,
-						 NULL, NULL, false);
+						 isc_timertype_inactive, NULL,
+						 NULL, false);
 			RUNTIME_CHECK(result == ISC_R_SUCCESS);
 			rl->state = isc_ratelimiter_idle;
-			pertic = 0;	/* Force the loop to exit. */
+			pertic = 0; /* Force the loop to exit. */
 		}
 		UNLOCK(&rl->lock);
 		if (p != NULL) {
@@ -237,7 +237,8 @@ ratelimiter_tick(isc_task_t *task, isc_event_t *event) {
 }
 
 void
-isc_ratelimiter_shutdown(isc_ratelimiter_t *rl) {
+isc_ratelimiter_shutdown(isc_ratelimiter_t *rl)
+{
 	isc_event_t *ev;
 	isc_task_t *task;
 
@@ -245,8 +246,8 @@ isc_ratelimiter_shutdown(isc_ratelimiter_t *rl) {
 
 	LOCK(&rl->lock);
 	rl->state = isc_ratelimiter_shuttingdown;
-	(void)isc_timer_reset(rl->timer, isc_timertype_inactive,
-			      NULL, NULL, false);
+	(void)isc_timer_reset(rl->timer, isc_timertype_inactive, NULL, NULL,
+			      false);
 	while ((ev = ISC_LIST_HEAD(rl->pending)) != NULL) {
 		ISC_LIST_UNLINK(rl->pending, ev, ev_ratelink);
 		ev->ev_attributes |= ISC_EVENTATTR_CANCELED;
@@ -266,7 +267,8 @@ isc_ratelimiter_shutdown(isc_ratelimiter_t *rl) {
 }
 
 static void
-ratelimiter_shutdowncomplete(isc_task_t *task, isc_event_t *event) {
+ratelimiter_shutdowncomplete(isc_task_t *task, isc_event_t *event)
+{
 	isc_ratelimiter_t *rl = (isc_ratelimiter_t *)event->ev_arg;
 
 	UNUSED(task);
@@ -275,14 +277,15 @@ ratelimiter_shutdowncomplete(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-ratelimiter_free(isc_ratelimiter_t *rl) {
+ratelimiter_free(isc_ratelimiter_t *rl)
+{
 	isc_mutex_destroy(&rl->lock);
 	isc_mem_put(rl->mctx, rl, sizeof(*rl));
 }
 
 void
-isc_ratelimiter_attach(isc_ratelimiter_t *source, isc_ratelimiter_t **target) {
-
+isc_ratelimiter_attach(isc_ratelimiter_t *source, isc_ratelimiter_t **target)
+{
 	REQUIRE(source != NULL);
 	REQUIRE(target != NULL && *target == NULL);
 
@@ -295,7 +298,8 @@ isc_ratelimiter_attach(isc_ratelimiter_t *source, isc_ratelimiter_t **target) {
 }
 
 void
-isc_ratelimiter_detach(isc_ratelimiter_t **rlp) {
+isc_ratelimiter_detach(isc_ratelimiter_t **rlp)
+{
 	isc_ratelimiter_t *rl;
 	bool free_now = false;
 
@@ -317,7 +321,8 @@ isc_ratelimiter_detach(isc_ratelimiter_t **rlp) {
 }
 
 isc_result_t
-isc_ratelimiter_stall(isc_ratelimiter_t *rl) {
+isc_ratelimiter_stall(isc_ratelimiter_t *rl)
+{
 	isc_result_t result = ISC_R_SUCCESS;
 
 	REQUIRE(rl != NULL);
@@ -342,7 +347,8 @@ isc_ratelimiter_stall(isc_ratelimiter_t *rl) {
 }
 
 isc_result_t
-isc_ratelimiter_release(isc_ratelimiter_t *rl) {
+isc_ratelimiter_release(isc_ratelimiter_t *rl)
+{
 	isc_result_t result = ISC_R_SUCCESS;
 
 	REQUIRE(rl != NULL);

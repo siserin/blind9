@@ -11,10 +11,9 @@
 
 #if HAVE_CMOCKA
 
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -30,7 +29,8 @@
 #include "isctest.h"
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -42,7 +42,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	isc_test_end();
@@ -52,7 +53,8 @@ _teardown(void **state) {
 
 /* test radix searching */
 static void
-isc_radix_search_test(void **state) {
+isc_radix_search_test(void **state)
+{
 	isc_radix_tree_t *radix = NULL;
 	isc_radix_node_t *node;
 	isc_prefix_t prefix;
@@ -100,10 +102,11 @@ isc_radix_search_test(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test_setup_teardown(isc_radix_search_test,
-						_setup, _teardown),
+		cmocka_unit_test_setup_teardown(isc_radix_search_test, _setup,
+						_teardown),
 	};
 
 	return (cmocka_run_group_tests(tests, NULL, NULL));
@@ -114,7 +117,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

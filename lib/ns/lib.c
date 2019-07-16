@@ -24,13 +24,11 @@
 
 #include <ns/lib.h>
 
-
 /***
  *** Globals
  ***/
 
-LIBNS_EXTERNAL_DATA unsigned int			ns_pps = 0U;
-
+LIBNS_EXTERNAL_DATA unsigned int ns_pps = 0U;
 
 /***
  *** Private
@@ -42,7 +40,8 @@ static bool initialize_done = false;
 static isc_refcount_t references;
 
 static void
-initialize(void) {
+initialize(void)
+{
 	isc_result_t result;
 
 	REQUIRE(initialize_done == false);
@@ -57,7 +56,8 @@ initialize(void) {
 }
 
 isc_result_t
-ns_lib_init(void) {
+ns_lib_init(void)
+{
 	isc_result_t result;
 
 	/*
@@ -78,7 +78,8 @@ ns_lib_init(void) {
 }
 
 void
-ns_lib_shutdown(void) {
+ns_lib_shutdown(void)
+{
 	if (isc_refcount_decrement(&references) == 1) {
 		if (ns_g_mctx != NULL) {
 			isc_mem_detach(&ns_g_mctx);

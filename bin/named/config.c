@@ -11,6 +11,7 @@
 
 /*! \file */
 
+#include <bind.keys.h>
 #include <inttypes.h>
 #include <stdlib.h>
 
@@ -24,11 +25,6 @@
 #include <isc/string.h>
 #include <isc/util.h>
 
-#include <pk11/site.h>
-
-#include <isccfg/grammar.h>
-#include <isccfg/namedconf.h>
-
 #include <dns/fixedname.h>
 #include <dns/name.h>
 #include <dns/rdataclass.h>
@@ -36,12 +32,13 @@
 #include <dns/tsig.h>
 #include <dns/zone.h>
 
-#include <dst/dst.h>
+#include <isccfg/grammar.h>
+#include <isccfg/namedconf.h>
 
+#include <dst/dst.h>
 #include <named/config.h>
 #include <named/globals.h>
-
-#include <bind.keys.h>
+#include <pk11/site.h>
 
 /*% default configuration */
 static char defaultconf[] = "\
@@ -50,26 +47,28 @@ options {\n\
 	automatic-interface-scan yes;\n\
 	bindkeys-file \"" NAMED_SYSCONFDIR "/bind.keys\";\n\
 #	blackhole {none;};\n"
-"	cookie-algorithm aes;\n"
+			    "	cookie-algorithm aes;\n"
 #ifndef WIN32
-"	coresize default;\n\
+			    "	coresize default;\n\
 	datasize default;\n"
 #endif
-"\
+			    "\
 #	deallocate-on-exit <obsolete>;\n\
 #	directory <none>\n\
 	dump-file \"named_dump.db\";\n\
 	edns-udp-size 4096;\n\
 #	fake-iquery <obsolete>;\n"
 #ifndef WIN32
-"	files unlimited;\n"
+			    "	files unlimited;\n"
 #endif
 #if defined(HAVE_GEOIP2) && !defined(WIN32)
-"	geoip-directory \"" MAXMINDDB_PREFIX "/share/GeoIP2\";\n"
+			    "	geoip-directory \"" MAXMINDDB_PREFIX "/share/"
+			    "GeoIP2\";"
+			    "\n"
 #elif defined(HAVE_GEOIP2)
-"	geoip-directory \".\";\n"
+			    "	geoip-directory \".\";\n"
 #endif
-"\
+			    "\
 #	has-old-clients <obsolete>;\n\
 	heartbeat-interval 60;\n\
 #	host-statistics <obsolete>;\n\
@@ -106,9 +105,9 @@ options {\n\
 #	session-keyfile \"" NAMED_LOCALSTATEDIR "/run/named/session.key\";\n\
 	session-keyname local-ddns;\n"
 #ifndef WIN32
-"	stacksize default;\n"
+			    "	stacksize default;\n"
 #endif
-"	startup-notify-rate 20;\n\
+			    "	startup-notify-rate 20;\n\
 	statistics-file \"named.stats\";\n\
 #	statistics-interval <obsolete>;\n\
 	tcp-advertised-timeout 300;\n\
@@ -149,9 +148,9 @@ options {\n\
 	dnssec-accept-expired no;\n\
 	dnssec-validation " VALIDATION_DEFAULT "; \n"
 #ifdef HAVE_DNSTAP
-"	dnstap-identity hostname;\n"
+			    "	dnstap-identity hostname;\n"
 #endif
-"\
+			    "\
 #	fetch-glue <obsolete>;\n\
 	fetch-quota-params 100 0.1 0.3 0.7;\n\
 	fetches-per-server 0;\n\
@@ -159,9 +158,9 @@ options {\n\
 	glue-cache yes;\n\
 	lame-ttl 600;\n"
 #ifdef HAVE_LMDB
-"	lmdb-mapsize 32M;\n"
+			    "	lmdb-mapsize 32M;\n"
 #endif
-"	max-cache-size 90%;\n\
+			    "	max-cache-size 90%;\n\
 	max-cache-ttl 604800; /* 1 week */\n\
 	max-clients-per-query 100;\n\
 	max-ncache-ttl 10800; /* 3 hours */\n\
@@ -251,7 +250,7 @@ options {\n\
 };\n\
 "
 
-"#\n\
+			    "#\n\
 #  Zones in the \"_bind\" view are NOT counted in the count of zones.\n\
 #\n\
 view \"_bind\" chaos {\n\
@@ -287,17 +286,17 @@ view \"_bind\" chaos {\n\
 	};\n\
 };\n\
 "
-"#\n\
+			    "#\n\
 #  Default trusted key(s), used if \n\
 # \"dnssec-validation auto;\" is set and\n\
 #  sysconfdir/bind.keys doesn't exist).\n\
 #\n\
 # BEGIN DNSSEC KEYS\n"
 
-/* Imported from bind.keys.h: */
-DNSSEC_KEYS
+	/* Imported from bind.keys.h: */
+	DNSSEC_KEYS
 
-"# END MANAGED KEYS\n\
+			    "# END MANAGED KEYS\n\
 \n\
 masters " DEFAULT_IANA_ROOT_ZONE_MASTERS " {\n\
 	2001:500:84::b;		# b.root-servers.net\n\
@@ -316,18 +315,18 @@ masters " DEFAULT_IANA_ROOT_ZONE_MASTERS " {\n\
 ";
 
 isc_result_t
-named_config_parsedefaults(cfg_parser_t *parser, cfg_obj_t **conf) {
+named_config_parsedefaults(cfg_parser_t *parser, cfg_obj_t **conf)
+{
 	isc_buffer_t b;
 
 	isc_buffer_init(&b, defaultconf, sizeof(defaultconf) - 1);
 	isc_buffer_add(&b, sizeof(defaultconf) - 1);
-	return (cfg_parse_buffer(parser, &b, __FILE__, 0,
-				 &cfg_type_namedconf,
+	return (cfg_parse_buffer(parser, &b, __FILE__, 0, &cfg_type_namedconf,
 				 CFG_PCTX_NODEPRECATED, conf));
 }
 
 isc_result_t
-named_config_get(cfg_obj_t const * const *maps, const char *name,
+named_config_get(cfg_obj_t const *const *maps, const char *name,
 		 const cfg_obj_t **obj)
 {
 	int i;
@@ -354,8 +353,8 @@ named_checknames_get(const cfg_obj_t **maps, const char *which,
 		if (maps[i] == NULL)
 			return (ISC_R_NOTFOUND);
 		checknames = NULL;
-		if (cfg_map_get(maps[i], "check-names",
-				&checknames) == ISC_R_SUCCESS) {
+		if (cfg_map_get(maps[i], "check-names", &checknames) ==
+		    ISC_R_SUCCESS) {
 			/*
 			 * Zone map entry is not a list.
 			 */
@@ -368,19 +367,19 @@ named_checknames_get(const cfg_obj_t **maps, const char *which,
 			     element = cfg_list_next(element)) {
 				value = cfg_listelt_value(element);
 				type = cfg_tuple_get(value, "type");
-				if (strcasecmp(cfg_obj_asstring(type),
-					       which) == 0) {
+				if (strcasecmp(cfg_obj_asstring(type), which) ==
+				    0) {
 					*obj = cfg_tuple_get(value, "mode");
 					return (ISC_R_SUCCESS);
 				}
 			}
-
 		}
 	}
 }
 
 int
-named_config_listcount(const cfg_obj_t *list) {
+named_config_listcount(const cfg_obj_t *list)
+{
 	const cfg_listelt_t *e;
 	int i = 0;
 
@@ -431,18 +430,16 @@ named_config_gettype(const cfg_obj_t *typeobj, dns_rdatatype_t deftype,
 }
 
 dns_zonetype_t
-named_config_getzonetype(const cfg_obj_t *zonetypeobj) {
+named_config_getzonetype(const cfg_obj_t *zonetypeobj)
+{
 	dns_zonetype_t ztype = dns_zone_none;
 	const char *str;
 
 	str = cfg_obj_asstring(zonetypeobj);
-	if (strcasecmp(str, "primary") == 0 ||
-	    strcasecmp(str, "master") == 0)
-	{
+	if (strcasecmp(str, "primary") == 0 || strcasecmp(str, "master") == 0) {
 		ztype = dns_zone_master;
 	} else if (strcasecmp(str, "secondary") == 0 ||
-		   strcasecmp(str, "slave") == 0)
-	{
+		   strcasecmp(str, "slave") == 0) {
 		ztype = dns_zone_slave;
 	} else if (strcasecmp(str, "mirror") == 0) {
 		ztype = dns_zone_mirror;
@@ -461,9 +458,9 @@ named_config_getzonetype(const cfg_obj_t *zonetypeobj) {
 
 isc_result_t
 named_config_getiplist(const cfg_obj_t *config, const cfg_obj_t *list,
-		    in_port_t defport, isc_mem_t *mctx,
-		    isc_sockaddr_t **addrsp, isc_dscp_t **dscpsp,
-		    uint32_t *countp)
+		       in_port_t defport, isc_mem_t *mctx,
+		       isc_sockaddr_t **addrsp, isc_dscp_t **dscpsp,
+		       uint32_t *countp)
 {
 	int count, i = 0;
 	const cfg_obj_t *addrlist;
@@ -489,7 +486,7 @@ named_config_getiplist(const cfg_obj_t *config, const cfg_obj_t *list,
 				    "port '%u' out of range", val);
 			return (ISC_R_RANGE);
 		}
-		port = (in_port_t) val;
+		port = (in_port_t)val;
 	} else if (defport != 0)
 		port = defport;
 	else {
@@ -523,10 +520,8 @@ named_config_getiplist(const cfg_obj_t *config, const cfg_obj_t *list,
 		return (ISC_R_NOMEMORY);
 	}
 
-	for (element = cfg_list_first(addrlist);
-	     element != NULL;
-	     element = cfg_list_next(element), i++)
-	{
+	for (element = cfg_list_first(addrlist); element != NULL;
+	     element = cfg_list_next(element), i++) {
 		const cfg_obj_t *addr;
 		INSIST(i < count);
 		addr = cfg_listelt_value(element);
@@ -579,8 +574,7 @@ named_config_getmastersdef(const cfg_obj_t *cctx, const char *name,
 	result = cfg_map_get(cctx, "masters", &masters);
 	if (result != ISC_R_SUCCESS)
 		return (result);
-	for (elt = cfg_list_first(masters);
-	     elt != NULL;
+	for (elt = cfg_list_first(masters); elt != NULL;
 	     elt = cfg_list_next(elt)) {
 		const cfg_obj_t *list;
 		const char *listname;
@@ -598,7 +592,7 @@ named_config_getmastersdef(const cfg_obj_t *cctx, const char *name,
 
 isc_result_t
 named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
-			  isc_mem_t *mctx, dns_ipkeylist_t *ipkl)
+			     isc_mem_t *mctx, dns_ipkeylist_t *ipkl)
 {
 	uint32_t addrcount = 0, dscpcount = 0, keycount = 0, i = 0;
 	uint32_t listcount = 0, l = 0, j;
@@ -614,7 +608,9 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 	isc_sockaddr_t *addrs = NULL;
 	isc_dscp_t *dscps = NULL;
 	dns_name_t **keys = NULL;
-	struct { const char *name; } *lists = NULL;
+	struct {
+		const char *name;
+	} *lists = NULL;
 	struct {
 		const cfg_listelt_t *element;
 		in_port_t port;
@@ -640,7 +636,7 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 	if (result != ISC_R_SUCCESS)
 		goto cleanup;
 
- newlist:
+newlist:
 	addrlist = cfg_tuple_get(list, "addresses");
 	portobj = cfg_tuple_get(list, "port");
 	dscpobj = cfg_tuple_get(list, "dscp");
@@ -653,7 +649,7 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 			result = ISC_R_RANGE;
 			goto cleanup;
 		}
-		port = (in_port_t) val;
+		port = (in_port_t)val;
 	}
 
 	if (dscpobj != NULL && cfg_obj_isuint32(dscpobj)) {
@@ -670,18 +666,15 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 	result = ISC_R_NOMEMORY;
 
 	element = cfg_list_first(addrlist);
- resume:
-	for ( ;
-	     element != NULL;
-	     element = cfg_list_next(element))
-	{
+resume:
+	for (; element != NULL; element = cfg_list_next(element)) {
 		const cfg_obj_t *addr;
 		const cfg_obj_t *key;
 		const char *keystr;
 		isc_buffer_t b;
 
-		addr = cfg_tuple_get(cfg_listelt_value(element),
-				     "masterselement");
+		addr = cfg_tuple_get(cfg_listelt_value(element), "masterselemen"
+								 "t");
 		key = cfg_tuple_get(cfg_listelt_value(element), "key");
 
 		if (!cfg_obj_issockaddr(addr)) {
@@ -690,7 +683,7 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 
 			/* Grow lists? */
 			if (listcount == l) {
-				void * tmp;
+				void *tmp;
 				uint32_t newlen = listcount + 16;
 				size_t newsize, oldsize;
 
@@ -716,7 +709,8 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 							     &list);
 			if (tresult == ISC_R_NOTFOUND) {
 				cfg_obj_log(addr, named_g_lctx, ISC_LOG_ERROR,
-				    "masters \"%s\" not found", listname);
+					    "masters \"%s\" not found",
+					    listname);
 
 				result = tresult;
 				goto cleanup;
@@ -726,7 +720,7 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 			lists[l++].name = listname;
 			/* Grow stack? */
 			if (stackcount == pushed) {
-				void * tmp;
+				void *tmp;
 				uint32_t newlen = stackcount + 16;
 				size_t newsize, oldsize;
 
@@ -754,7 +748,7 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 		}
 
 		if (i == addrcount) {
-			void * tmp;
+			void *tmp;
 			uint32_t newlen = addrcount + 16;
 			size_t newsize, oldsize;
 
@@ -802,7 +796,7 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 		if (dscps[i] == -1)
 			dscps[i] = dscp;
 		keys[i] = NULL;
-		i++;	/* Increment here so that cleanup on error works. */
+		i++; /* Increment here so that cleanup on error works. */
 		if (!cfg_obj_isstring(key))
 			continue;
 		keys[i - 1] = isc_mem_get(mctx, sizeof(dns_name_t));
@@ -831,7 +825,7 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 		goto resume;
 	}
 	if (i < addrcount) {
-		void * tmp;
+		void *tmp;
 		size_t newsize, oldsize;
 
 		newsize = i * sizeof(isc_sockaddr_t);
@@ -866,7 +860,7 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 			tmp = isc_mem_get(mctx, newsize);
 			if (tmp == NULL)
 				goto cleanup;
-			memmove(tmp, keys,  newsize);
+			memmove(tmp, keys, newsize);
 		} else
 			tmp = NULL;
 		isc_mem_put(mctx, keys, oldsize);
@@ -889,7 +883,7 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 
 	return (ISC_R_SUCCESS);
 
- cleanup:
+cleanup:
 	if (addrs != NULL)
 		isc_mem_put(mctx, addrs, addrcount * sizeof(isc_sockaddr_t));
 	if (dscps != NULL)
@@ -912,7 +906,8 @@ named_config_getipandkeylist(const cfg_obj_t *config, const cfg_obj_t *list,
 }
 
 isc_result_t
-named_config_getport(const cfg_obj_t *config, in_port_t *portp) {
+named_config_getport(const cfg_obj_t *config, in_port_t *portp)
+{
 	const cfg_obj_t *maps[3];
 	const cfg_obj_t *options = NULL;
 	const cfg_obj_t *portobj = NULL;
@@ -939,7 +934,8 @@ named_config_getport(const cfg_obj_t *config, in_port_t *portp) {
 }
 
 isc_result_t
-named_config_getdscp(const cfg_obj_t *config, isc_dscp_t *dscpp) {
+named_config_getdscp(const cfg_obj_t *config, isc_dscp_t *dscpp)
+{
 	const cfg_obj_t *options = NULL;
 	const cfg_obj_t *dscpobj = NULL;
 	isc_result_t result;
@@ -965,21 +961,24 @@ named_config_getdscp(const cfg_obj_t *config, isc_dscp_t *dscpp) {
 
 struct keyalgorithms {
 	const char *str;
-	enum { hmacnone, hmacmd5, hmacsha1, hmacsha224,
-	       hmacsha256, hmacsha384, hmacsha512 } hmac;
+	enum { hmacnone,
+	       hmacmd5,
+	       hmacsha1,
+	       hmacsha224,
+	       hmacsha256,
+	       hmacsha384,
+	       hmacsha512 } hmac;
 	unsigned int type;
 	uint16_t size;
-} algorithms[] = {
-	{ "hmac-md5", hmacmd5, DST_ALG_HMACMD5, 128 },
-	{ "hmac-md5.sig-alg.reg.int", hmacmd5, DST_ALG_HMACMD5, 0 },
-	{ "hmac-md5.sig-alg.reg.int.", hmacmd5, DST_ALG_HMACMD5, 0 },
-	{ "hmac-sha1", hmacsha1, DST_ALG_HMACSHA1, 160 },
-	{ "hmac-sha224", hmacsha224, DST_ALG_HMACSHA224, 224 },
-	{ "hmac-sha256", hmacsha256, DST_ALG_HMACSHA256, 256 },
-	{ "hmac-sha384", hmacsha384, DST_ALG_HMACSHA384, 384 },
-	{ "hmac-sha512", hmacsha512, DST_ALG_HMACSHA512, 512 },
-	{  NULL, hmacnone, DST_ALG_UNKNOWN, 0 }
-};
+} algorithms[] = { { "hmac-md5", hmacmd5, DST_ALG_HMACMD5, 128 },
+		   { "hmac-md5.sig-alg.reg.int", hmacmd5, DST_ALG_HMACMD5, 0 },
+		   { "hmac-md5.sig-alg.reg.int.", hmacmd5, DST_ALG_HMACMD5, 0 },
+		   { "hmac-sha1", hmacsha1, DST_ALG_HMACSHA1, 160 },
+		   { "hmac-sha224", hmacsha224, DST_ALG_HMACSHA224, 224 },
+		   { "hmac-sha256", hmacsha256, DST_ALG_HMACSHA256, 256 },
+		   { "hmac-sha384", hmacsha384, DST_ALG_HMACSHA384, 384 },
+		   { "hmac-sha512", hmacsha512, DST_ALG_HMACSHA512, 512 },
+		   { NULL, hmacnone, DST_ALG_UNKNOWN, 0 } };
 
 isc_result_t
 named_config_getkeyalgorithm(const char *str, const dns_name_t **name,
@@ -1019,12 +1018,24 @@ named_config_getkeyalgorithm2(const char *str, const dns_name_t **name,
 
 	if (name != NULL) {
 		switch (algorithms[i].hmac) {
-		case hmacmd5: *name = dns_tsig_hmacmd5_name; break;
-		case hmacsha1: *name = dns_tsig_hmacsha1_name; break;
-		case hmacsha224: *name = dns_tsig_hmacsha224_name; break;
-		case hmacsha256: *name = dns_tsig_hmacsha256_name; break;
-		case hmacsha384: *name = dns_tsig_hmacsha384_name; break;
-		case hmacsha512: *name = dns_tsig_hmacsha512_name; break;
+		case hmacmd5:
+			*name = dns_tsig_hmacmd5_name;
+			break;
+		case hmacsha1:
+			*name = dns_tsig_hmacsha1_name;
+			break;
+		case hmacsha224:
+			*name = dns_tsig_hmacsha224_name;
+			break;
+		case hmacsha256:
+			*name = dns_tsig_hmacsha256_name;
+			break;
+		case hmacsha384:
+			*name = dns_tsig_hmacsha384_name;
+			break;
+		case hmacsha512:
+			*name = dns_tsig_hmacsha512_name;
+			break;
 		default:
 			INSIST(0);
 			ISC_UNREACHABLE();

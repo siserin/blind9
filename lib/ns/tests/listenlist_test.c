@@ -11,16 +11,15 @@
 
 #if HAVE_CMOCKA
 
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <stdlib.h>
-#include <setjmp.h>
-
-#include <isc/util.h>
-
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <isc/util.h>
 
 #define UNIT_TESTING
 #include <cmocka.h>
@@ -36,7 +35,8 @@
 #include "nstest.h"
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -48,7 +48,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	ns_test_end();
@@ -58,7 +59,8 @@ _teardown(void **state) {
 
 /* test that ns_listenlist_default() works */
 static void
-ns_listenlist_default_test(void **state) {
+ns_listenlist_default_test(void **state)
+{
 	isc_result_t result;
 	ns_listenlist_t *list = NULL;
 	ns_listenelt_t *elt;
@@ -114,7 +116,8 @@ ns_listenlist_default_test(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test_setup_teardown(ns_listenlist_default_test,
 						_setup, _teardown),
@@ -127,7 +130,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

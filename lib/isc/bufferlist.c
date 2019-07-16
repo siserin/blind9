@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 /*! \file */
 
 #include <stddef.h>
@@ -19,7 +18,8 @@
 #include <isc/util.h>
 
 unsigned int
-isc_bufferlist_usedcount(isc_bufferlist_t *bl) {
+isc_bufferlist_usedcount(isc_bufferlist_t *bl)
+{
 	isc_buffer_t *buffer;
 	unsigned int length;
 
@@ -37,7 +37,8 @@ isc_bufferlist_usedcount(isc_bufferlist_t *bl) {
 }
 
 unsigned int
-isc_bufferlist_availablecount(isc_bufferlist_t *bl) {
+isc_bufferlist_availablecount(isc_bufferlist_t *bl)
+{
 	isc_buffer_t *buffer;
 	unsigned int length;
 

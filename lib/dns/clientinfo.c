@@ -23,7 +23,8 @@ dns_clientinfomethods_init(dns_clientinfomethods_t *methods,
 }
 
 void
-dns_clientinfo_init(dns_clientinfo_t *ci, void *data, void *versionp) {
+dns_clientinfo_init(dns_clientinfo_t *ci, void *data, void *versionp)
+{
 	ci->version = DNS_CLIENTINFO_VERSION;
 	ci->data = data;
 	ci->dbversion = versionp;

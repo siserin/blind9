@@ -11,19 +11,20 @@
 
 #if HAVE_CMOCKA
 
-#include <stdarg.h>
-#include <stddef.h>
-#include <setjmp.h>
-
-#include <isc/util.h>
-
 #include <inttypes.h>
+#include <setjmp.h>
+#include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <isc/util.h>
+
 #define UNIT_TESTING
 #include <cmocka.h>
+
+#include <isc/util.h>
 
 #include <dns/badcache.h>
 #include <dns/view.h>
@@ -31,12 +32,12 @@
 #include <ns/client.h>
 #include <ns/hooks.h>
 #include <ns/query.h>
-#include <isc/util.h>
 
 #include "nstest.h"
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -48,7 +49,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	ns_test_end();
@@ -64,22 +66,23 @@ _teardown(void **state) {
  * Structure containing parameters for ns__query_sfcache_test().
  */
 typedef struct {
-	const ns_test_id_t id;		   /* libns test identifier */
-	unsigned int qflags;		   /* query flags */
-	bool cache_entry_present; 	   /* whether a SERVFAIL cache entry
+	const ns_test_id_t id;      /* libns test identifier */
+	unsigned int qflags;	/* query flags */
+	bool cache_entry_present;   /* whether a SERVFAIL cache entry
 					      matching the query should be
 					      present */
-	uint32_t cache_entry_flags;	   /* NS_FAILCACHE_* flags to set for
+	uint32_t cache_entry_flags; /* NS_FAILCACHE_* flags to set for
 					      the SERVFAIL cache entry */
-	bool servfail_expected;   	   /* whether a cached SERVFAIL is
-					      expected to be returned */
+	bool servfail_expected;     /* whether a cached SERVFAIL is
+						  expected to be returned */
 } ns__query_sfcache_test_params_t;
 
 /*%
  * Perform a single ns__query_sfcache() check using given parameters.
  */
 static void
-run_sfcache_test(const ns__query_sfcache_test_params_t *test) {
+run_sfcache_test(const ns__query_sfcache_test_params_t *test)
+{
 	ns_hooktable_t *query_hooks = NULL;
 	query_ctx_t *qctx = NULL;
 	isc_result_t result;
@@ -162,7 +165,8 @@ run_sfcache_test(const ns__query_sfcache_test_params_t *test) {
 
 /* test ns__query_sfcache() */
 static void
-ns__query_sfcache_test(void **state) {
+ns__query_sfcache_test(void **state)
+{
 	size_t i;
 
 	const ns__query_sfcache_test_params_t tests[] = {
@@ -250,28 +254,28 @@ ns__query_sfcache_test(void **state) {
  * Structure containing parameters for ns__query_start_test().
  */
 typedef struct {
-	const ns_test_id_t id;		   /* libns test identifier */
-	const char *qname;		   /* QNAME */
-	dns_rdatatype_t qtype;		   /* QTYPE */
-	unsigned int qflags;		   /* query flags */
-	bool disable_name_checks; /* if set to true, owner name
-					      checks will be disabled for the
-					      view created */
-	bool recursive_service;   /* if set to true, the view
-					      created will have a cache
-					      database attached */
-	const char *auth_zone_origin;	   /* origin name of the zone the
-					      created view will be
-					      authoritative for */
-	const char *auth_zone_path;	   /* path to load the authoritative
-					      zone from */
-	enum {				   /* expected result: */
-		NS__QUERY_START_R_INVALID,
-		NS__QUERY_START_R_REFUSE,  /* query should be REFUSED */
-		NS__QUERY_START_R_CACHE,   /* query should be answered from
-					      cache */
-		NS__QUERY_START_R_AUTH,	   /* query should be answered using
-					      authoritative data */
+	const ns_test_id_t id;	/* libns test identifier */
+	const char *qname;	    /* QNAME */
+	dns_rdatatype_t qtype;	/* QTYPE */
+	unsigned int qflags;	  /* query flags */
+	bool disable_name_checks;     /* if set to true, owner name
+					checks will be disabled for the
+					view created */
+	bool recursive_service;       /* if set to true, the view
+					    created will have a cache
+					    database attached */
+	const char *auth_zone_origin; /* origin name of the zone the
+				       created view will be
+				       authoritative for */
+	const char *auth_zone_path;   /* path to load the authoritative
+					   zone from */
+	enum {			      /* expected result: */
+	       NS__QUERY_START_R_INVALID,
+	       NS__QUERY_START_R_REFUSE, /* query should be REFUSED */
+	       NS__QUERY_START_R_CACHE,  /* query should be answered from
+						cache */
+	       NS__QUERY_START_R_AUTH,   /* query should be answered using
+						  authoritative data */
 	} expected_result;
 } ns__query_start_test_params_t;
 
@@ -279,7 +283,8 @@ typedef struct {
  * Perform a single ns__query_start() check using given parameters.
  */
 static void
-run_start_test(const ns__query_start_test_params_t *test) {
+run_start_test(const ns__query_start_test_params_t *test)
+{
 	ns_hooktable_t *query_hooks = NULL;
 	query_ctx_t *qctx = NULL;
 	isc_result_t result;
@@ -372,8 +377,7 @@ run_start_test(const ns__query_start_test_params_t *test) {
 				 test->id.description, test->id.lineno);
 		}
 		if (qctx->db == NULL ||
-		    qctx->db != qctx->client->view->cachedb)
-		{
+		    qctx->db != qctx->client->view->cachedb) {
 			fail_msg("# test \"%s\" on line %d: "
 				 "cache database was expected to be "
 				 "attached to query context, but it was not",
@@ -421,7 +425,8 @@ run_start_test(const ns__query_start_test_params_t *test) {
 
 /* test ns__query_start() */
 static void
-ns__query_start_test(void **state) {
+ns__query_start_test(void **state)
+{
 	size_t i;
 
 	const ns__query_start_test_params_t tests[] = {
@@ -590,12 +595,13 @@ ns__query_start_test(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test_setup_teardown(ns__query_sfcache_test,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(ns__query_start_test,
-						_setup, _teardown),
+		cmocka_unit_test_setup_teardown(ns__query_sfcache_test, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(ns__query_start_test, _setup,
+						_teardown),
 	};
 
 	return (cmocka_run_group_tests(tests, NULL, NULL));
@@ -605,7 +611,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

@@ -11,16 +11,15 @@
 
 #if HAVE_CMOCKA
 
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <stdlib.h>
-#include <setjmp.h>
-
-#include <isc/util.h>
-
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <isc/util.h>
 
 #define UNIT_TESTING
 #include <cmocka.h>
@@ -40,7 +39,8 @@
 #include "nstest.h"
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -52,7 +52,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	ns_test_end();
@@ -61,7 +62,8 @@ _teardown(void **state) {
 }
 
 static void
-check_response(isc_buffer_t *buf) {
+check_response(isc_buffer_t *buf)
+{
 	isc_result_t result;
 	dns_message_t *message = NULL;
 	char rcodebuf[20];
@@ -84,7 +86,8 @@ check_response(isc_buffer_t *buf) {
 
 /* test ns_notify_start() */
 static void
-notify_start(void **state) {
+notify_start(void **state)
+{
 	isc_result_t result;
 	ns_client_t *client = NULL;
 	dns_message_t *nmsg = NULL;
@@ -109,8 +112,8 @@ notify_start(void **state) {
 	 * (XXX: use better message mocking method when available.)
 	 */
 
-	result = ns_test_getdata("testdata/notify/notify1.msg",
-				  ndata, sizeof(ndata), &nsize);
+	result = ns_test_getdata("testdata/notify/notify1.msg", ndata,
+				 sizeof(ndata), &nsize);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	isc_buffer_init(&nbuf, ndata, nsize);
 	isc_buffer_add(&nbuf, nsize);
@@ -142,10 +145,11 @@ notify_start(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test_setup_teardown(notify_start,
-						_setup, _teardown),
+		cmocka_unit_test_setup_teardown(notify_start, _setup,
+						_teardown),
 	};
 
 	return (cmocka_run_group_tests(tests, NULL, NULL));
@@ -155,7 +159,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

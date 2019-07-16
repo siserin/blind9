@@ -9,18 +9,15 @@
  * information regarding copyright ownership.
  */
 
-
 /*! \file */
 
 #include <errno.h>
-#include <limits.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <syslog.h>
 #include <time.h>
-
-#include <sys/time.h>	/* Required for struct timeval on some platforms. */
 
 #include <isc/log.h>
 #include <isc/platform.h>
@@ -31,10 +28,12 @@
 #include <isc/tm.h>
 #include <isc/util.h>
 
-#define NS_PER_S	1000000000	/*%< Nanoseconds per second. */
-#define NS_PER_US	1000		/*%< Nanoseconds per microsecond. */
-#define NS_PER_MS	1000000		/*%< Nanoseconds per millisecond. */
-#define US_PER_S	1000000		/*%< Microseconds per second. */
+#include <sys/time.h> /* Required for struct timeval on some platforms. */
+
+#define NS_PER_S 1000000000 /*%< Nanoseconds per second. */
+#define NS_PER_US 1000      /*%< Nanoseconds per microsecond. */
+#define NS_PER_MS 1000000   /*%< Nanoseconds per millisecond. */
+#define US_PER_S 1000000    /*%< Microseconds per second. */
 
 /*
  * All of the INSIST()s checks of nanoseconds < NS_PER_S are for
@@ -52,11 +51,12 @@
  ***/
 
 static const isc_interval_t zero_interval = { 0, 0 };
-const isc_interval_t * const isc_interval_zero = &zero_interval;
+const isc_interval_t *const isc_interval_zero = &zero_interval;
 
 #if ISC_FIX_TV_USEC
 static inline void
-fix_tv_usec(struct timeval *tv) {
+fix_tv_usec(struct timeval *tv)
+{
 	bool fixed = false;
 
 	if (tv->tv_usec < 0) {
@@ -70,19 +70,20 @@ fix_tv_usec(struct timeval *tv) {
 		do {
 			tv->tv_sec += 1;
 			tv->tv_usec -= US_PER_S;
-		} while (tv->tv_usec >=US_PER_S);
+		} while (tv->tv_usec >= US_PER_S);
 	}
 	/*
 	 * Call syslog directly as was are called from the logging functions.
 	 */
 	if (fixed)
-		(void)syslog(LOG_ERR, "gettimeofday returned bad tv_usec: corrected");
+		(void)syslog(LOG_ERR, "gettimeofday returned bad tv_usec: "
+				      "corrected");
 }
 #endif
 
 void
-isc_interval_set(isc_interval_t *i,
-		 unsigned int seconds, unsigned int nanoseconds)
+isc_interval_set(isc_interval_t *i, unsigned int seconds,
+		 unsigned int nanoseconds)
 {
 	REQUIRE(i != NULL);
 	REQUIRE(nanoseconds < NS_PER_S);
@@ -92,7 +93,8 @@ isc_interval_set(isc_interval_t *i,
 }
 
 bool
-isc_interval_iszero(const isc_interval_t *i) {
+isc_interval_iszero(const isc_interval_t *i)
+{
 	REQUIRE(i != NULL);
 	INSIST(i->nanoseconds < NS_PER_S);
 
@@ -102,16 +104,16 @@ isc_interval_iszero(const isc_interval_t *i) {
 	return (false);
 }
 
-
 /***
  *** Absolute Times
  ***/
 
 static const isc_time_t epoch = { 0, 0 };
-const isc_time_t * const isc_time_epoch = &epoch;
+const isc_time_t *const isc_time_epoch = &epoch;
 
 void
-isc_time_set(isc_time_t *t, unsigned int seconds, unsigned int nanoseconds) {
+isc_time_set(isc_time_t *t, unsigned int seconds, unsigned int nanoseconds)
+{
 	REQUIRE(t != NULL);
 	REQUIRE(nanoseconds < NS_PER_S);
 
@@ -120,7 +122,8 @@ isc_time_set(isc_time_t *t, unsigned int seconds, unsigned int nanoseconds) {
 }
 
 void
-isc_time_settoepoch(isc_time_t *t) {
+isc_time_settoepoch(isc_time_t *t)
+{
 	REQUIRE(t != NULL);
 
 	t->seconds = 0;
@@ -128,7 +131,8 @@ isc_time_settoepoch(isc_time_t *t) {
 }
 
 bool
-isc_time_isepoch(const isc_time_t *t) {
+isc_time_isepoch(const isc_time_t *t)
+{
 	REQUIRE(t != NULL);
 	INSIST(t->nanoseconds < NS_PER_S);
 
@@ -138,9 +142,9 @@ isc_time_isepoch(const isc_time_t *t) {
 	return (false);
 }
 
-
 isc_result_t
-isc_time_now(isc_time_t *t) {
+isc_time_now(isc_time_t *t)
+{
 	struct timeval tv;
 	char strbuf[ISC_STRERRORSIZE];
 
@@ -182,7 +186,8 @@ isc_time_now(isc_time_t *t) {
 }
 
 isc_result_t
-isc_time_nowplusinterval(isc_time_t *t, const isc_interval_t *i) {
+isc_time_nowplusinterval(isc_time_t *t, const isc_interval_t *i)
+{
 	struct timeval tv;
 	char strbuf[ISC_STRERRORSIZE];
 
@@ -233,7 +238,8 @@ isc_time_nowplusinterval(isc_time_t *t, const isc_interval_t *i) {
 }
 
 int
-isc_time_compare(const isc_time_t *t1, const isc_time_t *t2) {
+isc_time_compare(const isc_time_t *t1, const isc_time_t *t2)
+{
 	REQUIRE(t1 != NULL && t2 != NULL);
 	INSIST(t1->nanoseconds < NS_PER_S && t2->nanoseconds < NS_PER_S);
 
@@ -284,14 +290,14 @@ isc_time_subtract(const isc_time_t *t, const isc_interval_t *i,
 	if ((unsigned int)t->seconds < i->seconds ||
 	    ((unsigned int)t->seconds == i->seconds &&
 	     t->nanoseconds < i->nanoseconds))
-	    return (ISC_R_RANGE);
+		return (ISC_R_RANGE);
 
 	result->seconds = t->seconds - i->seconds;
 	if (t->nanoseconds >= i->nanoseconds)
 		result->nanoseconds = t->nanoseconds - i->nanoseconds;
 	else {
-		result->nanoseconds = NS_PER_S - i->nanoseconds +
-			t->nanoseconds;
+		result->nanoseconds =
+			NS_PER_S - i->nanoseconds + t->nanoseconds;
 		result->seconds--;
 	}
 
@@ -299,7 +305,8 @@ isc_time_subtract(const isc_time_t *t, const isc_interval_t *i,
 }
 
 uint64_t
-isc_time_microdiff(const isc_time_t *t1, const isc_time_t *t2) {
+isc_time_microdiff(const isc_time_t *t1, const isc_time_t *t2)
+{
 	uint64_t i1, i2, i3;
 
 	REQUIRE(t1 != NULL && t2 != NULL);
@@ -322,7 +329,8 @@ isc_time_microdiff(const isc_time_t *t1, const isc_time_t *t2) {
 }
 
 uint32_t
-isc_time_seconds(const isc_time_t *t) {
+isc_time_seconds(const isc_time_t *t)
+{
 	REQUIRE(t != NULL);
 	INSIST(t->nanoseconds < NS_PER_S);
 
@@ -330,7 +338,8 @@ isc_time_seconds(const isc_time_t *t) {
 }
 
 isc_result_t
-isc_time_secondsastimet(const isc_time_t *t, time_t *secondsp) {
+isc_time_secondsastimet(const isc_time_t *t, time_t *secondsp)
+{
 	time_t seconds;
 
 	REQUIRE(t != NULL);
@@ -358,7 +367,7 @@ isc_time_secondsastimet(const isc_time_t *t, time_t *secondsp) {
 	INSIST(sizeof(unsigned int) == sizeof(uint32_t));
 	INSIST(sizeof(time_t) >= sizeof(uint32_t));
 
-	if (t->seconds > (~0U>>1) && seconds <= (time_t)(~0U>>1))
+	if (t->seconds > (~0U >> 1) && seconds <= (time_t)(~0U >> 1))
 		return (ISC_R_RANGE);
 
 	*secondsp = seconds;
@@ -367,7 +376,8 @@ isc_time_secondsastimet(const isc_time_t *t, time_t *secondsp) {
 }
 
 uint32_t
-isc_time_nanoseconds(const isc_time_t *t) {
+isc_time_nanoseconds(const isc_time_t *t)
+{
 	REQUIRE(t != NULL);
 
 	ENSURE(t->nanoseconds < NS_PER_S);
@@ -376,7 +386,8 @@ isc_time_nanoseconds(const isc_time_t *t) {
 }
 
 void
-isc_time_formattimestamp(const isc_time_t *t, char *buf, unsigned int len) {
+isc_time_formattimestamp(const isc_time_t *t, char *buf, unsigned int len)
+{
 	time_t now;
 	unsigned int flen;
 	struct tm tm;
@@ -386,19 +397,20 @@ isc_time_formattimestamp(const isc_time_t *t, char *buf, unsigned int len) {
 	REQUIRE(buf != NULL);
 	REQUIRE(len > 0);
 
-	now = (time_t) t->seconds;
+	now = (time_t)t->seconds;
 	flen = strftime(buf, len, "%d-%b-%Y %X", localtime_r(&now, &tm));
 	INSIST(flen < len);
 	if (flen != 0)
-		snprintf(buf + flen, len - flen,
-			 ".%03u", t->nanoseconds / NS_PER_MS);
+		snprintf(buf + flen, len - flen, ".%03u",
+			 t->nanoseconds / NS_PER_MS);
 	else {
 		strlcpy(buf, "99-Bad-9999 99:99:99.999", len);
 	}
 }
 
 void
-isc_time_formathttptimestamp(const isc_time_t *t, char *buf, unsigned int len) {
+isc_time_formathttptimestamp(const isc_time_t *t, char *buf, unsigned int len)
+{
 	time_t now;
 	unsigned int flen;
 	struct tm tm;
@@ -418,7 +430,8 @@ isc_time_formathttptimestamp(const isc_time_t *t, char *buf, unsigned int len) {
 }
 
 isc_result_t
-isc_time_parsehttptimestamp(char *buf, isc_time_t *t) {
+isc_time_parsehttptimestamp(char *buf, isc_time_t *t)
+{
 	struct tm t_tm;
 	time_t when;
 	char *p;
@@ -437,7 +450,8 @@ isc_time_parsehttptimestamp(char *buf, isc_time_t *t) {
 }
 
 void
-isc_time_formatISO8601L(const isc_time_t *t, char *buf, unsigned int len) {
+isc_time_formatISO8601L(const isc_time_t *t, char *buf, unsigned int len)
+{
 	time_t now;
 	unsigned int flen;
 	struct tm tm;
@@ -453,7 +467,8 @@ isc_time_formatISO8601L(const isc_time_t *t, char *buf, unsigned int len) {
 }
 
 void
-isc_time_formatISO8601Lms(const isc_time_t *t, char *buf, unsigned int len) {
+isc_time_formatISO8601Lms(const isc_time_t *t, char *buf, unsigned int len)
+{
 	time_t now;
 	unsigned int flen;
 	struct tm tm;
@@ -473,7 +488,8 @@ isc_time_formatISO8601Lms(const isc_time_t *t, char *buf, unsigned int len) {
 }
 
 void
-isc_time_formatISO8601(const isc_time_t *t, char *buf, unsigned int len) {
+isc_time_formatISO8601(const isc_time_t *t, char *buf, unsigned int len)
+{
 	time_t now;
 	unsigned int flen;
 	struct tm tm;
@@ -489,7 +505,8 @@ isc_time_formatISO8601(const isc_time_t *t, char *buf, unsigned int len) {
 }
 
 void
-isc_time_formatISO8601ms(const isc_time_t *t, char *buf, unsigned int len) {
+isc_time_formatISO8601ms(const isc_time_t *t, char *buf, unsigned int len)
+{
 	time_t now;
 	unsigned int flen;
 	struct tm tm;

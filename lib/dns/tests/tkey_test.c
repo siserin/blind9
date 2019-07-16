@@ -11,11 +11,11 @@
 
 #if HAVE_CMOCKA
 
+#include <cmocka.h>
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <setjmp.h>
-#include <cmocka.h>
 
 #include <isc/mem.h>
 #include <isc/result.h>
@@ -23,15 +23,12 @@
 #include <dns/tkey.h>
 
 #if LD_WRAP
-static isc_mem_t mock_mctx = {
-	.impmagic = 0,
-	.magic = ISCAPI_MCTX_MAGIC,
-	.methods = NULL
-};
+static isc_mem_t mock_mctx = { .impmagic = 0,
+			       .magic = ISCAPI_MCTX_MAGIC,
+			       .methods = NULL };
 
 static void *
-__wrap_isc__mem_get(isc_mem_t *dt_mctx __attribute__ ((unused)),
-		   size_t size)
+__wrap_isc__mem_get(isc_mem_t *dt_mctx __attribute__((unused)), size_t size)
 {
 	bool has_enough_memory = mock_type(bool);
 	if (!has_enough_memory) {
@@ -41,25 +38,27 @@ __wrap_isc__mem_get(isc_mem_t *dt_mctx __attribute__ ((unused)),
 }
 
 static void
-__wrap_isc__mem_put(isc_mem_t *ctx0 __attribute__ ((unused)),
-		   void *ptr,
-		   size_t size __attribute__ ((unused)))
+__wrap_isc__mem_put(isc_mem_t *ctx0 __attribute__((unused)), void *ptr,
+		    size_t size __attribute__((unused)))
 {
 	free(ptr);
 }
 
 static void
-__wrap_isc_mem_attach(isc_mem_t *source0, isc_mem_t **targetp) {
+__wrap_isc_mem_attach(isc_mem_t *source0, isc_mem_t **targetp)
+{
 	*targetp = source0;
 }
 
 static void
-__wrap_isc_mem_detach(isc_mem_t **ctxp) {
+__wrap_isc_mem_detach(isc_mem_t **ctxp)
+{
 	*ctxp = NULL;
 }
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	dns_tkeyctx_t *tctx = NULL;
 	will_return(__wrap_isc__mem_get, true);
 	if (dns_tkeyctx_create(&mock_mctx, &tctx) != ISC_R_SUCCESS) {
@@ -70,7 +69,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	dns_tkeyctx_t *tctx = *state;
 	if (tctx != NULL) {
 		dns_tkeyctx_destroy(&tctx);
@@ -79,23 +79,23 @@ _teardown(void **state) {
 }
 
 static void
-dns_tkeyctx_create_test(void **state) {
+dns_tkeyctx_create_test(void **state)
+{
 	dns_tkeyctx_t *tctx;
 
 	tctx = NULL;
 	will_return(__wrap_isc__mem_get, false);
-	assert_int_equal(dns_tkeyctx_create(&mock_mctx, &tctx),
-			 ISC_R_NOMEMORY);
+	assert_int_equal(dns_tkeyctx_create(&mock_mctx, &tctx), ISC_R_NOMEMORY);
 
 	tctx = NULL;
 	will_return(__wrap_isc__mem_get, true);
-	assert_int_equal(dns_tkeyctx_create(&mock_mctx, &tctx),
-			 ISC_R_SUCCESS);
+	assert_int_equal(dns_tkeyctx_create(&mock_mctx, &tctx), ISC_R_SUCCESS);
 	*state = tctx;
 }
 
 static void
-dns_tkeyctx_destroy_test(void **state) {
+dns_tkeyctx_destroy_test(void **state)
+{
 	dns_tkeyctx_t *tctx = *state;
 
 	assert_non_null(tctx);
@@ -105,7 +105,8 @@ dns_tkeyctx_destroy_test(void **state) {
 #endif /* LD_WRAP */
 
 int
-main(void) {
+main(void)
+{
 #if LD_WRAP
 	const struct CMUnitTest tkey_tests[] = {
 		cmocka_unit_test_teardown(dns_tkeyctx_create_test, _teardown),
@@ -132,7 +133,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

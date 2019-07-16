@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 #ifndef NTSERVICE_H
 #define NTSERVICE_H
 
@@ -21,8 +20,10 @@
 void
 ntservice_init();
 void UpdateSCM(DWORD);
-void ServiceControl(DWORD dwCtrlCode);
+void
+ServiceControl(DWORD dwCtrlCode);
 void
 ntservice_shutdown();
-BOOL ntservice_isservice();
+BOOL
+ntservice_isservice();
 #endif

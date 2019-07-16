@@ -11,13 +11,12 @@
 
 #if HAVE_CMOCKA
 
+#include <fcntl.h>
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <setjmp.h>
-
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 #define UNIT_TESTING
 #include <cmocka.h>
@@ -29,16 +28,16 @@
 #include <isc/print.h>
 #include <isc/result.h>
 #include <isc/stdio.h>
-#include <isc/util.h>
 #include <isc/thread.h>
 #include <isc/time.h>
+#include <isc/util.h>
 
 #include "../mem_p.h"
-
 #include "isctest.h"
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -50,7 +49,8 @@ _setup(void **state) {
 }
 
 static void *
-default_memalloc(void *arg, size_t size) {
+default_memalloc(void *arg, size_t size)
+{
 	UNUSED(arg);
 	if (size == 0U) {
 		size = 1;
@@ -59,13 +59,15 @@ default_memalloc(void *arg, size_t size) {
 }
 
 static void
-default_memfree(void *arg, void *ptr) {
+default_memfree(void *arg, void *ptr)
+{
 	UNUSED(arg);
 	free(ptr);
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	isc_test_end();
@@ -73,16 +75,17 @@ _teardown(void **state) {
 	return (0);
 }
 
-#define	MP1_FREEMAX	10
-#define	MP1_FILLCNT	10
-#define	MP1_MAXALLOC	30
+#define MP1_FREEMAX 10
+#define MP1_FILLCNT 10
+#define MP1_MAXALLOC 30
 
-#define	MP2_FREEMAX	25
-#define	MP2_FILLCNT	25
+#define MP2_FREEMAX 25
+#define MP2_FILLCNT 25
 
 /* general memory system tests */
 static void
-isc_mem_test(void **state) {
+isc_mem_test(void **state)
+{
 	isc_result_t result;
 	void *items1[50];
 	void *items2[50];
@@ -168,8 +171,8 @@ isc_mem_test(void **state) {
 
 	isc_mem_destroy(&localmctx);
 
-	result = isc_mem_createx(0, 0, default_memalloc, default_memfree,
-				 NULL, &localmctx,
+	result = isc_mem_createx(0, 0, default_memalloc, default_memfree, NULL,
+				 &localmctx,
 				 ISC_MEMFLAG_FILL | ISC_MEMFLAG_INTERNAL);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
@@ -184,12 +187,12 @@ isc_mem_test(void **state) {
 	isc_mempool_destroy(&mp1);
 
 	isc_mem_destroy(&localmctx);
-
 }
 
 /* test TotalUse calculation */
 static void
-isc_mem_total_test(void **state) {
+isc_mem_total_test(void **state)
+{
 	isc_result_t result;
 	isc_mem_t *mctx2 = NULL;
 	size_t before, after;
@@ -200,8 +203,8 @@ isc_mem_total_test(void **state) {
 
 	/* Local alloc, free */
 	mctx2 = NULL;
-	result = isc_mem_createx(0, 0, default_memalloc, default_memfree,
-				 NULL, &mctx2, 0);
+	result = isc_mem_createx(0, 0, default_memalloc, default_memfree, NULL,
+				 &mctx2, 0);
 	if (result != ISC_R_SUCCESS) {
 		goto out;
 	}
@@ -238,16 +241,16 @@ isc_mem_total_test(void **state) {
 	/* 2048 +8 bytes extra for size_info */
 	assert_int_equal(diff, (2048 + 8) * 100000);
 
- out:
+out:
 	if (mctx2 != NULL) {
 		isc_mem_destroy(&mctx2);
 	}
-
 }
 
 /* test InUse calculation */
 static void
-isc_mem_inuse_test(void **state) {
+isc_mem_inuse_test(void **state)
+{
 	isc_result_t result;
 	isc_mem_t *mctx2 = NULL;
 	size_t before, after;
@@ -257,8 +260,8 @@ isc_mem_inuse_test(void **state) {
 	UNUSED(state);
 
 	mctx2 = NULL;
-	result = isc_mem_createx(0, 0, default_memalloc, default_memfree,
-				 NULL, &mctx2, 0);
+	result = isc_mem_createx(0, 0, default_memalloc, default_memfree, NULL,
+				 &mctx2, 0);
 	if (result != ISC_R_SUCCESS) {
 		goto out;
 	}
@@ -272,18 +275,18 @@ isc_mem_inuse_test(void **state) {
 
 	assert_int_equal(diff, 0);
 
- out:
+out:
 	if (mctx2 != NULL) {
 		isc_mem_destroy(&mctx2);
 	}
-
 }
 
 #if ISC_MEM_TRACKLINES
 
 /* test mem with no flags */
 static void
-isc_mem_noflags_test(void **state) {
+isc_mem_noflags_test(void **state)
+{
 	isc_result_t result;
 	isc_mem_t *mctx2 = NULL;
 	char buf[4096], *p, *q;
@@ -295,8 +298,8 @@ isc_mem_noflags_test(void **state) {
 
 	UNUSED(state);
 
-	result = isc_mem_createx(0, 0, default_memalloc, default_memfree,
-				 NULL, &mctx2, 0);
+	result = isc_mem_createx(0, 0, default_memalloc, default_memfree, NULL,
+				 &mctx2, 0);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	isc_mem_debugging = 0;
 	ptr = isc_mem_get(mctx2, 2048);
@@ -330,7 +333,8 @@ isc_mem_noflags_test(void **state) {
 
 /* test mem with record flag */
 static void
-isc_mem_recordflag_test(void **state) {
+isc_mem_recordflag_test(void **state)
+{
 	isc_result_t result;
 	isc_mem_t *mctx2 = NULL;
 	char buf[4096], *p;
@@ -342,8 +346,8 @@ isc_mem_recordflag_test(void **state) {
 
 	UNUSED(state);
 
-	result = isc_mem_createx(0, 0, default_memalloc, default_memfree,
-				 NULL, &mctx2, 0);
+	result = isc_mem_createx(0, 0, default_memalloc, default_memfree, NULL,
+				 &mctx2, 0);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	ptr = isc_mem_get(mctx2, 2048);
 	assert_non_null(ptr);
@@ -369,12 +373,12 @@ isc_mem_recordflag_test(void **state) {
 	p = strchr(p + 1, '\n');
 	assert_non_null(p);
 	assert_int_equal(strlen(p), 1);
-
 }
 
 /* test mem with trace flag */
 static void
-isc_mem_traceflag_test(void **state) {
+isc_mem_traceflag_test(void **state)
+{
 	isc_result_t result;
 	isc_mem_t *mctx2 = NULL;
 	char buf[4096], *p;
@@ -387,8 +391,8 @@ isc_mem_traceflag_test(void **state) {
 
 	UNUSED(state);
 
-	result = isc_mem_createx(0, 0, default_memalloc, default_memfree,
-				 NULL, &mctx2, 0);
+	result = isc_mem_createx(0, 0, default_memalloc, default_memfree, NULL,
+				 &mctx2, 0);
 	isc_mem_debugging = ISC_MEM_DEBUGTRACE;
 	assert_int_equal(result, ISC_R_SUCCESS);
 	ptr = isc_mem_get(mctx2, 2048);
@@ -427,11 +431,12 @@ isc_mem_traceflag_test(void **state) {
 #endif
 
 #define ITERS 512
-#define NUM_ITEMS 1024 //768
+#define NUM_ITEMS 1024 // 768
 #define ITEM_SIZE 65534
 
 static void *
-mem_thread(void *arg) {
+mem_thread(void *arg)
+{
 	void *items[NUM_ITEMS];
 	size_t size = *((size_t *)arg);
 
@@ -448,7 +453,8 @@ mem_thread(void *arg) {
 }
 
 static void
-isc_mem_benchmark(void **state) {
+isc_mem_benchmark(void **state)
+{
 	int nthreads = ISC_MAX(ISC_MIN(isc_os_ncpus(), 32), 1);
 	isc_thread_t threads[32];
 	isc_time_t ts1, ts2;
@@ -483,7 +489,8 @@ isc_mem_benchmark(void **state) {
 }
 
 static void *
-mempool_thread(void *arg) {
+mempool_thread(void *arg)
+{
 	isc_mempool_t *mp = (isc_mempool_t *)arg;
 	void *items[NUM_ITEMS];
 
@@ -500,7 +507,8 @@ mempool_thread(void *arg) {
 }
 
 static void
-isc_mempool_benchmark(void **state) {
+isc_mempool_benchmark(void **state)
+{
 	int nthreads = ISC_MAX(ISC_MIN(isc_os_ncpus(), 32), 1);
 	isc_thread_t threads[32];
 	isc_time_t ts1, ts2;
@@ -554,27 +562,28 @@ isc_mempool_benchmark(void **state) {
  */
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test_setup_teardown(isc_mem_test,
-				_setup, _teardown),
-		cmocka_unit_test_setup_teardown(isc_mem_total_test,
-				_setup, _teardown),
-		cmocka_unit_test_setup_teardown(isc_mem_inuse_test,
-				_setup, _teardown),
+		cmocka_unit_test_setup_teardown(isc_mem_test, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(isc_mem_total_test, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(isc_mem_inuse_test, _setup,
+						_teardown),
 
 #if ISC_MEM_TRACKLINES
-		cmocka_unit_test_setup_teardown(isc_mem_noflags_test,
-				_setup, _teardown),
-		cmocka_unit_test_setup_teardown(isc_mem_recordflag_test,
-				_setup, _teardown),
-		cmocka_unit_test_setup_teardown(isc_mem_traceflag_test,
-				_setup, _teardown),
+		cmocka_unit_test_setup_teardown(isc_mem_noflags_test, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(isc_mem_recordflag_test, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(isc_mem_traceflag_test, _setup,
+						_teardown),
 #endif
-		cmocka_unit_test_setup_teardown(isc_mem_benchmark,
-						_setup, _teardown),
-		cmocka_unit_test_setup_teardown(isc_mempool_benchmark,
-						_setup, _teardown),
+		cmocka_unit_test_setup_teardown(isc_mem_benchmark, _setup,
+						_teardown),
+		cmocka_unit_test_setup_teardown(isc_mempool_benchmark, _setup,
+						_teardown),
 	};
 
 	return (cmocka_run_group_tests(tests, NULL, NULL));
@@ -585,10 +594,10 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
-		printf("1..0 # Skipped: cmocka not available\n");
-			return (0);
-
+main(void)
+{
+	printf("1..0 # Skipped: cmocka not available\n");
+	return (0);
 }
 
 #endif

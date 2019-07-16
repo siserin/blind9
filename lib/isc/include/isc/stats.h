@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 #ifndef ISC_STATS_H
 #define ISC_STATS_H 1
 
@@ -24,7 +23,7 @@ ISC_LANG_BEGINDECLS
 /*%<
  * Flag(s) for isc_stats_dump().
  */
-#define ISC_STATSDUMP_VERBOSE	0x00000001 /*%< dump 0-value counters */
+#define ISC_STATSDUMP_VERBOSE 0x00000001 /*%< dump 0-value counters */
 
 /*%<
  * Dump callback type.
@@ -113,8 +112,7 @@ isc_stats_dump(isc_stats_t *stats, isc_stats_dumper_t dump_fn, void *arg,
  */
 
 void
-isc_stats_set(isc_stats_t *stats, uint64_t val,
-	      isc_statscounter_t counter);
+isc_stats_set(isc_stats_t *stats, uint64_t val, isc_statscounter_t counter);
 /*%<
  * Set the given counter to the specfied value.
  *
@@ -123,8 +121,7 @@ isc_stats_set(isc_stats_t *stats, uint64_t val,
  */
 
 void
-isc_stats_set(isc_stats_t *stats, uint64_t val,
-	      isc_statscounter_t counter);
+isc_stats_set(isc_stats_t *stats, uint64_t val, isc_statscounter_t counter);
 /*%<
  * Set the given counter to the specfied value.
  *

@@ -20,8 +20,8 @@
 #include <isc/commandline.h>
 #include <isc/file.h>
 #include <isc/log.h>
-#include <isc/net.h>
 #include <isc/mem.h>
+#include <isc/net.h>
 #include <isc/print.h>
 #include <isc/random.h>
 #include <isc/socket.h>
@@ -31,10 +31,13 @@
 #include <isc/thread.h>
 #include <isc/util.h>
 
-#include <pk11/site.h>
+#include <dns/name.h>
 
 #include <isccfg/namedconf.h>
 
+#include "util.h"
+
+#include <bind9/getaddresses.h>
 #include <isccc/alist.h>
 #include <isccc/base64.h>
 #include <isccc/cc.h>
@@ -43,12 +46,7 @@
 #include <isccc/sexpr.h>
 #include <isccc/types.h>
 #include <isccc/util.h>
-
-#include <dns/name.h>
-
-#include <bind9/getaddresses.h>
-
-#include "util.h"
+#include <pk11/site.h>
 
 #define SERVERADDRS 10
 
@@ -82,13 +80,15 @@ static uint32_t serial;
 static bool quiet = false;
 static bool showresult = false;
 
-static void rndc_startconnect(isc_sockaddr_t *addr, isc_task_t *task);
+static void
+rndc_startconnect(isc_sockaddr_t *addr, isc_task_t *task);
 
 ISC_PLATFORM_NORETURN_PRE static void
 usage(int status) ISC_PLATFORM_NORETURN_POST;
 
 static void
-usage(int status) {
+usage(int status)
+{
 	fprintf(stderr, "\
 Usage: %s [-b address] [-c config] [-s server] [-p port]\n\
 	[-k key-file ] [-y key] [-r] [-V] [-4 | -6] command\n\
@@ -215,7 +215,8 @@ Version: %s\n",
 #define CMDLINE_FLAGS "46b:c:hk:Mmp:qrs:Vy:"
 
 static void
-preparse_args(int argc, char **argv) {
+preparse_args(int argc, char **argv)
+{
 	bool ipv4only = false, ipv6only = false;
 	int ch;
 
@@ -243,30 +244,31 @@ preparse_args(int argc, char **argv) {
 }
 
 static void
-get_addresses(const char *host, in_port_t port) {
+get_addresses(const char *host, in_port_t port)
+{
 	isc_result_t result;
 	int found = 0, count;
 
 	if (*host == '/') {
-		result = isc_sockaddr_frompath(&serveraddrs[nserveraddrs],
-					       host);
+		result =
+			isc_sockaddr_frompath(&serveraddrs[nserveraddrs], host);
 		if (result == ISC_R_SUCCESS)
 			nserveraddrs++;
 	} else {
 		count = SERVERADDRS - nserveraddrs;
-		result = bind9_getaddresses(host, port,
-					    &serveraddrs[nserveraddrs],
-					    count, &found);
+		result = bind9_getaddresses(
+			host, port, &serveraddrs[nserveraddrs], count, &found);
 		nserveraddrs += found;
 	}
 	if (result != ISC_R_SUCCESS)
-		fatal("couldn't get address for '%s': %s",
-		      host, isc_result_totext(result));
+		fatal("couldn't get address for '%s': %s", host,
+		      isc_result_totext(result));
 	INSIST(nserveraddrs > 0);
 }
 
 static void
-rndc_senddone(isc_task_t *task, isc_event_t *event) {
+rndc_senddone(isc_task_t *task, isc_event_t *event)
+{
 	isc_socketevent_t *sevent = (isc_socketevent_t *)event;
 
 	UNUSED(task);
@@ -283,7 +285,8 @@ rndc_senddone(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-rndc_recvdone(isc_task_t *task, isc_event_t *event) {
+rndc_recvdone(isc_task_t *task, isc_event_t *event)
+{
 	isccc_sexpr_t *response = NULL;
 	isccc_sexpr_t *data;
 	isccc_region_t source;
@@ -317,20 +320,19 @@ rndc_recvdone(isc_task_t *task, isc_event_t *event) {
 	result = isccc_cc_lookupstring(data, "err", &errormsg);
 	if (result == ISC_R_SUCCESS) {
 		failed = true;
-		fprintf(stderr, "%s: '%s' failed: %s\n",
-			progname, command, errormsg);
-	}
-	else if (result != ISC_R_NOTFOUND)
-		fprintf(stderr, "%s: parsing response failed: %s\n",
-			progname, isc_result_totext(result));
+		fprintf(stderr, "%s: '%s' failed: %s\n", progname, command,
+			errormsg);
+	} else if (result != ISC_R_NOTFOUND)
+		fprintf(stderr, "%s: parsing response failed: %s\n", progname,
+			isc_result_totext(result));
 
 	result = isccc_cc_lookupstring(data, "text", &textmsg);
 	if (result == ISC_R_SUCCESS) {
 		if ((!quiet || failed) && strlen(textmsg) != 0U)
 			fprintf(failed ? stderr : stdout, "%s\n", textmsg);
 	} else if (result != ISC_R_NOTFOUND)
-		fprintf(stderr, "%s: parsing response failed: %s\n",
-			progname, isc_result_totext(result));
+		fprintf(stderr, "%s: parsing response failed: %s\n", progname,
+			isc_result_totext(result));
 
 	if (showresult) {
 		isc_result_t eresult;
@@ -352,7 +354,8 @@ rndc_recvdone(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-rndc_recvnonce(isc_task_t *task, isc_event_t *event) {
+rndc_recvnonce(isc_task_t *task, isc_event_t *event)
+{
 	isccc_sexpr_t *response = NULL;
 	isccc_sexpr_t *_ctrl;
 	isccc_region_t source;
@@ -423,11 +426,11 @@ rndc_recvnonce(isc_task_t *task, isc_event_t *event) {
 	r.length = databuf->used;
 
 	isccc_ccmsg_cancelread(&ccmsg);
-	DO("schedule recv", isccc_ccmsg_readmessage(&ccmsg, task,
-						    rndc_recvdone, NULL));
+	DO("schedule recv",
+	   isccc_ccmsg_readmessage(&ccmsg, task, rndc_recvdone, NULL));
 	recvs++;
-	DO("send message", isc_socket_send(sock, &r, task, rndc_senddone,
-					   NULL));
+	DO("send message",
+	   isc_socket_send(sock, &r, task, rndc_senddone, NULL));
 	sends++;
 
 	isc_event_free(&event);
@@ -437,7 +440,8 @@ rndc_recvnonce(isc_task_t *task, isc_event_t *event) {
 }
 
 static void
-rndc_connected(isc_task_t *task, isc_event_t *event) {
+rndc_connected(isc_task_t *task, isc_event_t *event)
+{
 	char socktext[ISC_SOCKADDR_FORMATSIZE];
 	isc_socketevent_t *sevent = (isc_socketevent_t *)event;
 	isccc_sexpr_t *request = NULL;
@@ -453,8 +457,7 @@ rndc_connected(isc_task_t *task, isc_event_t *event) {
 		isc_sockaddr_format(&serveraddrs[currentaddr], socktext,
 				    sizeof(socktext));
 		if (sevent->result != ISC_R_CANCELED &&
-		    ++currentaddr < nserveraddrs)
-		{
+		    ++currentaddr < nserveraddrs) {
 			notify("connection failed: %s: %s", socktext,
 			       isc_result_totext(sevent->result));
 			isc_socket_detach(&sock);
@@ -491,18 +494,19 @@ rndc_connected(isc_task_t *task, isc_event_t *event) {
 	isccc_ccmsg_init(rndc_mctx, sock, &ccmsg);
 	isccc_ccmsg_setmaxsize(&ccmsg, 1024 * 1024);
 
-	DO("schedule recv", isccc_ccmsg_readmessage(&ccmsg, task,
-						    rndc_recvnonce, NULL));
+	DO("schedule recv",
+	   isccc_ccmsg_readmessage(&ccmsg, task, rndc_recvnonce, NULL));
 	recvs++;
-	DO("send message", isc_socket_send(sock, &r, task, rndc_senddone,
-					   NULL));
+	DO("send message",
+	   isc_socket_send(sock, &r, task, rndc_senddone, NULL));
 	sends++;
 	isc_event_free(&event);
 	isccc_sexpr_free(&request);
 }
 
 static void
-rndc_startconnect(isc_sockaddr_t *addr, isc_task_t *task) {
+rndc_startconnect(isc_sockaddr_t *addr, isc_task_t *task)
+{
 	isc_result_t result;
 	int pf;
 	isc_sockettype_t type;
@@ -529,13 +533,14 @@ rndc_startconnect(isc_sockaddr_t *addr, isc_task_t *task) {
 	default:
 		break;
 	}
-	DO("connect", isc_socket_connect(sock, addr, task, rndc_connected,
-					 NULL));
+	DO("connect",
+	   isc_socket_connect(sock, addr, task, rndc_connected, NULL));
 	connects++;
 }
 
 static void
-rndc_start(isc_task_t *task, isc_event_t *event) {
+rndc_start(isc_task_t *task, isc_event_t *event)
+{
 	isc_event_free(&event);
 
 	currentaddr = 0;
@@ -568,19 +573,20 @@ parse_config(isc_mem_t *mctx, isc_log_t *log, const char *keyname,
 	bool key_only = false;
 	const cfg_listelt_t *element;
 
-	if (! isc_file_exists(conffile)) {
+	if (!isc_file_exists(conffile)) {
 		conffile = admin_keyfile;
 		conftype = &cfg_type_rndckey;
 
 		if (c_flag)
 			fatal("%s does not exist", admin_conffile);
 
-		if (! isc_file_exists(conffile))
-			fatal("neither %s nor %s was found",
-			      admin_conffile, admin_keyfile);
+		if (!isc_file_exists(conffile))
+			fatal("neither %s nor %s was found", admin_conffile,
+			      admin_keyfile);
 		key_only = true;
-	} else if (! c_flag && isc_file_exists(admin_keyfile)) {
-		fprintf(stderr, "WARNING: key file (%s) exists, but using "
+	} else if (!c_flag && isc_file_exists(admin_keyfile)) {
+		fprintf(stderr,
+			"WARNING: key file (%s) exists, but using "
 			"default configuration file (%s)\n",
 			admin_keyfile, admin_conffile);
 	}
@@ -612,13 +618,12 @@ parse_config(isc_mem_t *mctx, isc_log_t *log, const char *keyname,
 	if (!key_only) {
 		(void)cfg_map_get(config, "server", &servers);
 		if (servers != NULL) {
-			for (elt = cfg_list_first(servers);
-			     elt != NULL;
-			     elt = cfg_list_next(elt))
-			{
+			for (elt = cfg_list_first(servers); elt != NULL;
+			     elt = cfg_list_next(elt)) {
 				const char *name;
 				server = cfg_listelt_value(elt);
-				name = cfg_obj_asstring(cfg_map_getname(server));
+				name = cfg_obj_asstring(
+					cfg_map_getname(server));
 				if (strcasecmp(name, servername) == 0)
 					break;
 				server = NULL;
@@ -630,13 +635,13 @@ parse_config(isc_mem_t *mctx, isc_log_t *log, const char *keyname,
 	 * Look for the name of the key to use.
 	 */
 	if (keyname != NULL)
-		;		/* Was set on command line, do nothing. */
+		; /* Was set on command line, do nothing. */
 	else if (server != NULL) {
 		DO("get key for server", cfg_map_get(server, "key", &defkey));
 		keyname = cfg_obj_asstring(defkey);
 	} else if (options != NULL) {
-		DO("get default key", cfg_map_get(options, "default-key",
-						  &defkey));
+		DO("get default key",
+		   cfg_map_get(options, "default-key", &defkey));
 		keyname = cfg_obj_asstring(defkey);
 	} else if (!key_only)
 		fatal("no key for server and no default");
@@ -648,10 +653,8 @@ parse_config(isc_mem_t *mctx, isc_log_t *log, const char *keyname,
 		DO("get key", cfg_map_get(config, "key", &key));
 	else {
 		DO("get config key list", cfg_map_get(config, "key", &keys));
-		for (elt = cfg_list_first(keys);
-		     elt != NULL;
-		     elt = cfg_list_next(elt))
-		{
+		for (elt = cfg_list_first(keys); elt != NULL;
+		     elt = cfg_list_next(elt)) {
 			key = cfg_listelt_value(elt);
 			if (strcasecmp(cfg_obj_asstring(cfg_map_getname(key)),
 				       keyname) == 0)
@@ -694,7 +697,7 @@ parse_config(isc_mem_t *mctx, isc_log_t *log, const char *keyname,
 	 * Find the port to connect to.
 	 */
 	if (remoteport != 0)
-		;		/* Was set on command line, do nothing. */
+		; /* Was set on command line, do nothing. */
 	else {
 		if (server != NULL)
 			(void)cfg_map_get(server, "port", &defport);
@@ -713,10 +716,8 @@ parse_config(isc_mem_t *mctx, isc_log_t *log, const char *keyname,
 	else
 		result = ISC_R_NOTFOUND;
 	if (result == ISC_R_SUCCESS) {
-		for (element = cfg_list_first(addresses);
-		     element != NULL;
-		     element = cfg_list_next(element))
-		{
+		for (element = cfg_list_first(addresses); element != NULL;
+		     element = cfg_list_next(element)) {
 			isc_sockaddr_t sa;
 
 			address = cfg_listelt_value(element);
@@ -730,17 +731,18 @@ parse_config(isc_mem_t *mctx, isc_log_t *log, const char *keyname,
 				obj = cfg_tuple_get(address, "port");
 				if (cfg_obj_isuint32(obj)) {
 					myport = cfg_obj_asuint32(obj);
-					if (myport > UINT16_MAX ||
-					    myport == 0)
+					if (myport > UINT16_MAX || myport == 0)
 						fatal("port %u out of range",
 						      myport);
 				} else
 					myport = remoteport;
 				if (nserveraddrs < SERVERADDRS)
-					get_addresses(name, (in_port_t) myport);
+					get_addresses(name, (in_port_t)myport);
 				else
-					fprintf(stderr, "too many address: "
-						"%s: dropped\n", name);
+					fprintf(stderr,
+						"too many address: "
+						"%s: dropped\n",
+						name);
 				continue;
 			}
 			sa = *cfg_obj_assockaddr(address);
@@ -798,7 +800,8 @@ parse_config(isc_mem_t *mctx, isc_log_t *log, const char *keyname,
 }
 
 int
-main(int argc, char **argv) {
+main(int argc, char **argv)
+{
 	isc_result_t result = ISC_R_SUCCESS;
 	bool show_final_mem = false;
 	isc_taskmgr_t *taskmgr = NULL;
@@ -850,8 +853,8 @@ main(int argc, char **argv) {
 			isc_net_disableipv4();
 			break;
 		case 'b':
-			if (inet_pton(AF_INET, isc_commandline_argument,
-				      &in) == 1) {
+			if (inet_pton(AF_INET, isc_commandline_argument, &in) ==
+			    1) {
 				isc_sockaddr_fromin(&local4, &in, 0);
 				local4set = true;
 			} else if (inet_pton(AF_INET6, isc_commandline_argument,
@@ -916,8 +919,8 @@ main(int argc, char **argv) {
 			usage(0);
 			break;
 		default:
-			fprintf(stderr, "%s: unhandled option -%c\n",
-				program, isc_commandline_option);
+			fprintf(stderr, "%s: unhandled option -%c\n", program,
+				isc_commandline_option);
 			exit(1);
 		}
 	}
@@ -931,11 +934,14 @@ main(int argc, char **argv) {
 	serial = isc_random32();
 
 	DO("create memory context", isc_mem_create(0, 0, &rndc_mctx));
-	DO("create socket manager", isc_socketmgr_create(rndc_mctx, &socketmgr));
-	DO("create task manager", isc_taskmgr_create(rndc_mctx, 1, 0, &taskmgr));
+	DO("create socket manager",
+	   isc_socketmgr_create(rndc_mctx, &socketmgr));
+	DO("create task manager",
+	   isc_taskmgr_create(rndc_mctx, 1, 0, &taskmgr));
 	DO("create task", isc_task_create(taskmgr, 0, &task));
 
-	DO("create logging context", isc_log_create(rndc_mctx, &log, &logconfig));
+	DO("create logging context",
+	   isc_log_create(rndc_mctx, &log, &logconfig));
 	isc_log_setcontext(log);
 	DO("setting log tag", isc_log_settag(logconfig, progname));
 	logdest.file.stream = stderr;
@@ -943,11 +949,11 @@ main(int argc, char **argv) {
 	logdest.file.versions = ISC_LOG_ROLLNEVER;
 	logdest.file.maximum_size = 0;
 	DO("creating log channel",
-	   isc_log_createchannel(logconfig, "stderr",
-				 ISC_LOG_TOFILEDESC, ISC_LOG_INFO, &logdest,
-				 ISC_LOG_PRINTTAG|ISC_LOG_PRINTLEVEL));
-	DO("enabling log channel", isc_log_usechannel(logconfig, "stderr",
-						      NULL, NULL));
+	   isc_log_createchannel(logconfig, "stderr", ISC_LOG_TOFILEDESC,
+				 ISC_LOG_INFO, &logdest,
+				 ISC_LOG_PRINTTAG | ISC_LOG_PRINTLEVEL));
+	DO("enabling log channel",
+	   isc_log_usechannel(logconfig, "stderr", NULL, NULL));
 
 	parse_config(rndc_mctx, log, keyname, &pctx, &config);
 
@@ -989,7 +995,7 @@ main(int argc, char **argv) {
 		fatal("'%s' is not implemented", command);
 
 	if (nserveraddrs == 0)
-		get_addresses(servername, (in_port_t) remoteport);
+		get_addresses(servername, (in_port_t)remoteport);
 
 	DO("post event", isc_app_onrun(rndc_mctx, task, rndc_start, NULL));
 

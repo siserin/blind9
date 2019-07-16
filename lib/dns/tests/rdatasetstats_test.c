@@ -11,12 +11,11 @@
 
 #if HAVE_CMOCKA
 
-#include <stdarg.h>
-#include <stddef.h>
-#include <setjmp.h>
-
 #include <inttypes.h>
+#include <setjmp.h>
+#include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -32,7 +31,8 @@
 #include "dnstest.h"
 
 static int
-_setup(void **state) {
+_setup(void **state)
+{
 	isc_result_t result;
 
 	UNUSED(state);
@@ -44,7 +44,8 @@ _setup(void **state) {
 }
 
 static int
-_teardown(void **state) {
+_teardown(void **state)
+{
 	UNUSED(state);
 
 	dns_test_end();
@@ -53,7 +54,8 @@ _teardown(void **state) {
 }
 
 static void
-set_typestats(dns_stats_t *stats, dns_rdatatype_t type, bool stale) {
+set_typestats(dns_stats_t *stats, dns_rdatatype_t type, bool stale)
+{
 	dns_rdatastatstype_t which;
 	unsigned int attributes;
 
@@ -73,7 +75,8 @@ set_typestats(dns_stats_t *stats, dns_rdatatype_t type, bool stale) {
 }
 
 static void
-set_nxdomainstats(dns_stats_t *stats, bool stale) {
+set_nxdomainstats(dns_stats_t *stats, bool stale)
+{
 	dns_rdatastatstype_t which;
 	unsigned int attributes;
 
@@ -87,7 +90,8 @@ set_nxdomainstats(dns_stats_t *stats, bool stale) {
 
 #define ATTRIBUTE_SET(y) ((attributes & (y)) != 0)
 static void
-checkit1(dns_rdatastatstype_t which, uint64_t value, void *arg) {
+checkit1(dns_rdatastatstype_t which, uint64_t value, void *arg)
+{
 	unsigned int attributes;
 #if debug
 	unsigned int type;
@@ -115,7 +119,8 @@ checkit1(dns_rdatastatstype_t which, uint64_t value, void *arg) {
 }
 
 static void
-checkit2(dns_rdatastatstype_t which, uint64_t value, void *arg) {
+checkit2(dns_rdatastatstype_t which, uint64_t value, void *arg)
+{
 	unsigned int attributes;
 #if debug
 	unsigned int type;
@@ -147,7 +152,8 @@ checkit2(dns_rdatastatstype_t which, uint64_t value, void *arg) {
 
 /* test that rdatasetstats counters are properly set */
 static void
-rdatasetstats(void **state) {
+rdatasetstats(void **state)
+{
 	unsigned int i;
 	dns_stats_t *stats = NULL;
 	isc_result_t result;
@@ -187,10 +193,11 @@ rdatasetstats(void **state) {
 }
 
 int
-main(void) {
+main(void)
+{
 	const struct CMUnitTest tests[] = {
-		cmocka_unit_test_setup_teardown(rdatasetstats,
-						_setup, _teardown),
+		cmocka_unit_test_setup_teardown(rdatasetstats, _setup,
+						_teardown),
 	};
 
 	return (cmocka_run_group_tests(tests, NULL, NULL));
@@ -201,7 +208,8 @@ main(void) {
 #include <stdio.h>
 
 int
-main(void) {
+main(void)
+{
 	printf("1..0 # Skipped: cmocka not available\n");
 	return (0);
 }

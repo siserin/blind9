@@ -9,7 +9,6 @@
  * information regarding copyright ownership.
  */
 
-
 #ifndef DNS_KEYTABLE_H
 #define DNS_KEYTABLE_H 1
 
@@ -70,7 +69,6 @@ dns_keytable_create(isc_mem_t *mctx, dns_keytable_t **keytablep);
  *\li	Any other result indicates failure.
  */
 
-
 void
 dns_keytable_attach(dns_keytable_t *source, dns_keytable_t **targetp);
 /*%<
@@ -105,8 +103,8 @@ dns_keytable_detach(dns_keytable_t **keytablep);
  */
 
 isc_result_t
-dns_keytable_add(dns_keytable_t *keytable, bool managed,
-		 bool initial, dst_key_t **keyp);
+dns_keytable_add(dns_keytable_t *keytable, bool managed, bool initial,
+		 dst_key_t **keyp);
 /*%<
  * Add '*keyp' to 'keytable' (using the name in '*keyp').
  * The value of keynode->managed is set to 'managed', and the
@@ -282,7 +280,7 @@ dns_keytable_findkeynode(dns_keytable_t *keytable, const dns_name_t *name,
 
 isc_result_t
 dns_keytable_findnextkeynode(dns_keytable_t *keytable, dns_keynode_t *keynode,
-					     dns_keynode_t **nextnodep);
+			     dns_keynode_t **nextnodep);
 /*%<
  * Search for the next key with the same properties as 'keynode' in
  * 'keytable' as found by dns_keytable_findkeynode().
@@ -342,8 +340,7 @@ dns_keytable_attachkeynode(dns_keytable_t *keytable, dns_keynode_t *source,
  */
 
 void
-dns_keytable_detachkeynode(dns_keytable_t *keytable,
-			   dns_keynode_t **keynodep);
+dns_keytable_detachkeynode(dns_keytable_t *keytable, dns_keynode_t **keynodep);
 /*%<
  * Give back a keynode found via dns_keytable_findkeynode().
  *

@@ -18,6 +18,7 @@
 /*
  * This file is only built and linked if GeoIP2 has been configured.
  */
+#include <math.h>
 #include <maxminddb.h>
 
 #include <isc/mem.h>
@@ -29,16 +30,14 @@
 
 #include <dns/acl.h>
 #include <dns/geoip.h>
-
-#include <math.h>
 #ifndef WIN32
 #include <netinet/in.h>
 #else
 #ifndef _WINSOCKAPI_
-#define _WINSOCKAPI_   /* Prevent inclusion of winsock.h in windows.h */
+#define _WINSOCKAPI_ /* Prevent inclusion of winsock.h in windows.h */
 #endif
 #include <winsock2.h>
-#endif	/* WIN32 */
+#endif /* WIN32 */
 #include <dns/log.h>
 
 /*
@@ -79,22 +78,25 @@ static isc_once_t mutex_once = ISC_ONCE_INIT;
 static isc_mem_t *state_mctx = NULL;
 
 static void
-key_mutex_init(void) {
+key_mutex_init(void)
+{
 	isc_mutex_init(&key_mutex);
 }
 
 static void
-free_state(void *arg) {
+free_state(void *arg)
+{
 	geoip_state_t *state = arg;
 	if (state != NULL) {
-		isc_mem_putanddetach(&state->mctx,
-				     state, sizeof(geoip_state_t));
+		isc_mem_putanddetach(&state->mctx, state,
+				     sizeof(geoip_state_t));
 	}
 	isc_thread_key_setspecific(state_key, NULL);
 }
 
 static isc_result_t
-state_key_init(void) {
+state_key_init(void)
+{
 	isc_result_t result;
 
 	result = isc_once_do(&mutex_once, key_mutex_init);
@@ -123,7 +125,7 @@ state_key_init(void) {
 				result = ISC_R_FAILURE;
 			}
 		}
- unlock:
+	unlock:
 		UNLOCK(&key_mutex);
 	}
 
@@ -143,10 +145,10 @@ set_state(const MMDB_s *db, const isc_netaddr_t *addr,
 		return (result);
 	}
 
-	state = (geoip_state_t *) isc_thread_key_getspecific(state_key);
+	state = (geoip_state_t *)isc_thread_key_getspecific(state_key);
 	if (state == NULL) {
-		state = (geoip_state_t *) isc_mem_get(state_mctx,
-						      sizeof(geoip_state_t));
+		state = (geoip_state_t *)isc_mem_get(state_mctx,
+						     sizeof(geoip_state_t));
 		memset(state, 0, sizeof(*state));
 
 		result = isc_thread_key_setspecific(state_key, state);
@@ -171,7 +173,8 @@ set_state(const MMDB_s *db, const isc_netaddr_t *addr,
 }
 
 static geoip_state_t *
-get_entry_for(MMDB_s * const db, const isc_netaddr_t *addr) {
+get_entry_for(MMDB_s *const db, const isc_netaddr_t *addr)
+{
 	isc_result_t result;
 	isc_sockaddr_t sa;
 	geoip_state_t *state;
@@ -183,7 +186,7 @@ get_entry_for(MMDB_s * const db, const isc_netaddr_t *addr) {
 		return (NULL);
 	}
 
-	state = (geoip_state_t *) isc_thread_key_getspecific(state_key);
+	state = (geoip_state_t *)isc_thread_key_getspecific(state_key);
 	if (state != NULL) {
 		if (db == state->db && isc_netaddr_equal(addr, &state->addr)) {
 			return (state);
@@ -205,7 +208,8 @@ get_entry_for(MMDB_s * const db, const isc_netaddr_t *addr) {
 }
 
 static dns_geoip_subtype_t
-fix_subtype(const dns_geoip_databases_t *geoip, dns_geoip_subtype_t subtype) {
+fix_subtype(const dns_geoip_databases_t *geoip, dns_geoip_subtype_t subtype)
+{
 	dns_geoip_subtype_t ret = subtype;
 
 	switch (subtype) {
@@ -254,8 +258,7 @@ fix_subtype(const dns_geoip_databases_t *geoip, dns_geoip_subtype_t subtype) {
 }
 
 static MMDB_s *
-geoip2_database(const dns_geoip_databases_t *geoip,
-		dns_geoip_subtype_t subtype)
+geoip2_database(const dns_geoip_databases_t *geoip, dns_geoip_subtype_t subtype)
 {
 	switch (subtype) {
 	case dns_geoip_country_code:
@@ -296,13 +299,13 @@ geoip2_database(const dns_geoip_databases_t *geoip,
 }
 
 static bool
-match_string(MMDB_entry_data_s *value, const char *str) {
+match_string(MMDB_entry_data_s *value, const char *str)
+{
 	REQUIRE(str != NULL);
 
 	if (value == NULL || !value->has_data ||
 	    value->type != MMDB_DATA_TYPE_UTF8_STRING ||
-	    value->utf8_string == NULL)
-	{
+	    value->utf8_string == NULL) {
 		return (false);
 	}
 
@@ -310,11 +313,11 @@ match_string(MMDB_entry_data_s *value, const char *str) {
 }
 
 static bool
-match_int(MMDB_entry_data_s *value, const uint32_t ui32) {
+match_int(MMDB_entry_data_s *value, const uint32_t ui32)
+{
 	if (value == NULL || !value->has_data ||
 	    (value->type != MMDB_DATA_TYPE_UINT32 &&
-	     value->type != MMDB_DATA_TYPE_UINT16))
-	{
+	     value->type != MMDB_DATA_TYPE_UINT16)) {
 		return (false);
 	}
 
@@ -323,8 +326,7 @@ match_int(MMDB_entry_data_s *value, const uint32_t ui32) {
 
 bool
 dns_geoip_match(const isc_netaddr_t *reqaddr,
-		const dns_geoip_databases_t *geoip,
-		const dns_geoip_elem_t *elt)
+		const dns_geoip_databases_t *geoip, const dns_geoip_elem_t *elt)
 {
 	MMDB_s *db = NULL;
 	MMDB_entry_data_s value;
@@ -351,8 +353,8 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 	switch (subtype) {
 	case dns_geoip_country_code:
 	case dns_geoip_city_countrycode:
-		ret = MMDB_get_value(&state->entry, &value,
-				     "country", "iso_code", NULL);
+		ret = MMDB_get_value(&state->entry, &value, "country",
+				     "iso_code", NULL);
 		if (ret == MMDB_SUCCESS) {
 			return (match_string(&value, elt->as_string));
 		}
@@ -360,8 +362,8 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 
 	case dns_geoip_country_name:
 	case dns_geoip_city_countryname:
-		ret = MMDB_get_value(&state->entry, &value,
-				     "country", "names", "en", NULL);
+		ret = MMDB_get_value(&state->entry, &value, "country", "names",
+				     "en", NULL);
 		if (ret == MMDB_SUCCESS) {
 			return (match_string(&value, elt->as_string));
 		}
@@ -369,8 +371,8 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 
 	case dns_geoip_country_continentcode:
 	case dns_geoip_city_continentcode:
-		ret = MMDB_get_value(&state->entry, &value,
-				     "continent", "code", NULL);
+		ret = MMDB_get_value(&state->entry, &value, "continent", "code",
+				     NULL);
 		if (ret == MMDB_SUCCESS) {
 			return (match_string(&value, elt->as_string));
 		}
@@ -378,8 +380,8 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 
 	case dns_geoip_country_continent:
 	case dns_geoip_city_continent:
-		ret = MMDB_get_value(&state->entry, &value,
-				     "continent", "names", "en", NULL);
+		ret = MMDB_get_value(&state->entry, &value, "continent",
+				     "names", "en", NULL);
 		if (ret == MMDB_SUCCESS) {
 			return (match_string(&value, elt->as_string));
 		}
@@ -387,8 +389,8 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 
 	case dns_geoip_region:
 	case dns_geoip_city_region:
-		ret = MMDB_get_value(&state->entry, &value,
-				     "subdivisions", "0", "iso_code", NULL);
+		ret = MMDB_get_value(&state->entry, &value, "subdivisions", "0",
+				     "iso_code", NULL);
 		if (ret == MMDB_SUCCESS) {
 			return (match_string(&value, elt->as_string));
 		}
@@ -396,41 +398,40 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 
 	case dns_geoip_regionname:
 	case dns_geoip_city_regionname:
-		ret = MMDB_get_value(&state->entry, &value,
-				     "subdivisions", "0", "names", "en", NULL);
+		ret = MMDB_get_value(&state->entry, &value, "subdivisions", "0",
+				     "names", "en", NULL);
 		if (ret == MMDB_SUCCESS) {
 			return (match_string(&value, elt->as_string));
 		}
 		break;
 
 	case dns_geoip_city_name:
-		ret = MMDB_get_value(&state->entry, &value,
-				     "city", "names", "en", NULL);
+		ret = MMDB_get_value(&state->entry, &value, "city", "names",
+				     "en", NULL);
 		if (ret == MMDB_SUCCESS) {
 			return (match_string(&value, elt->as_string));
 		}
 		break;
 
 	case dns_geoip_city_postalcode:
-		ret = MMDB_get_value(&state->entry, &value,
-				     "postal", "code", NULL);
+		ret = MMDB_get_value(&state->entry, &value, "postal", "code",
+				     NULL);
 		if (ret == MMDB_SUCCESS) {
 			return (match_string(&value, elt->as_string));
 		}
 		break;
 
 	case dns_geoip_city_timezonecode:
-		ret = MMDB_get_value(&state->entry, &value,
-				     "location", "time_zone", NULL);
+		ret = MMDB_get_value(&state->entry, &value, "location",
+				     "time_zone", NULL);
 		if (ret == MMDB_SUCCESS) {
 			return (match_string(&value, elt->as_string));
 		}
 		break;
 
-
 	case dns_geoip_city_metrocode:
-		ret = MMDB_get_value(&state->entry, &value,
-				     "location", "metro_code", NULL);
+		ret = MMDB_get_value(&state->entry, &value, "location",
+				     "metro_code", NULL);
 		if (ret == MMDB_SUCCESS) {
 			return (match_string(&value, elt->as_string));
 		}
@@ -488,7 +489,8 @@ dns_geoip_match(const isc_netaddr_t *reqaddr,
 }
 
 void
-dns_geoip_shutdown(void) {
+dns_geoip_shutdown(void)
+{
 	if (state_mctx != NULL) {
 		isc_mem_detach(&state_mctx);
 	}
