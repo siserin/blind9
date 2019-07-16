@@ -1,3 +1,4 @@
+./.clang-format					X	2019
 ./.gitattributes				X	2015,2017,2018,2019
 ./.gitlab-ci.yml				X	2018,2019
 ./.uncrustify.cfg				X	2018,2019
