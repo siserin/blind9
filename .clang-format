@@ -12,6 +12,8 @@ AlwaysBreakBeforeMultilineStrings: false
 BreakBeforeBinaryOperators: None
 BreakBeforeTernaryOperators: true
 AlignEscapedNewlines: Left
+DerivePointerAlignment: false
+PointerAlignment: Right
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex:           '^<isc/'
