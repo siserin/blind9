@@ -30,8 +30,9 @@ ns_listenelt_create(isc_mem_t *mctx, in_port_t port, isc_dscp_t dscp,
 	ns_listenelt_t *elt = NULL;
 	REQUIRE(target != NULL && *target == NULL);
 	elt = isc_mem_get(mctx, sizeof(*elt));
-	if (elt == NULL)
+	if (elt == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 	elt->mctx = mctx;
 	ISC_LINK_INIT(elt, link);
 	elt->port = port;
@@ -44,8 +45,9 @@ ns_listenelt_create(isc_mem_t *mctx, in_port_t port, isc_dscp_t dscp,
 void
 ns_listenelt_destroy(ns_listenelt_t *elt)
 {
-	if (elt->acl != NULL)
+	if (elt->acl != NULL) {
 		dns_acl_detach(&elt->acl);
+	}
 	isc_mem_put(elt->mctx, elt, sizeof(*elt));
 }
 
@@ -55,8 +57,9 @@ ns_listenlist_create(isc_mem_t *mctx, ns_listenlist_t **target)
 	ns_listenlist_t *list = NULL;
 	REQUIRE(target != NULL && *target == NULL);
 	list = isc_mem_get(mctx, sizeof(*list));
-	if (list == NULL)
+	if (list == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 	list->mctx = mctx;
 	list->refcount = 1;
 	ISC_LIST_INIT(list->elts);
@@ -89,8 +92,9 @@ ns_listenlist_detach(ns_listenlist_t **listp)
 	ns_listenlist_t *list = *listp;
 	INSIST(list->refcount > 0);
 	list->refcount--;
-	if (list->refcount == 0)
+	if (list->refcount == 0) {
 		destroy(list);
+	}
 	*listp = NULL;
 }
 
@@ -104,20 +108,24 @@ ns_listenlist_default(isc_mem_t *mctx, in_port_t port, isc_dscp_t dscp,
 	ns_listenlist_t *list = NULL;
 
 	REQUIRE(target != NULL && *target == NULL);
-	if (enabled)
+	if (enabled) {
 		result = dns_acl_any(mctx, &acl);
-	else
+	} else {
 		result = dns_acl_none(mctx, &acl);
-	if (result != ISC_R_SUCCESS)
+	}
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	result = ns_listenelt_create(mctx, port, dscp, acl, &elt);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup_acl;
+	}
 
 	result = ns_listenlist_create(mctx, &list);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup_listenelt;
+	}
 
 	ISC_LIST_APPEND(list->elts, elt, link);
 

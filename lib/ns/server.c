@@ -43,8 +43,9 @@ ns_server_create(isc_mem_t *mctx, ns_matchview_t matchingview,
 	REQUIRE(sctxp != NULL && *sctxp == NULL);
 
 	sctx = isc_mem_get(mctx, sizeof(*sctx));
-	if (sctx == NULL)
+	if (sctx == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	memset(sctx, 0, sizeof(*sctx));
 
@@ -147,43 +148,59 @@ ns_server_detach(ns_server_t **sctxp)
 		isc_quota_destroy(&sctx->tcpquota);
 		isc_quota_destroy(&sctx->xfroutquota);
 
-		if (sctx->server_id != NULL)
+		if (sctx->server_id != NULL) {
 			isc_mem_free(sctx->mctx, sctx->server_id);
+		}
 
-		if (sctx->blackholeacl != NULL)
+		if (sctx->blackholeacl != NULL) {
 			dns_acl_detach(&sctx->blackholeacl);
-		if (sctx->keepresporder != NULL)
+		}
+		if (sctx->keepresporder != NULL) {
 			dns_acl_detach(&sctx->keepresporder);
-		if (sctx->tkeyctx != NULL)
+		}
+		if (sctx->tkeyctx != NULL) {
 			dns_tkeyctx_destroy(&sctx->tkeyctx);
+		}
 
-		if (sctx->nsstats != NULL)
+		if (sctx->nsstats != NULL) {
 			ns_stats_detach(&sctx->nsstats);
+		}
 
-		if (sctx->rcvquerystats != NULL)
+		if (sctx->rcvquerystats != NULL) {
 			dns_stats_detach(&sctx->rcvquerystats);
-		if (sctx->opcodestats != NULL)
+		}
+		if (sctx->opcodestats != NULL) {
 			dns_stats_detach(&sctx->opcodestats);
-		if (sctx->rcodestats != NULL)
+		}
+		if (sctx->rcodestats != NULL) {
 			dns_stats_detach(&sctx->rcodestats);
+		}
 
-		if (sctx->udpinstats4 != NULL)
+		if (sctx->udpinstats4 != NULL) {
 			isc_stats_detach(&sctx->udpinstats4);
-		if (sctx->tcpinstats4 != NULL)
+		}
+		if (sctx->tcpinstats4 != NULL) {
 			isc_stats_detach(&sctx->tcpinstats4);
-		if (sctx->udpoutstats4 != NULL)
+		}
+		if (sctx->udpoutstats4 != NULL) {
 			isc_stats_detach(&sctx->udpoutstats4);
-		if (sctx->tcpoutstats4 != NULL)
+		}
+		if (sctx->tcpoutstats4 != NULL) {
 			isc_stats_detach(&sctx->tcpoutstats4);
+		}
 
-		if (sctx->udpinstats6 != NULL)
+		if (sctx->udpinstats6 != NULL) {
 			isc_stats_detach(&sctx->udpinstats6);
-		if (sctx->tcpinstats6 != NULL)
+		}
+		if (sctx->tcpinstats6 != NULL) {
 			isc_stats_detach(&sctx->tcpinstats6);
-		if (sctx->udpoutstats6 != NULL)
+		}
+		if (sctx->udpoutstats6 != NULL) {
 			isc_stats_detach(&sctx->udpoutstats6);
-		if (sctx->tcpoutstats6 != NULL)
+		}
+		if (sctx->tcpoutstats6 != NULL) {
 			isc_stats_detach(&sctx->tcpoutstats6);
+		}
 
 		isc_mem_putanddetach(&sctx->mctx, sctx, sizeof(*sctx));
 	}
@@ -201,8 +218,9 @@ ns_server_setserverid(ns_server_t *sctx, const char *serverid)
 
 	if (serverid != NULL) {
 		sctx->server_id = isc_mem_strdup(sctx->mctx, serverid);
-		if (sctx->server_id == NULL)
+		if (sctx->server_id == NULL) {
 			return (ISC_R_NOMEMORY);
+		}
 	}
 
 	return (ISC_R_SUCCESS);

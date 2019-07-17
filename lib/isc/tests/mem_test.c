@@ -428,10 +428,10 @@ isc_mem_traceflag_test(void **state)
 
 	isc_mem_debugging = ISC_MEM_DEBUGRECORD;
 }
-#endif
+#endif /* if ISC_MEM_TRACKLINES */
 
 #define ITERS 512
-#define NUM_ITEMS 1024 // 768
+#define NUM_ITEMS 1024 /* 768 */
 #define ITEM_SIZE 65534
 
 static void *
@@ -579,7 +579,7 @@ main(void)
 						_teardown),
 		cmocka_unit_test_setup_teardown(isc_mem_traceflag_test, _setup,
 						_teardown),
-#endif
+#endif /* if ISC_MEM_TRACKLINES */
 		cmocka_unit_test_setup_teardown(isc_mem_benchmark, _setup,
 						_teardown),
 		cmocka_unit_test_setup_teardown(isc_mempool_benchmark, _setup,
@@ -600,4 +600,4 @@ main(void)
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

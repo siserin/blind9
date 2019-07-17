@@ -93,8 +93,9 @@ dnsrps_log_fnc(librpz_log_level_t level, void *ctxt, const char *buf)
 	/* Setting librpz_log_level in the configuration overrides the
 	 * BIND9 logging levels. */
 	if (level > LIBRPZ_LOG_TRACE1 &&
-	    level <= librpz->log_level_val(LIBRPZ_LOG_INVALID))
+	    level <= librpz->log_level_val(LIBRPZ_LOG_INVALID)) {
 		level = LIBRPZ_LOG_TRACE1;
+	}
 
 	switch (level) {
 	case LIBRPZ_LOG_FATAL:
@@ -146,8 +147,9 @@ dns_dnsrps_server_create(void)
 	 * Complain later if and when librpz is needed for a view with
 	 * "dnsrps-enable yse" (including the default view).
 	 */
-	if (librpz == NULL)
+	if (librpz == NULL) {
 		return (ISC_R_SUCCESS);
+	}
 
 	isc_mutex_init(&dnsrps_mutex);
 
@@ -172,19 +174,21 @@ dns_dnsrps_server_create(void)
 void
 dns_dnsrps_server_destroy(void)
 {
-	if (clist != NULL)
+	if (clist != NULL) {
 		librpz->clist_detach(&clist);
+	}
 
 #ifdef LIBRPZ_USE_DLOPEN
 	if (librpz != NULL) {
 		INSIST(librpz_handle != NULL);
-		if (dlclose(librpz_handle) != 0)
+		if (dlclose(librpz_handle) != 0) {
 			isc_log_write(dns_lctx, DNS_LOGCATEGORY_RPZ,
 				      DNS_LOGMODULE_RBTDB, DNS_RPZ_ERROR_LEVEL,
 				      "dnsrps: dlclose(): %s", dlerror());
+		}
 		librpz_handle = NULL;
 	}
-#endif
+#endif /* ifdef LIBRPZ_USE_DLOPEN */
 }
 
 /*
@@ -220,8 +224,9 @@ dns_dnsrps_connect(dns_rpz_zones_t *rpzs)
 {
 	librpz_emsg_t emsg;
 
-	if (rpzs == NULL || !rpzs->p.dnsrps_enabled)
+	if (rpzs == NULL || !rpzs->p.dnsrps_enabled) {
 		return (ISC_R_SUCCESS);
+	}
 
 	/*
 	 * Fail only if we failed to link to librpz.
@@ -393,8 +398,9 @@ rpsdb_detach(dns_db_t **dbp)
 	/*
 	 * Simple count because only one thread uses a rpsdb_t.
 	 */
-	if (--rpsdb->ref_cnt != 0)
+	if (--rpsdb->ref_cnt != 0) {
 		return;
+	}
 
 	librpz->rsp_detach(&rpsdb->rsp);
 	rpsdb->common.impmagic = 0;
@@ -446,10 +452,11 @@ rpsdb_findnode(dns_db_t *db, const dns_name_t *name, bool create,
 	 * One is the origin to support query_addsoa() in bin/named/query.c.
 	 * The other contains rewritten RRs.
 	 */
-	if (dns_name_equal(name, &db->origin))
+	if (dns_name_equal(name, &db->origin)) {
 		*nodep = &rpsdb->origin_node;
-	else
+	} else {
 		*nodep = &rpsdb->data_node;
+	}
 	dbp = NULL;
 	rpsdb_attach(db, &dbp);
 
@@ -520,10 +527,12 @@ rpsdb_findrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 	REQUIRE(VALID_RPSDB(rpsdb));
 
 	if (node == &rpsdb->origin_node) {
-		if (type == dns_rdatatype_any)
+		if (type == dns_rdatatype_any) {
 			return (ISC_R_SUCCESS);
-		if (type == dns_rdatatype_soa)
+		}
+		if (type == dns_rdatatype_soa) {
 			return (rpsdb_bind_soa(rdataset, rpsdb));
+		}
 		return (DNS_R_NXRRSET);
 	}
 
@@ -554,14 +563,16 @@ rpsdb_findrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 		break;
 	}
 
-	if (type == dns_rdatatype_soa)
+	if (type == dns_rdatatype_soa) {
 		return (rpsdb_bind_soa(rdataset, rpsdb));
+	}
 
 	/*
 	 * There is little to do for an ANY query.
 	 */
-	if (type == dns_rdatatype_any)
+	if (type == dns_rdatatype_any) {
 		return (ISC_R_SUCCESS);
+	}
 
 	/*
 	 * Reset to the start of the RRs.
@@ -585,8 +596,9 @@ rpsdb_findrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 	 */
 	count = 0;
 	do {
-		if (type == foundtype || type == dns_rdatatype_any)
+		if (type == foundtype || type == dns_rdatatype_any) {
 			++count;
+		}
 
 		if (!librpz->rsp_rr(&emsg, &foundtype, NULL, NULL, NULL,
 				    &rpsdb->result, rpsdb->qname->ndata,
@@ -595,8 +607,9 @@ rpsdb_findrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 			return (DNS_R_SERVFAIL);
 		}
 	} while (foundtype != dns_rdatatype_none);
-	if (count == 0)
+	if (count == 0) {
 		return (DNS_R_NXRRSET);
+	}
 	rpsdb_bind_rdataset(rdataset, count, rpsdb->result.next_rr, type, class,
 			    ttl, rpsdb);
 	return (ISC_R_SUCCESS);
@@ -622,8 +635,9 @@ rpsdb_finddb(dns_db_t *db, const dns_name_t *name, dns_dbversion_t *version,
 	}
 	rpsdb_findnode(db, name, false, nodep);
 	result = dns_name_copy(name, foundname, NULL);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 	return (rpsdb_findrdataset(db, *nodep, NULL, type, 0, 0, rdataset,
 				   sigrdataset));
 }
@@ -642,8 +656,9 @@ rpsdb_allrdatasets(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 	REQUIRE(node == &rpsdb->origin_node || node == &rpsdb->data_node);
 
 	rpsdb_iter = isc_mem_get(rpsdb->common.mctx, sizeof(*rpsdb_iter));
-	if (rpsdb_iter == NULL)
+	if (rpsdb_iter == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	memset(rpsdb_iter, 0, sizeof(*rpsdb_iter));
 	rpsdb_iter->common.magic = DNS_RDATASETITER_MAGIC;
@@ -718,8 +733,9 @@ rpsdb_rdataset_next(dns_rdataset_t *rdataset)
 	 * SOAs differ.
 	 */
 	if (rdataset->type == dns_rdatatype_soa) {
-		if (RD_NEXT_RR(rdataset) == LIBRPZ_IDX_NULL)
+		if (RD_NEXT_RR(rdataset) == LIBRPZ_IDX_NULL) {
 			return (ISC_R_NOMORE);
+		}
 		RD_NEXT_RR(rdataset) = LIBRPZ_IDX_NULL;
 		if (!librpz->rsp_soa(&emsg, NULL, &rr, NULL, &rpsdb->result,
 				     rpsdb->rsp)) {
@@ -743,8 +759,9 @@ rpsdb_rdataset_next(dns_rdataset_t *rdataset)
 			RD_NEXT_RR(rdataset) = rpsdb->result.next_rr;
 			return (ISC_R_SUCCESS);
 		}
-		if (type == dns_rdatatype_none)
+		if (type == dns_rdatatype_none) {
 			return (ISC_R_NOMORE);
+		}
 		free(rr);
 	}
 }
@@ -767,10 +784,11 @@ rpsdb_rdataset_first(dns_rdataset_t *rdataset)
 		librpz->log(LIBRPZ_LOG_ERROR, NULL, "%s", emsg.c);
 		return (DNS_R_SERVFAIL);
 	}
-	if (rdataset->type == dns_rdatatype_soa)
+	if (rdataset->type == dns_rdatatype_soa) {
 		RD_NEXT_RR(rdataset) = LIBRPZ_IDX_BAD;
-	else
+	} else {
 		RD_NEXT_RR(rdataset) = rpsdb->result.next_rr;
+	}
 
 	return (rpsdb_rdataset_next(rdataset));
 }
@@ -876,8 +894,9 @@ rpsdb_rdatasetiter_next(dns_rdatasetiter_t *iter)
 			return (DNS_R_SERVFAIL);
 		}
 		if (type == dns_rdatatype_none) {
-			if (next_type == dns_rdatatype_none)
+			if (next_type == dns_rdatatype_none) {
 				return (ISC_R_NOMORE);
+			}
 			rpsdb_iter->type = next_type;
 			rpsdb_iter->class = next_class;
 			return (ISC_R_SUCCESS);
@@ -886,8 +905,9 @@ rpsdb_rdatasetiter_next(dns_rdatasetiter_t *iter)
 		 * Skip RRs with the current class and type or before.
 		 */
 		if (rpsdb_iter->class > class ||
-		    (rpsdb_iter->class = class && rpsdb_iter->type >= type))
+		    (rpsdb_iter->class = class && rpsdb_iter->type >= type)) {
 			continue;
+		}
 		if (next_type == dns_rdatatype_none || next_class > class ||
 		    (next_class == class && next_type > type)) {
 			/*

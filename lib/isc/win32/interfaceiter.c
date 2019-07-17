@@ -111,8 +111,9 @@ isc_interfaceiter_create(isc_mem_t *mctx, isc_interfaceiter_t **iterp)
 	REQUIRE(*iterp == NULL);
 
 	iter = isc_mem_get(mctx, sizeof(*iter));
-	if (iter == NULL)
+	if (iter == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	InitSockets();
 
@@ -136,8 +137,9 @@ isc_interfaceiter_create(isc_mem_t *mctx, isc_interfaceiter_t **iterp)
 	iter->socket = socket(AF_INET, SOCK_DGRAM, 0);
 	if (iter->socket == INVALID_SOCKET) {
 		error = WSAGetLastError();
-		if (error == WSAEAFNOSUPPORT)
+		if (error == WSAEAFNOSUPPORT) {
 			goto inet6_only;
+		}
 		strerror_r(error, strbuf, sizeof(strbuf));
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
 				 "making interface scan socket: %s", strbuf);
@@ -183,8 +185,9 @@ isc_interfaceiter_create(isc_mem_t *mctx, isc_interfaceiter_t **iterp)
 			 * case and retry.
 			 */
 			if (bytesReturned > 0 &&
-			    (bytesReturned < iter->buf4size))
+			    (bytesReturned < iter->buf4size)) {
 				break;
+			}
 		}
 		if (iter->buf4size >=
 		    IFCONF_SIZE_MAX * sizeof(INTERFACE_INFO)) {
@@ -217,8 +220,9 @@ inet6_only:
 	iter->socket = socket(AF_INET6, SOCK_DGRAM, 0);
 	if (iter->socket == INVALID_SOCKET) {
 		error = WSAGetLastError();
-		if (error == WSAEAFNOSUPPORT)
+		if (error == WSAEAFNOSUPPORT) {
 			goto inet_only;
+		}
 		strerror_r(error, strbuf, sizeof(strbuf));
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
 				 "making interface scan socket: %s", strbuf);
@@ -256,8 +260,9 @@ inet6_only:
 			/*
 			 * EINVAL.  Retry with a bigger buffer.
 			 */
-		} else
+		} else {
 			break;
+		}
 
 		if (iter->buf6size >=
 		    IFCONF_SIZE_MAX * sizeof(SOCKET_ADDRESS)) {
@@ -284,12 +289,14 @@ ioctl6_failure:
 	isc_mem_put(mctx, iter->buf6, iter->buf6size);
 
 ioctl_failure:
-	if (iter->buf4 != NULL)
+	if (iter->buf4 != NULL) {
 		isc_mem_put(mctx, iter->buf4, iter->buf4size);
+	}
 
 alloc_failure:
-	if (iter->socket != INVALID_SOCKET)
+	if (iter->socket != INVALID_SOCKET) {
 		(void)closesocket(iter->socket);
+	}
 
 socket_failure:
 	isc_mem_put(mctx, iter, sizeof(*iter));
@@ -326,8 +333,9 @@ internal_current(isc_interfaceiter_t *iter)
 	iter->current.flags = 0;
 	flags = iter->IFData.iiFlags;
 
-	if ((flags & IFF_UP) != 0)
+	if ((flags & IFF_UP) != 0) {
 		iter->current.flags |= INTERFACE_F_UP;
+	}
 
 	if ((flags & IFF_POINTTOPOINT) != 0) {
 		iter->current.flags |= INTERFACE_F_POINTTOPOINT;
@@ -351,9 +359,10 @@ internal_current(isc_interfaceiter_t *iter)
 			 (struct sockaddr *)&(iter->IFData.iiBroadcastAddress));
 	}
 
-	if (ifNamed == FALSE)
+	if (ifNamed == FALSE) {
 		snprintf(iter->current.name, sizeof(iter->current.name),
 			 "TCP/IP Interface %d", iter->numIF);
+	}
 
 	/*
 	 * Get the network mask.
@@ -377,8 +386,9 @@ internal_current6(isc_interfaceiter_t *iter)
 	iter->current.af = AF_INET6;
 
 	if (!iter->pos6zero) {
-		if (iter->pos6 == 0U)
+		if (iter->pos6 == 0U) {
 			iter->pos6zero = true;
+		}
 		get_addr(AF_INET6, &iter->current.address,
 			 iter->buf6->Address[iter->pos6].lpSockaddr);
 
@@ -394,8 +404,9 @@ internal_current6(isc_interfaceiter_t *iter)
 		for (i = 0; i < 16; i++)
 			iter->current.netmask.type.in6.s6_addr[i] = 0xff;
 		iter->current.netmask.family = AF_INET6;
-		if (IN6_IS_ADDR_LOOPBACK(&iter->current.address.type.in6))
+		if (IN6_IS_ADDR_LOOPBACK(&iter->current.address.type.in6)) {
 			iter->v6loop = true;
+		}
 	} else {
 		/*
 		 * See if we can bind to the ::1 and if so return ::1.
@@ -405,8 +416,9 @@ internal_current6(isc_interfaceiter_t *iter)
 		iter->v6loop = true; /* So we don't loop forever. */
 
 		fd = socket(AF_INET6, SOCK_DGRAM, 0);
-		if (fd == INVALID_SOCKET)
+		if (fd == INVALID_SOCKET) {
 			return (ISC_R_IGNORE);
+		}
 		memset(&sin6, 0, sizeof(sin6));
 		sin6.sin6_family = AF_INET6;
 		sin6.sin6_addr.s6_addr[15] = 1;
@@ -420,10 +432,11 @@ internal_current6(isc_interfaceiter_t *iter)
 		snprintf(iter->current.name, sizeof(iter->current.name),
 			 "TCP/IPv6 Loopback Interface");
 		for (i = 0; i < 16; i++) {
-			if (i != 15)
+			if (i != 15) {
 				iter->current.address.type.in6.s6_addr[i] = 0;
-			else
+			} else {
 				iter->current.address.type.in6.s6_addr[i] = 1;
+			}
 			iter->current.netmask.type.in6.s6_addr[i] = 0xff;
 		}
 		iter->current.address.family = AF_INET6;
@@ -442,8 +455,9 @@ internal_current6(isc_interfaceiter_t *iter)
 static isc_result_t
 internal_next(isc_interfaceiter_t *iter)
 {
-	if (iter->numIF >= iter->v4IF)
+	if (iter->numIF >= iter->v4IF) {
 		return (ISC_R_NOMORE);
+	}
 
 	/*
 	 * The first one needs to be set up to point to the last
@@ -452,12 +466,14 @@ internal_next(isc_interfaceiter_t *iter)
 	 * the list in reverse order
 	 */
 
-	if (iter->numIF == 0)
+	if (iter->numIF == 0) {
 		iter->pos4 = (INTERFACE_INFO *)(iter->buf4 + (iter->v4IF));
+	}
 
 	iter->pos4--;
-	if (&(iter->pos4) < &(iter->buf4))
+	if (&(iter->pos4) < &(iter->buf4)) {
 		return (ISC_R_NOMORE);
+	}
 
 	memset(&(iter->IFData), 0, sizeof(INTERFACE_INFO));
 	memmove(&(iter->IFData), iter->pos4, sizeof(INTERFACE_INFO));
@@ -469,10 +485,12 @@ internal_next(isc_interfaceiter_t *iter)
 static isc_result_t
 internal_next6(isc_interfaceiter_t *iter)
 {
-	if (iter->pos6 == 0U && iter->v6loop)
+	if (iter->pos6 == 0U && iter->v6loop) {
 		return (ISC_R_NOMORE);
-	if (iter->pos6 != 0U)
+	}
+	if (iter->pos6 != 0U) {
 		iter->pos6--;
+	}
 	return (ISC_R_SUCCESS);
 }
 
@@ -510,17 +528,21 @@ isc_interfaceiter_next(isc_interfaceiter_t *iter)
 		result = internal_next(iter);
 		if (result == ISC_R_NOMORE) {
 			result = internal_next6(iter);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				break;
+			}
 			result = internal_current6(iter);
-			if (result == ISC_R_IGNORE)
+			if (result == ISC_R_IGNORE) {
 				continue;
+			}
 			break;
-		} else if (result != ISC_R_SUCCESS)
+		} else if (result != ISC_R_SUCCESS) {
 			break;
+		}
 		result = internal_current(iter);
-		if (result != ISC_R_IGNORE)
+		if (result != ISC_R_IGNORE) {
 			break;
+		}
 	}
 	iter->result = result;
 	return (result);
@@ -534,10 +556,12 @@ isc_interfaceiter_destroy(isc_interfaceiter_t **iterp)
 	iter = *iterp;
 	REQUIRE(VALID_IFITER(iter));
 
-	if (iter->buf4 != NULL)
+	if (iter->buf4 != NULL) {
 		isc_mem_put(iter->mctx, iter->buf4, iter->buf4size);
-	if (iter->buf6 != NULL)
+	}
+	if (iter->buf6 != NULL) {
 		isc_mem_put(iter->mctx, iter->buf6, iter->buf6size);
+	}
 
 	iter->magic = 0;
 	isc_mem_put(iter->mctx, iter, sizeof(*iter));

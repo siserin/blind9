@@ -35,12 +35,12 @@
 #ifndef RESOLV_CONF
 /*% location of resolve.conf */
 #define RESOLV_CONF "/etc/resolv.conf"
-#endif
+#endif /* ifndef RESOLV_CONF */
 
 #ifndef DNS_CONF
 /*% location of dns.conf */
 #define DNS_CONF "/etc/dns.conf"
-#endif
+#endif /* ifndef DNS_CONF */
 
 static bool thread_key_initialized = false;
 static isc_mutex_t thread_key_mutex;
@@ -68,20 +68,25 @@ static void
 ctxs_destroy(isc_mem_t **mctxp, isc_appctx_t **actxp, isc_taskmgr_t **taskmgrp,
 	     isc_socketmgr_t **socketmgrp, isc_timermgr_t **timermgrp)
 {
-	if (taskmgrp != NULL)
+	if (taskmgrp != NULL) {
 		isc_taskmgr_destroy(taskmgrp);
+	}
 
-	if (timermgrp != NULL)
+	if (timermgrp != NULL) {
 		isc_timermgr_destroy(timermgrp);
+	}
 
-	if (socketmgrp != NULL)
+	if (socketmgrp != NULL) {
 		isc_socketmgr_destroy(socketmgrp);
+	}
 
-	if (actxp != NULL)
+	if (actxp != NULL) {
 		isc_appctx_destroy(actxp);
+	}
 
-	if (mctxp != NULL)
+	if (mctxp != NULL) {
 		isc_mem_destroy(mctxp);
+	}
 }
 
 static isc_result_t
@@ -91,24 +96,29 @@ ctxs_init(isc_mem_t **mctxp, isc_appctx_t **actxp, isc_taskmgr_t **taskmgrp,
 	isc_result_t result;
 
 	result = isc_mem_create(0, 0, mctxp);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto fail;
+	}
 
 	result = isc_appctx_create(*mctxp, actxp);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto fail;
+	}
 
 	result = isc_taskmgr_createinctx(*mctxp, 1, 0, taskmgrp);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto fail;
+	}
 
 	result = isc_socketmgr_createinctx(*mctxp, socketmgrp);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto fail;
+	}
 
 	result = isc_timermgr_createinctx(*mctxp, timermgrp);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto fail;
+	}
 
 	return (ISC_R_SUCCESS);
 
@@ -140,8 +150,9 @@ thread_key_init(void)
 	isc_result_t result;
 
 	result = isc_once_do(&once, thread_key_mutex_init);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	if (!thread_key_initialized) {
 		LOCK(&thread_key_mutex);
@@ -150,8 +161,9 @@ thread_key_init(void)
 		    isc_thread_key_create(&irs_context_key,
 					  free_specific_context) != 0) {
 			result = ISC_R_FAILURE;
-		} else
+		} else {
 			thread_key_initialized = true;
+		}
 
 		UNLOCK(&thread_key_mutex);
 	}
@@ -168,14 +180,16 @@ irs_context_get(irs_context_t **contextp)
 	REQUIRE(contextp != NULL && *contextp == NULL);
 
 	result = thread_key_init();
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	context = isc_thread_key_getspecific(irs_context_key);
 	if (context == NULL) {
 		result = irs_context_create(&context);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (result);
+		}
 		result = isc_thread_key_setspecific(irs_context_key, context);
 		if (result != ISC_R_SUCCESS) {
 			irs_context_destroy(&context);
@@ -205,12 +219,14 @@ irs_context_create(irs_context_t **contextp)
 
 	isc_lib_register();
 	result = dns_lib_init();
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	result = ctxs_init(&mctx, &actx, &taskmgr, &socketmgr, &timermgr);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	result = isc_app_ctxstart(actx);
 	if (result != ISC_R_SUCCESS) {
@@ -233,39 +249,45 @@ irs_context_create(irs_context_t **contextp)
 	context->dnsconf = NULL;
 	context->task = NULL;
 	result = isc_task_create(taskmgr, 0, &context->task);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto fail;
+	}
 
 	/* Create a DNS client object */
 	result = dns_client_createx(mctx, actx, taskmgr, socketmgr, timermgr, 0,
 				    &client, NULL, NULL);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto fail;
+	}
 	context->dnsclient = client;
 
 	/* Read resolver configuration file */
 	result = irs_resconf_load(mctx, RESOLV_CONF, &context->resconf);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto fail;
+	}
 	/* Set nameservers */
 	nameservers = irs_resconf_getnameservers(context->resconf);
 	result = dns_client_setservers(client, dns_rdataclass_in, NULL,
 				       nameservers);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto fail;
+	}
 
 	/* Read advanced DNS configuration (if any) */
 	result = irs_dnsconf_load(mctx, DNS_CONF, &context->dnsconf);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto fail;
+	}
 	trustedkeys = irs_dnsconf_gettrustedkeys(context->dnsconf);
 	for (trustedkey = ISC_LIST_HEAD(*trustedkeys); trustedkey != NULL;
 	     trustedkey = ISC_LIST_NEXT(trustedkey, link)) {
 		result = dns_client_addtrustedkey(client, dns_rdataclass_in,
 						  trustedkey->keyname,
 						  trustedkey->keydatabuf);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto fail;
+		}
 	}
 
 	context->magic = IRS_CONTEXT_MAGIC;
@@ -274,14 +296,18 @@ irs_context_create(irs_context_t **contextp)
 	return (ISC_R_SUCCESS);
 
 fail:
-	if (context->task != NULL)
+	if (context->task != NULL) {
 		isc_task_detach(&context->task);
-	if (context->resconf != NULL)
+	}
+	if (context->resconf != NULL) {
 		irs_resconf_destroy(&context->resconf);
-	if (context->dnsconf != NULL)
+	}
+	if (context->dnsconf != NULL) {
 		irs_dnsconf_destroy(&context->dnsconf);
-	if (client != NULL)
+	}
+	if (client != NULL) {
 		dns_client_destroy(&client);
+	}
 	ctxs_destroy(NULL, &actx, &taskmgr, &socketmgr, &timermgr);
 	isc_mem_putanddetach(&mctx, context, sizeof(*context));
 

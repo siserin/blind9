@@ -16,9 +16,9 @@
 #if defined(HAVE_SYS_SYSCTL_H)
 #if defined(HAVE_SYS_PARAM_H)
 #include <sys/param.h>
-#endif
+#endif /* if defined(HAVE_SYS_PARAM_H) */
 #include <sys/sysctl.h>
-#endif
+#endif /* if defined(HAVE_SYS_SYSCTL_H) */
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -35,7 +35,7 @@
 
 #ifndef socklen_t
 #define socklen_t unsigned int
-#endif
+#endif /* ifndef socklen_t */
 
 /*%
  * Definitions about UDP port range specification.  This is a total mess of
@@ -65,7 +65,8 @@
 #define SYSCTL_V4PORTRANGE_HIGH "net.inet.ip.portrange.hilast"
 #define SYSCTL_V6PORTRANGE_LOW "net.inet.ip.portrange.hifirst"
 #define SYSCTL_V6PORTRANGE_HIGH "net.inet.ip.portrange.hilast"
-#endif
+#endif /* if defined(__FreeBSD__) || defined(__APPLE__) ||                     \
+	* defined(__DragonFly__) */
 
 #ifdef __NetBSD__
 #define USE_SYSCTL_PORTRANGE
@@ -73,7 +74,7 @@
 #define SYSCTL_V4PORTRANGE_HIGH "net.inet.ip.anonportmax"
 #define SYSCTL_V6PORTRANGE_LOW "net.inet6.ip6.anonportmin"
 #define SYSCTL_V6PORTRANGE_HIGH "net.inet6.ip6.anonportmax"
-#endif
+#endif /* ifdef __NetBSD__ */
 
 #else /* !HAVE_SYSCTLBYNAME */
 
@@ -90,7 +91,7 @@
 /* Same for IPv6 */
 #define SYSCTL_V6PORTRANGE_LOW SYSCTL_V4PORTRANGE_LOW
 #define SYSCTL_V6PORTRANGE_HIGH SYSCTL_V4PORTRANGE_HIGH
-#endif
+#endif /* ifdef __OpenBSD__ */
 
 #endif /* HAVE_SYSCTLBYNAME */
 
@@ -127,16 +128,16 @@ try_proto(int domain)
 		switch (errno) {
 #ifdef EAFNOSUPPORT
 		case EAFNOSUPPORT:
-#endif
+#endif /* ifdef EAFNOSUPPORT */
 #ifdef EPFNOSUPPORT
 		case EPFNOSUPPORT:
-#endif
+#endif /* ifdef EPFNOSUPPORT */
 #ifdef EPROTONOSUPPORT
 		case EPROTONOSUPPORT:
-#endif
+#endif /* ifdef EPROTONOSUPPORT */
 #ifdef EINVAL
 		case EINVAL:
-#endif
+#endif /* ifdef EINVAL */
 			return (ISC_R_NOTFOUND);
 		default:
 			strerror_r(errno, strbuf, sizeof(strbuf));
@@ -165,9 +166,9 @@ try_proto(int domain)
 				      "IPv6 is not supported.");
 			result = ISC_R_NOTFOUND;
 		} else {
-			if (len == sizeof(struct sockaddr_in6))
+			if (len == sizeof(struct sockaddr_in6)) {
 				result = ISC_R_SUCCESS;
-			else {
+			} else {
 				isc_log_write(isc_lctx, ISC_LOGCATEGORY_GENERAL,
 					      ISC_LOGMODULE_SOCKET,
 					      ISC_LOG_ERROR,
@@ -194,7 +195,7 @@ initialize_action(void)
 	ipv6_result = try_proto(PF_INET6);
 #ifdef ISC_PLATFORM_HAVESYSUNH
 	unix_result = try_proto(PF_UNIX);
-#endif
+#endif /* ifdef ISC_PLATFORM_HAVESYSUNH */
 }
 
 static void
@@ -230,7 +231,7 @@ try_ipv6only(void)
 #ifdef IPV6_V6ONLY
 	int s, on;
 	char strbuf[ISC_STRERRORSIZE];
-#endif
+#endif /* ifdef IPV6_V6ONLY */
 	isc_result_t result;
 
 	result = isc_net_probeipv6();
@@ -242,7 +243,7 @@ try_ipv6only(void)
 #ifndef IPV6_V6ONLY
 	ipv6only_result = ISC_R_NOTFOUND;
 	return;
-#else
+#else  /* ifndef IPV6_V6ONLY */
 	/* check for TCP sockets */
 	s = socket(PF_INET6, SOCK_STREAM, 0);
 	if (s == -1) {
@@ -318,9 +319,9 @@ try_ipv6pktinfo(void)
 
 #ifdef IPV6_RECVPKTINFO
 	optname = IPV6_RECVPKTINFO;
-#else
+#else  /* ifdef IPV6_RECVPKTINFO */
 	optname = IPV6_PKTINFO;
-#endif
+#endif /* ifdef IPV6_RECVPKTINFO */
 	on = 1;
 	if (setsockopt(s, IPPROTO_IPV6, optname, &on, sizeof(on)) < 0) {
 		ipv6pktinfo_result = ISC_R_NOTFOUND;
@@ -362,7 +363,7 @@ cmsg_len(socklen_t len)
 {
 #ifdef CMSG_LEN
 	return (CMSG_LEN(len));
-#else
+#else  /* ifdef CMSG_LEN */
 	socklen_t hdrlen;
 
 	/*
@@ -371,7 +372,7 @@ cmsg_len(socklen_t len)
 	 */
 	hdrlen = (socklen_t)CMSG_DATA(((struct cmsghdr *)NULL));
 	return (hdrlen + len);
-#endif
+#endif /* ifdef CMSG_LEN */
 }
 
 static inline socklen_t
@@ -379,7 +380,7 @@ cmsg_space(socklen_t len)
 {
 #ifdef CMSG_SPACE
 	return (CMSG_SPACE(len));
-#else
+#else  /* ifdef CMSG_SPACE */
 	struct msghdr msg;
 	struct cmsghdr *cmsgp;
 	/*
@@ -396,11 +397,12 @@ cmsg_space(socklen_t len)
 	cmsgp->cmsg_len = cmsg_len(len);
 
 	cmsgp = CMSG_NXTHDR(&msg, cmsgp);
-	if (cmsgp != NULL)
+	if (cmsgp != NULL) {
 		return ((char *)cmsgp - (char *)msg.msg_control);
-	else
+	} else {
 		return (0);
-#endif
+	}
+#endif /* ifdef CMSG_SPACE */
 }
 
 /*
@@ -416,20 +418,20 @@ make_nonblock(int fd)
 	int on = 1;
 
 	ret = ioctl(fd, FIONBIO, (char *)&on);
-#else
+#else  /* ifdef USE_FIONBIO_IOCTL */
 	flags = fcntl(fd, F_GETFL, 0);
 	flags |= PORT_NONBLOCK;
 	ret = fcntl(fd, F_SETFL, flags);
-#endif
+#endif /* ifdef USE_FIONBIO_IOCTL */
 
 	if (ret == -1) {
 		strerror_r(errno, strbuf, sizeof(strbuf));
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
 #ifdef USE_FIONBIO_IOCTL
 				 "ioctl(%d, FIONBIO, &on): %s", fd,
-#else
+#else  /* ifdef USE_FIONBIO_IOCTL */
 				 "fcntl(%d, F_SETFL, %d): %s", fd, flags,
-#endif
+#endif /* ifdef USE_FIONBIO_IOCTL */
 				 strbuf);
 
 		return (ISC_R_UNEXPECTED);
@@ -495,7 +497,7 @@ cmsgsend(int s, int level, int type, struct addrinfo *res)
 		*(unsigned char *)CMSG_DATA(cmsgp) = dscp;
 		msg.msg_controllen += cmsg_space(sizeof(char));
 		break;
-#endif
+#endif /* ifdef IP_TOS */
 #ifdef IPV6_TCLASS
 	case IPV6_TCLASS:
 		memset(cmsgp, 0, cmsg_space(sizeof(dscp)));
@@ -505,7 +507,7 @@ cmsgsend(int s, int level, int type, struct addrinfo *res)
 		memmove(CMSG_DATA(cmsgp), &dscp, sizeof(dscp));
 		msg.msg_controllen += cmsg_space(sizeof(dscp));
 		break;
-#endif
+#endif /* ifdef IPV6_TCLASS */
 	default:
 		INSIST(0);
 		ISC_UNREACHABLE();
@@ -517,10 +519,10 @@ cmsgsend(int s, int level, int type, struct addrinfo *res)
 		switch (errno) {
 #ifdef ENOPROTOOPT
 		case ENOPROTOOPT:
-#endif
+#endif /* ifdef ENOPROTOOPT */
 #ifdef EOPNOTSUPP
 		case EOPNOTSUPP:
-#endif
+#endif /* ifdef EOPNOTSUPP */
 		case EINVAL:
 		case EPERM:
 			break;
@@ -560,12 +562,13 @@ cmsgsend(int s, int level, int type, struct addrinfo *res)
 	msg.msg_controllen = 0;
 	msg.msg_flags = 0;
 
-	if (recvmsg(s, &msg, 0) < 0)
+	if (recvmsg(s, &msg, 0) < 0) {
 		return (false);
+	}
 
 	return (true);
 }
-#endif
+#endif /* if ISC_CMSG_IP_TOS || defined(IPV6_TCLASS) */
 
 static void
 try_dscp_v4(void)
@@ -584,9 +587,9 @@ try_dscp_v4(void)
 	hints.ai_protocol = IPPROTO_UDP;
 #ifdef AI_NUMERICHOST
 	hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
-#else
+#else  /* ifdef AI_NUMERICHOST */
 	hints.ai_flags = AI_PASSIVE;
-#endif
+#endif /* ifdef AI_NUMERICHOST */
 
 	n = getaddrinfo("127.0.0.1", NULL, &hints, &res0);
 	if (n != 0 || res0 == NULL) {
@@ -607,18 +610,21 @@ try_dscp_v4(void)
 		return;
 	}
 
-	if (setsockopt(s, IPPROTO_IP, IP_TOS, &dscp, sizeof(dscp)) == 0)
+	if (setsockopt(s, IPPROTO_IP, IP_TOS, &dscp, sizeof(dscp)) == 0) {
 		dscp_result |= ISC_NET_DSCPSETV4;
+	}
 
 #ifdef IP_RECVTOS
 	on = 1;
-	if (setsockopt(s, IPPROTO_IP, IP_RECVTOS, &on, sizeof(on)) == 0)
+	if (setsockopt(s, IPPROTO_IP, IP_RECVTOS, &on, sizeof(on)) == 0) {
 		dscp_result |= ISC_NET_DSCPRECVV4;
+	}
 #endif /* IP_RECVTOS */
 
 #if ISC_CMSG_IP_TOS
-	if (cmsgsend(s, IPPROTO_IP, IP_TOS, res0))
+	if (cmsgsend(s, IPPROTO_IP, IP_TOS, res0)) {
 		dscp_result |= ISC_NET_DSCPPKTV4;
+	}
 #endif /* ISC_CMSG_IP_TOS */
 
 	freeaddrinfo(res0);
@@ -644,9 +650,9 @@ try_dscp_v6(void)
 	hints.ai_protocol = IPPROTO_UDP;
 #ifdef AI_NUMERICHOST
 	hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
-#else
+#else  /* ifdef AI_NUMERICHOST */
 	hints.ai_flags = AI_PASSIVE;
-#endif
+#endif /* ifdef AI_NUMERICHOST */
 
 	n = getaddrinfo("::1", NULL, &hints, &res0);
 	if (n != 0 || res0 == NULL) {
@@ -665,17 +671,22 @@ try_dscp_v6(void)
 		freeaddrinfo(res0);
 		return;
 	}
-	if (setsockopt(s, IPPROTO_IPV6, IPV6_TCLASS, &dscp, sizeof(dscp)) == 0)
+	if (setsockopt(s, IPPROTO_IPV6, IPV6_TCLASS, &dscp, sizeof(dscp)) ==
+	    0) {
 		dscp_result |= ISC_NET_DSCPSETV6;
+	}
 
 #ifdef IPV6_RECVTCLASS
 	on = 1;
-	if (setsockopt(s, IPPROTO_IPV6, IPV6_RECVTCLASS, &on, sizeof(on)) == 0)
+	if (setsockopt(s, IPPROTO_IPV6, IPV6_RECVTCLASS, &on, sizeof(on)) ==
+	    0) {
 		dscp_result |= ISC_NET_DSCPRECVV6;
+	}
 #endif /* IPV6_RECVTCLASS */
 
-	if (cmsgsend(s, IPPROTO_IPV6, IPV6_TCLASS, res0))
+	if (cmsgsend(s, IPPROTO_IPV6, IPV6_TCLASS, res0)) {
 		dscp_result |= ISC_NET_DSCPPKTV6;
+	}
 
 	freeaddrinfo(res0);
 	close(s);
@@ -729,8 +740,9 @@ getudpportrange_sysctl(int af, in_port_t *low, in_port_t *high)
 	    0) {
 		return (ISC_R_FAILURE);
 	}
-	if ((port_low & ~0xffff) != 0 || (port_high & ~0xffff) != 0)
+	if ((port_low & ~0xffff) != 0 || (port_high & ~0xffff) != 0) {
 		return (ISC_R_RANGE);
+	}
 
 	*low = (in_port_t)port_low;
 	*high = (in_port_t)port_high;
@@ -769,8 +781,9 @@ getudpportrange_sysctl(int af, in_port_t *low, in_port_t *high)
 		return (ISC_R_FAILURE);
 	}
 
-	if ((port_low & ~0xffff) != 0 || (port_high & ~0xffff) != 0)
+	if ((port_low & ~0xffff) != 0 || (port_high & ~0xffff) != 0) {
 		return (ISC_R_RANGE);
+	}
 
 	*low = (in_port_t)port_low;
 	*high = (in_port_t)port_high;
@@ -786,7 +799,7 @@ isc_net_getudpportrange(int af, in_port_t *low, in_port_t *high)
 	int result = ISC_R_FAILURE;
 #if !defined(USE_SYSCTL_PORTRANGE) && defined(__linux)
 	FILE *fp;
-#endif
+#endif /* if !defined(USE_SYSCTL_PORTRANGE) && defined(__linux) */
 
 	REQUIRE(low != NULL && high != NULL);
 
@@ -812,9 +825,9 @@ isc_net_getudpportrange(int af, in_port_t *low, in_port_t *high)
 		}
 		fclose(fp);
 	}
-#else
+#else  /* if defined(USE_SYSCTL_PORTRANGE) */
 	UNUSED(af);
-#endif
+#endif /* if defined(USE_SYSCTL_PORTRANGE) */
 
 	if (result != ISC_R_SUCCESS) {
 		*low = ISC_NET_PORTRANGELOW;
@@ -828,30 +841,34 @@ void
 isc_net_disableipv4(void)
 {
 	initialize();
-	if (ipv4_result == ISC_R_SUCCESS)
+	if (ipv4_result == ISC_R_SUCCESS) {
 		ipv4_result = ISC_R_DISABLED;
+	}
 }
 
 void
 isc_net_disableipv6(void)
 {
 	initialize();
-	if (ipv6_result == ISC_R_SUCCESS)
+	if (ipv6_result == ISC_R_SUCCESS) {
 		ipv6_result = ISC_R_DISABLED;
+	}
 }
 
 void
 isc_net_enableipv4(void)
 {
 	initialize();
-	if (ipv4_result == ISC_R_DISABLED)
+	if (ipv4_result == ISC_R_DISABLED) {
 		ipv4_result = ISC_R_SUCCESS;
+	}
 }
 
 void
 isc_net_enableipv6(void)
 {
 	initialize();
-	if (ipv6_result == ISC_R_DISABLED)
+	if (ipv6_result == ISC_R_DISABLED) {
 		ipv6_result = ISC_R_SUCCESS;
+	}
 }

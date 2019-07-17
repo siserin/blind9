@@ -48,12 +48,13 @@ CHECKRESULT(isc_result_t result, const char *msg)
 static int
 fromhex(char c)
 {
-	if (c >= '0' && c <= '9')
+	if (c >= '0' && c <= '9') {
 		return (c - '0');
-	else if (c >= 'a' && c <= 'f')
+	} else if (c >= 'a' && c <= 'f') {
 		return (c - 'a' + 10);
-	else if (c >= 'A' && c <= 'F')
+	} else if (c >= 'A' && c <= 'F') {
 		return (c - 'A' + 10);
+	}
 
 	fprintf(stderr, "bad input format: %02x\n", c);
 	exit(3);
@@ -95,12 +96,14 @@ printmessage(dns_message_t *msg)
 		if (result == ISC_R_NOSPACE) {
 			isc_mem_put(mctx, buf, len);
 			len *= 2;
-		} else if (result == ISC_R_SUCCESS)
+		} else if (result == ISC_R_SUCCESS) {
 			printf("%.*s\n", (int)isc_buffer_usedlength(&b), buf);
+		}
 	} while (result == ISC_R_NOSPACE);
 
-	if (buf != NULL)
+	if (buf != NULL) {
 		isc_mem_put(mctx, buf, len);
+	}
 
 	return (result);
 }
@@ -124,16 +127,24 @@ main(int argc, char *argv[])
 	while ((ch = isc_commandline_parse(argc, argv, CMDLINE_FLAGS)) != -1) {
 		switch (ch) {
 		case 'm':
-			if (strcasecmp(isc_commandline_argument, "record") == 0)
+			if (strcasecmp(isc_commandline_argument, "record") ==
+			    0) {
 				isc_mem_debugging |= ISC_MEM_DEBUGRECORD;
-			if (strcasecmp(isc_commandline_argument, "trace") == 0)
+			}
+			if (strcasecmp(isc_commandline_argument, "trace") ==
+			    0) {
 				isc_mem_debugging |= ISC_MEM_DEBUGTRACE;
-			if (strcasecmp(isc_commandline_argument, "usage") == 0)
+			}
+			if (strcasecmp(isc_commandline_argument, "usage") ==
+			    0) {
 				isc_mem_debugging |= ISC_MEM_DEBUGUSAGE;
-			if (strcasecmp(isc_commandline_argument, "size") == 0)
+			}
+			if (strcasecmp(isc_commandline_argument, "size") == 0) {
 				isc_mem_debugging |= ISC_MEM_DEBUGSIZE;
-			if (strcasecmp(isc_commandline_argument, "mctx") == 0)
+			}
+			if (strcasecmp(isc_commandline_argument, "mctx") == 0) {
 				isc_mem_debugging |= ISC_MEM_DEBUGCTX;
+			}
 			break;
 		default:
 			break;
@@ -181,8 +192,9 @@ main(int argc, char *argv[])
 			exit(1);
 		}
 		need_close = true;
-	} else
+	} else {
 		f = stdin;
+	}
 
 	result = isc_buffer_allocate(mctx, &input, 64 * 1024);
 	RUNTIME_CHECK(result == ISC_R_SUCCESS);
@@ -201,8 +213,9 @@ main(int argc, char *argv[])
 			size_t i, len = 0;
 
 			while (*rp != '\0') {
-				if (*rp == '#')
+				if (*rp == '#') {
 					break;
+				}
 				if (*rp != ' ' && *rp != '\t' && *rp != '\r' &&
 				    *rp != '\n') {
 					*wp++ = *rp;
@@ -210,8 +223,9 @@ main(int argc, char *argv[])
 				}
 				rp++;
 			}
-			if (len == 0U)
+			if (len == 0U) {
 				continue;
+			}
 			if (len % 2 != 0U) {
 				fprintf(stderr, "bad input format: %lu\n",
 					(unsigned long)len);
@@ -230,8 +244,9 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (need_close)
+	if (need_close) {
 		fclose(f);
+	}
 
 	if (tcp) {
 		while (isc_buffer_remaininglength(input) != 0) {
@@ -249,14 +264,17 @@ main(int argc, char *argv[])
 			}
 			process_message(input);
 		}
-	} else
+	} else {
 		process_message(input);
+	}
 
-	if (input != NULL)
+	if (input != NULL) {
 		isc_buffer_free(&input);
+	}
 
-	if (printmemstats)
+	if (printmemstats) {
 		isc_mem_stats(mctx, stdout);
+	}
 	isc_mem_destroy(&mctx);
 
 	return (0);
@@ -274,15 +292,17 @@ process_message(isc_buffer_t *source)
 	CHECKRESULT(result, "dns_message_create failed");
 
 	result = dns_message_parse(message, source, parseflags);
-	if (result == DNS_R_RECOVERABLE)
+	if (result == DNS_R_RECOVERABLE) {
 		result = ISC_R_SUCCESS;
+	}
 	CHECKRESULT(result, "dns_message_parse failed");
 
 	result = printmessage(message);
 	CHECKRESULT(result, "printmessage() failed");
 
-	if (printmemstats)
+	if (printmemstats) {
 		isc_mem_stats(mctx, stdout);
+	}
 
 	if (dorender) {
 		unsigned char b2[64 * 1024];
@@ -334,8 +354,9 @@ process_message(isc_buffer_t *source)
 		dns_message_destroy(&message);
 
 		printf("Message rendered.\n");
-		if (printmemstats)
+		if (printmemstats) {
 			isc_mem_stats(mctx, stdout);
+		}
 
 		result = dns_message_create(mctx, DNS_MESSAGE_INTENTPARSE,
 					    &message);

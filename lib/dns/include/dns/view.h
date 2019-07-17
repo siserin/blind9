@@ -13,8 +13,8 @@
 #define DNS_VIEW_H 1
 
 /*****
- ***** Module Info
- *****/
+***** Module Info
+*****/
 
 /*! \file dns/view.h
  * \brief
@@ -173,7 +173,8 @@ struct dns_view {
 	uint16_t maxudp;
 	dns_ttl_t staleanswerttl;
 	dns_stale_answer_t staleanswersok; /* rndc setting */
-	bool staleanswersenable;	   /* named.conf setting */
+	bool staleanswersenable;	   /* named.conf setting
+					    * */
 	uint16_t nocookieudp;
 	uint16_t padding;
 	dns_acl_t *pad_acl;
@@ -233,7 +234,7 @@ struct dns_view {
 
 	dns_dtenv_t *dtenv;      /* Dnstap environment */
 	dns_dtmsgtype_t dttypes; /* Dnstap message types
-							   to log */
+				  *                        to log */
 
 	/* Registered module instances */
 	void *plugins;

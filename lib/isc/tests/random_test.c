@@ -79,11 +79,13 @@ igamc(double a, double x)
 	double ans, ax, c, yc, r, t, y, z;
 	double pk, pkm1, pkm2, qk, qkm1, qkm2;
 
-	if ((x <= 0) || (a <= 0))
+	if ((x <= 0) || (a <= 0)) {
 		return (1.0);
+	}
 
-	if ((x < 1.0) || (x < a))
+	if ((x < 1.0) || (x < a)) {
 		return (1.0 - igam(a, x));
+	}
 
 	ax = a * log(x) - x - lgamma(a);
 	if (ax < -MAXLOG) {
@@ -113,8 +115,9 @@ igamc(double a, double x)
 			r = pk / qk;
 			t = fabs((ans - r) / r);
 			ans = r;
-		} else
+		} else {
 			t = 1.0;
+		}
 
 		pkm2 = pkm1;
 		pkm1 = pk;
@@ -137,11 +140,13 @@ igam(double a, double x)
 {
 	double ans, ax, c, r;
 
-	if ((x <= 0) || (a <= 0))
+	if ((x <= 0) || (a <= 0)) {
 		return (0.0);
+	}
 
-	if ((x > 1.0) && (x > a))
+	if ((x > 1.0) && (x > a)) {
 		return (1.0 - igamc(a, x));
+	}
 
 	/* Compute  x**a * exp(-x) / md_gamma(a)  */
 	ax = a * log(x) - x - lgamma(a);
@@ -179,10 +184,11 @@ scount_calculate(uint16_t n)
 		uint16_t lsb;
 
 		lsb = n & 1;
-		if (lsb != 0)
+		if (lsb != 0) {
 			sc += 1;
-		else
+		} else {
 			sc -= 1;
+		}
 
 		n >>= 1;
 	}
@@ -201,8 +207,9 @@ bitcount_calculate(uint16_t n)
 		uint16_t lsb;
 
 		lsb = n & 1;
-		if (lsb != 0)
+		if (lsb != 0) {
 			bc += 1;
+		}
 
 		n >>= 1;
 	}
@@ -242,9 +249,9 @@ matrix_binaryrank(uint32_t *bits, size_t rows, size_t cols)
 		while (rt >= cols || ((bits[i] >> rt) & 1) == 0) {
 			i++;
 
-			if (i < rows)
+			if (i < rows) {
 				continue;
-			else {
+			} else {
 				rt++;
 				if (rt < cols) {
 					i = k;
@@ -263,10 +270,11 @@ matrix_binaryrank(uint32_t *bits, size_t rows, size_t cols)
 		}
 
 		for (j = i + 1; j < rows; j++) {
-			if (((bits[j] >> rt) & 1) == 0)
+			if (((bits[j] >> rt) & 1) == 0) {
 				continue;
-			else
+			} else {
 				bits[j] ^= bits[k];
+			}
 		}
 
 		rt++;
@@ -490,8 +498,9 @@ runs(isc_mem_t *mctx, uint16_t *values, size_t length)
 	 * for some sequences, and the p-value is taken as 0 in these
 	 * cases.
 	 */
-	if (fabs(pi - 0.5) >= tau)
+	if (fabs(pi - 0.5) >= tau) {
 		return (0.0);
+	}
 
 	/* Compute v_obs */
 	j = 0;
@@ -649,12 +658,13 @@ binarymatrixrank(isc_mem_t *mctx, uint16_t *values, size_t length)
 
 		rank = matrix_binaryrank(bits, matrix_m, matrix_q);
 
-		if (rank == matrix_m)
+		if (rank == matrix_m) {
 			fm_0++;
-		else if (rank == (matrix_m - 1))
+		} else if (rank == (matrix_m - 1)) {
 			fm_1++;
-		else
+		} else {
 			fm_rest++;
+		}
 	}
 
 	/* Compute chi_square */
@@ -885,4 +895,4 @@ main(void)
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

@@ -208,8 +208,9 @@ asyncload_zone(void **state)
 	isc_app_onrun(dt_mctx, maintask, start_zone_asyncload, &args);
 
 	isc_app_run();
-	while (dns__zone_loadpending(zone) && i++ < 5000)
+	while (dns__zone_loadpending(zone) && i++ < 5000) {
 		dns_test_nap(1000);
+	}
 	assert_true(done);
 	/* The zone should now be loaded; test it */
 	result = dns_zone_getdb(zone, &db);
@@ -230,8 +231,9 @@ asyncload_zone(void **state)
 
 	isc_app_run();
 
-	while (dns__zone_loadpending(zone) && i++ < 5000)
+	while (dns__zone_loadpending(zone) && i++ < 5000) {
 		dns_test_nap(1000);
+	}
 	assert_true(done);
 	/* The zone should now be loaded; test it */
 	result = dns_zone_getdb(zone, &db);
@@ -246,16 +248,18 @@ asyncload_zone(void **state)
 
 	isc_app_run();
 
-	while (dns__zone_loadpending(zone) && i++ < 5000)
+	while (dns__zone_loadpending(zone) && i++ < 5000) {
 		dns_test_nap(1000);
+	}
 	assert_true(done);
 	/* The zone should now be loaded; test it */
 	result = dns_zone_getdb(zone, &db);
 	assert_int_equal(result, ISC_R_SUCCESS);
 
 	assert_non_null(db);
-	if (db != NULL)
+	if (db != NULL) {
 		dns_db_detach(&db);
+	}
 
 	dns_test_releasezone(zone);
 	dns_test_closezonemgr();
@@ -317,22 +321,25 @@ asyncload_zt(void **state)
 	isc_app_onrun(dt_mctx, maintask, start_zt_asyncload, &args);
 
 	isc_app_run();
-	while (!done && i++ < 5000)
+	while (!done && i++ < 5000) {
 		dns_test_nap(1000);
+	}
 	assert_true(done);
 
 	/* Both zones should now be loaded; test them */
 	result = dns_zone_getdb(zone1, &db);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	assert_non_null(db);
-	if (db != NULL)
+	if (db != NULL) {
 		dns_db_detach(&db);
+	}
 
 	result = dns_zone_getdb(zone2, &db);
 	assert_int_equal(result, ISC_R_SUCCESS);
 	assert_non_null(db);
-	if (db != NULL)
+	if (db != NULL) {
 		dns_db_detach(&db);
+	}
 
 	dns_test_releasezone(zone3);
 	dns_test_releasezone(zone2);
@@ -370,4 +377,4 @@ main(void)
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

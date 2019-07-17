@@ -59,8 +59,9 @@ isc_ratelimiter_create(isc_mem_t *mctx, isc_timermgr_t *timermgr,
 	INSIST(ratelimiterp != NULL && *ratelimiterp == NULL);
 
 	rl = isc_mem_get(mctx, sizeof(*rl));
-	if (rl == NULL)
-		return ISC_R_NOMEMORY;
+	if (rl == NULL) {
+		return (ISC_R_NOMEMORY);
+	}
 	rl->mctx = mctx;
 	rl->refs = 1;
 	rl->task = task;
@@ -75,8 +76,9 @@ isc_ratelimiter_create(isc_mem_t *mctx, isc_timermgr_t *timermgr,
 
 	result = isc_timer_create(timermgr, isc_timertype_inactive, NULL, NULL,
 				  rl->task, ratelimiter_tick, rl, &rl->timer);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto free_mutex;
+	}
 
 	/*
 	 * Increment the reference count to indicate that we may
@@ -123,8 +125,9 @@ isc_ratelimiter_setpertic(isc_ratelimiter_t *rl, uint32_t pertic)
 {
 	REQUIRE(rl != NULL);
 
-	if (pertic == 0)
+	if (pertic == 0) {
 		pertic = 1;
+	}
 	rl->pertic = pertic;
 }
 
@@ -154,10 +157,11 @@ isc_ratelimiter_enqueue(isc_ratelimiter_t *rl, isc_task_t *task,
 	    rl->state == isc_ratelimiter_stalled) {
 		ev->ev_sender = task;
 		*eventp = NULL;
-		if (rl->pushpop)
+		if (rl->pushpop) {
 			ISC_LIST_PREPEND(rl->pending, ev, ev_ratelink);
-		else
+		} else {
 			ISC_LIST_APPEND(rl->pending, ev, ev_ratelink);
+		}
 	} else if (rl->state == isc_ratelimiter_idle) {
 		result = isc_timer_reset(rl->timer, isc_timertype_ticker, NULL,
 					 &rl->interval, false);
@@ -170,8 +174,9 @@ isc_ratelimiter_enqueue(isc_ratelimiter_t *rl, isc_task_t *task,
 		result = ISC_R_SHUTTINGDOWN;
 	}
 	UNLOCK(&rl->lock);
-	if (*eventp != NULL && result == ISC_R_SUCCESS)
+	if (*eventp != NULL && result == ISC_R_SUCCESS) {
 		isc_task_send(task, eventp);
+	}
 	return (result);
 }
 
@@ -187,8 +192,9 @@ isc_ratelimiter_dequeue(isc_ratelimiter_t *rl, isc_event_t *event)
 	if (ISC_LINK_LINKED(event, ev_ratelink)) {
 		ISC_LIST_UNLINK(rl->pending, event, ev_ratelink);
 		event->ev_sender = NULL;
-	} else
+	} else {
 		result = ISC_R_NOTFOUND;
+	}
 	UNLOCK(&rl->lock);
 	return (result);
 }
@@ -310,12 +316,14 @@ isc_ratelimiter_detach(isc_ratelimiter_t **rlp)
 	LOCK(&rl->lock);
 	REQUIRE(rl->refs > 0);
 	rl->refs--;
-	if (rl->refs == 0)
+	if (rl->refs == 0) {
 		free_now = true;
+	}
 	UNLOCK(&rl->lock);
 
-	if (free_now)
+	if (free_now) {
 		ratelimiter_free(rl);
+	}
 
 	*rlp = NULL;
 }
@@ -336,7 +344,7 @@ isc_ratelimiter_stall(isc_ratelimiter_t *rl)
 		result = isc_timer_reset(rl->timer, isc_timertype_inactive,
 					 NULL, NULL, false);
 		RUNTIME_CHECK(result == ISC_R_SUCCESS);
-		/* FALLTHROUGH */
+	/* FALLTHROUGH */
 	case isc_ratelimiter_idle:
 	case isc_ratelimiter_stalled:
 		rl->state = isc_ratelimiter_stalled;
@@ -363,10 +371,12 @@ isc_ratelimiter_release(isc_ratelimiter_t *rl)
 			result = isc_timer_reset(rl->timer,
 						 isc_timertype_ticker, NULL,
 						 &rl->interval, false);
-			if (result == ISC_R_SUCCESS)
+			if (result == ISC_R_SUCCESS) {
 				rl->state = isc_ratelimiter_ratelimited;
-		} else
+			}
+		} else {
 			rl->state = isc_ratelimiter_idle;
+		}
 		break;
 	case isc_ratelimiter_ratelimited:
 	case isc_ratelimiter_idle:

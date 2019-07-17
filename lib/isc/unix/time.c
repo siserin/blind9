@@ -44,7 +44,7 @@
 
 #ifndef ISC_FIX_TV_USEC
 #define ISC_FIX_TV_USEC 1
-#endif
+#endif /* ifndef ISC_FIX_TV_USEC */
 
 /*%
  *** Intervals
@@ -75,11 +75,12 @@ fix_tv_usec(struct timeval *tv)
 	/*
 	 * Call syslog directly as was are called from the logging functions.
 	 */
-	if (fixed)
+	if (fixed) {
 		(void)syslog(LOG_ERR, "gettimeofday returned bad tv_usec: "
 				      "corrected");
+	}
 }
-#endif
+#endif /* if ISC_FIX_TV_USEC */
 
 void
 isc_interval_set(isc_interval_t *i, unsigned int seconds,
@@ -98,8 +99,9 @@ isc_interval_iszero(const isc_interval_t *i)
 	REQUIRE(i != NULL);
 	INSIST(i->nanoseconds < NS_PER_S);
 
-	if (i->seconds == 0 && i->nanoseconds == 0)
+	if (i->seconds == 0 && i->nanoseconds == 0) {
 		return (true);
+	}
 
 	return (false);
 }
@@ -136,8 +138,9 @@ isc_time_isepoch(const isc_time_t *t)
 	REQUIRE(t != NULL);
 	INSIST(t->nanoseconds < NS_PER_S);
 
-	if (t->seconds == 0 && t->nanoseconds == 0)
+	if (t->seconds == 0 && t->nanoseconds == 0) {
 		return (true);
+	}
 
 	return (false);
 }
@@ -165,19 +168,22 @@ isc_time_now(isc_time_t *t)
 	 */
 #if ISC_FIX_TV_USEC
 	fix_tv_usec(&tv);
-	if (tv.tv_sec < 0)
+	if (tv.tv_sec < 0) {
 		return (ISC_R_UNEXPECTED);
-#else
-	if (tv.tv_sec < 0 || tv.tv_usec < 0 || tv.tv_usec >= US_PER_S)
+	}
+#else  /* if ISC_FIX_TV_USEC */
+	if (tv.tv_sec < 0 || tv.tv_usec < 0 || tv.tv_usec >= US_PER_S) {
 		return (ISC_R_UNEXPECTED);
-#endif
+	}
+#endif /* if ISC_FIX_TV_USEC */
 
 	/*
 	 * Ensure the tv_sec value fits in t->seconds.
 	 */
 	if (sizeof(tv.tv_sec) > sizeof(t->seconds) &&
-	    ((tv.tv_sec | (unsigned int)-1) ^ (unsigned int)-1) != 0U)
+	    ((tv.tv_sec | (unsigned int)-1) ^ (unsigned int)-1) != 0U) {
 		return (ISC_R_RANGE);
+	}
 
 	t->seconds = tv.tv_sec;
 	t->nanoseconds = tv.tv_usec * NS_PER_US;
@@ -210,12 +216,14 @@ isc_time_nowplusinterval(isc_time_t *t, const isc_interval_t *i)
 	 */
 #if ISC_FIX_TV_USEC
 	fix_tv_usec(&tv);
-	if (tv.tv_sec < 0)
+	if (tv.tv_sec < 0) {
 		return (ISC_R_UNEXPECTED);
-#else
-	if (tv.tv_sec < 0 || tv.tv_usec < 0 || tv.tv_usec >= US_PER_S)
+	}
+#else  /* if ISC_FIX_TV_USEC */
+	if (tv.tv_sec < 0 || tv.tv_usec < 0 || tv.tv_usec >= US_PER_S) {
 		return (ISC_R_UNEXPECTED);
-#endif
+	}
+#endif /* if ISC_FIX_TV_USEC */
 
 	/*
 	 * Ensure the resulting seconds value fits in the size of an
@@ -224,8 +232,9 @@ isc_time_nowplusinterval(isc_time_t *t, const isc_interval_t *i)
 	 * and getting another 1 added below the result is UINT_MAX.)
 	 */
 	if ((tv.tv_sec > INT_MAX || i->seconds > INT_MAX) &&
-	    ((long long)tv.tv_sec + i->seconds > UINT_MAX))
+	    ((long long)tv.tv_sec + i->seconds > UINT_MAX)) {
 		return (ISC_R_RANGE);
+	}
 
 	t->seconds = tv.tv_sec + i->seconds;
 	t->nanoseconds = tv.tv_usec * NS_PER_US + i->nanoseconds;
@@ -243,14 +252,18 @@ isc_time_compare(const isc_time_t *t1, const isc_time_t *t2)
 	REQUIRE(t1 != NULL && t2 != NULL);
 	INSIST(t1->nanoseconds < NS_PER_S && t2->nanoseconds < NS_PER_S);
 
-	if (t1->seconds < t2->seconds)
+	if (t1->seconds < t2->seconds) {
 		return (-1);
-	if (t1->seconds > t2->seconds)
+	}
+	if (t1->seconds > t2->seconds) {
 		return (1);
-	if (t1->nanoseconds < t2->nanoseconds)
+	}
+	if (t1->nanoseconds < t2->nanoseconds) {
 		return (-1);
-	if (t1->nanoseconds > t2->nanoseconds)
+	}
+	if (t1->nanoseconds > t2->nanoseconds) {
 		return (1);
+	}
 	return (0);
 }
 
@@ -267,8 +280,9 @@ isc_time_add(const isc_time_t *t, const isc_interval_t *i, isc_time_t *result)
 	 * and getting another 1 added below the result is UINT_MAX.)
 	 */
 	if ((t->seconds > INT_MAX || i->seconds > INT_MAX) &&
-	    ((long long)t->seconds + i->seconds > UINT_MAX))
+	    ((long long)t->seconds + i->seconds > UINT_MAX)) {
 		return (ISC_R_RANGE);
+	}
 
 	result->seconds = t->seconds + i->seconds;
 	result->nanoseconds = t->nanoseconds + i->nanoseconds;
@@ -289,13 +303,14 @@ isc_time_subtract(const isc_time_t *t, const isc_interval_t *i,
 
 	if ((unsigned int)t->seconds < i->seconds ||
 	    ((unsigned int)t->seconds == i->seconds &&
-	     t->nanoseconds < i->nanoseconds))
+	     t->nanoseconds < i->nanoseconds)) {
 		return (ISC_R_RANGE);
+	}
 
 	result->seconds = t->seconds - i->seconds;
-	if (t->nanoseconds >= i->nanoseconds)
+	if (t->nanoseconds >= i->nanoseconds) {
 		result->nanoseconds = t->nanoseconds - i->nanoseconds;
-	else {
+	} else {
 		result->nanoseconds =
 			NS_PER_S - i->nanoseconds + t->nanoseconds;
 		result->seconds--;
@@ -315,8 +330,9 @@ isc_time_microdiff(const isc_time_t *t1, const isc_time_t *t2)
 	i1 = (uint64_t)t1->seconds * NS_PER_S + t1->nanoseconds;
 	i2 = (uint64_t)t2->seconds * NS_PER_S + t2->nanoseconds;
 
-	if (i1 <= i2)
+	if (i1 <= i2) {
 		return (0);
+	}
 
 	i3 = i1 - i2;
 
@@ -367,8 +383,9 @@ isc_time_secondsastimet(const isc_time_t *t, time_t *secondsp)
 	INSIST(sizeof(unsigned int) == sizeof(uint32_t));
 	INSIST(sizeof(time_t) >= sizeof(uint32_t));
 
-	if (t->seconds > (~0U >> 1) && seconds <= (time_t)(~0U >> 1))
+	if (t->seconds > (~0U >> 1) && seconds <= (time_t)(~0U >> 1)) {
 		return (ISC_R_RANGE);
+	}
 
 	*secondsp = seconds;
 
@@ -400,10 +417,10 @@ isc_time_formattimestamp(const isc_time_t *t, char *buf, unsigned int len)
 	now = (time_t)t->seconds;
 	flen = strftime(buf, len, "%d-%b-%Y %X", localtime_r(&now, &tm));
 	INSIST(flen < len);
-	if (flen != 0)
+	if (flen != 0) {
 		snprintf(buf + flen, len - flen, ".%03u",
 			 t->nanoseconds / NS_PER_MS);
-	else {
+	} else {
 		strlcpy(buf, "99-Bad-9999 99:99:99.999", len);
 	}
 }
@@ -440,11 +457,13 @@ isc_time_parsehttptimestamp(char *buf, isc_time_t *t)
 	REQUIRE(t != NULL);
 
 	p = isc_tm_strptime(buf, "%a, %d %b %Y %H:%M:%S", &t_tm);
-	if (p == NULL)
+	if (p == NULL) {
 		return (ISC_R_UNEXPECTED);
+	}
 	when = isc_tm_timegm(&t_tm);
-	if (when == -1)
+	if (when == -1) {
 		return (ISC_R_UNEXPECTED);
+	}
 	isc_time_set(t, when, 0);
 	return (ISC_R_SUCCESS);
 }

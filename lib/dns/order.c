@@ -52,8 +52,9 @@ dns_order_create(isc_mem_t *mctx, dns_order_t **orderp)
 	REQUIRE(orderp != NULL && *orderp == NULL);
 
 	order = isc_mem_get(mctx, sizeof(*order));
-	if (order == NULL)
+	if (order == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	ISC_LIST_INIT(order->ents);
 
@@ -80,8 +81,9 @@ dns_order_add(dns_order_t *order, const dns_name_t *name,
 		mode == DNS_RDATASETATTR_CYCLIC);
 
 	ent = isc_mem_get(order->mctx, sizeof(*ent));
-	if (ent == NULL)
+	if (ent == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	dns_fixedname_init(&ent->name);
 	RUNTIME_CHECK(dns_name_copy(name, dns_fixedname_name(&ent->name),
@@ -97,8 +99,9 @@ dns_order_add(dns_order_t *order, const dns_name_t *name,
 static inline bool
 match(const dns_name_t *name1, const dns_name_t *name2)
 {
-	if (dns_name_iswildcard(name2))
+	if (dns_name_iswildcard(name2)) {
 		return (dns_name_matcheswildcard(name1, name2));
+	}
 	return (dns_name_equal(name1, name2));
 }
 
@@ -111,13 +114,16 @@ dns_order_find(dns_order_t *order, const dns_name_t *name,
 
 	for (ent = ISC_LIST_HEAD(order->ents); ent != NULL;
 	     ent = ISC_LIST_NEXT(ent, link)) {
-		if (ent->rdtype != rdtype && ent->rdtype != dns_rdatatype_any)
+		if (ent->rdtype != rdtype && ent->rdtype != dns_rdatatype_any) {
 			continue;
+		}
 		if (ent->rdclass != rdclass &&
-		    ent->rdclass != dns_rdataclass_any)
+		    ent->rdclass != dns_rdataclass_any) {
 			continue;
-		if (match(name, dns_fixedname_name(&ent->name)))
+		}
+		if (match(name, dns_fixedname_name(&ent->name))) {
 			return (ent->mode);
+		}
 	}
 	return (DNS_RDATASETATTR_NONE);
 }

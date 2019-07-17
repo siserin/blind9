@@ -58,8 +58,9 @@ gssapi_create_signverify_ctx(dst_key_t *key, dst_context_t *dctx)
 	UNUSED(key);
 
 	ctx = isc_mem_get(dctx->mctx, sizeof(dst_gssapi_signverifyctx_t));
-	if (ctx == NULL)
+	if (ctx == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 	ctx->buffer = NULL;
 	result = isc_buffer_allocate(dctx->mctx, &ctx->buffer,
 				     INITIAL_BUFFER_SIZE);
@@ -83,8 +84,9 @@ gssapi_destroy_signverify_ctx(dst_context_t *dctx)
 	dst_gssapi_signverifyctx_t *ctx = dctx->ctxdata.gssctx;
 
 	if (ctx != NULL) {
-		if (ctx->buffer != NULL)
+		if (ctx->buffer != NULL) {
 			isc_buffer_free(&ctx->buffer);
+		}
 		isc_mem_put(dctx->mctx, ctx,
 			    sizeof(dst_gssapi_signverifyctx_t));
 		dctx->ctxdata.gssctx = NULL;
@@ -107,14 +109,16 @@ gssapi_adddata(dst_context_t *dctx, const isc_region_t *data)
 	isc_result_t result;
 
 	result = isc_buffer_copyregion(ctx->buffer, data);
-	if (result == ISC_R_SUCCESS)
+	if (result == ISC_R_SUCCESS) {
 		return (ISC_R_SUCCESS);
+	}
 
 	length = isc_buffer_length(ctx->buffer) + data->length + BUFFER_EXTRA;
 
 	result = isc_buffer_allocate(dctx->mctx, &newbuffer, length);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	isc_buffer_usedregion(ctx->buffer, &r);
 	(void)isc_buffer_copyregion(newbuffer, &r);
@@ -175,8 +179,9 @@ gssapi_sign(dst_context_t *dctx, isc_buffer_t *sig)
 	 * allocated space.
 	 */
 	isc_buffer_putmem(sig, gsig.value, (unsigned int)gsig.length);
-	if (gsig.length != 0U)
+	if (gsig.length != 0U) {
 		gss_release_buffer(&minor, &gsig);
+	}
 
 	return (ISC_R_SUCCESS);
 }
@@ -222,10 +227,11 @@ gssapi_verify(dst_context_t *dctx, const isc_region_t *sig)
 		    gret == GSS_S_DUPLICATE_TOKEN || gret == GSS_S_OLD_TOKEN ||
 		    gret == GSS_S_UNSEQ_TOKEN || gret == GSS_S_GAP_TOKEN ||
 		    gret == GSS_S_CONTEXT_EXPIRED || gret == GSS_S_NO_CONTEXT ||
-		    gret == GSS_S_FAILURE)
+		    gret == GSS_S_FAILURE) {
 			return (DST_R_VERIFYFAILURE);
-		else
+		} else {
 			return (ISC_R_FAILURE);
+		}
 	}
 
 	return (ISC_R_SUCCESS);
@@ -278,14 +284,16 @@ gssapi_restore(dst_key_t *key, const char *keystr)
 	isc_result_t result;
 
 	len = strlen(keystr);
-	if ((len % 4) != 0U)
+	if ((len % 4) != 0U) {
 		return (ISC_R_BADBASE64);
+	}
 
 	len = (len / 4) * 3;
 
 	result = isc_buffer_allocate(key->mctx, &b, len);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	result = isc_base64_decodestring(keystr, b);
 	if (result != ISC_R_SUCCESS) {
@@ -324,8 +332,9 @@ gssapi_dump(dst_key_t *key, isc_mem_t *mctx, char **buffer, int *length)
 			minor);
 		return (ISC_R_FAILURE);
 	}
-	if (gssbuffer.length == 0U)
+	if (gssbuffer.length == 0U) {
 		return (ISC_R_FAILURE);
+	}
 	len = ((gssbuffer.length + 2) / 3) * 4;
 	buf = isc_mem_get(mctx, len);
 	if (buf == NULL) {
@@ -370,13 +379,14 @@ isc_result_t
 dst__gssapi_init(dst_func_t **funcp)
 {
 	REQUIRE(funcp != NULL);
-	if (*funcp == NULL)
+	if (*funcp == NULL) {
 		*funcp = &gssapi_functions;
+	}
 	return (ISC_R_SUCCESS);
 }
 
-#else
+#else  /* ifdef GSSAPI */
 int gssapi_link_unneeded = 1;
-#endif
+#endif /* ifdef GSSAPI */
 
 /*! \file */

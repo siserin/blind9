@@ -102,11 +102,13 @@ static inline void freestruct_cds(ARGS_FREESTRUCT)
 	REQUIRE(ds != NULL);
 	REQUIRE(ds->common.rdtype == dns_rdatatype_cds);
 
-	if (ds->mctx == NULL)
+	if (ds->mctx == NULL) {
 		return;
+	}
 
-	if (ds->digest != NULL)
+	if (ds->digest != NULL) {
 		isc_mem_free(ds->mctx, ds->digest);
+	}
 	ds->mctx = NULL;
 }
 

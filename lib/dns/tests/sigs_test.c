@@ -91,7 +91,8 @@ typedef struct {
 typedef struct {
 	const char *description;     /* test description */
 	const zonechange_t *changes; /* array of "raw" zone changes */
-	const zonediff_t *zonediff;  /* array of "processed" zone changes */
+	const zonediff_t *zonediff;  /* array of "processed" zone changes
+				      * */
 } updatesigs_test_params_t;
 
 /*%
@@ -459,4 +460,4 @@ main(void)
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

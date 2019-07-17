@@ -67,12 +67,12 @@ static thread_local isc_once_t isc_random_once = ISC_ONCE_INIT;
 static __thread isc_once_t isc_random_once = ISC_ONCE_INIT;
 #elif defined(HAVE___DECLSPEC_THREAD)
 static __declspec(thread) isc_once_t isc_random_once = ISC_ONCE_INIT;
-#else
+#else /* if defined(HAVE_THREAD_LOCAL) */
 #error "Unknown method for defining a TLS variable!"
-#endif
-#else
+#endif /* if defined(HAVE_THREAD_LOCAL) */
+#else  /* if defined(HAVE_TLS) */
 static isc_once_t isc_random_once = ISC_ONCE_INIT;
-#endif
+#endif /* if defined(HAVE_TLS) */
 
 static void
 isc_random_initialize(void)
@@ -84,9 +84,9 @@ isc_random_initialize(void)
 	 * find a crash or a hang.  The seed array must be non-zero else
 	 * xoshiro128starstar will generate an infinite series of zeroes.
 	 */
-#else
+#else  /* if FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
 	isc_entropy_get(useed, sizeof(useed));
-#endif
+#endif /* if FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
 	memmove(seed, useed, sizeof(seed));
 }
 

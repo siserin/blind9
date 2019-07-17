@@ -14,7 +14,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* ifdef __cplusplus */
 
 /* Before including this file (pkcs11.h) (or pkcs11t.h by
  * itself), 5 platform-specific macros must be defined.  These
@@ -250,6 +250,6 @@ struct CK_FUNCTION_LIST {
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* ifdef __cplusplus */
 
 #endif /* _PKCS11_H_ */

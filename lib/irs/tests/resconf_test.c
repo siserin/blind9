@@ -86,7 +86,6 @@ irs_resconf_load_test(void **state)
 		  ISC_R_SUCCESS },
 		{ "testdata/timeout.conf", ISC_R_SUCCESS, NULL, ISC_R_SUCCESS },
 		{ "testdata/unknown.conf", ISC_R_SUCCESS, NULL, ISC_R_SUCCESS }
-
 	};
 
 	UNUSED(state);
@@ -144,4 +143,4 @@ main(void)
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

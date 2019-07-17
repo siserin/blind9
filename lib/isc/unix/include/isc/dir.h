@@ -23,11 +23,11 @@
 
 #ifndef NAME_MAX
 #define NAME_MAX 256
-#endif
+#endif /* ifndef NAME_MAX */
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
-#endif
+#endif /* ifndef PATH_MAX */
 
 /*% Directory Entry */
 typedef struct isc_direntry {

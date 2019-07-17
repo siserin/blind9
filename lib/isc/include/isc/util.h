@@ -86,9 +86,9 @@
 #ifdef ISC_UTIL_TRACEON
 #define ISC_UTIL_TRACE(a) a
 #include <stdio.h> /* Required for fprintf/stderr when tracing. */
-#else
+#else		   /* ifdef ISC_UTIL_TRACEON */
 #define ISC_UTIL_TRACE(a)
-#endif
+#endif /* ifdef ISC_UTIL_TRACEON */
 
 #include <isc/result.h> /* Contractual promise. */
 
@@ -184,26 +184,26 @@
 
 #ifdef HAVE_BUILTIN_UNREACHABLE
 #define ISC_UNREACHABLE() __builtin_unreachable();
-#else
+#else /* ifdef HAVE_BUILTIN_UNREACHABLE */
 #define ISC_UNREACHABLE()
-#endif
+#endif /* ifdef HAVE_BUILTIN_UNREACHABLE */
 
 #if !defined(__has_feature)
 #define __has_feature(x) 0
-#endif
+#endif /* if !defined(__has_feature) */
 
 /* GCC defines __SANITIZE_ADDRESS__, so reuse the macro for clang */
 #if __has_feature(address_sanitizer)
 #define __SANITIZE_ADDRESS__ 1
-#endif
+#endif /* if __has_feature(address_sanitizer) */
 
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR >= 6)
 #define STATIC_ASSERT(cond, msg) _Static_assert(cond, msg)
 #elif __has_feature(c_static_assert)
 #define STATIC_ASSERT(cond, msg) _Static_assert(cond, msg)
-#else
+#else /* if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR >= 6) */
 #define STATIC_ASSERT(cond, msg) INSIST(cond)
-#endif
+#endif /* if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR >= 6) */
 
 #ifdef UNIT_TESTING
 extern void
@@ -286,9 +286,9 @@ mock_assert(const int result, const char *const expression,
  */
 #ifdef __GNUC__
 #define ISC_ALIGN(x, a) (((x) + (a)-1) & ~((typeof(x))(a)-1))
-#else
+#else /* ifdef __GNUC__ */
 #define ISC_ALIGN(x, a) (((x) + (a)-1) & ~((uintmax_t)(a)-1))
-#endif
+#endif /* ifdef __GNUC__ */
 
 /*%
  * Misc

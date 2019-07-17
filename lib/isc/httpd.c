@@ -27,7 +27,7 @@
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>
-#endif
+#endif /* ifdef HAVE_ZLIB */
 
 /*%
  * TODO:
@@ -56,7 +56,7 @@
 	do {                                                                   \
 		fprintf(stderr, "NOTICE %s\n", (x));                           \
 	} while (0)
-#else
+#else /* ifdef DEBUG_HTTPD */
 #define ENTER(x)                                                               \
 	do {                                                                   \
 	} while (0)
@@ -66,7 +66,7 @@
 #define NOTICE(x)                                                              \
 	do {                                                                   \
 	} while (0)
-#endif
+#endif /* ifdef DEBUG_HTTPD */
 
 #define HTTP_RECVLEN 1024
 #define HTTP_SENDGROW 1024
@@ -264,8 +264,9 @@ destroy_client(isc_httpd_t **httpdp)
 
 	UNLOCK(&httpdmgr->lock);
 
-	if (finishhook != NULL)
+	if (finishhook != NULL) {
 		finishhook();
+	}
 
 	httpdmgr_destroy(httpdmgr);
 }
@@ -286,8 +287,9 @@ isc_httpdmgr_create(isc_mem_t *mctx, isc_socket_t *sock, isc_task_t *task,
 	REQUIRE(httpdmgrp != NULL && *httpdmgrp == NULL);
 
 	httpdmgr = isc_mem_get(mctx, sizeof(isc_httpdmgr_t));
-	if (httpdmgr == NULL)
+	if (httpdmgr == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	isc_mutex_init(&httpdmgr->lock);
 	httpdmgr->mctx = NULL;
@@ -317,8 +319,9 @@ isc_httpdmgr_create(isc_mem_t *mctx, isc_socket_t *sock, isc_task_t *task,
 	(void)isc_socket_filter(sock, "httpready");
 
 	result = isc_socket_accept(sock, task, isc_httpd_accept, httpdmgr);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	httpdmgr->render_404 = render_404;
 	httpdmgr->render_500 = render_500;
@@ -381,8 +384,9 @@ httpdmgr_destroy(isc_httpdmgr_t *httpdmgr)
 	UNLOCK(&httpdmgr->lock);
 	isc_mutex_destroy(&httpdmgr->lock);
 
-	if (httpdmgr->ondestroy != NULL)
+	if (httpdmgr->ondestroy != NULL) {
 		(httpdmgr->ondestroy)(httpdmgr->cb_arg);
+	}
 
 	mctx = httpdmgr->mctx;
 	isc_mem_putanddetach(&mctx, httpdmgr, sizeof(isc_httpdmgr_t));
@@ -417,44 +421,53 @@ have_header(isc_httpd_t *httpd, const char *header, const char *value,
 			 * Skip to next line;
 			 */
 			cr = strchr(h, '\r');
-			if (cr != NULL && cr[1] == '\n')
+			if (cr != NULL && cr[1] == '\n') {
 				cr++;
+			}
 			nl = strchr(h, '\n');
 
 			/* last header? */
 			h = cr;
-			if (h == NULL || (nl != NULL && nl < h))
+			if (h == NULL || (nl != NULL && nl < h)) {
 				h = nl;
-			if (h == NULL)
+			}
+			if (h == NULL) {
 				return (false);
+			}
 			h++;
 			continue;
 		}
 
-		if (value == NULL)
+		if (value == NULL) {
 			return (true);
+		}
 
 		/*
 		 * Skip optional leading white space.
 		 */
 		h += hlen;
-		while (*h == ' ' || *h == '\t')
+		while (*h == ' ' || *h == '\t') {
 			h++;
+		}
 		/*
 		 * Terminate token search on NULL or EOL.
 		 */
 		while (*h != 0 && *h != '\r' && *h != '\n') {
-			if (strncasecmp(h, value, vlen) == 0)
-				if (strchr(eov, h[vlen]) != NULL)
+			if (strncasecmp(h, value, vlen) == 0) {
+				if (strchr(eov, h[vlen]) != NULL) {
 					return (true);
+				}
+			}
 			/*
 			 * Skip to next token.
 			 */
 			h += strcspn(h, eov);
-			if (h[0] == '\r' && h[1] == '\n')
+			if (h[0] == '\r' && h[1] == '\n') {
 				h++;
-			if (h[0] != 0)
+			}
+			if (h[0] != 0) {
 				h++;
+			}
 		}
 		return (false);
 	}
@@ -484,8 +497,9 @@ process_request(isc_httpd_t *httpd, int length)
 		s = strstr(httpd->recvbuf, "\n\n");
 		delim = 1;
 	}
-	if (s == NULL)
+	if (s == NULL) {
 		return (ISC_R_NOTFOUND);
+	}
 
 	/*
 	 * NUL terminate request at the blank line.
@@ -515,12 +529,15 @@ process_request(isc_httpd_t *httpd, int length)
 	 */
 	s = p;
 	while (LENGTHOK(s) && BUFLENOK(s) &&
-	       (*s != '\n' && *s != '\r' && *s != '\0' && *s != ' '))
+	       (*s != '\n' && *s != '\r' && *s != '\0' && *s != ' ')) {
 		s++;
-	if (!LENGTHOK(s))
+	}
+	if (!LENGTHOK(s)) {
 		return (ISC_R_NOTFOUND);
-	if (!BUFLENOK(s))
+	}
+	if (!BUFLENOK(s)) {
 		return (ISC_R_NOMEMORY);
+	}
 	*s = 0;
 
 	/*
@@ -528,20 +545,25 @@ process_request(isc_httpd_t *httpd, int length)
 	 */
 	if ((strncmp(p, "http:/", 6) == 0) || (strncmp(p, "https:/", 7) == 0)) {
 		/* Skip first / */
-		while (*p != '/' && *p != 0)
+		while (*p != '/' && *p != 0) {
 			p++;
-		if (*p == 0)
+		}
+		if (*p == 0) {
 			return (ISC_R_RANGE);
+		}
 		p++;
 		/* Skip second / */
-		while (*p != '/' && *p != 0)
+		while (*p != '/' && *p != 0) {
 			p++;
-		if (*p == 0)
+		}
+		if (*p == 0) {
 			return (ISC_R_RANGE);
+		}
 		p++;
 		/* Find third / */
-		while (*p != '/' && *p != 0)
+		while (*p != '/' && *p != 0) {
 			p++;
+		}
 		if (*p == 0) {
 			p--;
 			*p = '/';
@@ -567,54 +589,65 @@ process_request(isc_httpd_t *httpd, int length)
 	 * HTTP/1.0 or HTTP/1.1 for now.
 	 */
 	while (LENGTHOK(s) && BUFLENOK(s) &&
-	       (*s != '\n' && *s != '\r' && *s != '\0'))
+	       (*s != '\n' && *s != '\r' && *s != '\0')) {
 		s++;
-	if (!LENGTHOK(s))
+	}
+	if (!LENGTHOK(s)) {
 		return (ISC_R_NOTFOUND);
-	if (!BUFLENOK(s))
+	}
+	if (!BUFLENOK(s)) {
 		return (ISC_R_NOMEMORY);
+	}
 	/*
 	 * Check that we have the expected eol delimiter.
 	 */
-	if (strncmp(s, delim == 1 ? "\n" : "\r\n", delim) != 0)
+	if (strncmp(s, delim == 1 ? "\n" : "\r\n", delim) != 0) {
 		return (ISC_R_RANGE);
+	}
 	*s = 0;
 	if ((strncmp(p, "HTTP/1.0", 8) != 0) &&
-	    (strncmp(p, "HTTP/1.1", 8) != 0))
+	    (strncmp(p, "HTTP/1.1", 8) != 0)) {
 		return (ISC_R_RANGE);
+	}
 	httpd->protocol = p;
 	p = s + delim; /* skip past eol */
 	s = p;
 
 	httpd->headers = s;
 
-	if (have_header(httpd, "Connection:", "close", ", \t\r\n"))
+	if (have_header(httpd, "Connection:", "close", ", \t\r\n")) {
 		httpd->flags |= HTTPD_CLOSE;
+	}
 
-	if (have_header(httpd, "Host:", NULL, NULL))
+	if (have_header(httpd, "Host:", NULL, NULL)) {
 		httpd->flags |= HTTPD_FOUNDHOST;
+	}
 
 	if (strncmp(httpd->protocol, "HTTP/1.0", 8) == 0) {
-		if (have_header(httpd, "Connection:", "Keep-Alive", ", \t\r\n"))
+		if (have_header(httpd, "Connection:", "Keep-Alive",
+				", \t\r\n")) {
 			httpd->flags |= HTTPD_KEEPALIVE;
-		else
+		} else {
 			httpd->flags |= HTTPD_CLOSE;
+		}
 	}
 
 	/*
 	 * Check for Accept-Encoding:
 	 */
 #ifdef HAVE_ZLIB
-	if (have_header(httpd, "Accept-Encoding:", "deflate", ";, \t\r\n"))
+	if (have_header(httpd, "Accept-Encoding:", "deflate", ";, \t\r\n")) {
 		httpd->flags |= HTTPD_ACCEPT_DEFLATE;
-#endif
+	}
+#endif /* ifdef HAVE_ZLIB */
 
 	/*
 	 * Standards compliance hooks here.
 	 */
 	if (strcmp(httpd->protocol, "HTTP/1.1") == 0 &&
-	    ((httpd->flags & HTTPD_FOUNDHOST) == 0))
+	    ((httpd->flags & HTTPD_FOUNDHOST) == 0)) {
 		return (ISC_R_RANGE);
+	}
 
 	EXIT("request");
 
@@ -790,8 +823,9 @@ alloc_compspace(isc_httpd_t *httpd, unsigned int size)
 	}
 
 	newspace = isc_mem_get(httpd->mgr->mctx, size);
-	if (newspace == NULL)
+	if (newspace == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 	isc_buffer_reinit(&httpd->compbuffer, newspace, size);
 
 	if (r.base != NULL) {
@@ -826,7 +860,7 @@ isc_httpd_compress(isc_httpd_t *httpd)
 	inputlen = isc_buffer_usedlength(&httpd->bodybuffer);
 	result = alloc_compspace(httpd, inputlen);
 	if (result != ISC_R_SUCCESS) {
-		return result;
+		return (result);
 	}
 	isc_buffer_region(&httpd->compbuffer, &r);
 
@@ -853,7 +887,7 @@ isc_httpd_compress(isc_httpd_t *httpd)
 		return (ISC_R_FAILURE);
 	}
 }
-#endif
+#endif /* ifdef HAVE_ZLIB */
 
 static void
 isc_httpd_recvdone(isc_task_t *task, isc_event_t *ev)
@@ -906,21 +940,23 @@ isc_httpd_recvdone(isc_task_t *task, isc_event_t *ev)
 	isc_time_formathttptimestamp(&now, datebuf, sizeof(datebuf));
 	url = ISC_LIST_HEAD(httpd->mgr->urls);
 	while (url != NULL) {
-		if (strcmp(httpd->url, url->url) == 0)
+		if (strcmp(httpd->url, url->url) == 0) {
 			break;
+		}
 		url = ISC_LIST_NEXT(url, link);
 	}
-	if (url == NULL)
+	if (url == NULL) {
 		result = httpd->mgr->render_404(
 			httpd->url, NULL, httpd->querystring, NULL, NULL,
 			&httpd->retcode, &httpd->retmsg, &httpd->mimetype,
 			&httpd->bodybuffer, &httpd->freecb, &httpd->freecb_arg);
-	else
+	} else {
 		result = url->action(httpd->url, url, httpd->querystring,
 				     httpd->headers, url->action_arg,
 				     &httpd->retcode, &httpd->retmsg,
 				     &httpd->mimetype, &httpd->bodybuffer,
 				     &httpd->freecb, &httpd->freecb_arg);
+	}
 	if (result != ISC_R_SUCCESS) {
 		result = httpd->mgr->render_500(
 			httpd->url, url, httpd->querystring, NULL, NULL,
@@ -936,11 +972,12 @@ isc_httpd_recvdone(isc_task_t *task, isc_event_t *ev)
 			is_compressed = true;
 		}
 	}
-#endif
+#endif /* ifdef HAVE_ZLIB */
 
 	isc_httpd_response(httpd);
-	if ((httpd->flags & HTTPD_KEEPALIVE) != 0)
+	if ((httpd->flags & HTTPD_KEEPALIVE) != 0) {
 		isc_httpd_addheader(httpd, "Connection", "Keep-Alive");
+	}
 	isc_httpd_addheader(httpd, "Content-Type", httpd->mimetype);
 	isc_httpd_addheader(httpd, "Date", datebuf);
 	isc_httpd_addheader(httpd, "Expires", datebuf);
@@ -1033,12 +1070,14 @@ grow_headerspace(isc_httpd_t *httpd)
 
 	isc_buffer_region(&httpd->headerbuffer, &r);
 	newlen = r.length + HTTP_SENDGROW;
-	if (newlen > HTTP_SEND_MAXLEN)
+	if (newlen > HTTP_SEND_MAXLEN) {
 		return (ISC_R_NOSPACE);
+	}
 
 	newspace = isc_mem_get(httpd->mgr->mctx, newlen);
-	if (newspace == NULL)
+	if (newspace == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	isc_buffer_reinit(&httpd->headerbuffer, newspace, newlen);
 
@@ -1059,8 +1098,9 @@ isc_httpd_response(isc_httpd_t *httpd)
 
 	while (isc_buffer_availablelength(&httpd->headerbuffer) < needlen) {
 		result = grow_headerspace(httpd);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (result);
+		}
 	}
 
 	return (isc_buffer_printf(&httpd->headerbuffer, "%s %03u %s\r\n",
@@ -1075,14 +1115,16 @@ isc_httpd_addheader(isc_httpd_t *httpd, const char *name, const char *val)
 	unsigned int needlen;
 
 	needlen = strlen(name); /* name itself */
-	if (val != NULL)
+	if (val != NULL) {
 		needlen += 2 + strlen(val); /* :<space> and val */
-	needlen += 2;			    /* CRLF */
+	}
+	needlen += 2; /* CRLF */
 
 	while (isc_buffer_availablelength(&httpd->headerbuffer) < needlen) {
 		result = grow_headerspace(httpd);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (result);
+		}
 	}
 
 	if (val != NULL) {
@@ -1101,8 +1143,9 @@ isc_httpd_endheaders(isc_httpd_t *httpd)
 
 	while (isc_buffer_availablelength(&httpd->headerbuffer) < 2) {
 		result = grow_headerspace(httpd);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (result);
+		}
 	}
 
 	return (isc_buffer_printf(&httpd->headerbuffer, "\r\n"));
@@ -1123,8 +1166,9 @@ isc_httpd_addheaderuint(isc_httpd_t *httpd, const char *name, int val)
 
 	while (isc_buffer_availablelength(&httpd->headerbuffer) < needlen) {
 		result = grow_headerspace(httpd);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (result);
+		}
 	}
 
 	return (isc_buffer_printf(&httpd->headerbuffer, "%s: %s\r\n", name,
@@ -1230,8 +1274,9 @@ isc_httpdmgr_addurl2(isc_httpdmgr_t *httpdmgr, const char *url, bool isstatic,
 	}
 
 	item = isc_mem_get(httpdmgr->mctx, sizeof(isc_httpdurl_t));
-	if (item == NULL)
+	if (item == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	item->url = isc_mem_strdup(httpdmgr->mctx, url);
 	if (item->url == NULL) {

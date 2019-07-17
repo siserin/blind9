@@ -123,10 +123,12 @@ dyndb_init(isc_mem_t *mctx, const char *name, const char *parameters,
 	*instp = sample_inst;
 
 cleanup:
-	if (s != NULL)
+	if (s != NULL) {
 		isc_mem_free(mctx, s);
-	if (argv != NULL)
+	}
+	if (argv != NULL) {
 		isc_mem_put(mctx, argv, argc * sizeof(*argv));
+	}
 
 	return (result);
 }

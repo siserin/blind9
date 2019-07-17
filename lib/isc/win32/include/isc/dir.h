@@ -21,11 +21,11 @@
 
 #ifndef NAME_MAX
 #define NAME_MAX _MAX_FNAME
-#endif
+#endif /* ifndef NAME_MAX */
 
 #ifndef PATH_MAX
 #define PATH_MAX _MAX_PATH
-#endif
+#endif /* ifndef PATH_MAX */
 
 typedef struct {
 	char name[NAME_MAX];

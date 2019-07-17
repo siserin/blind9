@@ -85,9 +85,9 @@ static isc_once_t once = ISC_ONCE_INIT;
 
 #if defined(HAVE_LIBXML2) || defined(HAVE_JSON_C)
 #define EXTENDED_STATS
-#else
+#else /* if defined(HAVE_LIBXML2) || defined(HAVE_JSON_C) */
 #undef EXTENDED_STATS
-#endif
+#endif /* if defined(HAVE_LIBXML2) || defined(HAVE_JSON_C) */
 
 #ifdef EXTENDED_STATS
 static const char *
@@ -110,19 +110,21 @@ user_zonetype(dns_zone_t *zone)
 			{ 0, NULL } };
 	const struct zt *tp;
 
-	if ((dns_zone_getoptions(zone) & DNS_ZONEOPT_AUTOEMPTY) != 0)
+	if ((dns_zone_getoptions(zone) & DNS_ZONEOPT_AUTOEMPTY) != 0) {
 		return ("builtin");
+	}
 
 	view = dns_zone_getview(zone);
-	if (view != NULL && strcmp(view->name, "_bind") == 0)
+	if (view != NULL && strcmp(view->name, "_bind") == 0) {
 		return ("builtin");
+	}
 
 	ztype = dns_zone_gettype(zone);
 	for (tp = typemap; tp->string != NULL && tp->type != ztype; tp++)
 		/* empty */;
 	return (tp->string);
 }
-#endif
+#endif /* ifdef EXTENDED_STATS */
 
 /*%
  * Statistics descriptions.  These could be statistically initialized at
@@ -154,7 +156,7 @@ static const char *tcpinsizestats_xmldesc[dns_sizecounter_in_max];
 static const char *tcpoutsizestats_xmldesc[dns_sizecounter_out_max];
 static const char *dnstapstats_xmldesc[dns_dnstapcounter_max];
 static const char *gluecachestats_xmldesc[dns_gluecachestatscounter_max];
-#else
+#else /* if defined(EXTENDED_STATS) */
 #define nsstats_xmldesc NULL
 #define resstats_xmldesc NULL
 #define adbstats_xmldesc NULL
@@ -202,15 +204,15 @@ set_desc(int counter, int maxcounter, const char *fdesc, const char **fdescs,
 	REQUIRE(fdescs != NULL && fdescs[counter] == NULL);
 #if defined(EXTENDED_STATS)
 	REQUIRE(xdescs != NULL && xdescs[counter] == NULL);
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 	fdescs[counter] = fdesc;
 #if defined(EXTENDED_STATS)
 	xdescs[counter] = xdesc;
-#else
+#else  /* if defined(EXTENDED_STATS) */
 	UNUSED(xdesc);
 	UNUSED(xdescs);
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 }
 
 static void
@@ -224,7 +226,7 @@ init_desc(void)
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < ns_statscounter_max; i++)
 		nsstats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_NSSTATDESC(counterid, desc, xmldesc)                               \
 	do {                                                                   \
@@ -337,7 +339,7 @@ init_desc(void)
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < dns_resstatscounter_max; i++)
 		resstats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_RESSTATDESC(counterid, desc, xmldesc)                              \
 	do {                                                                   \
@@ -426,7 +428,7 @@ init_desc(void)
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < dns_adbstats_max; i++)
 		adbstats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_ADBSTATDESC(id, desc, xmldesc)                                     \
 	do {                                                                   \
@@ -448,7 +450,7 @@ init_desc(void)
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < dns_zonestatscounter_max; i++)
 		zonestats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_ZONESTATDESC(counterid, desc, xmldesc)                             \
 	do {                                                                   \
@@ -481,7 +483,7 @@ init_desc(void)
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < isc_sockstatscounter_max; i++)
 		sockstats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_SOCKSTATDESC(counterid, desc, xmldesc)                             \
 	do {                                                                   \
@@ -600,7 +602,7 @@ init_desc(void)
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < dns_dnssecstats_max; i++)
 		dnssecstats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_DNSSECSTATDESC(counterid, desc, xmldesc)                           \
 	do {                                                                   \
@@ -630,7 +632,7 @@ init_desc(void)
 #if defined(EXTENDED_STATS)
 	for (i = 0; i < dns_dnstapcounter_max; i++)
 		dnstapstats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 #define SET_DNSTAPSTATDESC(counterid, desc, xmldesc)                           \
 	do {                                                                   \
@@ -701,7 +703,7 @@ init_desc(void)
 		INSIST(dnstapstats_xmldesc[i] != NULL);
 	for (i = 0; i < dns_gluecachestatscounter_max; i++)
 		INSIST(gluecachestats_xmldesc[i] != NULL);
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 
 	/* Initialize traffic size statistics */
 	for (i = 0; i < dns_sizecounter_in_max; i++) {
@@ -710,7 +712,7 @@ init_desc(void)
 #if defined(EXTENDED_STATS)
 		udpinsizestats_xmldesc[i] = NULL;
 		tcpinsizestats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 	}
 	for (i = 0; i < dns_sizecounter_out_max; i++) {
 		udpoutsizestats_desc[i] = NULL;
@@ -718,7 +720,7 @@ init_desc(void)
 #if defined(EXTENDED_STATS)
 		udpoutsizestats_xmldesc[i] = NULL;
 		tcpoutsizestats_xmldesc[i] = NULL;
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 	}
 
 #define SET_SIZESTATDESC(counterid, desc, xmldesc, inout)                      \
@@ -1255,7 +1257,7 @@ init_desc(void)
 		INSIST(udpoutsizestats_xmldesc[i] != NULL);
 		INSIST(tcpoutsizestats_xmldesc[i] != NULL);
 	}
-#endif
+#endif /* if defined(EXTENDED_STATS) */
 }
 
 /*%
@@ -1282,14 +1284,14 @@ dump_counters(isc_stats_t *stats, isc_statsformat_t type, void *arg,
 #ifdef HAVE_LIBXML2
 	void *writer;
 	int xmlrc;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON_C
 	json_object *job, *cat, *counter;
-#endif
+#endif /* ifdef HAVE_JSON_C */
 
 #if !defined(EXTENDED_STATS)
 	UNUSED(category);
-#endif
+#endif /* if !defined(EXTENDED_STATS) */
 
 	dumparg.type = type;
 	dumparg.ncounters = ncounters;
@@ -1304,19 +1306,21 @@ dump_counters(isc_stats_t *stats, isc_statsformat_t type, void *arg,
 	if (ncounters > 0 && type == isc_statsformat_json) {
 		if (category != NULL) {
 			cat = json_object_new_object();
-			if (cat == NULL)
+			if (cat == NULL) {
 				return (ISC_R_NOMEMORY);
+			}
 			json_object_object_add(job, category, cat);
 		}
 	}
-#endif
+#endif /* ifdef HAVE_JSON_C */
 
 	for (i = 0; i < ncounters; i++) {
 		idx = indices[i];
 		value = values[idx];
 
-		if (value == 0 && (options & ISC_STATSDUMP_VERBOSE) == 0)
+		if (value == 0 && (options & ISC_STATSDUMP_VERBOSE) == 0) {
 			continue;
+		}
 
 		switch (dumparg.type) {
 		case isc_statsformat_file:
@@ -1350,7 +1354,6 @@ dump_counters(isc_stats_t *stats, isc_statsformat_t type, void *arg,
 				/* </counter> */
 				TRY0(xmlTextWriterEndElement(writer));
 				/* </NameOfCategory> */
-
 			} else {
 				TRY0(xmlTextWriterStartElement(
 					writer, ISC_XMLCHAR "counter"));
@@ -1363,15 +1366,16 @@ dump_counters(isc_stats_t *stats, isc_statsformat_t type, void *arg,
 				/* counter */
 			}
 
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 			break;
 		case isc_statsformat_json:
 #ifdef HAVE_JSON_C
 			counter = json_object_new_int64(value);
-			if (counter == NULL)
+			if (counter == NULL) {
 				return (ISC_R_NOMEMORY);
+			}
 			json_object_object_add(cat, desc[idx], counter);
-#endif
+#endif /* ifdef HAVE_JSON_C */
 			break;
 		}
 	}
@@ -1382,7 +1386,7 @@ error:
 		      NAMED_LOGMODULE_SERVER, ISC_LOG_ERROR,
 		      "failed at dump_counters()");
 	return (ISC_R_FAILURE);
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 }
 
 static void
@@ -1395,18 +1399,19 @@ rdtypestat_dump(dns_rdatastatstype_t type, uint64_t val, void *arg)
 #ifdef HAVE_LIBXML2
 	void *writer;
 	int xmlrc;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON_C
 	json_object *zoneobj, *obj;
-#endif
+#endif /* ifdef HAVE_JSON_C */
 
 	if ((DNS_RDATASTATSTYPE_ATTR(type) &
 	     DNS_RDATASTATSTYPE_ATTR_OTHERTYPE) == 0) {
 		dns_rdatatype_format(DNS_RDATASTATSTYPE_BASE(type), typebuf,
 				     sizeof(typebuf));
 		typestr = typebuf;
-	} else
+	} else {
 		typestr = "Others";
+	}
 
 	switch (dumparg->type) {
 	case isc_statsformat_file:
@@ -1424,16 +1429,17 @@ rdtypestat_dump(dns_rdatastatstype_t type, uint64_t val, void *arg)
 		TRY0(xmlTextWriterWriteFormatString(writer, "%" PRIu64, val));
 
 		TRY0(xmlTextWriterEndElement(writer)); /* type */
-#endif
+#endif						       /* ifdef HAVE_LIBXML2 */
 		break;
 	case isc_statsformat_json:
 #ifdef HAVE_JSON_C
 		zoneobj = (json_object *)dumparg->arg;
 		obj = json_object_new_int64(val);
-		if (obj == NULL)
+		if (obj == NULL) {
 			return;
+		}
 		json_object_object_add(zoneobj, typestr, obj);
-#endif
+#endif /* ifdef HAVE_JSON_C */
 		break;
 	}
 	return;
@@ -1444,7 +1450,7 @@ error:
 		      "failed at rdtypestat_dump()");
 	dumparg->result = ISC_R_FAILURE;
 	return;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 }
 
 static void
@@ -1459,11 +1465,11 @@ rdatasetstats_dump(dns_rdatastatstype_t type, uint64_t val, void *arg)
 #ifdef HAVE_LIBXML2
 	void *writer;
 	int xmlrc;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON_C
 	json_object *zoneobj, *obj;
 	char buf[1024];
-#endif
+#endif /* ifdef HAVE_JSON_C */
 
 	if ((DNS_RDATASTATSTYPE_ATTR(type) &
 	     DNS_RDATASTATSTYPE_ATTR_NXDOMAIN) != 0) {
@@ -1478,12 +1484,14 @@ rdatasetstats_dump(dns_rdatastatstype_t type, uint64_t val, void *arg)
 	}
 
 	if ((DNS_RDATASTATSTYPE_ATTR(type) & DNS_RDATASTATSTYPE_ATTR_NXRRSET) !=
-	    0)
+	    0) {
 		nxrrset = true;
+	}
 
 	if ((DNS_RDATASTATSTYPE_ATTR(type) & DNS_RDATASTATSTYPE_ATTR_STALE) !=
-	    0)
+	    0) {
 		stale = true;
+	}
 
 	switch (dumparg->type) {
 	case isc_statsformat_file:
@@ -1507,7 +1515,7 @@ rdatasetstats_dump(dns_rdatastatstype_t type, uint64_t val, void *arg)
 		TRY0(xmlTextWriterEndElement(writer)); /* counter */
 
 		TRY0(xmlTextWriterEndElement(writer)); /* rrset */
-#endif
+#endif						       /* ifdef HAVE_LIBXML2 */
 		break;
 	case isc_statsformat_json:
 #ifdef HAVE_JSON_C
@@ -1515,10 +1523,11 @@ rdatasetstats_dump(dns_rdatastatstype_t type, uint64_t val, void *arg)
 		snprintf(buf, sizeof(buf), "%s%s%s", stale ? "#" : "",
 			 nxrrset ? "!" : "", typestr);
 		obj = json_object_new_int64(val);
-		if (obj == NULL)
+		if (obj == NULL) {
 			return;
+		}
 		json_object_object_add(zoneobj, buf, obj);
-#endif
+#endif /* ifdef HAVE_JSON_C */
 		break;
 	}
 	return;
@@ -1528,7 +1537,7 @@ error:
 		      NAMED_LOGMODULE_SERVER, ISC_LOG_ERROR,
 		      "failed at rdatasetstats_dump()");
 	dumparg->result = ISC_R_FAILURE;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 }
 
 static void
@@ -1541,10 +1550,10 @@ opcodestat_dump(dns_opcode_t code, uint64_t val, void *arg)
 #ifdef HAVE_LIBXML2
 	void *writer;
 	int xmlrc;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON_C
 	json_object *zoneobj, *obj;
-#endif
+#endif /* ifdef HAVE_JSON_C */
 
 	isc_buffer_init(&b, codebuf, sizeof(codebuf) - 1);
 	dns_opcode_totext(code, &b);
@@ -1563,16 +1572,17 @@ opcodestat_dump(dns_opcode_t code, uint64_t val, void *arg)
 						 ISC_XMLCHAR codebuf));
 		TRY0(xmlTextWriterWriteFormatString(writer, "%" PRIu64, val));
 		TRY0(xmlTextWriterEndElement(writer)); /* counter */
-#endif
+#endif						       /* ifdef HAVE_LIBXML2 */
 		break;
 	case isc_statsformat_json:
 #ifdef HAVE_JSON_C
 		zoneobj = (json_object *)dumparg->arg;
 		obj = json_object_new_int64(val);
-		if (obj == NULL)
+		if (obj == NULL) {
 			return;
+		}
 		json_object_object_add(zoneobj, codebuf, obj);
-#endif
+#endif /* ifdef HAVE_JSON_C */
 		break;
 	}
 	return;
@@ -1584,7 +1594,7 @@ error:
 		      "failed at opcodestat_dump()");
 	dumparg->result = ISC_R_FAILURE;
 	return;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 }
 
 static void
@@ -1597,10 +1607,10 @@ rcodestat_dump(dns_rcode_t code, uint64_t val, void *arg)
 #ifdef HAVE_LIBXML2
 	void *writer;
 	int xmlrc;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON_C
 	json_object *zoneobj, *obj;
-#endif
+#endif /* ifdef HAVE_JSON_C */
 
 	isc_buffer_init(&b, codebuf, sizeof(codebuf) - 1);
 	dns_rcode_totext(code, &b);
@@ -1619,16 +1629,17 @@ rcodestat_dump(dns_rcode_t code, uint64_t val, void *arg)
 						 ISC_XMLCHAR codebuf));
 		TRY0(xmlTextWriterWriteFormatString(writer, "%" PRIu64, val));
 		TRY0(xmlTextWriterEndElement(writer)); /* counter */
-#endif
+#endif						       /* ifdef HAVE_LIBXML2 */
 		break;
 	case isc_statsformat_json:
 #ifdef HAVE_JSON_C
 		zoneobj = (json_object *)dumparg->arg;
 		obj = json_object_new_int64(val);
-		if (obj == NULL)
+		if (obj == NULL) {
 			return;
+		}
 		json_object_object_add(zoneobj, codebuf, obj);
-#endif
+#endif /* ifdef HAVE_JSON_C */
 		break;
 	}
 	return;
@@ -1640,7 +1651,7 @@ error:
 		      "failed at rcodestat_dump()");
 	dumparg->result = ISC_R_FAILURE;
 	return;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 }
 
 #if defined(EXTENDED_STATS)
@@ -1653,10 +1664,10 @@ dnssecsignstat_dump(dns_keytag_t tag, uint64_t val, void *arg)
 #ifdef HAVE_LIBXML2
 	xmlTextWriterPtr writer;
 	int xmlrc;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON_C
 	json_object *zoneobj, *obj;
-#endif
+#endif /* ifdef HAVE_JSON_C */
 
 	snprintf(tagbuf, sizeof(tagbuf), "%u", tag);
 
@@ -1673,7 +1684,7 @@ dnssecsignstat_dump(dns_keytag_t tag, uint64_t val, void *arg)
 						 ISC_XMLCHAR tagbuf));
 		TRY0(xmlTextWriterWriteFormatString(writer, "%" PRIu64, val));
 		TRY0(xmlTextWriterEndElement(writer)); /* counter */
-#endif
+#endif						       /* ifdef HAVE_LIBXML2 */
 		break;
 	case isc_statsformat_json:
 #ifdef HAVE_JSON_C
@@ -1683,7 +1694,7 @@ dnssecsignstat_dump(dns_keytag_t tag, uint64_t val, void *arg)
 			return;
 		}
 		json_object_object_add(zoneobj, tagbuf, obj);
-#endif
+#endif /* ifdef HAVE_JSON_C */
 		break;
 	}
 	return;
@@ -1694,7 +1705,7 @@ error:
 		      "failed at dnssecsignstat_dump()");
 	dumparg->result = ISC_R_FAILURE;
 	return;
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 }
 #endif /* defined(EXTENDED_STATS) */
 
@@ -1725,8 +1736,9 @@ zone_xmlrender(dns_zone_t *zone, void *arg)
 	const char *ztype;
 
 	statlevel = dns_zone_getstatlevel(zone);
-	if (statlevel == dns_zonestat_none)
+	if (statlevel == dns_zonestat_none) {
 		return (ISC_R_SUCCESS);
+	}
 
 	dumparg.type = isc_statsformat_xml;
 	dumparg.arg = writer;
@@ -1744,17 +1756,19 @@ zone_xmlrender(dns_zone_t *zone, void *arg)
 
 	TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "type"));
 	ztype = user_zonetype(zone);
-	if (ztype != NULL)
+	if (ztype != NULL) {
 		TRY0(xmlTextWriterWriteString(writer, ISC_XMLCHAR ztype));
-	else
+	} else {
 		TRY0(xmlTextWriterWriteString(writer, ISC_XMLCHAR "unknown"));
+	}
 	TRY0(xmlTextWriterEndElement(writer)); /* type */
 
 	TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "serial"));
-	if (dns_zone_getserial(zone, &serial) == ISC_R_SUCCESS)
+	if (dns_zone_getserial(zone, &serial) == ISC_R_SUCCESS) {
 		TRY0(xmlTextWriterWriteFormatString(writer, "%u", serial));
-	else
+	} else {
 		TRY0(xmlTextWriterWriteString(writer, ISC_XMLCHAR "-"));
+	}
 	TRY0(xmlTextWriterEndElement(writer)); /* serial */
 
 	if (statlevel == dns_zonestat_full) {
@@ -1779,8 +1793,9 @@ zone_xmlrender(dns_zone_t *zone, void *arg)
 					       ns_statscounter_max,
 					       nsstats_index, nsstat_values,
 					       ISC_STATSDUMP_VERBOSE);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				goto error;
+			}
 			/* counters type="rcode"*/
 			TRY0(xmlTextWriterEndElement(writer));
 		}
@@ -1800,8 +1815,9 @@ zone_xmlrender(dns_zone_t *zone, void *arg)
 				dns_gluecachestatscounter_max,
 				gluecachestats_index, gluecachestats_values,
 				ISC_STATSDUMP_VERBOSE);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				goto error;
+			}
 			/* counters type="rcode"*/
 			TRY0(xmlTextWriterEndElement(writer));
 		}
@@ -1817,8 +1833,9 @@ zone_xmlrender(dns_zone_t *zone, void *arg)
 			dumparg.result = ISC_R_SUCCESS;
 			dns_rdatatypestats_dump(rcvquerystats, rdtypestat_dump,
 						&dumparg, 0);
-			if (dumparg.result != ISC_R_SUCCESS)
+			if (dumparg.result != ISC_R_SUCCESS) {
 				goto error;
+			}
 
 			/* counters type="qtype"*/
 			TRY0(xmlTextWriterEndElement(writer));
@@ -1902,7 +1919,7 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 	uint64_t tcpoutsizestat_values[dns_sizecounter_out_max];
 #ifdef HAVE_DNSTAP
 	uint64_t dnstapstat_values[dns_dnstapcounter_max];
-#endif
+#endif /* ifdef HAVE_DNSTAP */
 	isc_result_t result;
 
 	isc_time_now(&now);
@@ -1912,8 +1929,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 	isc_time_formatISO8601ms(&now, nowstr, sizeof nowstr);
 
 	writer = xmlNewTextWriterDoc(&doc, 0);
-	if (writer == NULL)
+	if (writer == NULL) {
 		goto error;
+	}
 	TRY0(xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL));
 	TRY0(xmlTextWriterWritePI(writer, ISC_XMLCHAR "xml-stylesheet",
 				  ISC_XMLCHAR "type=\"text/xsl\" "
@@ -1950,8 +1968,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 
 		dns_opcodestats_dump(server->sctx->opcodestats, opcodestat_dump,
 				     &dumparg, ISC_STATSDUMP_VERBOSE);
-		if (dumparg.result != ISC_R_SUCCESS)
+		if (dumparg.result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer));
 
@@ -1961,8 +1980,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 
 		dns_rcodestats_dump(server->sctx->rcodestats, rcodestat_dump,
 				    &dumparg, ISC_STATSDUMP_VERBOSE);
-		if (dumparg.result != ISC_R_SUCCESS)
+		if (dumparg.result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer));
 
@@ -1973,8 +1993,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 		dumparg.result = ISC_R_SUCCESS;
 		dns_rdatatypestats_dump(server->sctx->rcvquerystats,
 					rdtypestat_dump, &dumparg, 0);
-		if (dumparg.result != ISC_R_SUCCESS)
+		if (dumparg.result != ISC_R_SUCCESS) {
 			goto error;
+		}
 		TRY0(xmlTextWriterEndElement(writer)); /* counters */
 
 		TRY0(xmlTextWriterStartElement(writer, ISC_XMLCHAR "counters"));
@@ -1986,8 +2007,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 				       nsstats_xmldesc, ns_statscounter_max,
 				       nsstats_index, nsstat_values,
 				       ISC_STATSDUMP_VERBOSE);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* /nsstat */
 
@@ -2000,8 +2022,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 				       dns_zonestatscounter_max,
 				       zonestats_index, zonestat_values,
 				       ISC_STATSDUMP_VERBOSE);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* /zonestat */
 
@@ -2016,8 +2039,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 			server->resolverstats, isc_statsformat_xml, writer,
 			NULL, resstats_xmldesc, dns_resstatscounter_max,
 			resstats_index, resstat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 		TRY0(xmlTextWriterEndElement(writer)); /* resstat */
 
 #ifdef HAVE_DNSTAP
@@ -2034,11 +2058,12 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 				dnstapstats_xmldesc, dns_dnstapcounter_max,
 				dnstapstats_index, dnstapstat_values, 0);
 			isc_stats_detach(&dnstapstats);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				goto error;
+			}
 			TRY0(xmlTextWriterEndElement(writer)); /* dnstap */
 		}
-#endif
+#endif /* ifdef HAVE_DNSTAP */
 	}
 
 	if ((flags & STATS_XML_NET) != 0) {
@@ -2051,8 +2076,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 				       isc_sockstatscounter_max,
 				       sockstats_index, sockstat_values,
 				       ISC_STATSDUMP_VERBOSE);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* /sockstat */
 	}
@@ -2070,8 +2096,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 			server->sctx->udpinstats4, isc_statsformat_xml, writer,
 			NULL, udpinsizestats_xmldesc, dns_sizecounter_in_max,
 			udpinsizestats_index, udpinsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 
@@ -2083,8 +2110,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 			server->sctx->udpoutstats4, isc_statsformat_xml, writer,
 			NULL, udpoutsizestats_xmldesc, dns_sizecounter_out_max,
 			udpoutsizestats_index, udpoutsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 		TRY0(xmlTextWriterEndElement(writer)); /* </udp> */
@@ -2098,8 +2126,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 			server->sctx->tcpinstats4, isc_statsformat_xml, writer,
 			NULL, tcpinsizestats_xmldesc, dns_sizecounter_in_max,
 			tcpinsizestats_index, tcpinsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 
@@ -2111,8 +2140,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 			server->sctx->tcpoutstats4, isc_statsformat_xml, writer,
 			NULL, tcpoutsizestats_xmldesc, dns_sizecounter_out_max,
 			tcpoutsizestats_index, tcpoutsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 		TRY0(xmlTextWriterEndElement(writer)); /* </tcp> */
@@ -2128,8 +2158,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 			server->sctx->udpinstats6, isc_statsformat_xml, writer,
 			NULL, udpinsizestats_xmldesc, dns_sizecounter_in_max,
 			udpinsizestats_index, udpinsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 
@@ -2141,8 +2172,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 			server->sctx->udpoutstats6, isc_statsformat_xml, writer,
 			NULL, udpoutsizestats_xmldesc, dns_sizecounter_out_max,
 			udpoutsizestats_index, udpoutsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 		TRY0(xmlTextWriterEndElement(writer)); /* </udp> */
@@ -2156,8 +2188,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 			server->sctx->tcpinstats6, isc_statsformat_xml, writer,
 			NULL, tcpinsizestats_xmldesc, dns_sizecounter_in_max,
 			tcpinsizestats_index, tcpinsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 
@@ -2169,8 +2202,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 			server->sctx->tcpoutstats6, isc_statsformat_xml, writer,
 			NULL, tcpoutsizestats_xmldesc, dns_sizecounter_out_max,
 			tcpoutsizestats_index, tcpoutsizestat_values, 0);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto error;
+		}
 
 		TRY0(xmlTextWriterEndElement(writer)); /* </counters> */
 		TRY0(xmlTextWriterEndElement(writer)); /* </tcp> */
@@ -2195,8 +2229,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 						       ISC_XMLCHAR "zones"));
 			result = dns_zt_apply(view->zonetable, true, NULL,
 					      zone_xmlrender, writer);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				goto error;
+			}
 			TRY0(xmlTextWriterEndElement(writer)); /* /zones */
 		}
 
@@ -2214,8 +2249,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 			dumparg.result = ISC_R_SUCCESS;
 			dns_rdatatypestats_dump(view->resquerystats,
 						rdtypestat_dump, &dumparg, 0);
-			if (dumparg.result != ISC_R_SUCCESS)
+			if (dumparg.result != ISC_R_SUCCESS) {
 				goto error;
+			}
 		}
 		TRY0(xmlTextWriterEndElement(writer));
 
@@ -2229,8 +2265,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 				NULL, resstats_xmldesc, dns_resstatscounter_max,
 				resstats_index, resstat_values,
 				ISC_STATSDUMP_VERBOSE);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				goto error;
+			}
 		}
 		TRY0(xmlTextWriterEndElement(writer)); /* </resstats> */
 
@@ -2244,8 +2281,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 			dumparg.result = ISC_R_SUCCESS;
 			dns_rdatasetstats_dump(cacherrstats, rdatasetstats_dump,
 					       &dumparg, 0);
-			if (dumparg.result != ISC_R_SUCCESS)
+			if (dumparg.result != ISC_R_SUCCESS) {
 				goto error;
+			}
 			TRY0(xmlTextWriterEndElement(writer)); /* cache */
 		}
 
@@ -2259,8 +2297,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 				NULL, adbstats_xmldesc, dns_adbstats_max,
 				adbstats_index, adbstat_values,
 				ISC_STATSDUMP_VERBOSE);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				goto error;
+			}
 		}
 		TRY0(xmlTextWriterEndElement(writer)); /* </adbstats> */
 
@@ -2302,8 +2341,9 @@ generatexml(named_server_t *server, uint32_t flags, int *buflen, xmlChar **buf)
 	xmlFreeTextWriter(writer);
 
 	xmlDocDumpFormatMemoryEnc(doc, buf, buflen, "UTF-8", 0);
-	if (*buf == NULL)
+	if (*buf == NULL) {
 		goto error;
+	}
 	xmlFreeDoc(doc);
 	return (ISC_R_SUCCESS);
 
@@ -2311,10 +2351,12 @@ error:
 	isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
 		      NAMED_LOGMODULE_SERVER, ISC_LOG_ERROR,
 		      "failed generating XML response");
-	if (writer != NULL)
+	if (writer != NULL) {
 		xmlFreeTextWriter(writer);
-	if (doc != NULL)
+	}
+	if (doc != NULL) {
 		xmlFreeDoc(doc);
+	}
 	return (ISC_R_FAILURE);
 }
 
@@ -2352,10 +2394,11 @@ render_xml(uint32_t flags, const char *url, isc_httpdurl_t *urlinfo,
 		isc_buffer_add(b, msglen);
 		*freecb = wrap_xmlfree;
 		*freecb_args = NULL;
-	} else
+	} else {
 		isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
 			      NAMED_LOGMODULE_SERVER, ISC_LOG_ERROR,
 			      "failed at rendering XML()");
+	}
 
 	return (result);
 }
@@ -2490,8 +2533,9 @@ static void
 wrap_jsonfree(isc_buffer_t *buffer, void *arg)
 {
 	json_object_put(isc_buffer_base(buffer));
-	if (arg != NULL)
+	if (arg != NULL) {
 		json_object_put((json_object *)arg);
+	}
 }
 
 static json_object *
@@ -2500,18 +2544,21 @@ addzone(char *name, char *classname, const char *ztype, uint32_t serial,
 {
 	json_object *node = json_object_new_object();
 
-	if (node == NULL)
+	if (node == NULL) {
 		return (NULL);
+	}
 
 	json_object_object_add(node, "name", json_object_new_string(name));
 	json_object_object_add(node, "class",
 			       json_object_new_string(classname));
-	if (add_serial)
+	if (add_serial) {
 		json_object_object_add(node, "serial",
 				       json_object_new_int64(serial));
-	if (ztype != NULL)
+	}
+	if (ztype != NULL) {
 		json_object_object_add(node, "type",
 				       json_object_new_string(ztype));
+	}
 	return (node);
 }
 
@@ -2530,8 +2577,9 @@ zone_jsonrender(dns_zone_t *zone, void *arg)
 	dns_zonestat_level_t statlevel;
 
 	statlevel = dns_zone_getstatlevel(zone);
-	if (statlevel == dns_zonestat_none)
+	if (statlevel == dns_zonestat_none) {
 		return (ISC_R_SUCCESS);
+	}
 
 	dns_zone_nameonly(zone, buf, sizeof(buf));
 	zone_name_only = buf;
@@ -2540,15 +2588,17 @@ zone_jsonrender(dns_zone_t *zone, void *arg)
 	dns_rdataclass_format(rdclass, classbuf, sizeof(classbuf));
 	class_only = classbuf;
 
-	if (dns_zone_getserial(zone, &serial) != ISC_R_SUCCESS)
+	if (dns_zone_getserial(zone, &serial) != ISC_R_SUCCESS) {
 		zoneobj = addzone(zone_name_only, class_only,
 				  user_zonetype(zone), 0, false);
-	else
+	} else {
 		zoneobj = addzone(zone_name_only, class_only,
 				  user_zonetype(zone), serial, true);
+	}
 
-	if (zoneobj == NULL)
+	if (zoneobj == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	if (statlevel == dns_zonestat_full) {
 		isc_stats_t *zonestats;
@@ -2576,11 +2626,12 @@ zone_jsonrender(dns_zone_t *zone, void *arg)
 				goto error;
 			}
 
-			if (json_object_get_object(counters)->count != 0)
+			if (json_object_get_object(counters)->count != 0) {
 				json_object_object_add(zoneobj, "rcodes",
 						       counters);
-			else
+			} else {
 				json_object_put(counters);
+			}
 		}
 
 		gluecachestats = dns_zone_getgluecachestats(zone);
@@ -2601,11 +2652,12 @@ zone_jsonrender(dns_zone_t *zone, void *arg)
 				goto error;
 			}
 
-			if (json_object_get_object(counters)->count != 0)
+			if (json_object_get_object(counters)->count != 0) {
 				json_object_object_add(zoneobj, "gluecache",
 						       counters);
-			else
+			} else {
 				json_object_put(counters);
+			}
 		}
 
 		rcvquerystats = dns_zone_getrcvquerystats(zone);
@@ -2624,11 +2676,12 @@ zone_jsonrender(dns_zone_t *zone, void *arg)
 				goto error;
 			}
 
-			if (json_object_get_object(counters)->count != 0)
+			if (json_object_get_object(counters)->count != 0) {
 				json_object_object_add(zoneobj, "qtypes",
 						       counters);
-			else
+			} else {
 				json_object_put(counters);
+			}
 		}
 
 		dnssecsignstats = dns_zone_getdnssecsignstats(zone);
@@ -2687,8 +2740,9 @@ zone_jsonrender(dns_zone_t *zone, void *arg)
 	result = ISC_R_SUCCESS;
 
 error:
-	if (zoneobj != NULL)
+	if (zoneobj != NULL) {
 		json_object_put(zoneobj);
+	}
 	return (result);
 }
 
@@ -2715,7 +2769,7 @@ generatejson(named_server_t *server, size_t *msglen, const char **msg,
 	uint64_t tcpoutsizestat_values[dns_sizecounter_out_max];
 #ifdef HAVE_DNSTAP
 	uint64_t dnstapstat_values[dns_dnstapcounter_max];
-#endif
+#endif /* ifdef HAVE_DNSTAP */
 	stats_dumparg_t dumparg;
 	char boottime[sizeof "yyyy-mm-ddThh:mm:ss.sssZ"];
 	char configtime[sizeof "yyyy-mm-ddThh:mm:ss.sssZ"];
@@ -2727,8 +2781,9 @@ generatejson(named_server_t *server, size_t *msglen, const char **msg,
 	REQUIRE(rootp == NULL || *rootp == NULL);
 
 	bindstats = json_object_new_object();
-	if (bindstats == NULL)
+	if (bindstats == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	/*
 	 * These statistics are included no matter which URL we use.
@@ -2773,10 +2828,11 @@ generatejson(named_server_t *server, size_t *msglen, const char **msg,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "opcodes", counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 		/* OPCODE counters */
 		counters = json_object_new_object();
@@ -2791,10 +2847,11 @@ generatejson(named_server_t *server, size_t *msglen, const char **msg,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "rcodes", counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 		/* QTYPE counters */
 		counters = json_object_new_object();
@@ -2809,10 +2866,11 @@ generatejson(named_server_t *server, size_t *msglen, const char **msg,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "qtypes", counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 		/* server stat counters */
 		counters = json_object_new_object();
@@ -2829,10 +2887,11 @@ generatejson(named_server_t *server, size_t *msglen, const char **msg,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "nsstats", counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 		/* zone stat counters */
 		counters = json_object_new_object();
@@ -2849,11 +2908,12 @@ generatejson(named_server_t *server, size_t *msglen, const char **msg,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "zonestats",
 					       counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 		/* resolver stat counters */
 		counters = json_object_new_object();
@@ -2870,10 +2930,11 @@ generatejson(named_server_t *server, size_t *msglen, const char **msg,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "resstats", counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 #ifdef HAVE_DNSTAP
 		/* dnstap stat counters */
@@ -2894,13 +2955,14 @@ generatejson(named_server_t *server, size_t *msglen, const char **msg,
 				goto error;
 			}
 
-			if (json_object_get_object(counters)->count != 0)
+			if (json_object_get_object(counters)->count != 0) {
 				json_object_object_add(bindstats, "dnstapstats",
 						       counters);
-			else
+			} else {
 				json_object_put(counters);
+			}
 		}
-#endif
+#endif /* ifdef HAVE_DNSTAP */
 	}
 
 	if ((flags & (STATS_JSON_ZONES | STATS_JSON_SERVER)) != 0) {
@@ -2928,10 +2990,11 @@ generatejson(named_server_t *server, size_t *msglen, const char **msg,
 				}
 			}
 
-			if (json_object_array_length(za) != 0)
+			if (json_object_array_length(za) != 0) {
 				json_object_object_add(v, "zones", za);
-			else
+			} else {
 				json_object_put(za);
+			}
 
 			if ((flags & STATS_JSON_SERVER) != 0) {
 				json_object *res;
@@ -3061,11 +3124,12 @@ generatejson(named_server_t *server, size_t *msglen, const char **msg,
 			goto error;
 		}
 
-		if (json_object_get_object(counters)->count != 0)
+		if (json_object_get_object(counters)->count != 0) {
 			json_object_object_add(bindstats, "sockstats",
 					       counters);
-		else
+		} else {
 			json_object_put(counters);
+		}
 
 		sockets = json_object_new_object();
 		CHECKMEM(sockets);
@@ -3225,26 +3289,36 @@ generatejson(named_server_t *server, size_t *msglen, const char **msg,
 	result = ISC_R_SUCCESS;
 
 error:
-	if (udpreq4 != NULL)
+	if (udpreq4 != NULL) {
 		json_object_put(udpreq4);
-	if (udpresp4 != NULL)
+	}
+	if (udpresp4 != NULL) {
 		json_object_put(udpresp4);
-	if (tcpreq4 != NULL)
+	}
+	if (tcpreq4 != NULL) {
 		json_object_put(tcpreq4);
-	if (tcpresp4 != NULL)
+	}
+	if (tcpresp4 != NULL) {
 		json_object_put(tcpresp4);
-	if (udpreq6 != NULL)
+	}
+	if (udpreq6 != NULL) {
 		json_object_put(udpreq6);
-	if (udpresp6 != NULL)
+	}
+	if (udpresp6 != NULL) {
 		json_object_put(udpresp6);
-	if (tcpreq6 != NULL)
+	}
+	if (tcpreq6 != NULL) {
 		json_object_put(tcpreq6);
-	if (tcpresp6 != NULL)
+	}
+	if (tcpresp6 != NULL) {
 		json_object_put(tcpresp6);
-	if (traffic != NULL)
+	}
+	if (traffic != NULL) {
 		json_object_put(traffic);
-	if (bindstats != NULL)
+	}
+	if (bindstats != NULL) {
 		json_object_put(bindstats);
+	}
 
 	return (result);
 }
@@ -3277,10 +3351,11 @@ render_json(uint32_t flags, const char *url, isc_httpdurl_t *urlinfo,
 		isc_buffer_add(b, msglen);
 		*freecb = wrap_jsonfree;
 		*freecb_args = bindstats;
-	} else
+	} else {
 		isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
 			      NAMED_LOGMODULE_SERVER, ISC_LOG_ERROR,
 			      "failed at rendering JSON()");
+	}
 
 	return (result);
 }
@@ -3527,8 +3602,9 @@ add_listener(named_server_t *server, named_statschannel_t **listenerp,
 	dns_acl_t *new_acl = NULL;
 
 	listener = isc_mem_get(server->mctx, sizeof(*listener));
-	if (listener == NULL)
+	if (listener == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	listener->httpdmgr = NULL;
 	listener->address = *addr;
@@ -3545,37 +3621,43 @@ add_listener(named_server_t *server, named_statschannel_t **listenerp,
 		result = cfg_acl_fromconfig(allow, config, named_g_lctx,
 					    aclconfctx, listener->mctx, 0,
 					    &new_acl);
-	} else
+	} else {
 		result = dns_acl_any(listener->mctx, &new_acl);
-	if (result != ISC_R_SUCCESS)
+	}
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 	dns_acl_attach(new_acl, &listener->acl);
 	dns_acl_detach(&new_acl);
 
 	result = isc_task_create(named_g_taskmgr, 0, &task);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 	isc_task_setname(task, "statchannel", NULL);
 
 	result = isc_socket_create(named_g_socketmgr, isc_sockaddr_pf(addr),
 				   isc_sockettype_tcp, &sock);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 	isc_socket_setname(sock, "statchannel", NULL);
 
 #ifndef ISC_ALLOW_MAPPED
 	isc_socket_ipv6only(sock, true);
-#endif
+#endif /* ifndef ISC_ALLOW_MAPPED */
 
 	result = isc_socket_bind(sock, addr, ISC_SOCKET_REUSEADDRESS);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	result = isc_httpdmgr_create(server->mctx, sock, task, client_ok,
 				     destroy_listener, listener,
 				     named_g_timermgr, &listener->httpdmgr);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 #ifdef HAVE_LIBXML2
 	isc_httpdmgr_addurl(listener->httpdmgr, "/", render_xml_all, server);
@@ -3596,7 +3678,7 @@ add_listener(named_server_t *server, named_statschannel_t **listenerp,
 			    server);
 	isc_httpdmgr_addurl(listener->httpdmgr, "/xml/v3/traffic",
 			    render_xml_traffic, server);
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 #ifdef HAVE_JSON_C
 	isc_httpdmgr_addurl(listener->httpdmgr, "/json", render_json_all,
 			    server);
@@ -3616,7 +3698,7 @@ add_listener(named_server_t *server, named_statschannel_t **listenerp,
 			    server);
 	isc_httpdmgr_addurl(listener->httpdmgr, "/json/v1/traffic",
 			    render_json_traffic, server);
-#endif
+#endif /* ifdef HAVE_JSON_C */
 	isc_httpdmgr_addurl2(listener->httpdmgr, "/bind9.xsl", true, render_xsl,
 			     server);
 
@@ -3627,16 +3709,19 @@ add_listener(named_server_t *server, named_statschannel_t **listenerp,
 
 cleanup:
 	if (result != ISC_R_SUCCESS) {
-		if (listener->acl != NULL)
+		if (listener->acl != NULL) {
 			dns_acl_detach(&listener->acl);
+		}
 		isc_mutex_destroy(&listener->lock);
 		isc_mem_putanddetach(&listener->mctx, listener,
 				     sizeof(*listener));
 	}
-	if (task != NULL)
+	if (task != NULL) {
 		isc_task_detach(&task);
-	if (sock != NULL)
+	}
+	if (sock != NULL) {
 		isc_socket_detach(&sock);
+	}
 
 	return (result);
 }
@@ -3654,8 +3739,9 @@ update_listener(named_server_t *server, named_statschannel_t **listenerp,
 
 	for (listener = ISC_LIST_HEAD(server->statschannels); listener != NULL;
 	     listener = ISC_LIST_NEXT(listener, link))
-		if (isc_sockaddr_equal(addr, &listener->address))
+		if (isc_sockaddr_equal(addr, &listener->address)) {
 			break;
+		}
 
 	if (listener == NULL) {
 		*listenerp = NULL;
@@ -3670,8 +3756,9 @@ update_listener(named_server_t *server, named_statschannel_t **listenerp,
 		result = cfg_acl_fromconfig(allow, config, named_g_lctx,
 					    aclconfctx, listener->mctx, 0,
 					    &new_acl);
-	} else
+	} else {
 		result = dns_acl_any(listener->mctx, &new_acl);
+	}
 
 	if (result == ISC_R_SUCCESS) {
 		LOCK(&listener->lock);
@@ -3746,8 +3833,9 @@ named_statschannels_configure(named_server_t *server, const cfg_obj_t *config,
 
 			statschannel = cfg_listelt_value(element);
 			(void)cfg_map_get(statschannel, "inet", &listenercfg);
-			if (listenercfg == NULL)
+			if (listenercfg == NULL) {
 				continue;
+			}
 
 			for (element2 = cfg_list_first(listenercfg);
 			     element2 != NULL;
@@ -3760,10 +3848,11 @@ named_statschannels_configure(named_server_t *server, const cfg_obj_t *config,
 
 				obj = cfg_tuple_get(listen_params, "address");
 				addr = *cfg_obj_assockaddr(obj);
-				if (isc_sockaddr_getport(&addr) == 0)
+				if (isc_sockaddr_getport(&addr) == 0) {
 					isc_sockaddr_setport(
 						&addr,
 						NAMED_STATSCHANNEL_HTTPPORT);
+				}
 
 				isc_sockaddr_format(&addr, socktext,
 						    sizeof(socktext));
@@ -3810,9 +3899,10 @@ named_statschannels_configure(named_server_t *server, const cfg_obj_t *config,
 					}
 				}
 
-				if (listener != NULL)
+				if (listener != NULL) {
 					ISC_LIST_APPEND(new_listeners, listener,
 							link);
+				}
 			}
 		}
 	}
@@ -3878,12 +3968,14 @@ named_stats_dump(named_server_t *server, FILE *fp)
 	fprintf(fp, "++ Outgoing Queries ++\n");
 	for (view = ISC_LIST_HEAD(server->viewlist); view != NULL;
 	     view = ISC_LIST_NEXT(view, link)) {
-		if (view->resquerystats == NULL)
+		if (view->resquerystats == NULL) {
 			continue;
-		if (strcmp(view->name, "_default") == 0)
+		}
+		if (strcmp(view->name, "_default") == 0) {
 			fprintf(fp, "[View: default]\n");
-		else
+		} else {
 			fprintf(fp, "[View: %s]\n", view->name);
+		}
 		dns_rdatatypestats_dump(view->resquerystats, rdtypestat_dump,
 					&dumparg, 0);
 	}
@@ -3906,12 +3998,14 @@ named_stats_dump(named_server_t *server, FILE *fp)
 			    resstats_index, resstat_values, 0);
 	for (view = ISC_LIST_HEAD(server->viewlist); view != NULL;
 	     view = ISC_LIST_NEXT(view, link)) {
-		if (view->resstats == NULL)
+		if (view->resstats == NULL) {
 			continue;
-		if (strcmp(view->name, "_default") == 0)
+		}
+		if (strcmp(view->name, "_default") == 0) {
 			fprintf(fp, "[View: default]\n");
-		else
+		} else {
 			fprintf(fp, "[View: %s]\n", view->name);
+		}
 		(void)dump_counters(view->resstats, isc_statsformat_file, fp,
 				    NULL, resstats_desc,
 				    dns_resstatscounter_max, resstats_index,
@@ -3921,16 +4015,18 @@ named_stats_dump(named_server_t *server, FILE *fp)
 	fprintf(fp, "++ Cache Statistics ++\n");
 	for (view = ISC_LIST_HEAD(server->viewlist); view != NULL;
 	     view = ISC_LIST_NEXT(view, link)) {
-		if (strcmp(view->name, "_default") == 0)
+		if (strcmp(view->name, "_default") == 0) {
 			fprintf(fp, "[View: default]\n");
-		else
+		} else {
 			fprintf(fp, "[View: %s (Cache: %s)]\n", view->name,
 				dns_cache_getname(view->cache));
+		}
 		/*
 		 * Avoid dumping redundant statistics when the cache is shared.
 		 */
-		if (dns_view_iscacheshared(view))
+		if (dns_view_iscacheshared(view)) {
 			continue;
+		}
 		dns_cache_dumpstats(view->cache, fp);
 	}
 
@@ -3940,13 +4036,15 @@ named_stats_dump(named_server_t *server, FILE *fp)
 		dns_stats_t *cacherrstats;
 
 		cacherrstats = dns_db_getrrsetstats(view->cachedb);
-		if (cacherrstats == NULL)
+		if (cacherrstats == NULL) {
 			continue;
-		if (strcmp(view->name, "_default") == 0)
+		}
+		if (strcmp(view->name, "_default") == 0) {
 			fprintf(fp, "[View: default]\n");
-		else
+		} else {
 			fprintf(fp, "[View: %s (Cache: %s)]\n", view->name,
 				dns_cache_getname(view->cache));
+		}
 		if (dns_view_iscacheshared(view)) {
 			/*
 			 * Avoid dumping redundant statistics when the cache is
@@ -3961,12 +4059,14 @@ named_stats_dump(named_server_t *server, FILE *fp)
 	fprintf(fp, "++ ADB stats ++\n");
 	for (view = ISC_LIST_HEAD(server->viewlist); view != NULL;
 	     view = ISC_LIST_NEXT(view, link)) {
-		if (view->adbstats == NULL)
+		if (view->adbstats == NULL) {
 			continue;
-		if (strcmp(view->name, "_default") == 0)
+		}
+		if (strcmp(view->name, "_default") == 0) {
 			fprintf(fp, "[View: default]\n");
-		else
+		} else {
 			fprintf(fp, "[View: %s]\n", view->name);
+		}
 		(void)dump_counters(view->adbstats, isc_statsformat_file, fp,
 				    NULL, adbstats_desc, dns_adbstats_max,
 				    adbstats_index, adbstat_values, 0);
@@ -3987,14 +4087,16 @@ named_stats_dump(named_server_t *server, FILE *fp)
 			char zonename[DNS_NAME_FORMATSIZE];
 
 			view = dns_zone_getview(zone);
-			if (view == NULL)
+			if (view == NULL) {
 				continue;
+			}
 
 			dns_name_format(dns_zone_getorigin(zone), zonename,
 					sizeof(zonename));
 			fprintf(fp, "[%s", zonename);
-			if (strcmp(view->name, "_default") != 0)
+			if (strcmp(view->name, "_default") != 0) {
 				fprintf(fp, " (view: %s)", view->name);
+			}
 			fprintf(fp, "]\n");
 
 			(void)dump_counters(zonestats, isc_statsformat_file, fp,
@@ -4014,14 +4116,16 @@ named_stats_dump(named_server_t *server, FILE *fp)
 			char zonename[DNS_NAME_FORMATSIZE];
 
 			view = dns_zone_getview(zone);
-			if (view == NULL)
+			if (view == NULL) {
 				continue;
+			}
 
 			dns_name_format(dns_zone_getorigin(zone), zonename,
 					sizeof(zonename));
 			fprintf(fp, "[%s", zonename);
-			if (strcmp(view->name, "_default") != 0)
+			if (strcmp(view->name, "_default") != 0) {
 				fprintf(fp, " (view: %s)", view->name);
+			}
 			fprintf(fp, "]\n");
 
 			(void)dump_counters(

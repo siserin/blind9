@@ -60,8 +60,9 @@ dns_peerlist_new(isc_mem_t *mem, dns_peerlist_t **list)
 	REQUIRE(list != NULL);
 
 	l = isc_mem_get(mem, sizeof(*l));
-	if (l == NULL)
+	if (l == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	ISC_LIST_INIT(l->elements);
 	l->mem = mem;
@@ -103,8 +104,9 @@ dns_peerlist_detach(dns_peerlist_t **list)
 
 	plist->refs--;
 
-	if (plist->refs == 0)
+	if (plist->refs == 0) {
 		peerlist_delete(&plist);
+	}
 }
 
 static void
@@ -146,13 +148,15 @@ dns_peerlist_addpeer(dns_peerlist_t *peers, dns_peer_t *peer)
 	 */
 	for (p = ISC_LIST_HEAD(peers->elements); p != NULL;
 	     p = ISC_LIST_NEXT(p, next))
-		if (p->prefixlen < peer->prefixlen)
+		if (p->prefixlen < peer->prefixlen) {
 			break;
+		}
 
-	if (p != NULL)
+	if (p != NULL) {
 		ISC_LIST_INSERTBEFORE(peers->elements, p, peer, next);
-	else
+	} else {
 		ISC_LIST_APPEND(peers->elements, peer, next);
+	}
 }
 
 isc_result_t
@@ -168,8 +172,9 @@ dns_peerlist_peerbyaddr(dns_peerlist_t *servers, const isc_netaddr_t *addr,
 	server = ISC_LIST_HEAD(servers->elements);
 	while (server != NULL) {
 		if (isc_netaddr_eqprefix(addr, &server->address,
-					 server->prefixlen))
+					 server->prefixlen)) {
 			break;
+		}
 
 		server = ISC_LIST_NEXT(server, next);
 	}
@@ -226,8 +231,9 @@ dns_peer_newprefix(isc_mem_t *mem, const isc_netaddr_t *addr,
 	REQUIRE(peerptr != NULL);
 
 	peer = isc_mem_get(mem, sizeof(*peer));
-	if (peer == NULL)
+	if (peer == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	peer->magic = DNS_PEER_MAGIC;
 	peer->address = *addr;
@@ -283,8 +289,9 @@ dns_peer_detach(dns_peer_t **peer)
 	*peer = NULL;
 	p->refs--;
 
-	if (p->refs == 0)
+	if (p->refs == 0) {
 		peer_delete(&p);
+	}
 }
 
 static void
@@ -309,15 +316,18 @@ peer_delete(dns_peer_t **peer)
 		isc_mem_put(mem, p->key, sizeof(dns_name_t));
 	}
 
-	if (p->query_source != NULL)
+	if (p->query_source != NULL) {
 		isc_mem_put(mem, p->query_source, sizeof(*p->query_source));
+	}
 
-	if (p->notify_source != NULL)
+	if (p->notify_source != NULL) {
 		isc_mem_put(mem, p->notify_source, sizeof(*p->notify_source));
+	}
 
-	if (p->transfer_source != NULL)
+	if (p->transfer_source != NULL) {
 		isc_mem_put(mem, p->transfer_source,
 			    sizeof(*p->transfer_source));
+	}
 
 	isc_mem_put(mem, p, sizeof(*p));
 
@@ -348,8 +358,9 @@ dns_peer_getbogus(dns_peer_t *peer, bool *retval)
 	if (DNS_BIT_CHECK(BOGUS_BIT, &peer->bitflags)) {
 		*retval = peer->bogus;
 		return (ISC_R_SUCCESS);
-	} else
+	} else {
 		return (ISC_R_NOTFOUND);
+	}
 }
 
 isc_result_t
@@ -405,8 +416,9 @@ dns_peer_getrequestixfr(dns_peer_t *peer, bool *retval)
 	if (DNS_BIT_CHECK(REQUEST_IXFR_BIT, &peer->bitflags)) {
 		*retval = peer->request_ixfr;
 		return (ISC_R_SUCCESS);
-	} else
+	} else {
 		return (ISC_R_NOTFOUND);
+	}
 }
 
 isc_result_t
@@ -433,8 +445,9 @@ dns_peer_getsupportedns(dns_peer_t *peer, bool *retval)
 	if (DNS_BIT_CHECK(SUPPORT_EDNS_BIT, &peer->bitflags)) {
 		*retval = peer->support_edns;
 		return (ISC_R_SUCCESS);
-	} else
+	} else {
 		return (ISC_R_NOTFOUND);
+	}
 }
 
 isc_result_t
@@ -461,8 +474,9 @@ dns_peer_getrequestnsid(dns_peer_t *peer, bool *retval)
 	if (DNS_BIT_CHECK(REQUEST_NSID_BIT, &peer->bitflags)) {
 		*retval = peer->request_nsid;
 		return (ISC_R_SUCCESS);
-	} else
+	} else {
 		return (ISC_R_NOTFOUND);
+	}
 }
 
 isc_result_t
@@ -489,8 +503,9 @@ dns_peer_getsendcookie(dns_peer_t *peer, bool *retval)
 	if (DNS_BIT_CHECK(SEND_COOKIE_BIT, &peer->bitflags)) {
 		*retval = peer->send_cookie;
 		return (ISC_R_SUCCESS);
-	} else
+	} else {
 		return (ISC_R_NOTFOUND);
+	}
 }
 
 isc_result_t
@@ -517,8 +532,9 @@ dns_peer_getrequestexpire(dns_peer_t *peer, bool *retval)
 	if (DNS_BIT_CHECK(REQUEST_EXPIRE_BIT, &peer->bitflags)) {
 		*retval = peer->request_expire;
 		return (ISC_R_SUCCESS);
-	} else
+	} else {
 		return (ISC_R_NOTFOUND);
+	}
 }
 
 isc_result_t
@@ -545,8 +561,9 @@ dns_peer_getforcetcp(dns_peer_t *peer, bool *retval)
 	if (DNS_BIT_CHECK(FORCE_TCP_BIT, &peer->bitflags)) {
 		*retval = peer->force_tcp;
 		return (ISC_R_SUCCESS);
-	} else
+	} else {
 		return (ISC_R_NOTFOUND);
+	}
 }
 
 isc_result_t
@@ -573,8 +590,9 @@ dns_peer_gettcpkeepalive(dns_peer_t *peer, bool *retval)
 	if (DNS_BIT_CHECK(REQUEST_TCP_KEEPALIVE_BIT, &peer->bitflags)) {
 		*retval = peer->tcp_keepalive;
 		return (ISC_R_SUCCESS);
-	} else
+	} else {
 		return (ISC_R_NOTFOUND);
+	}
 }
 
 isc_result_t
@@ -678,12 +696,14 @@ dns_peer_setkeybycharp(dns_peer_t *peer, const char *keyval)
 	isc_buffer_add(&b, strlen(keyval));
 	result = dns_name_fromtext(dns_fixedname_name(&fname), &b, dns_rootname,
 				   0, NULL);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	name = isc_mem_get(peer->mem, sizeof(dns_name_t));
-	if (name == NULL)
+	if (name == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	dns_name_init(name, NULL);
 	result = dns_name_dup(dns_fixedname_name(&fname), peer->mem, name);
@@ -693,8 +713,9 @@ dns_peer_setkeybycharp(dns_peer_t *peer, const char *keyval)
 	}
 
 	result = dns_peer_setkey(peer, &name);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		isc_mem_put(peer->mem, name, sizeof(dns_name_t));
+	}
 
 	return (result);
 }
@@ -713,8 +734,9 @@ dns_peer_settransfersource(dns_peer_t *peer,
 	if (transfer_source != NULL) {
 		peer->transfer_source =
 			isc_mem_get(peer->mem, sizeof(*peer->transfer_source));
-		if (peer->transfer_source == NULL)
+		if (peer->transfer_source == NULL) {
 			return (ISC_R_NOMEMORY);
+		}
 
 		*peer->transfer_source = *transfer_source;
 	}
@@ -727,8 +749,9 @@ dns_peer_gettransfersource(dns_peer_t *peer, isc_sockaddr_t *transfer_source)
 	REQUIRE(DNS_PEER_VALID(peer));
 	REQUIRE(transfer_source != NULL);
 
-	if (peer->transfer_source == NULL)
+	if (peer->transfer_source == NULL) {
 		return (ISC_R_NOTFOUND);
+	}
 	*transfer_source = *peer->transfer_source;
 	return (ISC_R_SUCCESS);
 }
@@ -746,8 +769,9 @@ dns_peer_setnotifysource(dns_peer_t *peer, const isc_sockaddr_t *notify_source)
 	if (notify_source != NULL) {
 		peer->notify_source =
 			isc_mem_get(peer->mem, sizeof(*peer->notify_source));
-		if (peer->notify_source == NULL)
+		if (peer->notify_source == NULL) {
 			return (ISC_R_NOMEMORY);
+		}
 
 		*peer->notify_source = *notify_source;
 	}
@@ -760,8 +784,9 @@ dns_peer_getnotifysource(dns_peer_t *peer, isc_sockaddr_t *notify_source)
 	REQUIRE(DNS_PEER_VALID(peer));
 	REQUIRE(notify_source != NULL);
 
-	if (peer->notify_source == NULL)
+	if (peer->notify_source == NULL) {
 		return (ISC_R_NOTFOUND);
+	}
 	*notify_source = *peer->notify_source;
 	return (ISC_R_SUCCESS);
 }
@@ -779,8 +804,9 @@ dns_peer_setquerysource(dns_peer_t *peer, const isc_sockaddr_t *query_source)
 	if (query_source != NULL) {
 		peer->query_source =
 			isc_mem_get(peer->mem, sizeof(*peer->query_source));
-		if (peer->query_source == NULL)
+		if (peer->query_source == NULL) {
 			return (ISC_R_NOMEMORY);
+		}
 
 		*peer->query_source = *query_source;
 	}
@@ -793,8 +819,9 @@ dns_peer_getquerysource(dns_peer_t *peer, isc_sockaddr_t *query_source)
 	REQUIRE(DNS_PEER_VALID(peer));
 	REQUIRE(query_source != NULL);
 
-	if (peer->query_source == NULL)
+	if (peer->query_source == NULL) {
 		return (ISC_R_NOTFOUND);
+	}
 	*query_source = *peer->query_source;
 	return (ISC_R_SUCCESS);
 }
@@ -866,8 +893,9 @@ dns_peer_setpadding(dns_peer_t *peer, uint16_t padding)
 
 	existed = DNS_BIT_CHECK(SERVER_PADDING_BIT, &peer->bitflags);
 
-	if (padding > 512)
+	if (padding > 512) {
 		padding = 512;
+	}
 	peer->padding = padding;
 	DNS_BIT_SET(SERVER_PADDING_BIT, &peer->bitflags);
 
@@ -980,6 +1008,7 @@ dns_peer_getednsversion(dns_peer_t *peer, uint8_t *ednsversion)
 	if (DNS_BIT_CHECK(EDNS_VERSION_BIT, &peer->bitflags)) {
 		*ednsversion = peer->ednsversion;
 		return (ISC_R_SUCCESS);
-	} else
+	} else {
 		return (ISC_R_NOTFOUND);
+	}
 }

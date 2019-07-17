@@ -47,8 +47,9 @@ initialize(void)
 	REQUIRE(initialize_done == false);
 
 	result = isc_mem_create(0, 0, &ns_g_mctx);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return;
+	}
 
 	isc_refcount_init(&references, 0);
 	initialize_done = true;
@@ -66,11 +67,13 @@ ns_lib_init(void)
 	 * abort, on any failure.
 	 */
 	result = isc_once_do(&init_once, initialize);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
-	if (!initialize_done)
+	if (!initialize_done) {
 		return (ISC_R_FAILURE);
+	}
 
 	isc_refcount_increment(&references);
 

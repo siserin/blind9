@@ -13,25 +13,25 @@
 
 #if defined(HAVE_SCHED_H)
 #include <sched.h>
-#endif
+#endif /* if defined(HAVE_SCHED_H) */
 
 #if defined(HAVE_CPUSET_H)
 #include <sys/cpuset.h>
 #include <sys/param.h>
-#endif
+#endif /* if defined(HAVE_CPUSET_H) */
 
 #if defined(HAVE_SYS_PROCSET_H)
 #include <sys/processor.h>
 #include <sys/procset.h>
 #include <sys/types.h>
-#endif
+#endif /* if defined(HAVE_SYS_PROCSET_H) */
 
 #include <isc/thread.h>
 #include <isc/util.h>
 
 #ifndef THREAD_MINSTACKSIZE
 #define THREAD_MINSTACKSIZE (1024U * 1024)
-#endif
+#endif /* ifndef THREAD_MINSTACKSIZE */
 
 isc_result_t
 isc_thread_create(isc_threadfunc_t func, isc_threadarg_t arg,
@@ -41,7 +41,8 @@ isc_thread_create(isc_threadfunc_t func, isc_threadarg_t arg,
 #if defined(HAVE_PTHREAD_ATTR_GETSTACKSIZE) &&                                 \
 	defined(HAVE_PTHREAD_ATTR_SETSTACKSIZE)
 	size_t stacksize;
-#endif
+#endif /* if defined(HAVE_PTHREAD_ATTR_GETSTACKSIZE) &&                        \
+	* defined(HAVE_PTHREAD_ATTR_SETSTACKSIZE) */
 	int ret;
 
 	pthread_attr_init(&attr);
@@ -49,19 +50,23 @@ isc_thread_create(isc_threadfunc_t func, isc_threadarg_t arg,
 #if defined(HAVE_PTHREAD_ATTR_GETSTACKSIZE) &&                                 \
 	defined(HAVE_PTHREAD_ATTR_SETSTACKSIZE)
 	ret = pthread_attr_getstacksize(&attr, &stacksize);
-	if (ret != 0)
+	if (ret != 0) {
 		return (ISC_R_UNEXPECTED);
+	}
 
 	if (stacksize < THREAD_MINSTACKSIZE) {
 		ret = pthread_attr_setstacksize(&attr, THREAD_MINSTACKSIZE);
-		if (ret != 0)
+		if (ret != 0) {
 			return (ISC_R_UNEXPECTED);
+		}
 	}
-#endif
+#endif /* if defined(HAVE_PTHREAD_ATTR_GETSTACKSIZE) &&                        \
+	* defined(HAVE_PTHREAD_ATTR_SETSTACKSIZE) */
 
 	ret = pthread_create(thread, &attr, func, arg);
-	if (ret != 0)
+	if (ret != 0) {
 		return (ISC_R_UNEXPECTED);
+	}
 
 	pthread_attr_destroy(&attr);
 
@@ -70,7 +75,7 @@ isc_thread_create(isc_threadfunc_t func, isc_threadarg_t arg,
 
 #ifdef __NetBSD__
 #define pthread_setconcurrency(a) (void)a /* nothing */
-#endif
+#endif					  /* ifdef __NetBSD__ */
 
 void
 isc_thread_setconcurrency(unsigned int level)
@@ -88,15 +93,15 @@ isc_thread_setname(isc_thread_t thread, const char *name)
 	 */
 #if defined(__NetBSD__)
 	(void)pthread_setname_np(thread, name, NULL);
-#else
+#else  /* if defined(__NetBSD__) */
 	(void)pthread_setname_np(thread, name);
-#endif
+#endif /* if defined(__NetBSD__) */
 #elif defined(HAVE_PTHREAD_SET_NAME_NP)
 	(void)pthread_set_name_np(thread, name);
-#else
+#else  /* if defined(HAVE_PTHREAD_SETNAME_NP) && !defined(__APPLE__) */
 	UNUSED(thread);
 	UNUSED(name);
-#endif
+#endif /* if defined(HAVE_PTHREAD_SETNAME_NP) && !defined(__APPLE__) */
 }
 
 void
@@ -108,7 +113,7 @@ isc_thread_yield(void)
 	pthread_yield();
 #elif defined(HAVE_PTHREAD_YIELD_NP)
 	pthread_yield_np();
-#endif
+#endif /* if defined(HAVE_SCHED_YIELD) */
 }
 
 isc_result_t
@@ -126,8 +131,9 @@ isc_thread_setaffinity(int cpu)
 #if defined(__NetBSD__)
 	cpuset_t *cset;
 	cset = cpuset_create();
-	if (cset == NULL)
+	if (cset == NULL) {
 		return (ISC_R_FAILURE);
+	}
 	cpuset_set(cpu, cset);
 	if (pthread_setaffinity_np(pthread_self(), cpuset_size(cset), cset) !=
 	    0) {
@@ -148,8 +154,8 @@ isc_thread_setaffinity(int cpu)
 	if (processor_bind(P_LWPID, P_MYID, cpu, NULL) != 0) {
 		return (ISC_R_FAILURE);
 	}
-#else
+#else  /* if defined(HAVE_CPUSET_SETAFFINITY) */
 	UNUSED(cpu);
-#endif
+#endif /* if defined(HAVE_CPUSET_SETAFFINITY) */
 	return (ISC_R_SUCCESS);
 }

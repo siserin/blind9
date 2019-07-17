@@ -641,7 +641,6 @@ getlabelsequence_test(void **state)
 		{ "c.d", 1, "a.b.c.d", 3, 1 },
 		{ "a.b.c.d.e", 2, "c.d", 0, 2 },
 		{ "a.b.c", 0, "a.b.c", 0, 3 },
-
 	};
 	unsigned int i;
 
@@ -812,4 +811,4 @@ main(void)
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

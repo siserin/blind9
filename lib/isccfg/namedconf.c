@@ -284,8 +284,9 @@ parse_matchname(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	if ((pctx->flags & CFG_PCTX_SKIP) != 0) {
 		pctx->flags &= ~CFG_PCTX_SKIP;
 		CHECK(cfg_parse_void(pctx, NULL, &obj));
-	} else
+	} else {
 		result = cfg_parse_astring(pctx, type, &obj);
+	}
 
 	*ret = obj;
 cleanup:
@@ -385,10 +386,11 @@ cleanup:
 static void
 print_updatepolicy(cfg_printer_t *pctx, const cfg_obj_t *obj)
 {
-	if (cfg_obj_isstring(obj))
+	if (cfg_obj_isstring(obj)) {
 		cfg_print_ustring(pctx, obj);
-	else
+	} else {
 		cfg_print_bracketed_list(pctx, obj);
+	}
 }
 
 static void
@@ -704,8 +706,9 @@ parse_qstringornone(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 
 	CHECK(cfg_gettoken(pctx, CFG_LEXOPT_QSTRING));
 	if (pctx->token.type == isc_tokentype_string &&
-	    strcasecmp(TOKEN_STRING(pctx), "none") == 0)
+	    strcasecmp(TOKEN_STRING(pctx), "none") == 0) {
 		return (cfg_create_obj(pctx, &cfg_type_none, ret));
+	}
 	cfg_ungettoken(pctx);
 	return (cfg_parse_qstring(pctx, type, ret));
 cleanup:
@@ -747,8 +750,9 @@ parse_boolorauto(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 
 	CHECK(cfg_gettoken(pctx, CFG_LEXOPT_QSTRING));
 	if (pctx->token.type == isc_tokentype_string &&
-	    strcasecmp(TOKEN_STRING(pctx), "auto") == 0)
+	    strcasecmp(TOKEN_STRING(pctx), "auto") == 0) {
 		return (cfg_create_obj(pctx, &cfg_type_auto, ret));
+	}
 	cfg_ungettoken(pctx);
 	return (cfg_parse_boolean(pctx, type, ret));
 cleanup:
@@ -758,12 +762,13 @@ cleanup:
 static void
 print_boolorauto(cfg_printer_t *pctx, const cfg_obj_t *obj)
 {
-	if (obj->type->rep == &cfg_rep_void)
+	if (obj->type->rep == &cfg_rep_void) {
 		cfg_print_cstr(pctx, "auto");
-	else if (obj->value.boolean)
+	} else if (obj->value.boolean) {
 		cfg_print_cstr(pctx, "yes");
-	else
+	} else {
 		cfg_print_cstr(pctx, "no");
+	}
 }
 
 static void
@@ -802,13 +807,15 @@ parse_serverid(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	isc_result_t result;
 	CHECK(cfg_gettoken(pctx, CFG_LEXOPT_QSTRING));
 	if (pctx->token.type == isc_tokentype_string &&
-	    strcasecmp(TOKEN_STRING(pctx), "none") == 0)
+	    strcasecmp(TOKEN_STRING(pctx), "none") == 0) {
 		return (cfg_create_obj(pctx, &cfg_type_none, ret));
+	}
 	if (pctx->token.type == isc_tokentype_string &&
 	    strcasecmp(TOKEN_STRING(pctx), "hostname") == 0) {
 		result = cfg_create_obj(pctx, &cfg_type_hostname, ret);
-		if (result == ISC_R_SUCCESS)
+		if (result == ISC_R_SUCCESS) {
 			(*ret)->value.boolean = true;
+		}
 		return (result);
 	}
 	cfg_ungettoken(pctx);
@@ -870,9 +877,9 @@ parse_portrange(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	UNUSED(type);
 
 	CHECK(cfg_peektoken(pctx, ISC_LEXOPT_NUMBER | ISC_LEXOPT_CNUMBER));
-	if (pctx->token.type == isc_tokentype_number)
+	if (pctx->token.type == isc_tokentype_number) {
 		CHECK(parse_port(pctx, ret));
-	else {
+	} else {
 		CHECK(cfg_gettoken(pctx, 0));
 		if (pctx->token.type != isc_tokentype_string ||
 		    strcasecmp(TOKEN_STRING(pctx), "range") != 0) {
@@ -897,8 +904,9 @@ parse_portrange(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	}
 
 cleanup:
-	if (obj != NULL)
+	if (obj != NULL) {
 		cfg_obj_destroy(pctx, &obj);
+	}
 	return (result);
 }
 
@@ -1045,13 +1053,13 @@ static cfg_clausedef_t options_clauses[] = {
 	{ "dnstap-output", &cfg_type_dnstapoutput, 0 },
 	{ "dnstap-identity", &cfg_type_serverid, 0 },
 	{ "dnstap-version", &cfg_type_qstringornone, 0 },
-#else
+#else  /* ifdef HAVE_DNSTAP */
 	{ "dnstap-output", &cfg_type_dnstapoutput,
 	  CFG_CLAUSEFLAG_NOTCONFIGURED },
 	{ "dnstap-identity", &cfg_type_serverid, CFG_CLAUSEFLAG_NOTCONFIGURED },
 	{ "dnstap-version", &cfg_type_qstringornone,
 	  CFG_CLAUSEFLAG_NOTCONFIGURED },
-#endif
+#endif /* ifdef HAVE_DNSTAP */
 	{ "dscp", &cfg_type_uint32, 0 },
 	{ "dump-file", &cfg_type_qstring, 0 },
 	{ "fake-iquery", &cfg_type_boolean, CFG_CLAUSEFLAG_ANCIENT },
@@ -1065,7 +1073,7 @@ static cfg_clausedef_t options_clauses[] = {
 	{ "fstrm-set-output-queue-model", &cfg_type_fstrm_model, 0 },
 	{ "fstrm-set-output-queue-size", &cfg_type_uint32, 0 },
 	{ "fstrm-set-reopen-interval", &cfg_type_ttlval, 0 },
-#else
+#else  /* ifdef HAVE_DNSTAP */
 	{ "fstrm-set-buffer-hint", &cfg_type_uint32,
 	  CFG_CLAUSEFLAG_NOTCONFIGURED },
 	{ "fstrm-set-flush-timeout", &cfg_type_uint32,
@@ -1083,7 +1091,7 @@ static cfg_clausedef_t options_clauses[] = {
 #endif /* HAVE_DNSTAP */
 #if defined(HAVE_GEOIP2)
 	{ "geoip-directory", &cfg_type_qstringornone, 0 },
-#else
+#else  /* if defined(HAVE_GEOIP2) */
 	{ "geoip-directory", &cfg_type_qstringornone,
 	  CFG_CLAUSEFLAG_NOTCONFIGURED },
 #endif /* HAVE_GEOIP2 */
@@ -1355,12 +1363,15 @@ parse_dtout(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	}
 
 	/* Create void objects for missing optional values. */
-	if (obj->value.tuple[2] == NULL)
+	if (obj->value.tuple[2] == NULL) {
 		CHECK(cfg_parse_void(pctx, NULL, &obj->value.tuple[2]));
-	if (obj->value.tuple[3] == NULL)
+	}
+	if (obj->value.tuple[3] == NULL) {
 		CHECK(cfg_parse_void(pctx, NULL, &obj->value.tuple[3]));
-	if (obj->value.tuple[4] == NULL)
+	}
+	if (obj->value.tuple[4] == NULL) {
 		CHECK(cfg_parse_void(pctx, NULL, &obj->value.tuple[4]));
+	}
 
 	*ret = obj;
 	return (ISC_R_SUCCESS);
@@ -1446,8 +1457,9 @@ doc_rpz_policy(cfg_printer_t *pctx, const cfg_type_t *type)
 	cfg_print_cstr(pctx, "( ");
 	for (p = type->of; *p != NULL; p++) {
 		cfg_print_cstr(pctx, *p);
-		if (p[1] != NULL)
+		if (p[1] != NULL) {
 			cfg_print_cstr(pctx, " | ");
+		}
 	}
 }
 
@@ -1514,8 +1526,9 @@ cfg_parse_kv_tuple(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 
 	for (;;) {
 		CHECK(cfg_peektoken(pctx, CFG_LEXOPT_QSTRING));
-		if (pctx->token.type != isc_tokentype_string)
+		if (pctx->token.type != isc_tokentype_string) {
 			break;
+		}
 
 		for (fn = 1, f = &fields[1];; ++fn, ++f) {
 			if (f->name == NULL) {
@@ -1525,8 +1538,9 @@ cfg_parse_kv_tuple(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 				goto cleanup;
 			}
 			if (obj->value.tuple[fn] == NULL &&
-			    strcasecmp(f->name, TOKEN_STRING(pctx)) == 0)
+			    strcasecmp(f->name, TOKEN_STRING(pctx)) == 0) {
 				break;
+			}
 		}
 
 		CHECK(cfg_gettoken(pctx, 0));
@@ -1534,9 +1548,10 @@ cfg_parse_kv_tuple(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	}
 
 	for (fn = 1, f = &fields[1]; f->name != NULL; ++fn, ++f) {
-		if (obj->value.tuple[fn] == NULL)
+		if (obj->value.tuple[fn] == NULL) {
 			CHECK(cfg_parse_void(pctx, NULL,
 					     &obj->value.tuple[fn]));
+		}
 	}
 
 	*ret = obj;
@@ -1557,8 +1572,9 @@ cfg_print_kv_tuple(cfg_printer_t *pctx, const cfg_obj_t *obj)
 	fields = obj->type->of;
 	for (f = fields, i = 0; f->name != NULL; f++, i++) {
 		fieldobj = obj->value.tuple[i];
-		if (fieldobj->type->print == cfg_print_void)
+		if (fieldobj->type->print == cfg_print_void) {
 			continue;
+		}
 		if (i != 0) {
 			cfg_print_cstr(pctx, " ");
 			cfg_print_cstr(pctx, f->name);
@@ -1578,12 +1594,14 @@ cfg_doc_kv_tuple(cfg_printer_t *pctx, const cfg_type_t *type)
 		if (f != fields) {
 			cfg_print_cstr(pctx, " [ ");
 			cfg_print_cstr(pctx, f->name);
-			if (f->type->doc != cfg_doc_void)
+			if (f->type->doc != cfg_doc_void) {
 				cfg_print_cstr(pctx, " ");
+			}
 		}
 		cfg_doc_obj(pctx, f->type);
-		if (f != fields)
+		if (f != fields) {
 			cfg_print_cstr(pctx, " ]");
+		}
 	}
 }
 
@@ -1650,11 +1668,11 @@ static cfg_tuplefielddef_t rpz_fields[] = {
 #ifdef USE_DNSRPS
 	{ "dnsrps-enable", &cfg_type_boolean, 0 },
 	{ "dnsrps-options", &cfg_type_bracketed_text, 0 },
-#else
+#else  /* ifdef USE_DNSRPS */
 	{ "dnsrps-enable", &cfg_type_boolean, CFG_CLAUSEFLAG_NOTCONFIGURED },
 	{ "dnsrps-options", &cfg_type_bracketed_text,
 	  CFG_CLAUSEFLAG_NOTCONFIGURED },
-#endif
+#endif /* ifdef USE_DNSRPS */
 	{ NULL, NULL, 0 }
 };
 static cfg_type_t cfg_type_rpz = { "rpz",
@@ -1734,10 +1752,11 @@ print_lookaside(cfg_printer_t *pctx, const cfg_obj_t *obj)
 	const cfg_obj_t *domain = obj->value.tuple[0];
 
 	if (domain->value.string.length == 4 &&
-	    strncmp(domain->value.string.base, "auto", 4) == 0)
+	    strncmp(domain->value.string.base, "auto", 4) == 0) {
 		cfg_print_cstr(pctx, "auto");
-	else
+	} else {
 		cfg_print_tuple(pctx, obj);
+	}
 }
 
 static void
@@ -1861,11 +1880,11 @@ static cfg_clausedef_t view_clauses[] = {
 #ifdef USE_DNSRPS
 	{ "dnsrps-enable", &cfg_type_boolean, 0 },
 	{ "dnsrps-options", &cfg_type_bracketed_text, 0 },
-#else
+#else  /* ifdef USE_DNSRPS */
 	{ "dnsrps-enable", &cfg_type_boolean, CFG_CLAUSEFLAG_NOTCONFIGURED },
 	{ "dnsrps-options", &cfg_type_bracketed_text,
 	  CFG_CLAUSEFLAG_NOTCONFIGURED },
-#endif
+#endif /* ifdef USE_DNSRPS */
 	{ "dnssec-accept-expired", &cfg_type_boolean, 0 },
 	{ "dnssec-enable", &cfg_type_boolean, CFG_CLAUSEFLAG_OBSOLETE },
 	{ "dnssec-lookaside", &cfg_type_lookaside,
@@ -1875,7 +1894,7 @@ static cfg_clausedef_t view_clauses[] = {
 	{ "dnssec-validation", &cfg_type_boolorauto, 0 },
 #ifdef HAVE_DNSTAP
 	{ "dnstap", &cfg_type_dnstap, 0 },
-#else
+#else  /* ifdef HAVE_DNSTAP */
 	{ "dnstap", &cfg_type_dnstap, CFG_CLAUSEFLAG_NOTCONFIGURED },
 #endif /* HAVE_DNSTAP */
 	{ "dual-stack-servers", &cfg_type_nameportiplist, 0 },
@@ -1895,9 +1914,9 @@ static cfg_clausedef_t view_clauses[] = {
 	{ "lame-ttl", &cfg_type_ttlval, 0 },
 #ifdef HAVE_LMDB
 	{ "lmdb-mapsize", &cfg_type_sizeval, 0 },
-#else
+#else  /* ifdef HAVE_LMDB */
 	{ "lmdb-mapsize", &cfg_type_sizeval, CFG_CLAUSEFLAG_NOOP },
-#endif
+#endif /* ifdef HAVE_LMDB */
 	{ "max-acache-size", &cfg_type_sizenodefault, CFG_CLAUSEFLAG_OBSOLETE },
 	{ "max-cache-size", &cfg_type_sizeorpercent, 0 },
 	{ "max-cache-ttl", &cfg_type_ttlval, 0 },
@@ -2410,8 +2429,9 @@ parse_unitstring(char *str, isc_resourcevalue_t *valuep)
 	}
 
 	len = strlen(str);
-	if (len < 2 || endp[1] != '\0')
+	if (len < 2 || endp[1] != '\0') {
 		return (ISC_R_FAILURE);
+	}
 
 	switch (str[len - 1]) {
 	case 'k':
@@ -2429,8 +2449,9 @@ parse_unitstring(char *str, isc_resourcevalue_t *valuep)
 	default:
 		return (ISC_R_FAILURE);
 	}
-	if (value > UINT64_MAX / unit)
+	if (value > UINT64_MAX / unit) {
 		return (ISC_R_FAILURE);
+	}
 	*valuep = value * unit;
 	return (ISC_R_SUCCESS);
 }
@@ -2887,10 +2908,11 @@ parse_optional_class(cfg_parser_t *pctx, const cfg_type_t *type,
 	isc_result_t result;
 	UNUSED(type);
 	CHECK(cfg_peektoken(pctx, 0));
-	if (pctx->token.type == isc_tokentype_string)
+	if (pctx->token.type == isc_tokentype_string) {
 		CHECK(cfg_parse_obj(pctx, &cfg_type_ustring, ret));
-	else
+	} else {
 		CHECK(cfg_parse_obj(pctx, &cfg_type_void, ret));
+	}
 cleanup:
 	return (result);
 }
@@ -2962,8 +2984,9 @@ parse_querysource(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 						 "or 'dscp'");
 				return (ISC_R_UNEXPECTEDTOKEN);
 			}
-		} else
+		} else {
 			break;
+		}
 	}
 	if (have_address > 1 || have_port > 1 ||
 	    have_address + have_port == 0) {
@@ -3088,8 +3111,9 @@ parse_server_key_kludge(cfg_parser_t *pctx, const cfg_type_t *type,
 		/* Skip semicolon if present. */
 		CHECK(cfg_peektoken(pctx, 0));
 		if (pctx->token.type == isc_tokentype_special &&
-		    pctx->token.value.as_char == ';')
+		    pctx->token.value.as_char == ';') {
 			CHECK(cfg_gettoken(pctx, 0));
+		}
 
 		CHECK(cfg_parse_special(pctx, '}'));
 	}
@@ -3257,12 +3281,15 @@ parse_logfile(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	}
 
 	/* Create void objects for missing optional values. */
-	if (obj->value.tuple[1] == NULL)
+	if (obj->value.tuple[1] == NULL) {
 		CHECK(cfg_parse_void(pctx, NULL, &obj->value.tuple[1]));
-	if (obj->value.tuple[2] == NULL)
+	}
+	if (obj->value.tuple[2] == NULL) {
 		CHECK(cfg_parse_void(pctx, NULL, &obj->value.tuple[2]));
-	if (obj->value.tuple[3] == NULL)
+	}
+	if (obj->value.tuple[3] == NULL) {
 		CHECK(cfg_parse_void(pctx, NULL, &obj->value.tuple[3]));
+	}
 
 	*ret = obj;
 	return (ISC_R_SUCCESS);
@@ -3439,10 +3466,11 @@ parse_sockaddrnameport(cfg_parser_t *pctx, const cfg_type_t *type,
 	CHECK(cfg_peektoken(pctx, CFG_LEXOPT_QSTRING));
 	if (pctx->token.type == isc_tokentype_string ||
 	    pctx->token.type == isc_tokentype_qstring) {
-		if (cfg_lookingat_netaddr(pctx, CFG_ADDR_V4OK | CFG_ADDR_V6OK))
+		if (cfg_lookingat_netaddr(pctx,
+					  CFG_ADDR_V4OK | CFG_ADDR_V6OK)) {
 			CHECK(cfg_parse_sockaddr(pctx, &cfg_type_sockaddr,
 						 ret));
-		else {
+		} else {
 			const cfg_tuplefielddef_t *fields =
 				cfg_type_nameport.of;
 			CHECK(cfg_create_tuple(pctx, &cfg_type_nameport, &obj));
@@ -3529,11 +3557,13 @@ parse_masterselement(cfg_parser_t *pctx, const cfg_type_t *type,
 	CHECK(cfg_peektoken(pctx, CFG_LEXOPT_QSTRING));
 	if (pctx->token.type == isc_tokentype_string ||
 	    pctx->token.type == isc_tokentype_qstring) {
-		if (cfg_lookingat_netaddr(pctx, CFG_ADDR_V4OK | CFG_ADDR_V6OK))
+		if (cfg_lookingat_netaddr(pctx,
+					  CFG_ADDR_V4OK | CFG_ADDR_V6OK)) {
 			CHECK(cfg_parse_sockaddr(pctx, &cfg_type_sockaddr,
 						 ret));
-		else
+		} else {
 			CHECK(cfg_parse_astring(pctx, &cfg_type_astring, ret));
+		}
 	} else {
 		cfg_parser_error(pctx, CFG_LOG_NEAR,
 				 "expected IP address or masters name");
@@ -3570,8 +3600,9 @@ parse_ttlval(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	if (result == ISC_R_RANGE) {
 		cfg_parser_error(pctx, CFG_LOG_NEAR, "TTL out of range ");
 		return (result);
-	} else if (result != ISC_R_SUCCESS)
+	} else if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	CHECK(cfg_create_obj(pctx, &cfg_type_uint32, &obj));
 	obj->value.uint32 = ttl;

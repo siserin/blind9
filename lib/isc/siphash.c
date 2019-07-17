@@ -74,25 +74,25 @@ isc_siphash24(const uint8_t *k, const uint8_t *in, size_t inlen, uint8_t *out)
 	switch (left) {
 	case 7:
 		b |= ((uint64_t)end[6]) << 48;
-		/* FALLTHROUGH */
+	/* FALLTHROUGH */
 	case 6:
 		b |= ((uint64_t)end[5]) << 40;
-		/* FALLTHROUGH */
+	/* FALLTHROUGH */
 	case 5:
 		b |= ((uint64_t)end[4]) << 32;
-		/* FALLTHROUGH */
+	/* FALLTHROUGH */
 	case 4:
 		b |= ((uint64_t)end[3]) << 24;
-		/* FALLTHROUGH */
+	/* FALLTHROUGH */
 	case 3:
 		b |= ((uint64_t)end[2]) << 16;
-		/* FALLTHROUGH */
+	/* FALLTHROUGH */
 	case 2:
 		b |= ((uint64_t)end[1]) << 8;
-		/* FALLTHROUGH */
+	/* FALLTHROUGH */
 	case 1:
 		b |= ((uint64_t)end[0]);
-		/* FALLTHROUGH */
+	/* FALLTHROUGH */
 	case 0:
 		break;
 	default:

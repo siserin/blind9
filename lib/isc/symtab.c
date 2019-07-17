@@ -58,8 +58,9 @@ isc_symtab_create(isc_mem_t *mctx, unsigned int size,
 	REQUIRE(size > 0); /* Should be prime. */
 
 	symtab = (isc_symtab_t *)isc_mem_get(mctx, sizeof(*symtab));
-	if (symtab == NULL)
+	if (symtab == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	symtab->mctx = NULL;
 	isc_mem_attach(mctx, &symtab->mctx);
@@ -98,10 +99,11 @@ isc_symtab_destroy(isc_symtab_t **symtabp)
 	for (i = 0; i < symtab->size; i++) {
 		for (elt = HEAD(symtab->table[i]); elt != NULL; elt = nelt) {
 			nelt = NEXT(elt, link);
-			if (symtab->undefine_action != NULL)
+			if (symtab->undefine_action != NULL) {
 				(symtab->undefine_action)(elt->key, elt->type,
 							  elt->value,
 							  symtab->undefine_arg);
+			}
 			isc_mem_put(symtab->mctx, elt, sizeof(*elt));
 		}
 	}
@@ -168,11 +170,13 @@ isc_symtab_lookup(isc_symtab_t *symtab, const char *key, unsigned int type,
 
 	FIND(symtab, key, type, bucket, elt);
 
-	if (elt == NULL)
+	if (elt == NULL) {
 		return (ISC_R_NOTFOUND);
+	}
 
-	if (value != NULL)
+	if (value != NULL) {
 		*value = elt->value;
+	}
 
 	return (ISC_R_SUCCESS);
 }
@@ -190,8 +194,9 @@ grow_table(isc_symtab_t *symtab)
 	INSIST(newsize > 0U && newmax > 0U);
 
 	newtable = isc_mem_get(symtab->mctx, newsize * sizeof(eltlist_t));
-	if (newtable == NULL)
+	if (newtable == NULL) {
 		return;
+	}
 
 	for (i = 0; i < newsize; i++)
 		INIT_LIST(newtable[i]);
@@ -232,18 +237,21 @@ isc_symtab_define(isc_symtab_t *symtab, const char *key, unsigned int type,
 	FIND(symtab, key, type, bucket, elt);
 
 	if (exists_policy != isc_symexists_add && elt != NULL) {
-		if (exists_policy == isc_symexists_reject)
+		if (exists_policy == isc_symexists_reject) {
 			return (ISC_R_EXISTS);
+		}
 		INSIST(exists_policy == isc_symexists_replace);
 		UNLINK(symtab->table[bucket], elt, link);
-		if (symtab->undefine_action != NULL)
+		if (symtab->undefine_action != NULL) {
 			(symtab->undefine_action)(elt->key, elt->type,
 						  elt->value,
 						  symtab->undefine_arg);
+		}
 	} else {
 		elt = (elt_t *)isc_mem_get(symtab->mctx, sizeof(*elt));
-		if (elt == NULL)
+		if (elt == NULL) {
 			return (ISC_R_NOMEMORY);
+		}
 		ISC_LINK_INIT(elt, link);
 		symtab->count++;
 	}
@@ -264,8 +272,9 @@ isc_symtab_define(isc_symtab_t *symtab, const char *key, unsigned int type,
 	 */
 	PREPEND(symtab->table[bucket], elt, link);
 
-	if (symtab->count > symtab->maxload)
+	if (symtab->count > symtab->maxload) {
 		grow_table(symtab);
+	}
 
 	return (ISC_R_SUCCESS);
 }
@@ -281,12 +290,14 @@ isc_symtab_undefine(isc_symtab_t *symtab, const char *key, unsigned int type)
 
 	FIND(symtab, key, type, bucket, elt);
 
-	if (elt == NULL)
+	if (elt == NULL) {
 		return (ISC_R_NOTFOUND);
+	}
 
-	if (symtab->undefine_action != NULL)
+	if (symtab->undefine_action != NULL) {
 		(symtab->undefine_action)(elt->key, elt->type, elt->value,
 					  symtab->undefine_arg);
+	}
 	UNLINK(symtab->table[bucket], elt, link);
 	isc_mem_put(symtab->mctx, elt, sizeof(*elt));
 	symtab->count--;

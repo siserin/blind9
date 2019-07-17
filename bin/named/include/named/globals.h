@@ -35,14 +35,14 @@
 #ifdef NAMED_MAIN
 #define EXTERN
 #define INIT(v) = (v)
-#else
+#else /* ifdef NAMED_MAIN */
 #define EXTERN extern
 #define INIT(v)
-#endif
+#endif /* ifdef NAMED_MAIN */
 
 #ifndef NAMED_RUN_PID_DIR
 #define NAMED_RUN_PID_DIR 1
-#endif
+#endif /* ifndef NAMED_RUN_PID_DIR */
 
 EXTERN isc_mem_t *named_g_mctx INIT(NULL);
 EXTERN unsigned int named_g_cpus INIT(0);
@@ -53,7 +53,7 @@ EXTERN unsigned int named_g_cpus_detected INIT(1);
 
 #ifdef ENABLE_AFL
 EXTERN bool named_g_run_done INIT(false);
-#endif
+#endif /* ifdef ENABLE_AFL */
 /*
  * XXXRTH  We're going to want multiple timer managers eventually.  One
  *         for really short timers, another for client timers, and one
@@ -126,16 +126,16 @@ EXTERN bool named_g_forcelock INIT(false);
 #if NAMED_RUN_PID_DIR
 EXTERN const char *named_g_defaultpidfile INIT(NAMED_LOCALSTATEDIR "/run/named/"
 								   "named.pid");
-#else
+#else  /* if NAMED_RUN_PID_DIR */
 EXTERN const char *named_g_defaultpidfile INIT(NAMED_LOCALSTATEDIR "/run/"
 								   "named.pid");
-#endif
+#endif /* if NAMED_RUN_PID_DIR */
 
 #ifdef HAVE_DNSTAP
 EXTERN const char *named_g_defaultdnstap INIT(NAMED_LOCALSTATEDIR "/run/named/"
 								  "dnstap."
 								  "sock");
-#else
+#else  /* ifdef HAVE_DNSTAP */
 EXTERN const char *named_g_defaultdnstap INIT(NULL);
 #endif /* HAVE_DNSTAP */
 
@@ -152,7 +152,7 @@ EXTERN unsigned int named_g_tat_interval INIT(24 * 3600);
 
 #if defined(HAVE_GEOIP2)
 EXTERN dns_geoip_databases_t *named_g_geoip INIT(NULL);
-#endif
+#endif /* if defined(HAVE_GEOIP2) */
 
 EXTERN const char *named_g_fuzz_addr INIT(NULL);
 EXTERN isc_fuzztype_t named_g_fuzz_type INIT(isc_fuzz_none);

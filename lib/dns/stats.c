@@ -128,15 +128,17 @@ create_stats(isc_mem_t *mctx, dns_statstype_t type, int ncounters,
 	isc_result_t result;
 
 	stats = isc_mem_get(mctx, sizeof(*stats));
-	if (stats == NULL)
+	if (stats == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	stats->counters = NULL;
 	isc_refcount_init(&stats->references, 1);
 
 	result = isc_stats_create(mctx, &stats->counters, ncounters);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto clean_mutex;
+	}
 
 	stats->magic = DNS_STATS_MAGIC;
 	stats->type = type;
@@ -222,12 +224,13 @@ dns_rdatatypestats_increment(dns_stats_t *stats, dns_rdatatype_t type)
 
 	REQUIRE(DNS_STATS_VALID(stats) && stats->type == dns_statstype_rdtype);
 
-	if (type == dns_rdatatype_dlv)
+	if (type == dns_rdatatype_dlv) {
 		counter = rdtypecounter_dlv;
-	else if (type > dns_rdatatype_any)
+	} else if (type > dns_rdatatype_any) {
 		counter = rdtypecounter_others;
-	else
+	} else {
 		counter = (int)type;
+	}
 
 	isc_stats_increment(stats->counters, (isc_statscounter_t)counter);
 }
@@ -244,16 +247,18 @@ update_rdatasetstats(dns_stats_t *stats, dns_rdatastatstype_t rrsettype,
 		counter = rdtypecounter_nxdomain;
 	} else {
 		rdtype = DNS_RDATASTATSTYPE_BASE(rrsettype);
-		if (rdtype == dns_rdatatype_dlv)
+		if (rdtype == dns_rdatatype_dlv) {
 			counter = (int)rdtypecounter_dlv;
-		else if (rdtype > dns_rdatatype_any)
+		} else if (rdtype > dns_rdatatype_any) {
 			counter = (int)rdtypecounter_others;
-		else
+		} else {
 			counter = (int)rdtype;
+		}
 
 		if ((DNS_RDATASTATSTYPE_ATTR(rrsettype) &
-		     DNS_RDATASTATSTYPE_ATTR_NXRRSET) != 0)
+		     DNS_RDATASTATSTYPE_ATTR_NXRRSET) != 0) {
 			counter += rdtypecounter_max;
+		}
 	}
 
 	if (increment) {
@@ -265,8 +270,9 @@ update_rdatasetstats(dns_stats_t *stats, dns_rdatastatstype_t rrsettype,
 		isc_stats_increment(stats->counters, counter);
 	} else {
 		if ((DNS_RDATASTATSTYPE_ATTR(rrsettype) &
-		     DNS_RDATASTATSTYPE_ATTR_STALE) != 0)
+		     DNS_RDATASTATSTYPE_ATTR_STALE) != 0) {
 			counter += rdtypecounter_stale;
+		}
 		isc_stats_decrement(stats->counters, counter);
 	}
 }
@@ -302,8 +308,9 @@ dns_rcodestats_increment(dns_stats_t *stats, dns_rcode_t code)
 {
 	REQUIRE(DNS_STATS_VALID(stats) && stats->type == dns_statstype_rcode);
 
-	if (code <= dns_rcode_badcookie)
+	if (code <= dns_rcode_badcookie) {
 		isc_stats_increment(stats->counters, (isc_statscounter_t)code);
+	}
 }
 
 void
@@ -334,13 +341,14 @@ dump_rdentry(int rdcounter, uint64_t value, dns_rdatastatstype_t attributes,
 	dns_rdatatype_t rdtype = dns_rdatatype_none; /* sentinel */
 	dns_rdatastatstype_t type;
 
-	if (rdcounter == rdtypecounter_others)
+	if (rdcounter == rdtypecounter_others) {
 		attributes |= DNS_RDATASTATSTYPE_ATTR_OTHERTYPE;
-	else {
-		if (rdcounter == rdtypecounter_dlv)
+	} else {
+		if (rdcounter == rdtypecounter_dlv) {
 			rdtype = dns_rdatatype_dlv;
-		else
+		} else {
 			rdtype = (dns_rdatatype_t)rdcounter;
+		}
 	}
 	type = DNS_RDATASTATSTYPE_VALUE((dns_rdatastatstype_t)rdtype,
 					attributes);
@@ -494,8 +502,9 @@ dns_stats_alloccounters(isc_mem_t *mctx, uint64_t **ctrp)
 {
 	int i;
 	uint64_t *p = isc_mem_get(mctx, DNS_STATS_NCOUNTERS * sizeof(uint64_t));
-	if (p == NULL)
+	if (p == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 	for (i = 0; i < DNS_STATS_NCOUNTERS; i++)
 		p[i] = 0;
 	*ctrp = p;

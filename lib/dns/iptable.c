@@ -31,8 +31,9 @@ dns_iptable_create(isc_mem_t *mctx, dns_iptable_t **target)
 	dns_iptable_t *tab;
 
 	tab = isc_mem_get(mctx, sizeof(*tab));
-	if (tab == NULL)
+	if (tab == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 	tab->mctx = NULL;
 	isc_mem_attach(mctx, &tab->mctx);
 	isc_refcount_init(&tab->refcount, 1);
@@ -40,8 +41,9 @@ dns_iptable_create(isc_mem_t *mctx, dns_iptable_t **target)
 	tab->magic = DNS_IPTABLE_MAGIC;
 
 	result = isc_radix_create(mctx, &tab->radix, RADIX_MAXBITS);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	*target = tab;
 	return (ISC_R_SUCCESS);
@@ -82,9 +84,10 @@ dns_iptable_addprefix(dns_iptable_t *tab, const isc_netaddr_t *addr,
 		/* "any" or "none" */
 		INSIST(pfx.bitlen == 0);
 		for (i = 0; i < RADIX_FAMILIES; i++) {
-			if (node->data[i] == NULL)
+			if (node->data[i] == NULL) {
 				node->data[i] = pos ? &dns_iptable_pos
 						    : &dns_iptable_neg;
+			}
 		}
 	} else {
 		/* any other prefix */
@@ -114,8 +117,9 @@ dns_iptable_merge(dns_iptable_t *tab, dns_iptable_t *source, bool pos)
 		new_node = NULL;
 		result = isc_radix_insert(tab->radix, &new_node, node, NULL);
 
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (result);
+		}
 
 		/*
 		 * If we're negating a nested ACL, then we should
@@ -127,11 +131,13 @@ dns_iptable_merge(dns_iptable_t *tab, dns_iptable_t *source, bool pos)
 		 */
 		for (i = 0; i < RADIX_FAMILIES; i++) {
 			if (!pos) {
-				if (node->data[i] && *(bool *)node->data[i])
+				if (node->data[i] && *(bool *)node->data[i]) {
 					new_node->data[i] = &dns_iptable_neg;
+				}
 			}
-			if (node->node_num[i] > max_node)
+			if (node->node_num[i] > max_node) {
 				max_node = node->node_num[i];
+			}
 		}
 	}
 	RADIX_WALK_END;

@@ -106,14 +106,15 @@ struct cache_cleaner {
 	dns_cache_t *cache;
 	isc_task_t *task;
 	isc_event_t *resched_event; /*% Sent by cleaner task to
-					   itself to reschedule */
+				     *     itself to reschedule */
 	isc_event_t *overmem_event;
 
 	dns_dbiterator_t *iterator;
 	unsigned int increment; /*% Number of names to
-				      clean in one increment */
+				 *    clean in one increment */
 	cleaner_state_t state;  /*% Idle/Busy. */
-	bool overmem;		/*% The cache is in an overmem state. */
+	bool overmem;		/*% The cache is in an overmem state.
+				 * */
 	bool replaceiterator;
 };
 
@@ -172,8 +173,9 @@ cache_create_db(dns_cache_t *cache, dns_db_t **db)
 	result = dns_db_create(cache->mctx, cache->db_type, dns_rootname,
 			       dns_dbtype_cache, cache->rdclass, cache->db_argc,
 			       cache->db_argv, db);
-	if (result == ISC_R_SUCCESS)
+	if (result == ISC_R_SUCCESS) {
 		dns_db_setservestalettl(*db, cache->serve_stale_ttl);
+	}
 	return (result);
 }
 
@@ -195,8 +197,9 @@ dns_cache_create(isc_mem_t *cmctx, isc_mem_t *hmctx, isc_taskmgr_t *taskmgr,
 	REQUIRE(cachename != NULL);
 
 	cache = isc_mem_get(cmctx, sizeof(*cache));
-	if (cache == NULL)
+	if (cache == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	cache->mctx = cache->hmctx = NULL;
 	isc_mem_attach(cmctx, &cache->mctx);
@@ -222,8 +225,9 @@ dns_cache_create(isc_mem_t *cmctx, isc_mem_t *hmctx, isc_taskmgr_t *taskmgr,
 	cache->stats = NULL;
 	result = isc_stats_create(cmctx, &cache->stats,
 				  dns_cachestatscounter_max);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup_filelock;
+	}
 
 	cache->db_type = isc_mem_strdup(cmctx, db_type);
 	if (cache->db_type == NULL) {
@@ -236,8 +240,9 @@ dns_cache_create(isc_mem_t *cmctx, isc_mem_t *hmctx, isc_taskmgr_t *taskmgr,
 	 * via cache->db_argv, followed by the rest of the arguments in
 	 * db_argv (of which there really shouldn't be any).
 	 */
-	if (strcmp(cache->db_type, "rbt") == 0)
+	if (strcmp(cache->db_type, "rbt") == 0) {
 		extra = 1;
+	}
 
 	cache->db_argc = db_argc + extra;
 	cache->db_argv = NULL;
@@ -269,13 +274,15 @@ dns_cache_create(isc_mem_t *cmctx, isc_mem_t *hmctx, isc_taskmgr_t *taskmgr,
 	 */
 	cache->db = NULL;
 	result = cache_create_db(cache, &cache->db);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup_dbargv;
+	}
 	if (taskmgr != NULL) {
 		dbtask = NULL;
 		result = isc_task_create(taskmgr, 1, &dbtask);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto cleanup_db;
+		}
 
 		isc_task_setname(dbtask, "cache_dbtask", NULL);
 		dns_db_settask(cache->db, dbtask);
@@ -290,18 +297,20 @@ dns_cache_create(isc_mem_t *cmctx, isc_mem_t *hmctx, isc_taskmgr_t *taskmgr,
 	 * RBT-type cache DB has its own mechanism of cache cleaning and doesn't
 	 * need the control of the generic cleaner.
 	 */
-	if (strcmp(db_type, "rbt") == 0)
+	if (strcmp(db_type, "rbt") == 0) {
 		result = cache_cleaner_init(cache, NULL, NULL, &cache->cleaner);
-	else {
+	} else {
 		result = cache_cleaner_init(cache, taskmgr, timermgr,
 					    &cache->cleaner);
 	}
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup_db;
+	}
 
 	result = dns_db_setcachestats(cache->db, cache->stats);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup_db;
+	}
 
 	*cachep = cache;
 	return (ISC_R_SUCCESS);
@@ -310,11 +319,13 @@ cleanup_db:
 	dns_db_detach(&cache->db);
 cleanup_dbargv:
 	for (i = extra; i < cache->db_argc; i++)
-		if (cache->db_argv[i] != NULL)
+		if (cache->db_argv[i] != NULL) {
 			isc_mem_free(cmctx, cache->db_argv[i]);
-	if (cache->db_argv != NULL)
+		}
+	if (cache->db_argv != NULL) {
 		isc_mem_put(cmctx, cache->db_argv,
 			    cache->db_argc * sizeof(char *));
+	}
 cleanup_dbtype:
 	isc_mem_free(cmctx, cache->db_type);
 cleanup_filelock:
@@ -341,17 +352,21 @@ cache_free(dns_cache_t *cache)
 
 	isc_mem_setwater(cache->mctx, NULL, NULL, 0, 0);
 
-	if (cache->cleaner.task != NULL)
+	if (cache->cleaner.task != NULL) {
 		isc_task_detach(&cache->cleaner.task);
+	}
 
-	if (cache->cleaner.overmem_event != NULL)
+	if (cache->cleaner.overmem_event != NULL) {
 		isc_event_free(&cache->cleaner.overmem_event);
+	}
 
-	if (cache->cleaner.resched_event != NULL)
+	if (cache->cleaner.resched_event != NULL) {
 		isc_event_free(&cache->cleaner.resched_event);
+	}
 
-	if (cache->cleaner.iterator != NULL)
+	if (cache->cleaner.iterator != NULL) {
 		dns_dbiterator_destroy(&cache->cleaner.iterator);
+	}
 
 	isc_mutex_destroy(&cache->cleaner.lock);
 
@@ -360,8 +375,9 @@ cache_free(dns_cache_t *cache)
 		cache->filename = NULL;
 	}
 
-	if (cache->db != NULL)
+	if (cache->db != NULL) {
 		dns_db_detach(&cache->db);
+	}
 
 	if (cache->db_argv != NULL) {
 		/*
@@ -369,23 +385,28 @@ cache_free(dns_cache_t *cache)
 		 * as it's a pointer to hmctx
 		 */
 		int extra = 0;
-		if (strcmp(cache->db_type, "rbt") == 0)
+		if (strcmp(cache->db_type, "rbt") == 0) {
 			extra = 1;
+		}
 		for (i = extra; i < cache->db_argc; i++)
-			if (cache->db_argv[i] != NULL)
+			if (cache->db_argv[i] != NULL) {
 				isc_mem_free(cache->mctx, cache->db_argv[i]);
+			}
 		isc_mem_put(cache->mctx, cache->db_argv,
 			    cache->db_argc * sizeof(char *));
 	}
 
-	if (cache->db_type != NULL)
+	if (cache->db_type != NULL) {
 		isc_mem_free(cache->mctx, cache->db_type);
+	}
 
-	if (cache->name != NULL)
+	if (cache->name != NULL) {
 		isc_mem_free(cache->mctx, cache->name);
+	}
 
-	if (cache->stats != NULL)
+	if (cache->stats != NULL) {
 		isc_stats_detach(&cache->stats);
+	}
 
 	isc_mutex_destroy(&cache->lock);
 	isc_mutex_destroy(&cache->filelock);
@@ -426,11 +447,12 @@ dns_cache_detach(dns_cache_t **cachep)
 		 * specified.
 		 */
 		isc_result_t result = dns_cache_dump(cache);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			isc_log_write(dns_lctx, DNS_LOGCATEGORY_DATABASE,
 				      DNS_LOGMODULE_CACHE, ISC_LOG_WARNING,
 				      "error dumping cache: %s ",
 				      isc_result_totext(result));
+		}
 
 		/*
 		 * If the cleaner task exists, let it free the cache.
@@ -468,12 +490,14 @@ dns_cache_setfilename(dns_cache_t *cache, const char *filename)
 	REQUIRE(filename != NULL);
 
 	newname = isc_mem_strdup(cache->mctx, filename);
-	if (newname == NULL)
+	if (newname == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	LOCK(&cache->filelock);
-	if (cache->filename)
+	if (cache->filename) {
 		isc_mem_free(cache->mctx, cache->filename);
+	}
 	cache->filename = newname;
 	UNLOCK(&cache->filelock);
 
@@ -487,8 +511,9 @@ dns_cache_load(dns_cache_t *cache)
 
 	REQUIRE(VALID_CACHE(cache));
 
-	if (cache->filename == NULL)
+	if (cache->filename == NULL) {
 		return (ISC_R_SUCCESS);
+	}
 
 	LOCK(&cache->filelock);
 	result = dns_db_load(cache->db, cache->filename, dns_masterformat_text,
@@ -505,8 +530,9 @@ dns_cache_dump(dns_cache_t *cache)
 
 	REQUIRE(VALID_CACHE(cache));
 
-	if (cache->filename == NULL)
+	if (cache->filename == NULL) {
 		return (ISC_R_SUCCESS);
+	}
 
 	LOCK(&cache->filelock);
 	result = dns_master_dump(cache->mctx, cache->db, NULL,
@@ -550,8 +576,9 @@ cache_cleaner_init(dns_cache_t *cache, isc_taskmgr_t *taskmgr,
 
 	result = dns_db_createiterator(cleaner->cache->db, false,
 				       &cleaner->iterator);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	if (taskmgr != NULL && timermgr != NULL) {
 		result = isc_task_create(taskmgr, 1, &cleaner->task);
@@ -596,14 +623,18 @@ cache_cleaner_init(dns_cache_t *cache, isc_taskmgr_t *taskmgr,
 	return (ISC_R_SUCCESS);
 
 cleanup:
-	if (cleaner->overmem_event != NULL)
+	if (cleaner->overmem_event != NULL) {
 		isc_event_free(&cleaner->overmem_event);
-	if (cleaner->resched_event != NULL)
+	}
+	if (cleaner->resched_event != NULL) {
 		isc_event_free(&cleaner->resched_event);
-	if (cleaner->task != NULL)
+	}
+	if (cleaner->task != NULL) {
 		isc_task_detach(&cleaner->task);
-	if (cleaner->iterator != NULL)
+	}
+	if (cleaner->iterator != NULL) {
 		dns_dbiterator_destroy(&cleaner->iterator);
+	}
 	isc_mutex_destroy(&cleaner->lock);
 
 	return (result);
@@ -620,16 +651,17 @@ begin_cleaning(cache_cleaner_t *cleaner)
 	 * Create an iterator, if it does not already exist, and
 	 * position it at the beginning of the cache.
 	 */
-	if (cleaner->iterator == NULL)
+	if (cleaner->iterator == NULL) {
 		result = dns_db_createiterator(cleaner->cache->db, false,
 					       &cleaner->iterator);
-	if (result != ISC_R_SUCCESS)
+	}
+	if (result != ISC_R_SUCCESS) {
 		isc_log_write(dns_lctx, DNS_LOGCATEGORY_DATABASE,
 			      DNS_LOGMODULE_CACHE, ISC_LOG_WARNING,
 			      "cache cleaner could not create "
 			      "iterator: %s",
 			      isc_result_totext(result));
-	else {
+	} else {
 		dns_dbiterator_setcleanmode(cleaner->iterator, true);
 		result = dns_dbiterator_first(cleaner->iterator);
 	}
@@ -675,8 +707,9 @@ end_cleaning(cache_cleaner_t *cleaner, isc_event_t *event)
 	REQUIRE(event != NULL);
 
 	result = dns_dbiterator_pause(cleaner->iterator);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		dns_dbiterator_destroy(&cleaner->iterator);
+	}
 
 	isc_log_write(dns_lctx, DNS_LOGCATEGORY_DATABASE, DNS_LOGMODULE_CACHE,
 		      ISC_LOG_DEBUG(1), "end cache cleaning, mem inuse %lu",
@@ -711,10 +744,11 @@ overmem_cleaning_action(isc_task_t *task, isc_event_t *event)
 	LOCK(&cleaner->lock);
 
 	if (cleaner->overmem) {
-		if (cleaner->state == cleaner_s_idle)
+		if (cleaner->state == cleaner_s_idle) {
 			want_cleaning = true;
+		}
 	} else {
-		if (cleaner->state == cleaner_s_busy)
+		if (cleaner->state == cleaner_s_busy) {
 			/*
 			 * end_cleaning() can't be called here because
 			 * then both cleaner->overmem_event and
@@ -724,14 +758,16 @@ overmem_cleaning_action(isc_task_t *task, isc_event_t *event)
 			 * is posted, it will handle the end_cleaning.
 			 */
 			cleaner->state = cleaner_s_done;
+		}
 	}
 
 	cleaner->overmem_event = event;
 
 	UNLOCK(&cleaner->lock);
 
-	if (want_cleaning)
+	if (want_cleaning) {
 		begin_cleaning(cleaner);
+	}
 }
 
 /*
@@ -806,13 +842,13 @@ incremental_cleaning_action(isc_task_t *task, isc_event_t *event)
 			 * overmem and no error was encountered,
 			 * keep trying to clean it, otherwise stop cleaning.
 			 */
-			if (result != ISC_R_NOMORE)
+			if (result != ISC_R_NOMORE) {
 				UNEXPECTED_ERROR(__FILE__, __LINE__,
 						 "cache cleaner: "
 						 "dns_dbiterator_next() "
 						 "failed: %s",
 						 dns_result_totext(result));
-			else if (cleaner->overmem) {
+			} else if (cleaner->overmem) {
 				result =
 					dns_dbiterator_first(cleaner->iterator);
 				if (result == ISC_R_SUCCESS) {
@@ -865,8 +901,9 @@ dns_cache_clean(dns_cache_t *cache, isc_stdtime_t now)
 	REQUIRE(VALID_CACHE(cache));
 
 	result = dns_db_createiterator(cache->db, 0, &iterator);
-	if (result != ISC_R_SUCCESS)
-		return result;
+	if (result != ISC_R_SUCCESS) {
+		return (result);
+	}
 
 	result = dns_dbiterator_first(iterator);
 
@@ -874,8 +911,9 @@ dns_cache_clean(dns_cache_t *cache, isc_stdtime_t now)
 		dns_dbnode_t *node = NULL;
 		result = dns_dbiterator_current(iterator, &node,
 						(dns_name_t *)NULL);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			break;
+		}
 
 		/*
 		 * Check TTLs, mark expired rdatasets stale.
@@ -901,8 +939,9 @@ dns_cache_clean(dns_cache_t *cache, isc_stdtime_t now)
 
 	dns_dbiterator_destroy(&iterator);
 
-	if (result == ISC_R_NOMORE)
+	if (result == ISC_R_NOMORE) {
 		result = ISC_R_SUCCESS;
+	}
 
 	return (result);
 }
@@ -923,9 +962,10 @@ water(void *arg, int mark)
 		isc_mem_waterack(cache->mctx, mark);
 	}
 
-	if (cache->cleaner.overmem_event != NULL)
+	if (cache->cleaner.overmem_event != NULL) {
 		isc_task_send(cache->cleaner.task,
 			      &cache->cleaner.overmem_event);
+	}
 
 	UNLOCK(&cache->cleaner.lock);
 }
@@ -941,8 +981,9 @@ dns_cache_setcachesize(dns_cache_t *cache, size_t size)
 	 * Impose a minimum cache size; pathological things happen if there
 	 * is too little room.
 	 */
-	if (size != 0U && size < DNS_CACHE_MINSIZE)
+	if (size != 0U && size < DNS_CACHE_MINSIZE) {
 		size = DNS_CACHE_MINSIZE;
+	}
 
 	LOCK(&cache->lock);
 	cache->size = size;
@@ -958,17 +999,18 @@ dns_cache_setcachesize(dns_cache_t *cache, size_t size)
 	 * water().
 	 */
 
-	if (size == 0U || hiwater == 0U || lowater == 0U)
+	if (size == 0U || hiwater == 0U || lowater == 0U) {
 		/*
 		 * Disable cache memory limiting.
 		 */
 		isc_mem_setwater(cache->mctx, water, cache, 0, 0);
-	else
+	} else {
 		/*
 		 * Establish new cache memory limits (either for the first
 		 * time, or replacing other limits).
 		 */
 		isc_mem_setwater(cache->mctx, water, cache, hiwater, lowater);
+	}
 }
 
 size_t
@@ -1010,7 +1052,7 @@ dns_cache_getservestalettl(dns_cache_t *cache)
 	 * to confirm the value that the db is really using.
 	 */
 	result = dns_db_getservestalettl(cache->db, &ttl);
-	return result == ISC_R_SUCCESS ? ttl : 0;
+	return (result == ISC_R_SUCCESS ? ttl : 0);
 }
 
 /*
@@ -1027,10 +1069,11 @@ cleaner_shutdown_action(isc_task_t *task, isc_event_t *event)
 	INSIST(task == cache->cleaner.task);
 	INSIST(event->ev_type == ISC_TASKEVENT_SHUTDOWN);
 
-	if (CLEANER_BUSY(&cache->cleaner))
+	if (CLEANER_BUSY(&cache->cleaner)) {
 		end_cleaning(&cache->cleaner, event);
-	else
+	} else {
 		isc_event_free(&event);
+	}
 
 	LOCK(&cache->lock);
 
@@ -1046,8 +1089,9 @@ cleaner_shutdown_action(isc_task_t *task, isc_event_t *event)
 
 	UNLOCK(&cache->lock);
 
-	if (should_free)
+	if (should_free) {
 		cache_free(cache);
+	}
 }
 
 isc_result_t
@@ -1058,8 +1102,9 @@ dns_cache_flush(dns_cache_t *cache)
 	isc_result_t result;
 
 	result = cache_create_db(cache, &db);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	result = dns_db_createiterator(db, false, &dbiterator);
 	if (result != ISC_R_SUCCESS) {
@@ -1074,8 +1119,9 @@ dns_cache_flush(dns_cache_t *cache)
 		cache->cleaner.iterator = dbiterator;
 		dbiterator = NULL;
 	} else {
-		if (cache->cleaner.state == cleaner_s_busy)
+		if (cache->cleaner.state == cleaner_s_busy) {
 			cache->cleaner.state = cleaner_s_done;
+		}
 		cache->cleaner.replaceiterator = true;
 	}
 	olddb = cache->db;
@@ -1084,10 +1130,12 @@ dns_cache_flush(dns_cache_t *cache)
 	UNLOCK(&cache->cleaner.lock);
 	UNLOCK(&cache->lock);
 
-	if (dbiterator != NULL)
+	if (dbiterator != NULL) {
 		dns_dbiterator_destroy(&dbiterator);
-	if (olddbiterator != NULL)
+	}
+	if (olddbiterator != NULL) {
 		dns_dbiterator_destroy(&olddbiterator);
+	}
 	dns_db_detach(&olddb);
 
 	return (ISC_R_SUCCESS);
@@ -1100,8 +1148,9 @@ clearnode(dns_db_t *db, dns_dbnode_t *node)
 	dns_rdatasetiter_t *iter = NULL;
 
 	result = dns_db_allrdatasets(db, node, NULL, (isc_stdtime_t)0, &iter);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	for (result = dns_rdatasetiter_first(iter); result == ISC_R_SUCCESS;
 	     result = dns_rdatasetiter_next(iter)) {
@@ -1112,12 +1161,14 @@ clearnode(dns_db_t *db, dns_dbnode_t *node)
 		result = dns_db_deleterdataset(db, node, NULL, rdataset.type,
 					       rdataset.covers);
 		dns_rdataset_disassociate(&rdataset);
-		if (result != ISC_R_SUCCESS && result != DNS_R_UNCHANGED)
+		if (result != ISC_R_SUCCESS && result != DNS_R_UNCHANGED) {
 			break;
+		}
 	}
 
-	if (result == ISC_R_NOMORE)
+	if (result == ISC_R_NOMORE) {
 		result = ISC_R_SUCCESS;
+	}
 
 	dns_rdatasetiter_destroy(&iter);
 	return (result);
@@ -1141,48 +1192,60 @@ cleartree(dns_db_t *db, const dns_name_t *name)
 	nodename = dns_fixedname_initname(&fnodename);
 
 	result = dns_db_createiterator(db, 0, &iter);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	result = dns_dbiterator_seek(iter, name);
-	if (result == DNS_R_PARTIALMATCH)
+	if (result == DNS_R_PARTIALMATCH) {
 		result = dns_dbiterator_next(iter);
-	if (result != ISC_R_SUCCESS)
+	}
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	while (result == ISC_R_SUCCESS) {
 		result = dns_dbiterator_current(iter, &node, nodename);
-		if (result == DNS_R_NEWORIGIN)
+		if (result == DNS_R_NEWORIGIN) {
 			result = ISC_R_SUCCESS;
-		if (result != ISC_R_SUCCESS)
+		}
+		if (result != ISC_R_SUCCESS) {
 			goto cleanup;
+		}
 		/*
 		 * Are we done?
 		 */
-		if (!dns_name_issubdomain(nodename, name))
+		if (!dns_name_issubdomain(nodename, name)) {
 			goto cleanup;
+		}
 
 		/*
 		 * If clearnode fails record and move onto the next node.
 		 */
 		result = clearnode(db, node);
-		if (result != ISC_R_SUCCESS && answer == ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS && answer == ISC_R_SUCCESS) {
 			answer = result;
+		}
 		dns_db_detachnode(db, &node);
 		result = dns_dbiterator_next(iter);
 	}
 
 cleanup:
-	if (result == ISC_R_NOMORE || result == ISC_R_NOTFOUND)
+	if (result == ISC_R_NOMORE || result == ISC_R_NOTFOUND) {
 		result = ISC_R_SUCCESS;
-	if (result != ISC_R_SUCCESS && answer == ISC_R_SUCCESS)
+	}
+	if (result != ISC_R_SUCCESS && answer == ISC_R_SUCCESS) {
 		answer = result;
-	if (node != NULL)
+	}
+	if (node != NULL) {
 		dns_db_detachnode(db, &node);
-	if (iter != NULL)
+	}
+	if (iter != NULL) {
 		dns_dbiterator_destroy(&iter);
-	if (top != NULL)
+	}
+	if (top != NULL) {
 		dns_db_detachnode(db, &top);
+	}
 
 	return (answer);
 }
@@ -1200,15 +1263,18 @@ dns_cache_flushnode(dns_cache_t *cache, const dns_name_t *name, bool tree)
 	dns_dbnode_t *node = NULL;
 	dns_db_t *db = NULL;
 
-	if (tree && dns_name_equal(name, dns_rootname))
+	if (tree && dns_name_equal(name, dns_rootname)) {
 		return (dns_cache_flush(cache));
+	}
 
 	LOCK(&cache->lock);
-	if (cache->db != NULL)
+	if (cache->db != NULL) {
 		dns_db_attach(cache->db, &db);
+	}
 	UNLOCK(&cache->lock);
-	if (db == NULL)
+	if (db == NULL) {
 		return (ISC_R_SUCCESS);
+	}
 
 	if (tree) {
 		result = cleartree(cache->db, name);
@@ -1218,8 +1284,9 @@ dns_cache_flushnode(dns_cache_t *cache, const dns_name_t *name, bool tree)
 			result = ISC_R_SUCCESS;
 			goto cleanup_db;
 		}
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			goto cleanup_db;
+		}
 		result = clearnode(cache->db, node);
 		dns_db_detachnode(cache->db, &node);
 	}
@@ -1240,8 +1307,9 @@ void
 dns_cache_updatestats(dns_cache_t *cache, isc_result_t result)
 {
 	REQUIRE(VALID_CACHE(cache));
-	if (cache->stats == NULL)
+	if (cache->stats == NULL) {
 		return;
+	}
 
 	switch (result) {
 	case ISC_R_SUCCESS:
@@ -1408,7 +1476,7 @@ dns_cache_renderxml(dns_cache_t *cache, void *writer0)
 error:
 	return (xmlrc);
 }
-#endif
+#endif /* ifdef HAVE_LIBXML2 */
 
 #ifdef HAVE_JSON_C
 #define CHECKMEM(m)                                                            \
@@ -1493,4 +1561,4 @@ dns_cache_renderjson(dns_cache_t *cache, void *cstats0)
 error:
 	return (result);
 }
-#endif
+#endif /* ifdef HAVE_JSON_C */

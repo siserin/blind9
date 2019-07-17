@@ -53,7 +53,7 @@
 
 #ifndef MAP_FILE
 #define MAP_FILE 0
-#endif
+#endif /* ifndef MAP_FILE */
 
 /* Set to true (or use -v option) for verbose output */
 static bool verbose = false;
@@ -489,4 +489,4 @@ main(void)
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

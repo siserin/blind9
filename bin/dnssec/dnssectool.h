@@ -24,7 +24,7 @@
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024 /* WIN32, and others don't define this. */
-#endif
+#endif		      /* ifndef PATH_MAX */
 
 /*! verbosity: set by -v option in each program, defined in dnssectool.c */
 extern int verbose;
@@ -106,6 +106,6 @@ void
 InitSockets(void);
 void
 DestroySockets(void);
-#endif
+#endif /* ifdef _WIN32 */
 
 #endif /* DNSSEC_DNSSECTOOL_H */

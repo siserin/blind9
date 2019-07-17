@@ -111,7 +111,7 @@ main(void)
 	const struct CMUnitTest tkey_tests[] = {
 		cmocka_unit_test_teardown(dns_tkeyctx_create_test, _teardown),
 		cmocka_unit_test_setup(dns_tkeyctx_destroy_test, _setup),
-#if 0 /* not yet */
+#if 0  /* not yet */
 		cmocka_unit_test(dns_tkey_processquery_test),
 		cmocka_unit_test(dns_tkey_builddhquery_test),
 		cmocka_unit_test(dns_tkey_buildgssquery_test),
@@ -120,15 +120,15 @@ main(void)
 		cmocka_unit_test(dns_tkey_processgssresponse_test),
 		cmocka_unit_test(dns_tkey_processdeleteresponse_test),
 		cmocka_unit_test(dns_tkey_gssnegotiate_test),
-#endif
+#endif /* if 0 */
 	};
 	return (cmocka_run_group_tests(tkey_tests, NULL, NULL));
-#else
+#else  /* if LD_WRAP */
 	print_message("1..0 # Skip tkey_test requires LD_WRAP\n");
 #endif /* LD_WRAP */
 }
 
-#else
+#else /* if HAVE_CMOCKA */
 
 #include <stdio.h>
 
@@ -139,4 +139,4 @@ main(void)
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */

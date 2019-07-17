@@ -19,7 +19,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#endif
+#endif /* ifndef WIN32 */
 
 #include <inttypes.h>
 #include <stdbool.h>
@@ -36,7 +36,7 @@
 #include <isc/mem.h>
 #ifdef WIN32
 #include <isc/ntpaths.h>
-#endif
+#endif /* ifdef WIN32 */
 #include <isc/parseint.h>
 #include <isc/print.h>
 #include <isc/sockaddr.h>
@@ -257,8 +257,9 @@ delv_log(int level, const char *fmt, ...)
 	va_list ap;
 	char msgbuf[2048];
 
-	if (!isc_log_wouldlog(lctx, level))
+	if (!isc_log_wouldlog(lctx, level)) {
 		return;
+	}
 
 	va_start(ap, fmt);
 
@@ -278,8 +279,9 @@ setup_logging(FILE *errout)
 	isc_logconfig_t *logconfig = NULL;
 
 	result = isc_log_create(mctx, &lctx, &logconfig);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("Couldn't set up logging");
+	}
 
 	isc_log_registercategories(lctx, categories);
 	isc_log_registermodules(lctx, modules);
@@ -296,60 +298,69 @@ setup_logging(FILE *errout)
 	result = isc_log_createchannel(logconfig, "stderr", ISC_LOG_TOFILEDESC,
 				       ISC_LOG_DYNAMIC, &destination,
 				       ISC_LOG_PRINTPREFIX);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("Couldn't set up log channel 'stderr'");
+	}
 
 	isc_log_setdebuglevel(lctx, loglevel);
 
 	result = isc_log_settag(logconfig, ";; ");
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("Couldn't set log tag");
+	}
 
 	result = isc_log_usechannel(logconfig, "stderr",
 				    ISC_LOGCATEGORY_DEFAULT, NULL);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("Couldn't attach to log channel 'stderr'");
+	}
 
 	if (resolve_trace && loglevel < 1) {
 		result = isc_log_createchannel(
 			logconfig, "resolver", ISC_LOG_TOFILEDESC,
 			ISC_LOG_DEBUG(1), &destination, ISC_LOG_PRINTPREFIX);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			fatal("Couldn't set up log channel 'resolver'");
+		}
 
 		result = isc_log_usechannel(logconfig, "resolver",
 					    DNS_LOGCATEGORY_RESOLVER,
 					    DNS_LOGMODULE_RESOLVER);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			fatal("Couldn't attach to log channel 'resolver'");
+		}
 	}
 
 	if (validator_trace && loglevel < 3) {
 		result = isc_log_createchannel(
 			logconfig, "validator", ISC_LOG_TOFILEDESC,
 			ISC_LOG_DEBUG(3), &destination, ISC_LOG_PRINTPREFIX);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			fatal("Couldn't set up log channel 'validator'");
+		}
 
 		result = isc_log_usechannel(logconfig, "validator",
 					    DNS_LOGCATEGORY_DNSSEC,
 					    DNS_LOGMODULE_VALIDATOR);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			fatal("Couldn't attach to log channel 'validator'");
+		}
 	}
 
 	if (message_trace && loglevel < 10) {
 		result = isc_log_createchannel(
 			logconfig, "messages", ISC_LOG_TOFILEDESC,
 			ISC_LOG_DEBUG(10), &destination, ISC_LOG_PRINTPREFIX);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			fatal("Couldn't set up log channel 'messages'");
+		}
 
 		result = isc_log_usechannel(logconfig, "messages",
 					    DNS_LOGCATEGORY_RESOLVER,
 					    DNS_LOGMODULE_PACKETS);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			fatal("Couldn't attach to log channel 'messagse'");
+		}
 	}
 }
 
@@ -360,11 +371,13 @@ print_status(dns_rdataset_t *rdataset)
 
 	REQUIRE(rdataset != NULL);
 
-	if (!showtrust || !dns_rdataset_isassociated(rdataset))
+	if (!showtrust || !dns_rdataset_isassociated(rdataset)) {
 		return;
+	}
 
-	if ((rdataset->attributes & DNS_RDATASETATTR_NEGATIVE) != 0)
+	if ((rdataset->attributes & DNS_RDATASETATTR_NEGATIVE) != 0) {
 		astr = "negative response, ";
+	}
 
 	switch (rdataset->trust) {
 	case dns_trust_none:
@@ -383,10 +396,11 @@ print_status(dns_rdataset_t *rdataset)
 		tstr = "glue data";
 		break;
 	case dns_trust_answer:
-		if (root_validation || dlv_validation)
+		if (root_validation || dlv_validation) {
 			tstr = "unsigned answer";
-		else
+		} else {
 			tstr = "answer not validated";
+		}
 		break;
 	case dns_trust_authauthority:
 		tstr = "authority data";
@@ -424,12 +438,14 @@ printdata(dns_rdataset_t *rdataset, dns_name_t *owner,
 		return (ISC_R_SUCCESS);
 	}
 
-	if (!showdnssec && rdataset->type == dns_rdatatype_rrsig)
+	if (!showdnssec && rdataset->type == dns_rdatatype_rrsig) {
 		return (ISC_R_SUCCESS);
+	}
 
 	if (first || rdataset->trust != trust) {
-		if (!first && showtrust && !short_form)
+		if (!first && showtrust && !short_form) {
 			putchar('\n');
+		}
 		print_status(rdataset);
 		trust = rdataset->trust;
 		first = false;
@@ -437,8 +453,9 @@ printdata(dns_rdataset_t *rdataset, dns_name_t *owner,
 
 	do {
 		t = isc_mem_get(mctx, len);
-		if (t == NULL)
+		if (t == NULL) {
 			return (ISC_R_NOMEMORY);
+		}
 
 		isc_buffer_init(&target, t, len);
 		if (short_form) {
@@ -447,15 +464,17 @@ printdata(dns_rdataset_t *rdataset, dns_name_t *owner,
 			     result == ISC_R_SUCCESS;
 			     result = dns_rdataset_next(rdataset)) {
 				if ((rdataset->attributes &
-				     DNS_RDATASETATTR_NEGATIVE) != 0)
+				     DNS_RDATASETATTR_NEGATIVE) != 0) {
 					continue;
+				}
 
 				dns_rdataset_current(rdataset, &rdata);
 				result = dns_rdata_tofmttext(
 					&rdata, dns_rootname, styleflags, 0,
 					splitwidth, " ", &target);
-				if (result != ISC_R_SUCCESS)
+				if (result != ISC_R_SUCCESS) {
 					break;
+				}
 
 				if (isc_buffer_availablelength(&target) < 1) {
 					result = ISC_R_NOSPACE;
@@ -468,8 +487,9 @@ printdata(dns_rdataset_t *rdataset, dns_name_t *owner,
 			}
 		} else {
 			if ((rdataset->attributes &
-			     DNS_RDATASETATTR_NEGATIVE) != 0)
+			     DNS_RDATASETATTR_NEGATIVE) != 0) {
 				isc_buffer_putstr(&target, "; ");
+			}
 
 			result = dns_master_rdatasettotext(owner, rdataset,
 							   style, &target);
@@ -478,18 +498,20 @@ printdata(dns_rdataset_t *rdataset, dns_name_t *owner,
 		if (result == ISC_R_NOSPACE) {
 			isc_mem_put(mctx, t, len);
 			len += 1024;
-		} else if (result == ISC_R_NOMORE)
+		} else if (result == ISC_R_NOMORE) {
 			result = ISC_R_SUCCESS;
-		else
+		} else {
 			CHECK(result);
+		}
 	} while (result == ISC_R_NOSPACE);
 
 	isc_buffer_usedregion(&target, &r);
 	printf("%.*s", (int)r.length, (char *)r.base);
 
 cleanup:
-	if (t != NULL)
+	if (t != NULL) {
 		isc_mem_put(mctx, t, len);
+	}
 
 	return (ISC_R_SUCCESS);
 }
@@ -503,35 +525,43 @@ setup_style(dns_master_style_t **stylep)
 	REQUIRE(stylep != NULL || *stylep == NULL);
 
 	styleflags |= DNS_STYLEFLAG_REL_OWNER;
-	if (showcomments)
+	if (showcomments) {
 		styleflags |= DNS_STYLEFLAG_COMMENT;
-	if (print_unknown_format)
+	}
+	if (print_unknown_format) {
 		styleflags |= DNS_STYLEFLAG_UNKNOWNFORMAT;
-	if (rrcomments)
+	}
+	if (rrcomments) {
 		styleflags |= DNS_STYLEFLAG_RRCOMMENT;
-	if (nottl)
+	}
+	if (nottl) {
 		styleflags |= DNS_STYLEFLAG_NO_TTL;
-	if (noclass)
+	}
+	if (noclass) {
 		styleflags |= DNS_STYLEFLAG_NO_CLASS;
-	if (nocrypto)
+	}
+	if (nocrypto) {
 		styleflags |= DNS_STYLEFLAG_NOCRYPTO;
+	}
 	if (multiline) {
 		styleflags |= DNS_STYLEFLAG_MULTILINE;
 		styleflags |= DNS_STYLEFLAG_COMMENT;
 	}
 
-	if (multiline || (nottl && noclass))
+	if (multiline || (nottl && noclass)) {
 		result = dns_master_stylecreate(&style, styleflags, 24, 24, 24,
 						32, 80, 8, splitwidth, mctx);
-	else if (nottl || noclass)
+	} else if (nottl || noclass) {
 		result = dns_master_stylecreate(&style, styleflags, 24, 24, 32,
 						40, 80, 8, splitwidth, mctx);
-	else
+	} else {
 		result = dns_master_stylecreate(&style, styleflags, 24, 32, 40,
 						48, 80, 8, splitwidth, mctx);
+	}
 
-	if (result == ISC_R_SUCCESS)
+	if (result == ISC_R_SUCCESS) {
 		*stylep = style;
+	}
 	return (result);
 }
 
@@ -580,25 +610,33 @@ key_fromconfig(const cfg_obj_t *key, dns_client_t *client)
 	keynamestr = cfg_obj_asstring(cfg_tuple_get(key, "name"));
 	CHECK(convert_name(&fkeyname, &keyname, keynamestr));
 
-	if (!root_validation && !dlv_validation)
+	if (!root_validation && !dlv_validation) {
 		return (ISC_R_SUCCESS);
+	}
 
-	if (anchor_name)
+	if (anchor_name) {
 		match_root = dns_name_equal(keyname, anchor_name);
-	if (dlv_name)
+	}
+	if (dlv_name) {
 		match_dlv = dns_name_equal(keyname, dlv_name);
+	}
 
-	if (!match_root && !match_dlv)
+	if (!match_root && !match_dlv) {
 		return (ISC_R_SUCCESS);
-	if ((!root_validation && match_root) || (!dlv_validation && match_dlv))
+	}
+	if ((!root_validation && match_root) ||
+	    (!dlv_validation && match_dlv)) {
 		return (ISC_R_SUCCESS);
+	}
 
-	if (match_root)
+	if (match_root) {
 		delv_log(ISC_LOG_DEBUG(3), "adding trust anchor %s",
 			 trust_anchor);
-	if (match_dlv)
+	}
+	if (match_dlv) {
 		delv_log(ISC_LOG_DEBUG(3), "adding DLV trust anchor %s",
 			 dlv_anchor);
+	}
 
 	flags = cfg_obj_asuint32(cfg_tuple_get(key, "flags"));
 	proto = cfg_obj_asuint32(cfg_tuple_get(key, "protocol"));
@@ -613,12 +651,15 @@ key_fromconfig(const cfg_obj_t *key, dns_client_t *client)
 
 	ISC_LINK_INIT(&keystruct.common, link);
 
-	if (flags > 0xffff)
+	if (flags > 0xffff) {
 		CHECK(ISC_R_RANGE);
-	if (proto > 0xff)
+	}
+	if (proto > 0xff) {
 		CHECK(ISC_R_RANGE);
-	if (alg > 0xff)
+	}
+	if (alg > 0xff) {
 		CHECK(ISC_R_RANGE);
+	}
 
 	keystruct.flags = (uint16_t)flags;
 	keystruct.protocol = (uint8_t)proto;
@@ -642,9 +683,9 @@ key_fromconfig(const cfg_obj_t *key, dns_client_t *client)
 	num_keys++;
 
 cleanup:
-	if (result == DST_R_NOCRYPTO)
+	if (result == DST_R_NOCRYPTO) {
 		cfg_obj_log(key, lctx, ISC_LOG_ERROR, "no crypto support");
-	else if (result == DST_R_UNSUPPORTEDALG) {
+	} else if (result == DST_R_UNSUPPORTEDALG) {
 		cfg_obj_log(key, lctx, ISC_LOG_WARNING,
 			    "skipping trusted key '%s': %s", keynamestr,
 			    isc_result_totext(result));
@@ -678,8 +719,9 @@ load_keys(const cfg_obj_t *keys, dns_client_t *client)
 	}
 
 cleanup:
-	if (result == DST_R_NOCRYPTO)
+	if (result == DST_R_NOCRYPTO) {
 		result = ISC_R_SUCCESS;
+	}
 	return (result);
 }
 
@@ -701,12 +743,12 @@ setup_dnsseckeys(dns_client_t *client)
 	if (filename == NULL) {
 #ifndef WIN32
 		filename = SYSCONFDIR "/bind.keys";
-#else
+#else  /* ifndef WIN32 */
 		static char buf[MAX_PATH];
 		strlcpy(buf, isc_ntpaths_get(SYS_CONF_DIR), sizeof(buf));
 		strlcat(buf, "\\bind.keys", sizeof(buf));
 		filename = buf;
-#endif
+#endif /* ifndef WIN32 */
 	}
 
 	if (trust_anchor == NULL) {
@@ -804,8 +846,9 @@ addserver(dns_client_t *client)
 	dns_name_t *name = NULL;
 
 	result = parse_uint(&destport, port, 0xffff, "port");
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("Couldn't parse port number");
+	}
 
 	ISC_LIST_INIT(servers);
 
@@ -814,8 +857,9 @@ addserver(dns_client_t *client)
 			fatal("Use of IPv4 disabled by -6");
 		}
 		sa = isc_mem_get(mctx, sizeof(*sa));
-		if (sa == NULL)
+		if (sa == NULL) {
 			return (ISC_R_NOMEMORY);
+		}
 		ISC_LINK_INIT(sa, link);
 		isc_sockaddr_fromin(sa, &in4, destport);
 		ISC_LIST_APPEND(servers, sa, link);
@@ -824,19 +868,21 @@ addserver(dns_client_t *client)
 			fatal("Use of IPv6 disabled by -4");
 		}
 		sa = isc_mem_get(mctx, sizeof(*sa));
-		if (sa == NULL)
+		if (sa == NULL) {
 			return (ISC_R_NOMEMORY);
+		}
 		ISC_LINK_INIT(sa, link);
 		isc_sockaddr_fromin6(sa, &in6, destport);
 		ISC_LIST_APPEND(servers, sa, link);
 	} else {
 		memset(&hints, 0, sizeof(hints));
-		if (!use_ipv6)
+		if (!use_ipv6) {
 			hints.ai_family = AF_INET;
-		else if (!use_ipv4)
+		} else if (!use_ipv4) {
 			hints.ai_family = AF_INET6;
-		else
+		} else {
 			hints.ai_family = AF_UNSPEC;
+		}
 		hints.ai_socktype = SOCK_DGRAM;
 		hints.ai_protocol = IPPROTO_UDP;
 		gaierror = getaddrinfo(server, port, &hints, &res);
@@ -849,8 +895,9 @@ addserver(dns_client_t *client)
 		result = ISC_R_SUCCESS;
 		for (cur = res; cur != NULL; cur = cur->ai_next) {
 			if (cur->ai_family != AF_INET &&
-			    cur->ai_family != AF_INET6)
+			    cur->ai_family != AF_INET6) {
 				continue;
+			}
 			sa = isc_mem_get(mctx, sizeof(*sa));
 			if (sa == NULL) {
 				result = ISC_R_NOMEMORY;
@@ -875,9 +922,10 @@ cleanup:
 		isc_mem_put(mctx, sa, sizeof(*sa));
 	}
 
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		delv_log(ISC_LOG_ERROR, "addserver: %s",
 			 isc_result_totext(result));
+	}
 
 	return (result);
 }
@@ -892,8 +940,9 @@ findserver(dns_client_t *client)
 	uint32_t destport;
 
 	result = parse_uint(&destport, port, 0xffff, "port");
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("Couldn't parse port number");
+	}
 
 	result = irs_resconf_load(mctx, "/etc/resolv.conf", &resconf);
 	if (result != ISC_R_SUCCESS && result != ISC_R_FILENOTFOUND) {
@@ -953,13 +1002,15 @@ findserver(dns_client_t *client)
 
 	result = dns_client_setservers(client, dns_rdataclass_in, NULL,
 				       nameservers);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		delv_log(ISC_LOG_ERROR, "dns_client_setservers: %s",
 			 isc_result_totext(result));
+	}
 
 cleanup:
-	if (resconf != NULL)
+	if (resconf != NULL) {
 		irs_resconf_destroy(&resconf);
+	}
 	return (result);
 }
 
@@ -968,8 +1019,9 @@ parse_uint(uint32_t *uip, const char *value, uint32_t max, const char *desc)
 {
 	uint32_t n;
 	isc_result_t result = isc_parse_uint32(&n, value, 10);
-	if (result == ISC_R_SUCCESS && n > max)
+	if (result == ISC_R_SUCCESS && n > max) {
 		result = ISC_R_RANGE;
+	}
 	if (result != ISC_R_SUCCESS) {
 		printf("invalid %s '%s': %s\n", desc, value,
 		       isc_result_totext(result));
@@ -1040,13 +1092,15 @@ plus_option(char *option)
 		switch (cmd[1]) {
 		case 'l': /* dlv */
 			FULLCHECK("dlv");
-			if (state && no_sigs)
+			if (state && no_sigs) {
 				break;
+			}
 			dlv_validation = state;
 			if (value != NULL) {
 				dlv_anchor = isc_mem_strdup(mctx, value);
-				if (dlv_anchor == NULL)
+				if (dlv_anchor == NULL) {
 					fatal("out of memory");
+				}
 			}
 			break;
 		case 'n': /* dnssec */
@@ -1061,8 +1115,9 @@ plus_option(char *option)
 		switch (cmd[1]) {
 		case 't': /* mtrace */
 			message_trace = state;
-			if (state)
+			if (state) {
 				resolve_trace = state;
+			}
 			break;
 		case 'u': /* multiline */
 			FULLCHECK("multiline");
@@ -1076,13 +1131,15 @@ plus_option(char *option)
 		switch (cmd[1]) {
 		case 'o': /* root */
 			FULLCHECK("root");
-			if (state && no_sigs)
+			if (state && no_sigs) {
 				break;
+			}
 			root_validation = state;
 			if (value != NULL) {
 				trust_anchor = isc_mem_strdup(mctx, value);
-				if (trust_anchor == NULL)
+				if (trust_anchor == NULL) {
 					fatal("out of memory");
+				}
 			}
 			break;
 		case 'r': /* rrcomments */
@@ -1111,13 +1168,15 @@ plus_option(char *option)
 			break;
 		case 'p': /* split */
 			FULLCHECK("split");
-			if (value != NULL && !state)
+			if (value != NULL && !state) {
 				goto invalid_option;
+			}
 			if (!state) {
 				splitwidth = 0;
 				break;
-			} else if (value == NULL)
+			} else if (value == NULL) {
 				break;
+			}
 
 			result = parse_uint(&splitwidth, value, 1023, "split");
 			if (splitwidth % 4 != 0) {
@@ -1133,10 +1192,12 @@ plus_option(char *option)
 			 * using the default width but incorrect in this
 			 * case, so we correct for it
 			 */
-			if (splitwidth)
+			if (splitwidth) {
 				splitwidth += 3;
-			if (result != ISC_R_SUCCESS)
+			}
+			if (result != ISC_R_SUCCESS) {
 				fatal("Couldn't parse split");
+			}
 			break;
 		default:
 			goto invalid_option;
@@ -1167,8 +1228,9 @@ plus_option(char *option)
 	case 'v': /* vtrace */
 		FULLCHECK("vtrace");
 		validator_trace = state;
-		if (state)
+		if (state) {
 			resolve_trace = state;
+		}
 		break;
 	default:
 	invalid_option:
@@ -1213,16 +1275,18 @@ dash_option(char *option, char *next, bool *open_type_class)
 		opt = option[0];
 		switch (opt) {
 		case '4':
-			if (isc_net_probeipv4() != ISC_R_SUCCESS)
+			if (isc_net_probeipv4() != ISC_R_SUCCESS) {
 				fatal("IPv4 networking not available");
+			}
 			if (use_ipv6) {
 				isc_net_disableipv6();
 				use_ipv6 = false;
 			}
 			break;
 		case '6':
-			if (isc_net_probeipv6() != ISC_R_SUCCESS)
+			if (isc_net_probeipv6() != ISC_R_SUCCESS) {
 				fatal("IPv6 networking not available");
+			}
 			if (use_ipv4) {
 				isc_net_disableipv4();
 				use_ipv4 = false;
@@ -1231,7 +1295,7 @@ dash_option(char *option, char *next, bool *open_type_class)
 		case 'h':
 			usage();
 			exit(0);
-			/* NOTREACHED */
+		/* NOTREACHED */
 		case 'i':
 			no_sigs = true;
 			dlv_validation = false;
@@ -1243,15 +1307,16 @@ dash_option(char *option, char *next, bool *open_type_class)
 		case 'v':
 			fputs("delv " VERSION "\n", stderr);
 			exit(0);
-			/* NOTREACHED */
+		/* NOTREACHED */
 		default:
 			INSIST(0);
 			ISC_UNREACHABLE();
 		}
-		if (strlen(option) > 1U)
+		if (strlen(option) > 1U) {
 			option = &option[1];
-		else
+		} else {
 			return (false);
+		}
 	}
 	opt = option[0];
 	if (strlen(option) > 1U) {
@@ -1261,65 +1326,76 @@ dash_option(char *option, char *next, bool *open_type_class)
 		value_from_next = true;
 		value = next;
 	}
-	if (value == NULL)
+	if (value == NULL) {
 		goto invalid_option;
+	}
 	switch (opt) {
 	case 'a':
 		anchorfile = isc_mem_strdup(mctx, value);
-		if (anchorfile == NULL)
+		if (anchorfile == NULL) {
 			fatal("out of memory");
+		}
 		return (value_from_next);
 	case 'b':
 		hash = strchr(value, '#');
 		if (hash != NULL) {
 			result = parse_uint(&num, hash + 1, 0xffff, "port");
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				fatal("Couldn't parse port number");
+			}
 			srcport = num;
 			*hash = '\0';
-		} else
+		} else {
 			srcport = 0;
+		}
 
 		if (inet_pton(AF_INET, value, &in4) == 1) {
-			if (srcaddr4 != NULL)
+			if (srcaddr4 != NULL) {
 				fatal("Only one local address per family "
 				      "can be specified\n");
+			}
 			isc_sockaddr_fromin(&a4, &in4, srcport);
 			srcaddr4 = &a4;
 		} else if (inet_pton(AF_INET6, value, &in6) == 1) {
-			if (srcaddr6 != NULL)
+			if (srcaddr6 != NULL) {
 				fatal("Only one local address per family "
 				      "can be specified\n");
+			}
 			isc_sockaddr_fromin6(&a6, &in6, srcport);
 			srcaddr6 = &a6;
 		} else {
-			if (hash != NULL)
+			if (hash != NULL) {
 				*hash = '#';
+			}
 			fatal("Invalid address %s", value);
 		}
-		if (hash != NULL)
+		if (hash != NULL) {
 			*hash = '#';
+		}
 		return (value_from_next);
 	case 'c':
-		if (classset)
+		if (classset) {
 			warn("extra query class");
+		}
 
 		*open_type_class = false;
 		tr.base = value;
 		tr.length = strlen(value);
 		result = dns_rdataclass_fromtext(&rdclass,
 						 (isc_textregion_t *)&tr);
-		if (result == ISC_R_SUCCESS)
+		if (result == ISC_R_SUCCESS) {
 			classset = true;
-		else if (rdclass != dns_rdataclass_in)
+		} else if (rdclass != dns_rdataclass_in) {
 			warn("ignoring non-IN query class");
-		else
+		} else {
 			warn("ignoring invalid class");
+		}
 		return (value_from_next);
 	case 'd':
 		result = parse_uint(&num, value, 99, "debug level");
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			fatal("Couldn't parse debug level");
+		}
 		loglevel = num;
 		return (value_from_next);
 	case 'p':
@@ -1331,8 +1407,9 @@ dash_option(char *option, char *next, bool *open_type_class)
 			isc_mem_free(mctx, curqname);
 		}
 		curqname = isc_mem_strdup(mctx, value);
-		if (curqname == NULL)
+		if (curqname == NULL) {
 			fatal("out of memory");
+		}
 		return (value_from_next);
 	case 't':
 		*open_type_class = false;
@@ -1341,15 +1418,18 @@ dash_option(char *option, char *next, bool *open_type_class)
 		result = dns_rdatatype_fromtext(&rdtype,
 						(isc_textregion_t *)&tr);
 		if (result == ISC_R_SUCCESS) {
-			if (typeset)
+			if (typeset) {
 				warn("extra query type");
+			}
 			if (rdtype == dns_rdatatype_ixfr ||
-			    rdtype == dns_rdatatype_axfr)
+			    rdtype == dns_rdatatype_axfr) {
 				fatal("Transfer not supported");
+			}
 			qtype = rdtype;
 			typeset = true;
-		} else
+		} else {
 			warn("ignoring invalid type");
+		}
 		return (value_from_next);
 	case 'x':
 		result = get_reverse(textname, sizeof(textname), value, false);
@@ -1359,10 +1439,12 @@ dash_option(char *option, char *next, bool *open_type_class)
 				warn("extra query name");
 			}
 			curqname = isc_mem_strdup(mctx, textname);
-			if (curqname == NULL)
+			if (curqname == NULL) {
 				fatal("out of memory");
-			if (typeset)
+			}
+			if (typeset) {
 				warn("extra query type");
+			}
 			qtype = dns_rdatatype_ptr;
 			typeset = true;
 		} else {
@@ -1483,11 +1565,13 @@ parse_args(int argc, char **argv)
 				result = dns_rdatatype_fromtext(
 					&rdtype, (isc_textregion_t *)&tr);
 				if (result == ISC_R_SUCCESS) {
-					if (typeset)
+					if (typeset) {
 						warn("extra query type");
+					}
 					if (rdtype == dns_rdatatype_ixfr ||
-					    rdtype == dns_rdatatype_axfr)
+					    rdtype == dns_rdatatype_axfr) {
 						fatal("Transfer not supported");
+					}
 					qtype = rdtype;
 					typeset = true;
 					continue;
@@ -1495,19 +1579,22 @@ parse_args(int argc, char **argv)
 				result = dns_rdataclass_fromtext(
 					&rdclass, (isc_textregion_t *)&tr);
 				if (result == ISC_R_SUCCESS) {
-					if (classset)
+					if (classset) {
 						warn("extra query class");
-					else if (rdclass != dns_rdataclass_in)
+					} else if (rdclass !=
+						   dns_rdataclass_in) {
 						warn("ignoring non-IN "
 						     "query class");
+					}
 					continue;
 				}
 			}
 
 			if (curqname == NULL) {
 				curqname = isc_mem_strdup(mctx, argv[0]);
-				if (curqname == NULL)
+				if (curqname == NULL) {
 					fatal("out of memory");
+				}
 			}
 		}
 	}
@@ -1516,25 +1603,30 @@ parse_args(int argc, char **argv)
 	 * If no qname or qtype specified, search for root/NS
 	 * If no qtype specified, use A
 	 */
-	if (!typeset)
+	if (!typeset) {
 		qtype = dns_rdatatype_a;
+	}
 
 	if (curqname == NULL) {
 		qname = isc_mem_strdup(mctx, ".");
-		if (qname == NULL)
+		if (qname == NULL) {
 			fatal("out of memory");
+		}
 
-		if (!typeset)
+		if (!typeset) {
 			qtype = dns_rdatatype_ns;
-	} else
+		}
+	} else {
 		qname = curqname;
+	}
 }
 
 static isc_result_t
 append_str(const char *text, int len, char **p, char *end)
 {
-	if (len > end - *p)
+	if (len > end - *p) {
 		return (ISC_R_NOSPACE);
+	}
 	memmove(*p, text, len);
 	*p += len;
 	return (ISC_R_SUCCESS);
@@ -1548,14 +1640,17 @@ reverse_octets(const char *in, char **p, char *end)
 	if (dot != NULL) {
 		isc_result_t result;
 		result = reverse_octets(dot + 1, p, end);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (result);
+		}
 		result = append_str(".", 1, p, end);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (result);
+		}
 		len = (int)(dot - in);
-	} else
+	} else {
 		len = strlen(in);
+	}
 	return (append_str(in, len, p, end));
 }
 
@@ -1576,8 +1671,9 @@ get_reverse(char *reverse, size_t len, char *value, bool strict)
 
 		name = dns_fixedname_initname(&fname);
 		result = dns_byaddr_createptrname(&addr, options, name);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (result);
+		}
 		dns_name_format(name, reverse, (unsigned int)len);
 		return (ISC_R_SUCCESS);
 	} else {
@@ -1591,14 +1687,17 @@ get_reverse(char *reverse, size_t len, char *value, bool strict)
 		 */
 		char *p = reverse;
 		char *end = reverse + len;
-		if (strict && inet_pton(AF_INET, value, &addr.type.in) != 1)
+		if (strict && inet_pton(AF_INET, value, &addr.type.in) != 1) {
 			return (DNS_R_BADDOTTEDQUAD);
+		}
 		result = reverse_octets(value, &p, end);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (result);
+		}
 		result = append_str(".in-addr.arpa.", 15, &p, end);
-		if (result != ISC_R_SUCCESS)
+		if (result != ISC_R_SUCCESS) {
 			return (result);
+		}
 		return (ISC_R_SUCCESS);
 	}
 }
@@ -1620,7 +1719,7 @@ main(int argc, char *argv[])
 	dns_master_style_t *style = NULL;
 #ifndef WIN32
 	struct sigaction sa;
-#endif
+#endif /* ifndef WIN32 */
 
 	progname = argv[0];
 	preparse_args(argc, argv);
@@ -1630,12 +1729,14 @@ main(int argc, char *argv[])
 
 	isc_lib_register();
 	result = dns_lib_init();
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("dns_lib_init failed: %d", result);
+	}
 
 	result = isc_mem_create(0, 0, &mctx);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		fatal("failed to create mctx");
+	}
 
 	CHECK(isc_appctx_create(mctx, &actx));
 	CHECK(isc_taskmgr_createinctx(mctx, 1, 0, &taskmgr));
@@ -1654,9 +1755,10 @@ main(int argc, char *argv[])
 	/* Unblock SIGINT if it's been blocked by isc_app_ctxstart() */
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = SIG_DFL;
-	if (sigfillset(&sa.sa_mask) != 0 || sigaction(SIGINT, &sa, NULL) < 0)
+	if (sigfillset(&sa.sa_mask) != 0 || sigaction(SIGINT, &sa, NULL) < 0) {
 		fatal("Couldn't set up signal handler");
-#endif
+	}
+#endif /* ifndef WIN32 */
 
 	/* Create client */
 	clopt = DNS_CLIENTCREATEOPT_USECACHE;
@@ -1669,10 +1771,11 @@ main(int argc, char *argv[])
 	}
 
 	/* Set the nameserver */
-	if (server != NULL)
+	if (server != NULL) {
 		addserver(client);
-	else
+	} else {
 		findserver(client);
+	}
 
 	CHECK(setup_dnsseckeys(client));
 
@@ -1681,22 +1784,27 @@ main(int argc, char *argv[])
 
 	/* Set up resolution options */
 	resopt = DNS_CLIENTRESOPT_ALLOWRUN | DNS_CLIENTRESOPT_NOCDFLAG;
-	if (no_sigs)
+	if (no_sigs) {
 		resopt |= DNS_CLIENTRESOPT_NODNSSEC;
-	if (!root_validation && !dlv_validation)
+	}
+	if (!root_validation && !dlv_validation) {
 		resopt |= DNS_CLIENTRESOPT_NOVALIDATE;
-	if (cdflag)
+	}
+	if (cdflag) {
 		resopt &= ~DNS_CLIENTRESOPT_NOCDFLAG;
-	if (use_tcp)
+	}
+	if (use_tcp) {
 		resopt |= DNS_CLIENTRESOPT_TCP;
+	}
 
 	/* Perform resolution */
 	ISC_LIST_INIT(namelist);
 	result = dns_client_resolve(client, query_name, dns_rdataclass_in,
 				    qtype, resopt, &namelist);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		delv_log(ISC_LOG_ERROR, "resolution failed: %s",
 			 isc_result_totext(result));
+	}
 
 	for (response_name = ISC_LIST_HEAD(namelist); response_name != NULL;
 	     response_name = ISC_LIST_NEXT(response_name, link)) {
@@ -1704,36 +1812,48 @@ main(int argc, char *argv[])
 		     rdataset != NULL;
 		     rdataset = ISC_LIST_NEXT(rdataset, link)) {
 			result = printdata(rdataset, response_name, style);
-			if (result != ISC_R_SUCCESS)
+			if (result != ISC_R_SUCCESS) {
 				delv_log(ISC_LOG_ERROR, "print data failed");
+			}
 		}
 	}
 
 	dns_client_freeresanswer(client, &namelist);
 
 cleanup:
-	if (dlv_anchor != NULL)
+	if (dlv_anchor != NULL) {
 		isc_mem_free(mctx, dlv_anchor);
-	if (trust_anchor != NULL)
+	}
+	if (trust_anchor != NULL) {
 		isc_mem_free(mctx, trust_anchor);
-	if (anchorfile != NULL)
+	}
+	if (anchorfile != NULL) {
 		isc_mem_free(mctx, anchorfile);
-	if (qname != NULL)
+	}
+	if (qname != NULL) {
 		isc_mem_free(mctx, qname);
-	if (style != NULL)
+	}
+	if (style != NULL) {
 		dns_master_styledestroy(&style, mctx);
-	if (client != NULL)
+	}
+	if (client != NULL) {
 		dns_client_destroy(&client);
-	if (taskmgr != NULL)
+	}
+	if (taskmgr != NULL) {
 		isc_taskmgr_destroy(&taskmgr);
-	if (timermgr != NULL)
+	}
+	if (timermgr != NULL) {
 		isc_timermgr_destroy(&timermgr);
-	if (socketmgr != NULL)
+	}
+	if (socketmgr != NULL) {
 		isc_socketmgr_destroy(&socketmgr);
-	if (actx != NULL)
+	}
+	if (actx != NULL) {
 		isc_appctx_destroy(&actx);
-	if (lctx != NULL)
+	}
+	if (lctx != NULL) {
 		isc_log_destroy(&lctx);
+	}
 	isc_mem_detach(&mctx);
 
 	dns_lib_shutdown();

@@ -45,17 +45,20 @@ dns_fwdtable_create(isc_mem_t *mctx, dns_fwdtable_t **fwdtablep)
 	REQUIRE(fwdtablep != NULL && *fwdtablep == NULL);
 
 	fwdtable = isc_mem_get(mctx, sizeof(dns_fwdtable_t));
-	if (fwdtable == NULL)
+	if (fwdtable == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	fwdtable->table = NULL;
 	result = dns_rbt_create(mctx, auto_detach, fwdtable, &fwdtable->table);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup_fwdtable;
+	}
 
 	result = isc_rwlock_init(&fwdtable->rwlock, 0, 0);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup_rbt;
+	}
 
 	fwdtable->mctx = NULL;
 	isc_mem_attach(mctx, &fwdtable->mctx);
@@ -84,8 +87,9 @@ dns_fwdtable_addfwd(dns_fwdtable_t *fwdtable, const dns_name_t *name,
 	REQUIRE(VALID_FWDTABLE(fwdtable));
 
 	forwarders = isc_mem_get(fwdtable->mctx, sizeof(dns_forwarders_t));
-	if (forwarders == NULL)
+	if (forwarders == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	ISC_LIST_INIT(forwarders->fwdrs);
 	for (fwd = ISC_LIST_HEAD(*fwdrs); fwd != NULL;
@@ -105,8 +109,9 @@ dns_fwdtable_addfwd(dns_fwdtable_t *fwdtable, const dns_name_t *name,
 	result = dns_rbt_addname(fwdtable->table, name, forwarders);
 	RWUNLOCK(&fwdtable->rwlock, isc_rwlocktype_write);
 
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	return (ISC_R_SUCCESS);
 
@@ -132,8 +137,9 @@ dns_fwdtable_add(dns_fwdtable_t *fwdtable, const dns_name_t *name,
 	REQUIRE(VALID_FWDTABLE(fwdtable));
 
 	forwarders = isc_mem_get(fwdtable->mctx, sizeof(dns_forwarders_t));
-	if (forwarders == NULL)
+	if (forwarders == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	ISC_LIST_INIT(forwarders->fwdrs);
 	for (sa = ISC_LIST_HEAD(*addrs); sa != NULL;
@@ -154,8 +160,9 @@ dns_fwdtable_add(dns_fwdtable_t *fwdtable, const dns_name_t *name,
 	result = dns_rbt_addname(fwdtable->table, name, forwarders);
 	RWUNLOCK(&fwdtable->rwlock, isc_rwlocktype_write);
 
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	return (ISC_R_SUCCESS);
 
@@ -180,8 +187,9 @@ dns_fwdtable_delete(dns_fwdtable_t *fwdtable, const dns_name_t *name)
 	result = dns_rbt_deletename(fwdtable->table, name, false);
 	RWUNLOCK(&fwdtable->rwlock, isc_rwlocktype_write);
 
-	if (result == DNS_R_PARTIALMATCH)
+	if (result == DNS_R_PARTIALMATCH) {
 		result = ISC_R_NOTFOUND;
+	}
 
 	return (result);
 }
@@ -198,8 +206,9 @@ dns_fwdtable_find(dns_fwdtable_t *fwdtable, const dns_name_t *name,
 
 	result = dns_rbt_findname(fwdtable->table, name, 0, foundname,
 				  (void **)forwardersp);
-	if (result == DNS_R_PARTIALMATCH)
+	if (result == DNS_R_PARTIALMATCH) {
 		result = ISC_R_SUCCESS;
+	}
 
 	RWUNLOCK(&fwdtable->rwlock, isc_rwlocktype_read);
 

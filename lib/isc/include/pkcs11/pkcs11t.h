@@ -27,11 +27,11 @@
 #ifndef CK_DISABLE_TRUE_FALSE
 #ifndef FALSE
 #define FALSE CK_FALSE
-#endif
+#endif /* ifndef FALSE */
 #ifndef TRUE
 #define TRUE CK_TRUE
-#endif
-#endif
+#endif /* ifndef TRUE */
+#endif /* ifndef CK_DISABLE_TRUE_FALSE */
 
 /* an unsigned 8-bit value */
 typedef unsigned char CK_BYTE;
@@ -1146,12 +1146,12 @@ typedef CK_ULONG CK_RV;
 /* CK_NOTIFY is an application callback that processes events */
 typedef CK_CALLBACK_FUNCTION(CK_RV, CK_NOTIFY)(
 	CK_SESSION_HANDLE hSession,			/* the
-							   session's
-							   handle
+							 * session's
+							 * handle
 							 */
 	CK_NOTIFICATION event, CK_VOID_PTR pApplication /* passed
-							   to
-							   C_OpenSession
+							 * to
+							 * C_OpenSession
 							 */
 );
 
@@ -1170,10 +1170,10 @@ typedef CK_FUNCTION_LIST_PTR CK_PTR CK_FUNCTION_LIST_PTR_PTR;
  */
 typedef CK_CALLBACK_FUNCTION(CK_RV,
 			     CK_CREATEMUTEX)(CK_VOID_PTR_PTR ppMutex /* location
-									to
-									receive
-									ptr to
-									mutex */
+								      * to
+								      * receive
+								      * ptr to
+								      * mutex */
 );
 
 /* CK_DESTROYMUTEX is an application callback for destroying a
@@ -1181,14 +1181,14 @@ typedef CK_CALLBACK_FUNCTION(CK_RV,
  */
 typedef CK_CALLBACK_FUNCTION(CK_RV,
 			     CK_DESTROYMUTEX)(CK_VOID_PTR pMutex /* pointer
-								    to
-								    mutex
+								  * to
+								  * mutex
 								  */
 );
 
 /* CK_LOCKMUTEX is an application callback for locking a mutex */
 typedef CK_CALLBACK_FUNCTION(CK_RV, CK_LOCKMUTEX)(CK_VOID_PTR pMutex /* pointer
-									to mutex
+								      * to mutex
 								      */
 );
 
@@ -1197,8 +1197,8 @@ typedef CK_CALLBACK_FUNCTION(CK_RV, CK_LOCKMUTEX)(CK_VOID_PTR pMutex /* pointer
  */
 typedef CK_CALLBACK_FUNCTION(CK_RV,
 			     CK_UNLOCKMUTEX)(CK_VOID_PTR pMutex /* pointer
-								   to
-								   mutex
+								 * to
+								 * mutex
 								 */
 );
 

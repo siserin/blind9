@@ -43,11 +43,11 @@ static thread_local uint32_t seed[4];
 static __thread uint32_t seed[4];
 #elif defined(HAVE___DECLSPEC_THREAD)
 static __declspec(thread) uint32_t seed[4];
-#else
+#else /* if defined(HAVE_THREAD_LOCAL) */
 #error "Unknown method for defining a TLS variable!"
-#endif
+#endif /* if defined(HAVE_THREAD_LOCAL) */
 
-#else
+#else /* if defined(HAVE_TLS) */
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 static volatile HANDLE _mutex = NULL;
@@ -86,7 +86,7 @@ static uint32_t seed[4];
 static inline uint32_t
 rotl(const uint32_t x, int k)
 {
-	return (x << k) | (x >> (32 - k));
+	return ((x << k) | (x >> (32 - k)));
 }
 
 static inline uint32_t

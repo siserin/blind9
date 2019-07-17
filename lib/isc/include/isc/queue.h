@@ -28,9 +28,9 @@
 
 #ifdef ISC_QUEUE_CHECKINIT
 #define ISC_QLINK_INSIST(x) ISC_INSIST(x)
-#else
+#else /* ifdef ISC_QUEUE_CHECKINIT */
 #define ISC_QLINK_INSIST(x) (void)0
-#endif
+#endif /* ifdef ISC_QUEUE_CHECKINIT */
 
 #define ISC_QLINK(type)                                                        \
 	struct {                                                               \

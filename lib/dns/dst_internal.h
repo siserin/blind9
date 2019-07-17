@@ -80,12 +80,14 @@ struct dst_key {
 	isc_refcount_t refs;
 	dns_name_t *key_name;       /*%< name of the key */
 	unsigned int key_size;      /*%< size of the key in bits */
-	unsigned int key_proto;     /*%< protocols this key is used for */
+	unsigned int key_proto;     /*%< protocols this key is used for
+				     * */
 	unsigned int key_alg;       /*%< algorithm of the key */
 	uint32_t key_flags;	 /*%< flags of the public key */
 	uint16_t key_id;	    /*%< identifier of the key */
 	uint16_t key_rid;	   /*%< identifier of the key when
-								 revoked */
+				     *                            revoked
+				     * */
 	uint16_t key_bits;	  /*%< hmac digest bits */
 	dns_rdataclass_t key_class; /*%< class of the key record */
 	dns_ttl_t key_ttl;	  /*%< default/initial dnskey ttl */
@@ -98,10 +100,10 @@ struct dst_key {
 		DH *dh;
 #if USE_OPENSSL
 		EVP_PKEY *pkey;
-#endif
+#endif /* if USE_OPENSSL */
 #if USE_PKCS11
 		pk11_object_t *pkey;
-#endif
+#endif /* if USE_PKCS11 */
 		dst_hmac_key_t *hmac_key;
 	} keydata; /*%< pointer to key in crypto pkg fmt */
 
@@ -110,11 +112,13 @@ struct dst_key {
 	isc_stdtime_t nums[DST_MAX_NUMERIC + 1]; /*%< numeric metadata */
 	bool numset[DST_MAX_NUMERIC + 1];	/*%< data set? */
 	bool inactive; /*%< private key not present as it is
-				   inactive */
+			*          inactive */
 	bool external; /*%< external key */
 
-	int fmt_major; /*%< private key format, major version */
-	int fmt_minor; /*%< private key format, minor version */
+	int fmt_major; /*%< private key format, major version
+			* */
+	int fmt_minor; /*%< private key format, minor version
+			* */
 
 	dst_func_t *func;	    /*%< crypto package specific functions */
 	isc_buffer_t *key_tkeytoken; /*%< TKEY token data */
@@ -133,7 +137,7 @@ struct dst_context {
 		EVP_MD_CTX *evp_md_ctx;
 #if USE_PKCS11
 		pk11_context_t *pk11_ctx;
-#endif
+#endif /* if USE_PKCS11 */
 	} ctxdata;
 };
 
@@ -221,7 +225,7 @@ dst__pkcs11ecdsa_init(struct dst_func **funcp);
 #if defined(HAVE_PKCS11_ED25519) || defined(HAVE_PKCS11_ED448)
 isc_result_t
 dst__pkcs11eddsa_init(struct dst_func **funcp);
-#endif
+#endif /* if defined(HAVE_PKCS11_ED25519) || defined(HAVE_PKCS11_ED448) */
 #endif /* USE_PKCS11 */
 #ifdef GSSAPI
 isc_result_t

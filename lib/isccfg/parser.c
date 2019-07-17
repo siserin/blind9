@@ -170,9 +170,9 @@ cfg_print_chars(cfg_printer_t *pctx, const char *text, int len)
 static void
 print_open(cfg_printer_t *pctx)
 {
-	if ((pctx->flags & CFG_PRINTER_ONELINE) != 0)
+	if ((pctx->flags & CFG_PRINTER_ONELINE) != 0) {
 		cfg_print_cstr(pctx, "{ ");
-	else {
+	} else {
 		cfg_print_cstr(pctx, "{\n");
 		pctx->indent++;
 	}
@@ -212,8 +212,9 @@ cfg_parse_obj(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	REQUIRE(ret != NULL && *ret == NULL);
 
 	result = type->parse(pctx, type, ret);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 	ENSURE(*ret != NULL);
 	return (ISC_R_SUCCESS);
 }
@@ -278,8 +279,9 @@ cfg_create_tuple(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	return (ISC_R_SUCCESS);
 
 cleanup:
-	if (obj != NULL)
+	if (obj != NULL) {
 		isc_mem_put(pctx->mctx, obj, sizeof(*obj));
+	}
 	return (result);
 }
 
@@ -323,8 +325,9 @@ cfg_print_tuple(cfg_printer_t *pctx, const cfg_obj_t *obj)
 
 	for (f = fields, i = 0; f->name != NULL; f++, i++) {
 		const cfg_obj_t *fieldobj = obj->value.tuple[i];
-		if (need_space && fieldobj->type->rep != &cfg_rep_void)
+		if (need_space && fieldobj->type->rep != &cfg_rep_void) {
 			cfg_print_cstr(pctx, " ");
+		}
 		cfg_print_obj(pctx, fieldobj);
 		need_space =
 			(need_space || fieldobj->type->print != cfg_print_void);
@@ -344,8 +347,9 @@ cfg_doc_tuple(cfg_printer_t *pctx, const cfg_type_t *type)
 	fields = type->of;
 
 	for (f = fields; f->name != NULL; f++) {
-		if (need_space)
+		if (need_space) {
 			cfg_print_cstr(pctx, " ");
+		}
 		cfg_doc_obj(pctx, f->type);
 		need_space = (f->type->print != cfg_print_void);
 	}
@@ -359,8 +363,9 @@ free_tuple(cfg_parser_t *pctx, cfg_obj_t *obj)
 	const cfg_tuplefielddef_t *f;
 	unsigned int nfields = 0;
 
-	if (obj->value.tuple == NULL)
+	if (obj->value.tuple == NULL) {
 		return;
+	}
 
 	for (f = fields, i = 0; f->name != NULL; f++, i++) {
 		CLEANUP_OBJ(obj->value.tuple[i]);
@@ -389,8 +394,9 @@ cfg_tuple_get(const cfg_obj_t *tupleobj, const char *name)
 
 	fields = tupleobj->type->of;
 	for (f = fields, i = 0; f->name != NULL; f++, i++) {
-		if (strcmp(f->name, name) == 0)
+		if (strcmp(f->name, name) == 0) {
 			return (tupleobj->value.tuple[i]);
+		}
 	}
 	INSIST(0);
 	ISC_UNREACHABLE();
@@ -405,8 +411,9 @@ cfg_parse_special(cfg_parser_t *pctx, int special)
 
 	CHECK(cfg_gettoken(pctx, 0));
 	if (pctx->token.type == isc_tokentype_special &&
-	    pctx->token.value.as_char == special)
+	    pctx->token.value.as_char == special) {
 		return (ISC_R_SUCCESS);
+	}
 
 	cfg_parser_error(pctx, CFG_LOG_NEAR, "'%c' expected", special);
 	return (ISC_R_UNEXPECTEDTOKEN);
@@ -428,8 +435,9 @@ parse_semicolon(cfg_parser_t *pctx)
 
 	CHECK(cfg_gettoken(pctx, 0));
 	if (pctx->token.type == isc_tokentype_special &&
-	    pctx->token.value.as_char == ';')
+	    pctx->token.value.as_char == ';') {
 		return (ISC_R_SUCCESS);
+	}
 
 	cfg_parser_error(pctx, CFG_LOG_BEFORE, "missing ';'");
 	cfg_ungettoken(pctx);
@@ -447,8 +455,9 @@ parse_eof(cfg_parser_t *pctx)
 
 	CHECK(cfg_gettoken(pctx, 0));
 
-	if (pctx->token.type == isc_tokentype_eof)
+	if (pctx->token.type == isc_tokentype_eof) {
 		return (ISC_R_SUCCESS);
+	}
 
 	cfg_parser_error(pctx, CFG_LOG_NEAR, "syntax error");
 	return (ISC_R_UNEXPECTEDTOKEN);
@@ -473,8 +482,9 @@ cfg_parser_create(isc_mem_t *mctx, isc_log_t *lctx, cfg_parser_t **ret)
 	REQUIRE(ret != NULL && *ret == NULL);
 
 	pctx = isc_mem_get(mctx, sizeof(*pctx));
-	if (pctx == NULL)
+	if (pctx == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	pctx->mctx = NULL;
 	isc_mem_attach(mctx, &pctx->mctx);
@@ -518,8 +528,9 @@ cfg_parser_create(isc_mem_t *mctx, isc_log_t *lctx, cfg_parser_t **ret)
 	return (ISC_R_SUCCESS);
 
 cleanup:
-	if (pctx->lexer != NULL)
+	if (pctx->lexer != NULL) {
 		isc_lex_destroy(&pctx->lexer);
+	}
 	CLEANUP_OBJ(pctx->open_files);
 	CLEANUP_OBJ(pctx->closed_files);
 	isc_mem_putanddetach(&pctx->mctx, pctx, sizeof(*pctx));
@@ -578,8 +589,9 @@ cfg_parser_reset(cfg_parser_t *pctx)
 {
 	REQUIRE(pctx != NULL);
 
-	if (pctx->lexer != NULL)
+	if (pctx->lexer != NULL) {
 		isc_lex_close(pctx->lexer);
+	}
 
 	pctx->seen_eof = false;
 	pctx->ungotten = false;
@@ -602,8 +614,9 @@ parse2(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 
 	if (pctx->errors != 0) {
 		/* Errors have been logged. */
-		if (result == ISC_R_SUCCESS)
+		if (result == ISC_R_SUCCESS) {
 			result = ISC_R_FAILURE;
+		}
 		goto cleanup;
 	}
 
@@ -668,8 +681,9 @@ cfg_parse_buffer(cfg_parser_t *pctx, isc_buffer_t *buffer, const char *file,
 	pctx->buf_name = file;
 	pctx->flags = flags;
 
-	if (line != 0U)
+	if (line != 0U) {
 		CHECK(isc_lex_setsourceline(pctx->lexer, line));
+	}
 
 	CHECK(parse2(pctx, type, ret));
 	pctx->buf_name = NULL;
@@ -1168,8 +1182,9 @@ cfg_is_enum(const char *s, const char *const *enums)
 	REQUIRE(enums != NULL);
 
 	for (p = enums; *p != NULL; p++) {
-		if (strcasecmp(*p, s) == 0)
+		if (strcasecmp(*p, s) == 0) {
 			return (true);
+		}
 	}
 	return (false);
 }
@@ -1179,8 +1194,9 @@ check_enum(cfg_parser_t *pctx, cfg_obj_t *obj, const char *const *enums)
 {
 	const char *s = obj->value.string.base;
 
-	if (cfg_is_enum(s, enums))
+	if (cfg_is_enum(s, enums)) {
 		return (ISC_R_SUCCESS);
+	}
 	cfg_parser_error(pctx, 0, "'%s' unexpected", s);
 	return (ISC_R_UNEXPECTEDTOKEN);
 }
@@ -1215,8 +1231,9 @@ cfg_doc_enum(cfg_printer_t *pctx, const cfg_type_t *type)
 	cfg_print_cstr(pctx, "( ");
 	for (p = type->of; *p != NULL; p++) {
 		cfg_print_cstr(pctx, *p);
-		if (p[1] != NULL)
+		if (p[1] != NULL) {
 			cfg_print_cstr(pctx, " | ");
+		}
 	}
 	cfg_print_cstr(pctx, " )");
 }
@@ -1295,10 +1312,12 @@ print_sstring(cfg_printer_t *pctx, const cfg_obj_t *obj)
 	cfg_print_cstr(pctx, "\"");
 	if ((pctx->flags & CFG_PRINTER_XKEY) != 0) {
 		unsigned int len = obj->value.string.length;
-		while (len-- > 0)
+		while (len-- > 0) {
 			cfg_print_cstr(pctx, "?");
-	} else
+		}
+	} else {
 		cfg_print_ustring(pctx, obj);
+	}
 	cfg_print_cstr(pctx, "\"");
 }
 
@@ -1468,12 +1487,12 @@ parse_addrmatchelt(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 #if defined(HAVE_GEOIP2)
 			CHECK(cfg_gettoken(pctx, 0));
 			CHECK(cfg_parse_obj(pctx, &cfg_type_geoip, ret));
-#else
+#else  /* if defined(HAVE_GEOIP2) */
 			cfg_parser_error(pctx, CFG_LOG_NEAR,
 					 "'geoip' "
 					 "not supported in this build");
 			return (ISC_R_UNEXPECTEDTOKEN);
-#endif
+#endif /* if defined(HAVE_GEOIP2) */
 		} else {
 			if (cfg_lookingat_netaddr(
 				    pctx, CFG_ADDR_V4OK | CFG_ADDR_V4PREFIXOK |
@@ -1627,11 +1646,13 @@ cfg_parse_boolean(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	UNUSED(type);
 
 	result = cfg_gettoken(pctx, 0);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
-	if (pctx->token.type != isc_tokentype_string)
+	if (pctx->token.type != isc_tokentype_string) {
 		goto bad_boolean;
+	}
 
 	if ((strcasecmp(TOKEN_STRING(pctx), "true") == 0) ||
 	    (strcasecmp(TOKEN_STRING(pctx), "yes") == 0) ||
@@ -1664,10 +1685,11 @@ cfg_print_boolean(cfg_printer_t *pctx, const cfg_obj_t *obj)
 	REQUIRE(pctx != NULL);
 	REQUIRE(obj != NULL);
 
-	if (obj->value.boolean)
+	if (obj->value.boolean) {
 		cfg_print_cstr(pctx, "yes");
-	else
+	} else {
 		cfg_print_cstr(pctx, "no");
+	}
 }
 
 LIBISCCFG_EXTERNAL_DATA cfg_type_t cfg_type_boolean = {
@@ -1700,8 +1722,9 @@ create_listelt(cfg_parser_t *pctx, cfg_listelt_t **eltp)
 	cfg_listelt_t *elt;
 
 	elt = isc_mem_get(pctx->mctx, sizeof(*elt));
-	if (elt == NULL)
+	if (elt == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 	elt->obj = NULL;
 	ISC_LINK_INIT(elt, link);
 	*eltp = elt;
@@ -1711,8 +1734,9 @@ create_listelt(cfg_parser_t *pctx, cfg_listelt_t **eltp)
 static void
 free_listelt(cfg_parser_t *pctx, cfg_listelt_t *elt)
 {
-	if (elt->obj != NULL)
+	if (elt->obj != NULL) {
 		cfg_obj_destroy(pctx, &elt->obj);
+	}
 	isc_mem_put(pctx->mctx, elt, sizeof(*elt));
 }
 
@@ -1741,8 +1765,9 @@ cfg_parse_listelt(cfg_parser_t *pctx, const cfg_type_t *elttype,
 	CHECK(create_listelt(pctx, &elt));
 
 	result = cfg_parse_obj(pctx, elttype, &value);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		goto cleanup;
+	}
 
 	elt->obj = value;
 
@@ -1771,8 +1796,9 @@ parse_list(cfg_parser_t *pctx, const cfg_type_t *listtype, cfg_obj_t **ret)
 	for (;;) {
 		CHECK(cfg_peektoken(pctx, 0));
 		if (pctx->token.type == isc_tokentype_special &&
-		    pctx->token.value.as_char == /*{*/ '}')
+		    pctx->token.value.as_char == /*{*/ '}') {
 			break;
+		}
 		CHECK(cfg_parse_listelt(pctx, listof, &elt));
 		CHECK(parse_semicolon(pctx));
 		ISC_LIST_APPEND(listobj->value.list, elt, link);
@@ -1782,8 +1808,9 @@ parse_list(cfg_parser_t *pctx, const cfg_type_t *listtype, cfg_obj_t **ret)
 	return (ISC_R_SUCCESS);
 
 cleanup:
-	if (elt != NULL)
+	if (elt != NULL) {
 		free_listelt(pctx, elt);
+	}
 	CLEANUP_OBJ(listobj);
 	return (result);
 }
@@ -1870,8 +1897,9 @@ cfg_parse_spacelist(cfg_parser_t *pctx, const cfg_type_t *listtype,
 
 		CHECK(cfg_peektoken(pctx, 0));
 		if (pctx->token.type == isc_tokentype_special &&
-		    pctx->token.value.as_char == ';')
+		    pctx->token.value.as_char == ';') {
 			break;
+		}
 		CHECK(cfg_parse_listelt(pctx, listof, &elt));
 		ISC_LIST_APPEND(listobj->value.list, elt, link);
 	}
@@ -1895,8 +1923,9 @@ cfg_print_spacelist(cfg_printer_t *pctx, const cfg_obj_t *obj)
 	for (elt = ISC_LIST_HEAD(*list); elt != NULL;
 	     elt = ISC_LIST_NEXT(elt, link)) {
 		cfg_print_obj(pctx, elt->obj);
-		if (ISC_LIST_NEXT(elt, link) != NULL)
+		if (ISC_LIST_NEXT(elt, link) != NULL) {
 			cfg_print_cstr(pctx, " ");
+		}
 	}
 }
 
@@ -1911,8 +1940,9 @@ const cfg_listelt_t *
 cfg_list_first(const cfg_obj_t *obj)
 {
 	REQUIRE(obj == NULL || obj->type->rep == &cfg_rep_list);
-	if (obj == NULL)
+	if (obj == NULL) {
 		return (NULL);
+	}
 	return (ISC_LIST_HEAD(obj->value.list));
 }
 
@@ -1933,8 +1963,9 @@ cfg_list_length(const cfg_obj_t *obj, bool recurse)
 	const cfg_listelt_t *elt;
 	unsigned int count = 0;
 
-	if (obj == NULL || !cfg_obj_islist(obj))
+	if (obj == NULL || !cfg_obj_islist(obj)) {
 		return (0U);
+	}
 	for (elt = cfg_list_first(obj); elt != NULL; elt = cfg_list_next(elt)) {
 		if (recurse && cfg_obj_islist(elt->obj)) {
 			count += cfg_list_length(elt->obj, recurse);
@@ -2026,8 +2057,9 @@ cfg_parse_mapbody(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 			for (clause = *clauseset; clause->name != NULL;
 			     clause++) {
 				if (strcasecmp(TOKEN_STRING(pctx),
-					       clause->name) == 0)
+					       clause->name) == 0) {
 					goto done;
+				}
 			}
 		}
 	done:
@@ -2179,8 +2211,9 @@ parse_symtab_elt(cfg_parser_t *pctx, const char *name, cfg_type_t *elttype,
 
 	CHECK(cfg_parse_obj(pctx, elttype, &obj));
 
-	if (callback && pctx->callback != NULL)
+	if (callback && pctx->callback != NULL) {
 		CHECK(pctx->callback(name, obj, pctx->callbackarg));
+	}
 
 	symval.as_pointer = obj;
 	CHECK(isc_symtab_define(symtab, name, 1, symval, isc_symexists_reject));
@@ -2272,17 +2305,19 @@ cfg_parse_netprefix_map(cfg_parser_t *pctx, const cfg_type_t *type,
 static void
 print_symval(cfg_printer_t *pctx, const char *name, cfg_obj_t *obj)
 {
-	if ((pctx->flags & CFG_PRINTER_ONELINE) == 0)
+	if ((pctx->flags & CFG_PRINTER_ONELINE) == 0) {
 		cfg_print_indent(pctx);
+	}
 
 	cfg_print_cstr(pctx, name);
 	cfg_print_cstr(pctx, " ");
 	cfg_print_obj(pctx, obj);
 
-	if ((pctx->flags & CFG_PRINTER_ONELINE) == 0)
+	if ((pctx->flags & CFG_PRINTER_ONELINE) == 0) {
 		cfg_print_cstr(pctx, ";\n");
-	else
+	} else {
 		cfg_print_cstr(pctx, "; ");
+	}
 }
 
 void
@@ -2320,7 +2355,7 @@ cfg_print_mapbody(cfg_printer_t *pctx, const cfg_obj_t *obj)
 						     symobj);
 				}
 			} else if (result == ISC_R_NOTFOUND) {
-				; /* do nothing */
+				/* do nothing */
 			} else {
 				INSIST(0);
 				ISC_UNREACHABLE();
@@ -2352,10 +2387,11 @@ cfg_print_clauseflags(cfg_printer_t *pctx, unsigned int flags)
 	bool first = true;
 	for (p = flagtexts; p->flag != 0; p++) {
 		if ((flags & p->flag) != 0) {
-			if (first)
+			if (first) {
 				cfg_print_cstr(pctx, " // ");
-			else
+			} else {
 				cfg_print_cstr(pctx, ", ");
+			}
 			cfg_print_cstr(pctx, p->text);
 			first = false;
 		}
@@ -2424,8 +2460,9 @@ cfg_doc_map(cfg_printer_t *pctx, const cfg_type_t *type)
 		for (clause = *clauseset; clause->name != NULL; clause++) {
 			cfg_print_indent(pctx);
 			cfg_print_cstr(pctx, clause->name);
-			if (clause->type->print != cfg_print_void)
+			if (clause->type->print != cfg_print_void) {
 				cfg_print_cstr(pctx, " ");
+			}
 			cfg_doc_obj(pctx, clause->type);
 			cfg_print_cstr(pctx, ";");
 			cfg_print_clauseflags(pctx, clause->flags);
@@ -2456,8 +2493,9 @@ cfg_map_get(const cfg_obj_t *mapobj, const char *name, const cfg_obj_t **obj)
 	map = &mapobj->value.map;
 
 	result = isc_symtab_lookup(map->symtab, name, MAP_SYM, &val);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 	*obj = val.as_pointer;
 	return (ISC_R_SUCCESS);
 }
@@ -2498,8 +2536,9 @@ cfg_map_firstclause(const cfg_type_t *map, const void **clauses,
 	*idx = 0;
 	while ((*clauseset)[*idx].name == NULL) {
 		*clauses = (*++clauseset);
-		if (*clauses == NULL)
+		if (*clauses == NULL) {
 			return (NULL);
+		}
 	}
 	return ((*clauseset)[*idx].name);
 }
@@ -2523,8 +2562,9 @@ cfg_map_nextclause(const cfg_type_t *map, const void **clauses,
 	while ((*clauseset)[*idx].name == NULL) {
 		*idx = 0;
 		*clauses = (*++clauseset);
-		if (*clauses == NULL)
+		if (*clauses == NULL) {
 			return (NULL);
+		}
 	}
 	return ((*clauseset)[*idx].name);
 }
@@ -2561,8 +2601,9 @@ parse_token(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	return (result);
 
 cleanup:
-	if (obj != NULL)
+	if (obj != NULL) {
 		isc_mem_put(pctx->mctx, obj, sizeof(*obj));
+	}
 	return (result);
 }
 
@@ -2590,13 +2631,15 @@ parse_unsupported(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 
 		CHECK(cfg_peektoken(pctx, 0));
 		if (pctx->token.type == isc_tokentype_special) {
-			if (pctx->token.value.as_char == '{')
+			if (pctx->token.value.as_char == '{') {
 				braces++;
-			else if (pctx->token.value.as_char == '}')
+			} else if (pctx->token.value.as_char == '}') {
 				braces--;
-			else if (pctx->token.value.as_char == ';')
-				if (braces == 0)
+			} else if (pctx->token.value.as_char == ';') {
+				if (braces == 0) {
 					break;
+				}
+			}
 		}
 		if (pctx->token.type == isc_tokentype_eof || braces < 0) {
 			cfg_parser_error(pctx, CFG_LOG_NEAR,
@@ -2638,8 +2681,9 @@ token_addr(cfg_parser_t *pctx, unsigned int flags, isc_netaddr_t *na)
 	struct in_addr in4a;
 	struct in6_addr in6a;
 
-	if (pctx->token.type != isc_tokentype_string)
+	if (pctx->token.type != isc_tokentype_string) {
 		return (ISC_R_UNEXPECTEDTOKEN);
+	}
 
 	s = TOKEN_STRING(pctx);
 	if ((flags & CFG_ADDR_WILDOK) != 0 && strcmp(s, "*") == 0) {
@@ -2680,8 +2724,9 @@ token_addr(cfg_parser_t *pctx, unsigned int flags, isc_netaddr_t *na)
 
 			strlcpy(buf, s, sizeof(buf));
 			d = strchr(buf, '%');
-			if (d != NULL)
+			if (d != NULL) {
 				*d = '\0';
+			}
 
 			if (inet_pton(AF_INET6, buf, &in6a) == 1) {
 				if (d != NULL) {
@@ -2689,8 +2734,9 @@ token_addr(cfg_parser_t *pctx, unsigned int flags, isc_netaddr_t *na)
 
 					result = isc_netscope_pton(
 						AF_INET6, d + 1, &in6a, &zone);
-					if (result != ISC_R_SUCCESS)
+					if (result != ISC_R_SUCCESS) {
 						return (result);
+					}
 				}
 
 				isc_netaddr_fromin6(na, &in6a);
@@ -2715,22 +2761,25 @@ cfg_parse_rawaddr(cfg_parser_t *pctx, unsigned int flags, isc_netaddr_t *na)
 	CHECK(cfg_gettoken(pctx, 0));
 	result = token_addr(pctx, flags, na);
 	if (result == ISC_R_UNEXPECTEDTOKEN) {
-		if ((flags & CFG_ADDR_WILDOK) != 0)
+		if ((flags & CFG_ADDR_WILDOK) != 0) {
 			wild = " or '*'";
-		if ((flags & CFG_ADDR_V4PREFIXOK) != 0)
+		}
+		if ((flags & CFG_ADDR_V4PREFIXOK) != 0) {
 			wild = " or IPv4 prefix";
-		if ((flags & CFG_ADDR_MASK) == CFG_ADDR_V4OK)
+		}
+		if ((flags & CFG_ADDR_MASK) == CFG_ADDR_V4OK) {
 			cfg_parser_error(pctx, CFG_LOG_NEAR,
 					 "expected IPv4 address%s%s", prefix,
 					 wild);
-		else if ((flags & CFG_ADDR_MASK) == CFG_ADDR_V6OK)
+		} else if ((flags & CFG_ADDR_MASK) == CFG_ADDR_V6OK) {
 			cfg_parser_error(pctx, CFG_LOG_NEAR,
 					 "expected IPv6 address%s%s", prefix,
 					 wild);
-		else
+		} else {
 			cfg_parser_error(pctx, CFG_LOG_NEAR,
 					 "expected IP address%s%s", prefix,
 					 wild);
+		}
 	}
 cleanup:
 	return (result);
@@ -2860,14 +2909,16 @@ cfg_doc_netaddr(cfg_printer_t *pctx, const cfg_type_t *type)
 		n++;
 	}
 	if ((*flagp & CFG_ADDR_V6OK) != 0) {
-		if (n != 0)
+		if (n != 0) {
 			cfg_print_cstr(pctx, " | ");
+		}
 		cfg_print_cstr(pctx, "<ipv6_address>");
 		n++;
 	}
 	if ((*flagp & CFG_ADDR_WILDOK) != 0) {
-		if (n != 0)
+		if (n != 0) {
 			cfg_print_cstr(pctx, " | ");
+		}
 		cfg_print_cstr(pctx, "*");
 		n++;
 		POST(n);
@@ -3020,10 +3071,12 @@ parse_sockaddrsub(cfg_parser_t *pctx, const cfg_type_t *type, int flags,
 				CHECK(cfg_gettoken(pctx, 0)); /* read "dscp" */
 				CHECK(cfg_parse_dscp(pctx, &dscp));
 				++have_dscp;
-			} else
+			} else {
 				break;
-		} else
+			}
+		} else {
 			break;
+		}
 	}
 	if (have_port > 1) {
 		cfg_parser_error(pctx, 0, "expected at most one port");
@@ -3112,14 +3165,16 @@ cfg_doc_sockaddr(cfg_printer_t *pctx, const cfg_type_t *type)
 		n++;
 	}
 	if ((*flagp & CFG_ADDR_V6OK) != 0) {
-		if (n != 0)
+		if (n != 0) {
 			cfg_print_cstr(pctx, " | ");
+		}
 		cfg_print_cstr(pctx, "<ipv6_address>");
 		n++;
 	}
 	if ((*flagp & CFG_ADDR_WILDOK) != 0) {
-		if (n != 0)
+		if (n != 0) {
 			cfg_print_cstr(pctx, " | ");
+		}
 		cfg_print_cstr(pctx, "*");
 		n++;
 		POST(n);
@@ -3163,8 +3218,9 @@ cfg_gettoken(cfg_parser_t *pctx, int options)
 
 	REQUIRE(pctx != NULL);
 
-	if (pctx->seen_eof)
+	if (pctx->seen_eof) {
 		return (ISC_R_SUCCESS);
+	}
 
 	options |= (ISC_LEXOPT_EOF | ISC_LEXOPT_NOMORE);
 
@@ -3221,8 +3277,9 @@ cfg_ungettoken(cfg_parser_t *pctx)
 {
 	REQUIRE(pctx != NULL);
 
-	if (pctx->seen_eof)
+	if (pctx->seen_eof) {
 		return;
+	}
 	isc_lex_ungettoken(pctx->lexer, &pctx->token);
 	pctx->ungotten = true;
 }
@@ -3250,8 +3307,9 @@ cfg_getstringtoken(cfg_parser_t *pctx)
 	isc_result_t result;
 
 	result = cfg_gettoken(pctx, CFG_LEXOPT_QSTRING);
-	if (result != ISC_R_SUCCESS)
+	if (result != ISC_R_SUCCESS) {
 		return (result);
+	}
 
 	if (pctx->token.type != isc_tokentype_string &&
 	    pctx->token.type != isc_tokentype_qstring) {
@@ -3295,12 +3353,14 @@ static bool
 have_current_file(cfg_parser_t *pctx)
 {
 	cfg_listelt_t *elt;
-	if (pctx->open_files == NULL)
+	if (pctx->open_files == NULL) {
 		return (false);
+	}
 
 	elt = ISC_LIST_TAIL(pctx->open_files->value.list);
-	if (elt == NULL)
+	if (elt == NULL) {
 		return (false);
+	}
 
 	return (true);
 }
@@ -3312,12 +3372,14 @@ current_file(cfg_parser_t *pctx)
 	cfg_listelt_t *elt;
 	cfg_obj_t *fileobj;
 
-	if (!have_current_file(pctx))
+	if (!have_current_file(pctx)) {
 		return (none);
+	}
 
 	elt = ISC_LIST_TAIL(pctx->open_files->value.list);
-	if (elt == NULL) /* shouldn't be possible, but... */
+	if (elt == NULL) { /* shouldn't be possible, but... */
 		return (none);
+	}
 
 	fileobj = elt->obj;
 	INSIST(fileobj->type == &cfg_type_qstring);
@@ -3335,15 +3397,17 @@ parser_complain(cfg_parser_t *pctx, bool is_warning, unsigned int flags,
 	const char *prep = "";
 	size_t len;
 
-	if (is_warning)
+	if (is_warning) {
 		level = ISC_LOG_WARNING;
+	}
 
 	where[0] = '\0';
-	if (have_current_file(pctx))
+	if (have_current_file(pctx)) {
 		snprintf(where, sizeof(where), "%s:%u: ", current_file(pctx),
 			 pctx->line);
-	else if (pctx->buf_name != NULL)
+	} else if (pctx->buf_name != NULL) {
 		snprintf(where, sizeof(where), "%s: ", pctx->buf_name);
+	}
 
 	len = vsnprintf(message, sizeof(message), format, args);
 #define ELIPSIS " ... "
@@ -3355,8 +3419,9 @@ parser_complain(cfg_parser_t *pctx, bool is_warning, unsigned int flags,
 	if ((flags & (CFG_LOG_NEAR | CFG_LOG_BEFORE | CFG_LOG_NOPREP)) != 0) {
 		isc_region_t r;
 
-		if (pctx->ungotten)
+		if (pctx->ungotten) {
 			(void)cfg_gettoken(pctx, 0);
+		}
 
 		if (pctx->token.type == isc_tokentype_eof) {
 			snprintf(tokenbuf, sizeof(tokenbuf), "end of file");
@@ -3365,12 +3430,13 @@ parser_complain(cfg_parser_t *pctx, bool is_warning, unsigned int flags,
 			tokenbuf[0] = '\0';
 		} else {
 			isc_lex_getlasttokentext(pctx->lexer, &pctx->token, &r);
-			if (r.length > MAX_LOG_TOKEN)
+			if (r.length > MAX_LOG_TOKEN) {
 				snprintf(tokenbuf, sizeof(tokenbuf),
 					 "'%.*s...'", MAX_LOG_TOKEN, r.base);
-			else
+			} else {
 				snprintf(tokenbuf, sizeof(tokenbuf), "'%.*s'",
 					 (int)r.length, r.base);
+			}
 		}
 
 		/* Choose a preposition. */
@@ -3398,8 +3464,9 @@ cfg_obj_log(const cfg_obj_t *obj, isc_log_t *lctx, int level, const char *fmt,
 	REQUIRE(obj != NULL);
 	REQUIRE(fmt != NULL);
 
-	if (!isc_log_wouldlog(lctx, level))
+	if (!isc_log_wouldlog(lctx, level)) {
 		return;
+	}
 
 	va_start(ap, fmt);
 	vsnprintf(msgbuf, sizeof(msgbuf), fmt, ap);
@@ -3439,8 +3506,9 @@ cfg_create_obj(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	REQUIRE(ret != NULL && *ret == NULL);
 
 	obj = isc_mem_get(pctx->mctx, sizeof(cfg_obj_t));
-	if (obj == NULL)
+	if (obj == NULL) {
 		return (ISC_R_NOMEMORY);
+	}
 
 	obj->type = type;
 	obj->file = current_file(pctx);
@@ -3484,8 +3552,9 @@ create_map(cfg_parser_t *pctx, const cfg_type_t *type, cfg_obj_t **ret)
 	return (ISC_R_SUCCESS);
 
 cleanup:
-	if (obj != NULL)
+	if (obj != NULL) {
 		isc_mem_put(pctx->mctx, obj, sizeof(*obj));
+	}
 	return (result);
 }
 
@@ -3604,8 +3673,9 @@ cfg_parser_mapadd(cfg_parser_t *pctx, cfg_obj_t *mapobj, cfg_obj_t *obj,
 	}
 
 breakout:
-	if (clause == NULL || clause->name == NULL)
+	if (clause == NULL || clause->name == NULL) {
 		return (ISC_R_FAILURE);
+	}
 
 	result = isc_symtab_lookup(map->symtab, clausename, 0, &symval);
 	if (result == ISC_R_NOTFOUND) {
@@ -3616,8 +3686,9 @@ breakout:
 			cfg_obj_attach(obj, &elt->obj);
 			ISC_LIST_APPEND(destobj->value.list, elt, link);
 			symval.as_pointer = destobj;
-		} else
+		} else {
 			symval.as_pointer = obj;
+		}
 
 		CHECK(isc_symtab_define(map->symtab, clausename, 1, symval,
 					isc_symexists_reject));
@@ -3630,16 +3701,18 @@ breakout:
 			CHECK(create_listelt(pctx, &elt));
 			cfg_obj_attach(obj, &elt->obj);
 			ISC_LIST_APPEND(destobj2->value.list, elt, link);
-		} else
+		} else {
 			result = ISC_R_EXISTS;
+		}
 	}
 
 	destobj = NULL;
 	elt = NULL;
 
 cleanup:
-	if (elt != NULL)
+	if (elt != NULL) {
 		free_listelt(pctx, elt);
+	}
 	CLEANUP_OBJ(destobj);
 
 	return (result);

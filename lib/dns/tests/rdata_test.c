@@ -75,7 +75,8 @@ _teardown(void **state)
 typedef struct text_ok {
 	const char *text_in;  /* text passed to fromtext_*() */
 	const char *text_out; /* text expected from totext_*();
-					   NULL indicates text_in is invalid */
+			       *           NULL indicates text_in is
+			       * invalid */
 } text_ok_t;
 
 /*
@@ -2026,11 +2027,11 @@ sshfp(void **state)
 				TEXT_VALID("0 0"),    /* no finger print */
 				TEXT_VALID("0 0 AA"), /* reserved */
 				TEXT_INVALID("0 1 AA"), /* too short SHA 1
-							   digest */
+							 * digest */
 				TEXT_INVALID("0 2 AA"), /* too short SHA 256
-							   digest */
+							 * digest */
 				TEXT_VALID("0 3 AA"),   /* unknown finger print
-							   type */
+							 * type */
 				/* good length SHA 1 digest */
 				TEXT_VALID("1 1 "
 					   "00112233445566778899AABBCCDDEEFF171"
@@ -2093,7 +2094,7 @@ sshfp(void **state)
 			     0x31, 0x32, 0x33),
 		/* unknown digest, * no fingerprint */
 		WIRE_VALID(0x00, 0x03), WIRE_VALID(0x00, 0x03, 0x00), /* unknown
-									 digest
+								       * digest
 								       */
 		WIRE_SENTINEL()
 	};
@@ -2463,4 +2464,4 @@ main(void)
 	return (0);
 }
 
-#endif
+#endif /* if HAVE_CMOCKA */
