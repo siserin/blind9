@@ -20,8 +20,8 @@
 #include <isc/magic.h>
 #include <isc/types.h>
 
-#define PK11_FATALCHECK(func, args)                                            \
-	((void)(((rv = (func)args) == CKR_OK) ||                               \
+#define PK11_FATALCHECK(func, args)              \
+	((void)(((rv = (func)args) == CKR_OK) || \
 		((pk11_error_fatalcheck)(__FILE__, __LINE__, #func, rv), 0)))
 
 #include <pk11/site.h>

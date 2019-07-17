@@ -42,11 +42,11 @@
 
 #include "mem_p.h"
 
-#define MCTXLOCK(m, l)                                                         \
-	if (((m)->flags & ISC_MEMFLAG_NOLOCK) == 0)                            \
+#define MCTXLOCK(m, l)                              \
+	if (((m)->flags & ISC_MEMFLAG_NOLOCK) == 0) \
 	LOCK(l)
-#define MCTXUNLOCK(m, l)                                                       \
-	if (((m)->flags & ISC_MEMFLAG_NOLOCK) == 0)                            \
+#define MCTXUNLOCK(m, l)                            \
+	if (((m)->flags & ISC_MEMFLAG_NOLOCK) == 0) \
 	UNLOCK(l)
 
 #ifndef ISC_MEM_DEBUGGING
@@ -2155,11 +2155,11 @@ typedef struct summarystat {
 } summarystat_t;
 
 #ifdef HAVE_LIBXML2
-#define TRY0(a)                                                                \
-	do {                                                                   \
-		xmlrc = (a);                                                   \
-		if (xmlrc < 0)                                                 \
-			goto error;                                            \
+#define TRY0(a)                     \
+	do {                        \
+		xmlrc = (a);        \
+		if (xmlrc < 0)      \
+			goto error; \
 	} while (0)
 static int
 xml_renderctx(isc__mem_t *ctx, summarystat_t *summary, xmlTextWriterPtr writer)

@@ -14,8 +14,8 @@
 #ifndef RDATA_GENERIC_DS_43_C
 #define RDATA_GENERIC_DS_43_C
 
-#define RRTYPE_DS_ATTRIBUTES                                                   \
-	(DNS_RDATATYPEATTR_DNSSEC | DNS_RDATATYPEATTR_ZONECUTAUTH |            \
+#define RRTYPE_DS_ATTRIBUTES                                        \
+	(DNS_RDATATYPEATTR_DNSSEC | DNS_RDATATYPEATTR_ZONECUTAUTH | \
 	 DNS_RDATATYPEATTR_ATPARENT)
 
 #include <isc/md.h>

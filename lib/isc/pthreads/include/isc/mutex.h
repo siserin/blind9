@@ -30,10 +30,10 @@ ISC_LANG_BEGINDECLS
 #if ISC_MUTEX_DEBUG && defined(__NetBSD__) && defined(PTHREAD_MUTEX_ERRORCHECK)
 extern pthread_mutexattr_t isc__mutex_attrs;
 #define ISC__MUTEX_ATTRS &isc__mutex_attrs
-#else /* if ISC_MUTEX_DEBUG && defined(__NetBSD__) &&                          \
+#else /* if ISC_MUTEX_DEBUG && defined(__NetBSD__) && \
        * defined(PTHREAD_MUTEX_ERRORCHECK) */
 #define ISC__MUTEX_ATTRS NULL
-#endif /* if ISC_MUTEX_DEBUG && defined(__NetBSD__) &&                         \
+#endif /* if ISC_MUTEX_DEBUG && defined(__NetBSD__) && \
 	* defined(PTHREAD_MUTEX_ERRORCHECK) */
 
 /* XXX We could do fancier error handling... */
@@ -74,28 +74,28 @@ isc__mutex_init(isc_mutex_t *mp, const char *file, unsigned int line);
 #if ISC_MUTEX_PROFILE
 #define isc_mutex_lock(mp) isc_mutex_lock_profile((mp), __FILE__, __LINE__)
 #else /* if ISC_MUTEX_PROFILE */
-#define isc_mutex_lock(mp)                                                     \
+#define isc_mutex_lock(mp) \
 	((pthread_mutex_lock((mp)) == 0) ? ISC_R_SUCCESS : ISC_R_UNEXPECTED)
 #endif /* if ISC_MUTEX_PROFILE */
 
 #if ISC_MUTEX_PROFILE
 #define isc_mutex_unlock(mp) isc_mutex_unlock_profile((mp), __FILE__, __LINE__)
 #else /* if ISC_MUTEX_PROFILE */
-#define isc_mutex_unlock(mp)                                                   \
+#define isc_mutex_unlock(mp) \
 	((pthread_mutex_unlock((mp)) == 0) ? ISC_R_SUCCESS : ISC_R_UNEXPECTED)
 #endif /* if ISC_MUTEX_PROFILE */
 
 #if ISC_MUTEX_PROFILE
-#define isc_mutex_trylock(mp)                                                  \
-	((pthread_mutex_trylock((&(mp)->mutex)) == 0) ? ISC_R_SUCCESS          \
+#define isc_mutex_trylock(mp)                                         \
+	((pthread_mutex_trylock((&(mp)->mutex)) == 0) ? ISC_R_SUCCESS \
 						      : ISC_R_LOCKBUSY)
 #else /* if ISC_MUTEX_PROFILE */
-#define isc_mutex_trylock(mp)                                                  \
+#define isc_mutex_trylock(mp) \
 	((pthread_mutex_trylock((mp)) == 0) ? ISC_R_SUCCESS : ISC_R_LOCKBUSY)
 #endif /* if ISC_MUTEX_PROFILE */
 
 #if ISC_MUTEX_PROFILE
-#define isc_mutex_destroy(mp)                                                  \
+#define isc_mutex_destroy(mp) \
 	(RUNTIME_CHECK(pthread_mutex_destroy((&(mp)->mutex)) == 0))
 #else /* if ISC_MUTEX_PROFILE */
 #define isc_mutex_destroy(mp) (RUNTIME_CHECK(pthread_mutex_destroy((mp)) == 0))

@@ -33,18 +33,18 @@
 #define TOKEN_STRING(pctx) (pctx->token.value.as_textregion.base)
 
 /*% Check a return value. */
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto cleanup;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto cleanup;        \
 	} while (0)
 
 /*% Clean up a configuration object if non-NULL. */
-#define CLEANUP_OBJ(obj)                                                       \
-	do {                                                                   \
-		if ((obj) != NULL)                                             \
-			cfg_obj_destroy(pctx, &(obj));                         \
+#define CLEANUP_OBJ(obj)                               \
+	do {                                           \
+		if ((obj) != NULL)                     \
+			cfg_obj_destroy(pctx, &(obj)); \
 	} while (0)
 
 /*%
@@ -3679,9 +3679,9 @@ cfg_print_zonegrammar(const unsigned int zonetype,
 		      void (*f)(void *closure, const char *text, int textlen),
 		      void *closure)
 {
-#define NCLAUSES                                                               \
-	(((sizeof(zone_clauses) + sizeof(zone_only_clauses)) /                 \
-	  sizeof(clause[0])) -                                                 \
+#define NCLAUSES                                               \
+	(((sizeof(zone_clauses) + sizeof(zone_only_clauses)) / \
+	  sizeof(clause[0])) -                                 \
 	 1)
 
 	cfg_printer_t pctx;

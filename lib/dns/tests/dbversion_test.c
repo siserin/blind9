@@ -51,12 +51,12 @@ static dns_dbversion_t *v1 = NULL, *v2 = NULL;
  */
 jmp_buf assertion;
 
-#define check_assertion(function_call)                                         \
-	do {                                                                   \
-		const int r = setjmp(assertion);                               \
-		if (r == 0) {                                                  \
-			expect_assert_failure(function_call);                  \
-		}                                                              \
+#define check_assertion(function_call)                        \
+	do {                                                  \
+		const int r = setjmp(assertion);              \
+		if (r == 0) {                                 \
+			expect_assert_failure(function_call); \
+		}                                             \
 	} while (false);
 
 static void

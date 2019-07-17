@@ -114,8 +114,8 @@ typedef enum {
 #define DNS_ZONE_MAXRETRY 1209600 /*%< 2 weeks */
 #endif				  /* ifndef DNS_ZONE_MAXRETRY */
 #ifndef DNS_ZONE_DEFAULTRETRY
-#define DNS_ZONE_DEFAULTRETRY                                                  \
-	60 /*%< 1 minute, subject to                                           \
+#define DNS_ZONE_DEFAULTRETRY        \
+	60 /*%< 1 minute, subject to \
 	    *                                      exponential backoff */
 #endif     /* ifndef DNS_ZONE_DEFAULTRETRY */
 

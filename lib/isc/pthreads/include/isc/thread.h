@@ -48,7 +48,7 @@ isc_thread_setaffinity(int cpu);
 
 /* XXX We could do fancier error handling... */
 
-#define isc_thread_join(t, rp)                                                 \
+#define isc_thread_join(t, rp) \
 	((pthread_join((t), (rp)) == 0) ? ISC_R_SUCCESS : ISC_R_UNEXPECTED)
 
 #define isc_thread_self (unsigned long)pthread_self

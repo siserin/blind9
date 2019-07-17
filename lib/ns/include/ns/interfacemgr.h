@@ -61,8 +61,8 @@
 #define NS_INTERFACE_VALID(t) ISC_MAGIC_VALID(t, IFACE_MAGIC)
 
 #define NS_INTERFACEFLAG_ANYADDR 0x01U /*%< bound to "any" address */
-#define MAX_UDP_DISPATCH                                                       \
-	128 /*%< Maximum number of UDP dispatchers                             \
+#define MAX_UDP_DISPATCH                           \
+	128 /*%< Maximum number of UDP dispatchers \
 	     *                                       to start per interface */
 /*% The nameserver interface structure */
 struct ns_interface {

@@ -164,9 +164,9 @@ typedef struct bdb_instance {
  * and the BDB database before exiting.
  */
 
-#define quit(i)                                                                \
-	close_lexer();                                                         \
-	bdb_cleanup();                                                         \
+#define quit(i)        \
+	close_lexer(); \
+	bdb_cleanup(); \
 	exit(i);
 
 /*%
@@ -176,11 +176,11 @@ typedef struct bdb_instance {
  * line, which would make no sense anyway.
  */
 
-#define checkOp(x)                                                             \
-	if (x != 0) {                                                          \
-		fprintf(stderr, "\nonly one operation "                        \
-				"(l e d a f s) may be specified\n");           \
-		quit(2);                                                       \
+#define checkOp(x)                                                   \
+	if (x != 0) {                                                \
+		fprintf(stderr, "\nonly one operation "              \
+				"(l e d a f s) may be specified\n"); \
+		quit(2);                                             \
 	}
 
 /*%
@@ -189,13 +189,13 @@ typedef struct bdb_instance {
  * any attempt to use it twice causes an error.
  */
 
-#define checkParam(x, y)                                                       \
-	if (x != NULL) {                                                       \
-		fprintf(stderr,                                                \
-			"\n%s may only "                                       \
-			"be specified once\n",                                 \
-			y);                                                    \
-		quit(2);                                                       \
+#define checkParam(x, y)                       \
+	if (x != NULL) {                       \
+		fprintf(stderr,                \
+			"\n%s may only "       \
+			"be specified once\n", \
+			y);                    \
+		quit(2);                       \
 	}
 
 /*%
@@ -204,13 +204,13 @@ typedef struct bdb_instance {
  * for the add operation, and thus it isn't allowed.
  */
 
-#define checkInvalidParam(x, y, z)                                             \
-	if (x != NULL) {                                                       \
-		fprintf(stderr,                                                \
-			"\n%s "                                                \
-			"may not be specified %s\n",                           \
-			y, z);                                                 \
-		quit(2);                                                       \
+#define checkInvalidParam(x, y, z)                   \
+	if (x != NULL) {                             \
+		fprintf(stderr,                      \
+			"\n%s "                      \
+			"may not be specified %s\n", \
+			y, z);                       \
+		quit(2);                             \
 	}
 
 /*%
@@ -221,13 +221,13 @@ typedef struct bdb_instance {
  * if w == x then output error message "flag", "message"
  */
 
-#define checkInvalidOption(w, x, y, z)                                         \
-	if (w == x) {                                                          \
-		fprintf(stderr,                                                \
-			"\n%s "                                                \
-			"may not be specified %s\n",                           \
-			y, z);                                                 \
-		quit(2);                                                       \
+#define checkInvalidOption(w, x, y, z)               \
+	if (w == x) {                                \
+		fprintf(stderr,                      \
+			"\n%s "                      \
+			"may not be specified %s\n", \
+			y, z);                       \
+		quit(2);                             \
 	}
 
 /* Global Variables */

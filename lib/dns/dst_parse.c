@@ -423,20 +423,20 @@ dst__privstruct_parse(dst_key_t *key, unsigned int alg, isc_lex_t *lex,
 	priv->nelements = 0;
 	memset(priv->elements, 0, sizeof(priv->elements));
 
-#define NEXTTOKEN(lex, opt, token)                                             \
-	do {                                                                   \
-		ret = isc_lex_gettoken(lex, opt, token);                       \
-		if (ret != ISC_R_SUCCESS)                                      \
-			goto fail;                                             \
+#define NEXTTOKEN(lex, opt, token)                       \
+	do {                                             \
+		ret = isc_lex_gettoken(lex, opt, token); \
+		if (ret != ISC_R_SUCCESS)                \
+			goto fail;                       \
 	} while (0)
 
-#define READLINE(lex, opt, token)                                              \
-	do {                                                                   \
-		ret = isc_lex_gettoken(lex, opt, token);                       \
-		if (ret == ISC_R_EOF)                                          \
-			break;                                                 \
-		else if (ret != ISC_R_SUCCESS)                                 \
-			goto fail;                                             \
+#define READLINE(lex, opt, token)                        \
+	do {                                             \
+		ret = isc_lex_gettoken(lex, opt, token); \
+		if (ret == ISC_R_EOF)                    \
+			break;                           \
+		else if (ret != ISC_R_SUCCESS)           \
+			goto fail;                       \
 	} while ((*token).type != isc_tokentype_eol)
 
 	/*

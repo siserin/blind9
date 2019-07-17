@@ -88,11 +88,11 @@
 		}                                                              \
 	}
 #else /* ifdef s6_addr */
-#define IN6ADDR_LOOPBACK_INIT                                                  \
-	{                                                                      \
-		{                                                              \
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1         \
-		}                                                              \
+#define IN6ADDR_LOOPBACK_INIT                                          \
+	{                                                              \
+		{                                                      \
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 \
+		}                                                      \
 	}
 #endif /* ifdef s6_addr */
 #endif /* ifndef IN6ADDR_LOOPBACK_INIT */
@@ -100,38 +100,38 @@
 #ifndef IN6ADDR_V4MAPPED_INIT
 #ifdef s6_addr
 /*% IPv6 v4mapped prefix init */
-#define IN6ADDR_V4MAPPED_INIT                                                  \
-	{                                                                      \
-		{                                                              \
-			{                                                      \
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0,   \
-					0, 0, 0                                \
-			}                                                      \
-		}                                                              \
+#define IN6ADDR_V4MAPPED_INIT                                                \
+	{                                                                    \
+		{                                                            \
+			{                                                    \
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0, \
+					0, 0, 0                              \
+			}                                                    \
+		}                                                            \
 	}
 #else /* ifdef s6_addr */
-#define IN6ADDR_V4MAPPED_INIT                                                  \
-	{                                                                      \
-		{                                                              \
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0, 0, 0, 0   \
-		}                                                              \
+#define IN6ADDR_V4MAPPED_INIT                                                \
+	{                                                                    \
+		{                                                            \
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0, 0, 0, 0 \
+		}                                                            \
 	}
 #endif /* ifdef s6_addr */
 #endif /* ifndef IN6ADDR_V4MAPPED_INIT */
 
 #ifndef IN6_IS_ADDR_V4MAPPED
 /*% Is IPv6 address V4 mapped? */
-#define IN6_IS_ADDR_V4MAPPED(x)                                                \
-	(memcmp((x)->s6_addr, in6addr_any.s6_addr, 10) == 0 &&                 \
+#define IN6_IS_ADDR_V4MAPPED(x)                                \
+	(memcmp((x)->s6_addr, in6addr_any.s6_addr, 10) == 0 && \
 	 (x)->s6_addr[10] == 0xff && (x)->s6_addr[11] == 0xff)
 #endif /* ifndef IN6_IS_ADDR_V4MAPPED */
 
 #ifndef IN6_IS_ADDR_V4COMPAT
 /*% Is IPv6 address V4 compatible? */
-#define IN6_IS_ADDR_V4COMPAT(x)                                                \
-	(memcmp((x)->s6_addr, in6addr_any.s6_addr, 12) == 0 &&                 \
-	 ((x)->s6_addr[12] != 0 || (x)->s6_addr[13] != 0 ||                    \
-	  (x)->s6_addr[14] != 0 ||                                             \
+#define IN6_IS_ADDR_V4COMPAT(x)                                \
+	(memcmp((x)->s6_addr, in6addr_any.s6_addr, 12) == 0 && \
+	 ((x)->s6_addr[12] != 0 || (x)->s6_addr[13] != 0 ||    \
+	  (x)->s6_addr[14] != 0 ||                             \
 	  ((x)->s6_addr[15] != 0 && (x)->s6_addr[15] != 1)))
 #endif /* ifndef IN6_IS_ADDR_V4COMPAT */
 
@@ -142,19 +142,19 @@
 
 #ifndef IN6_IS_ADDR_LINKLOCAL
 /*% Is IPv6 address linklocal? */
-#define IN6_IS_ADDR_LINKLOCAL(a)                                               \
+#define IN6_IS_ADDR_LINKLOCAL(a) \
 	(((a)->s6_addr[0] == 0xfe) && (((a)->s6_addr[1] & 0xc0) == 0x80))
 #endif /* ifndef IN6_IS_ADDR_LINKLOCAL */
 
 #ifndef IN6_IS_ADDR_SITELOCAL
 /*% is IPv6 address sitelocal? */
-#define IN6_IS_ADDR_SITELOCAL(a)                                               \
+#define IN6_IS_ADDR_SITELOCAL(a) \
 	(((a)->s6_addr[0] == 0xfe) && (((a)->s6_addr[1] & 0xc0) == 0xc0))
 #endif /* ifndef IN6_IS_ADDR_SITELOCAL */
 
 #ifndef IN6_IS_ADDR_LOOPBACK
 /*% is IPv6 address loopback? */
-#define IN6_IS_ADDR_LOOPBACK(x)                                                \
+#define IN6_IS_ADDR_LOOPBACK(x) \
 	(memcmp((x)->s6_addr, in6addr_loopback.s6_addr, 16) == 0)
 #endif /* ifndef IN6_IS_ADDR_LOOPBACK */
 
@@ -191,10 +191,10 @@
 #define ISC__IPADDR(x) ((uint32_t)htonl((uint32_t)(x)))
 
 /*% Is IP address multicast? */
-#define ISC_IPADDR_ISMULTICAST(i)                                              \
+#define ISC_IPADDR_ISMULTICAST(i) \
 	(((uint32_t)(i)&ISC__IPADDR(0xf0000000)) == ISC__IPADDR(0xe0000000))
 
-#define ISC_IPADDR_ISEXPERIMENTAL(i)                                           \
+#define ISC_IPADDR_ISEXPERIMENTAL(i) \
 	(((uint32_t)(i)&ISC__IPADDR(0xf0000000)) == ISC__IPADDR(0xf0000000))
 
 /***

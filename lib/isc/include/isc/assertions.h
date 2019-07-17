@@ -43,28 +43,28 @@ void isc_assertion_setcallback(isc_assertioncallback_t);
 const char *
 isc_assertion_typetotext(isc_assertiontype_t type);
 
-#define ISC_REQUIRE(cond)                                                      \
-	((void)(ISC_LIKELY(cond) ||                                            \
-		((isc_assertion_failed)(__FILE__, __LINE__,                    \
-					isc_assertiontype_require, #cond),     \
+#define ISC_REQUIRE(cond)                                                  \
+	((void)(ISC_LIKELY(cond) ||                                        \
+		((isc_assertion_failed)(__FILE__, __LINE__,                \
+					isc_assertiontype_require, #cond), \
 		 0)))
 
-#define ISC_ENSURE(cond)                                                       \
-	((void)(ISC_LIKELY(cond) ||                                            \
-		((isc_assertion_failed)(__FILE__, __LINE__,                    \
-					isc_assertiontype_ensure, #cond),      \
+#define ISC_ENSURE(cond)                                                  \
+	((void)(ISC_LIKELY(cond) ||                                       \
+		((isc_assertion_failed)(__FILE__, __LINE__,               \
+					isc_assertiontype_ensure, #cond), \
 		 0)))
 
-#define ISC_INSIST(cond)                                                       \
-	((void)(ISC_LIKELY(cond) ||                                            \
-		((isc_assertion_failed)(__FILE__, __LINE__,                    \
-					isc_assertiontype_insist, #cond),      \
+#define ISC_INSIST(cond)                                                  \
+	((void)(ISC_LIKELY(cond) ||                                       \
+		((isc_assertion_failed)(__FILE__, __LINE__,               \
+					isc_assertiontype_insist, #cond), \
 		 0)))
 
-#define ISC_INVARIANT(cond)                                                    \
-	((void)(ISC_LIKELY(cond) ||                                            \
-		((isc_assertion_failed)(__FILE__, __LINE__,                    \
-					isc_assertiontype_invariant, #cond),   \
+#define ISC_INVARIANT(cond)                                                  \
+	((void)(ISC_LIKELY(cond) ||                                          \
+		((isc_assertion_failed)(__FILE__, __LINE__,                  \
+					isc_assertiontype_invariant, #cond), \
 		 0)))
 
 ISC_LANG_ENDDECLS

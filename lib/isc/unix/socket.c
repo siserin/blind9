@@ -27,7 +27,7 @@
 #if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
-#endif /* if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)  \
+#endif /* if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H) \
 	*/
 
 #include <errno.h>
@@ -189,8 +189,8 @@ typedef enum { poll_idle, poll_active, poll_checking } pollstate_t;
  */
 #define FDLOCK_BITS 10
 #define FDLOCK_COUNT (1 << FDLOCK_BITS)
-#define FDLOCK_ID(fd)                                                          \
-	(((fd) % (FDLOCK_COUNT) >> (FDLOCK_BITS / 2)) |                        \
+#define FDLOCK_ID(fd)                                   \
+	(((fd) % (FDLOCK_COUNT) >> (FDLOCK_BITS / 2)) | \
 	 (((fd) << (FDLOCK_BITS / 2)) % (FDLOCK_COUNT)))
 
 /*%
@@ -224,8 +224,8 @@ typedef enum { poll_idle, poll_active, poll_checking } pollstate_t;
  * from recv() but will have errno==0.  This is broken, but we have to
  * work around it here.
  */
-#define SOFT_ERROR(e)                                                          \
-	((e) == EAGAIN || (e) == EWOULDBLOCK || (e) == ENOBUFS ||              \
+#define SOFT_ERROR(e)                                             \
+	((e) == EAGAIN || (e) == EWOULDBLOCK || (e) == ENOBUFS || \
 	 (e) == EINTR || (e) == 0)
 
 #define DLVL(x) ISC_LOGCATEGORY_GENERAL, ISC_LOGMODULE_SOCKET, ISC_LOG_DEBUG(x)
@@ -317,12 +317,12 @@ typedef isc_event_t intev_t;
 #define CMSG_SP_INT 24
 
 /* Align cmsg buffers to be safe on SPARC etc. */
-#define RECVCMSGBUFLEN                                                         \
-	ISC_ALIGN(2 * (CMSG_SP_IN6PKT + CMSG_SP_TIMESTAMP + CMSG_SP_TCTOS) +   \
-			  1,                                                   \
+#define RECVCMSGBUFLEN                                                       \
+	ISC_ALIGN(2 * (CMSG_SP_IN6PKT + CMSG_SP_TIMESTAMP + CMSG_SP_TCTOS) + \
+			  1,                                                 \
 		  sizeof(void *))
-#define SENDCMSGBUFLEN                                                         \
-	ISC_ALIGN(2 * (CMSG_SP_IN6PKT + CMSG_SP_INT + CMSG_SP_TCTOS) + 1,      \
+#define SENDCMSGBUFLEN                                                    \
+	ISC_ALIGN(2 * (CMSG_SP_IN6PKT + CMSG_SP_INT + CMSG_SP_TCTOS) + 1, \
 		  sizeof(void *))
 
 /*%
@@ -1351,8 +1351,8 @@ build_msghdr_send(isc__socket_t *sock, char *cmsgbuf, isc_socketevent_t *dev,
 			       SENDCMSGBUFLEN - msg->msg_controllen);
 		}
 	}
-#endif /* if defined(IP_TOS) || (defined(IPPROTO_IPV6) &&                      \
-	* defined(IPV6_TCLASS))                                                \
+#endif /* if defined(IP_TOS) || (defined(IPPROTO_IPV6) && \
+	* defined(IPV6_TCLASS))                           \
 	* */
 #endif /* USE_CMSG */
 
@@ -1535,22 +1535,22 @@ doio_recv(isc__socket_t *sock, isc_socketevent_t *dev)
 				   sock->fd, cc, recv_errno, strbuf);
 		}
 
-#define SOFT_OR_HARD(_system, _isc)                                            \
-	if (recv_errno == _system) {                                           \
-		if (sock->connected) {                                         \
-			dev->result = _isc;                                    \
-			inc_stats(sock->manager->stats,                        \
-				  sock->statsindex[STATID_RECVFAIL]);          \
-			return (DOIO_HARD);                                    \
-		}                                                              \
-		return (DOIO_SOFT);                                            \
+#define SOFT_OR_HARD(_system, _isc)                                   \
+	if (recv_errno == _system) {                                  \
+		if (sock->connected) {                                \
+			dev->result = _isc;                           \
+			inc_stats(sock->manager->stats,               \
+				  sock->statsindex[STATID_RECVFAIL]); \
+			return (DOIO_HARD);                           \
+		}                                                     \
+		return (DOIO_SOFT);                                   \
 	}
-#define ALWAYS_HARD(_system, _isc)                                             \
-	if (recv_errno == _system) {                                           \
-		dev->result = _isc;                                            \
-		inc_stats(sock->manager->stats,                                \
-			  sock->statsindex[STATID_RECVFAIL]);                  \
-		return (DOIO_HARD);                                            \
+#define ALWAYS_HARD(_system, _isc)                            \
+	if (recv_errno == _system) {                          \
+		dev->result = _isc;                           \
+		inc_stats(sock->manager->stats,               \
+			  sock->statsindex[STATID_RECVFAIL]); \
+		return (DOIO_HARD);                           \
 	}
 
 		SOFT_OR_HARD(ECONNREFUSED, ISC_R_CONNREFUSED);
@@ -1703,22 +1703,22 @@ resend:
 			return (DOIO_SOFT);
 		}
 
-#define SOFT_OR_HARD(_system, _isc)                                            \
-	if (send_errno == _system) {                                           \
-		if (sock->connected) {                                         \
-			dev->result = _isc;                                    \
-			inc_stats(sock->manager->stats,                        \
-				  sock->statsindex[STATID_SENDFAIL]);          \
-			return (DOIO_HARD);                                    \
-		}                                                              \
-		return (DOIO_SOFT);                                            \
+#define SOFT_OR_HARD(_system, _isc)                                   \
+	if (send_errno == _system) {                                  \
+		if (sock->connected) {                                \
+			dev->result = _isc;                           \
+			inc_stats(sock->manager->stats,               \
+				  sock->statsindex[STATID_SENDFAIL]); \
+			return (DOIO_HARD);                           \
+		}                                                     \
+		return (DOIO_SOFT);                                   \
 	}
-#define ALWAYS_HARD(_system, _isc)                                             \
-	if (send_errno == _system) {                                           \
-		dev->result = _isc;                                            \
-		inc_stats(sock->manager->stats,                                \
-			  sock->statsindex[STATID_SENDFAIL]);                  \
-		return (DOIO_HARD);                                            \
+#define ALWAYS_HARD(_system, _isc)                            \
+	if (send_errno == _system) {                          \
+		dev->result = _isc;                           \
+		inc_stats(sock->manager->stats,               \
+			  sock->statsindex[STATID_SENDFAIL]); \
+		return (DOIO_HARD);                           \
 	}
 
 		SOFT_OR_HARD(ECONNREFUSED, ISC_R_CONNREFUSED);
@@ -4828,9 +4828,9 @@ isc_socket_connect(isc_socket_t *sock0, const isc_sockaddr_t *addr,
 		}
 
 		switch (errno) {
-#define ERROR_MATCH(a, b)                                                      \
-	case a:                                                                \
-		dev->result = b;                                               \
+#define ERROR_MATCH(a, b)        \
+	case a:                  \
+		dev->result = b; \
 		goto err_exit;
 			ERROR_MATCH(EACCES, ISC_R_NOPERM);
 			ERROR_MATCH(EADDRNOTAVAIL, ISC_R_ADDRNOTAVAIL);
@@ -4974,9 +4974,9 @@ internal_connect(isc__socket_t *sock)
 		 * Translate other errors into ISC_R_* flavors.
 		 */
 		switch (errno) {
-#define ERROR_MATCH(a, b)                                                      \
-	case a:                                                                \
-		result = b;                                                    \
+#define ERROR_MATCH(a, b)   \
+	case a:             \
+		result = b; \
 		break;
 			ERROR_MATCH(EACCES, ISC_R_NOPERM);
 			ERROR_MATCH(EADDRNOTAVAIL, ISC_R_ADDRNOTAVAIL);
@@ -5371,7 +5371,7 @@ init_hasreuseport()
  * We only want to use it on Linux, if it's available. On BSD we want to dup()
  * sockets instead of re-binding them.
  */
-#if (defined(SO_REUSEPORT) && defined(__linux__)) ||                           \
+#if (defined(SO_REUSEPORT) && defined(__linux__)) || \
 	(defined(SO_REUSEPORT_LB) && defined(__FreeBSD_kernel__))
 	int sock, yes = 1;
 	sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -5398,7 +5398,7 @@ init_hasreuseport()
 	}
 	hasreuseport = true;
 	close(sock);
-#endif /* if (defined(SO_REUSEPORT) && defined(__linux__)) ||                  \
+#endif /* if (defined(SO_REUSEPORT) && defined(__linux__)) || \
 	* (defined(SO_REUSEPORT_LB) && defined(__FreeBSD_kernel__)) */
 }
 
@@ -5428,11 +5428,11 @@ _socktype(isc_sockettype_t type)
 #endif /* if defined(HAVE_LIBXML2) || defined(HAVE_JSON_C) */
 
 #ifdef HAVE_LIBXML2
-#define TRY0(a)                                                                \
-	do {                                                                   \
-		xmlrc = (a);                                                   \
-		if (xmlrc < 0)                                                 \
-			goto error;                                            \
+#define TRY0(a)                     \
+	do {                        \
+		xmlrc = (a);        \
+		if (xmlrc < 0)      \
+			goto error; \
 	} while (0)
 int
 isc_socketmgr_renderxml(isc_socketmgr_t *mgr0, void *writer0)
@@ -5539,12 +5539,12 @@ error:
 #endif /* HAVE_LIBXML2 */
 
 #ifdef HAVE_JSON_C
-#define CHECKMEM(m)                                                            \
-	do {                                                                   \
-		if (m == NULL) {                                               \
-			result = ISC_R_NOMEMORY;                               \
-			goto error;                                            \
-		}                                                              \
+#define CHECKMEM(m)                              \
+	do {                                     \
+		if (m == NULL) {                 \
+			result = ISC_R_NOMEMORY; \
+			goto error;              \
+		}                                \
 	} while (0)
 
 isc_result_t

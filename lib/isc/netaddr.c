@@ -451,7 +451,7 @@ isc_netaddr_issitelocal(const isc_netaddr_t *na)
 	}
 }
 
-#define ISC_IPADDR_ISNETZERO(i)                                                \
+#define ISC_IPADDR_ISNETZERO(i) \
 	(((uint32_t)(i)&ISC__IPADDR(0xff000000)) == ISC__IPADDR(0x00000000))
 
 bool

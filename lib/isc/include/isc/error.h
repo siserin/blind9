@@ -46,8 +46,8 @@ ISC_PLATFORM_NORETURN_PRE void
 isc_error_runtimecheck(const char *, int,
 		       const char *) ISC_PLATFORM_NORETURN_POST;
 
-#define ISC_ERROR_RUNTIMECHECK(cond)                                           \
-	((void)(ISC_LIKELY(cond) ||                                            \
+#define ISC_ERROR_RUNTIMECHECK(cond) \
+	((void)(ISC_LIKELY(cond) ||  \
 		((isc_error_runtimecheck)(__FILE__, __LINE__, #cond), 0)))
 
 ISC_LANG_ENDDECLS

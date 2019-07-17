@@ -77,7 +77,7 @@
  * Miscellaneous utilities.
  */
 
-#define JOURNAL_COMMON_LOGARGS                                                 \
+#define JOURNAL_COMMON_LOGARGS \
 	dns_lctx, DNS_LOGCATEGORY_GENERAL, DNS_LOGMODULE_JOURNAL
 
 #define JOURNAL_DEBUG_LOGARGS(n) JOURNAL_COMMON_LOGARGS, ISC_LOG_DEBUG(n)
@@ -87,18 +87,18 @@
  * ISC_R_SUCCESS code, but the test is there to keep the Solaris compiler
  * from complaining about "end-of-loop code not reached".
  */
-#define FAIL(code)                                                             \
-	do {                                                                   \
-		result = (code);                                               \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define FAIL(code)                           \
+	do {                                 \
+		result = (code);             \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 #define JOURNAL_SERIALSET 0x01U

@@ -29,16 +29,16 @@
 #define INITIAL_BUFFER_SIZE 1024
 #define BUFFER_EXTRA 1024
 
-#define REGION_TO_GBUFFER(r, gb)                                               \
-	do {                                                                   \
-		(gb).length = (r).length;                                      \
-		(gb).value = (r).base;                                         \
+#define REGION_TO_GBUFFER(r, gb)          \
+	do {                              \
+		(gb).length = (r).length; \
+		(gb).value = (r).base;    \
 	} while (0)
 
-#define GBUFFER_TO_REGION(gb, r)                                               \
-	do {                                                                   \
-		(r).length = (unsigned int)(gb).length;                        \
-		(r).base = (gb).value;                                         \
+#define GBUFFER_TO_REGION(gb, r)                        \
+	do {                                            \
+		(r).length = (unsigned int)(gb).length; \
+		(r).base = (gb).value;                  \
 	} while (0)
 
 struct dst_gssapi_signverifyctx {

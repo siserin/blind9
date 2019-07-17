@@ -51,17 +51,17 @@
 #define DNS_DCTX_MAGIC ISC_MAGIC('D', 'c', 't', 'x')
 #define DNS_DCTX_VALID(d) ISC_MAGIC_VALID(d, DNS_DCTX_MAGIC)
 
-#define RETERR(x)                                                              \
-	do {                                                                   \
-		isc_result_t _r = (x);                                         \
-		if (_r != ISC_R_SUCCESS)                                       \
-			return ((_r));                                         \
+#define RETERR(x)                        \
+	do {                             \
+		isc_result_t _r = (x);   \
+		if (_r != ISC_R_SUCCESS) \
+			return ((_r));   \
 	} while (0)
 
-#define CHECK(x)                                                               \
-	do {                                                                   \
-		if ((x) != ISC_R_SUCCESS)                                      \
-			goto cleanup;                                          \
+#define CHECK(x)                          \
+	do {                              \
+		if ((x) != ISC_R_SUCCESS) \
+			goto cleanup;     \
 	} while (0)
 
 struct dns_master_style {
@@ -424,16 +424,16 @@ totext_ctx_init(const dns_master_style_t *style, dns_totext_ctx_t *ctx)
 	return (ISC_R_SUCCESS);
 }
 
-#define INDENT_TO(col)                                                         \
-	do {                                                                   \
-		if ((ctx->style.flags & DNS_STYLEFLAG_YAML) != 0) {            \
-			if ((result = str_totext(" ", target)) !=              \
-			    ISC_R_SUCCESS)                                     \
-				return ((result));                             \
-		} else if ((result = indent(&column, ctx->style.col,           \
-					    ctx->style.tab_width, target)) !=  \
-			   ISC_R_SUCCESS)                                      \
-			return ((result));                                     \
+#define INDENT_TO(col)                                                        \
+	do {                                                                  \
+		if ((ctx->style.flags & DNS_STYLEFLAG_YAML) != 0) {           \
+			if ((result = str_totext(" ", target)) !=             \
+			    ISC_R_SUCCESS)                                    \
+				return ((result));                            \
+		} else if ((result = indent(&column, ctx->style.col,          \
+					    ctx->style.tab_width, target)) != \
+			   ISC_R_SUCCESS)                                     \
+			return ((result));                                    \
 	} while (0)
 
 static isc_result_t

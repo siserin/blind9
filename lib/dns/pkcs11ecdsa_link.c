@@ -55,10 +55,10 @@
 #define TAG_OCTECT_STRING 0x04
 #define UNCOMPRESSED 0x04
 
-#define DST_RET(a)                                                             \
-	{                                                                      \
-		ret = a;                                                       \
-		goto err;                                                      \
+#define DST_RET(a)        \
+	{                 \
+		ret = a;  \
+		goto err; \
 	}
 
 static CK_BBOOL truevalue = TRUE;
@@ -434,30 +434,30 @@ pkcs11ecdsa_compare(const dst_key_t *key1, const dst_key_t *key2)
 	return (true);
 }
 
-#define SETCURVE()                                                             \
-	if (key->key_alg == DST_ALG_ECDSA256) {                                \
-		attr->pValue =                                                 \
-			isc_mem_get(key->mctx, sizeof(pk11_ecc_prime256v1));   \
-		if (attr->pValue == NULL)                                      \
-			DST_RET(ISC_R_NOMEMORY);                               \
-		memmove(attr->pValue, pk11_ecc_prime256v1,                     \
-			sizeof(pk11_ecc_prime256v1));                          \
-		attr->ulValueLen = sizeof(pk11_ecc_prime256v1);                \
-	} else {                                                               \
-		attr->pValue =                                                 \
-			isc_mem_get(key->mctx, sizeof(pk11_ecc_secp384r1));    \
-		if (attr->pValue == NULL)                                      \
-			DST_RET(ISC_R_NOMEMORY);                               \
-		memmove(attr->pValue, pk11_ecc_secp384r1,                      \
-			sizeof(pk11_ecc_secp384r1));                           \
-		attr->ulValueLen = sizeof(pk11_ecc_secp384r1);                 \
+#define SETCURVE()                                                           \
+	if (key->key_alg == DST_ALG_ECDSA256) {                              \
+		attr->pValue =                                               \
+			isc_mem_get(key->mctx, sizeof(pk11_ecc_prime256v1)); \
+		if (attr->pValue == NULL)                                    \
+			DST_RET(ISC_R_NOMEMORY);                             \
+		memmove(attr->pValue, pk11_ecc_prime256v1,                   \
+			sizeof(pk11_ecc_prime256v1));                        \
+		attr->ulValueLen = sizeof(pk11_ecc_prime256v1);              \
+	} else {                                                             \
+		attr->pValue =                                               \
+			isc_mem_get(key->mctx, sizeof(pk11_ecc_secp384r1));  \
+		if (attr->pValue == NULL)                                    \
+			DST_RET(ISC_R_NOMEMORY);                             \
+		memmove(attr->pValue, pk11_ecc_secp384r1,                    \
+			sizeof(pk11_ecc_secp384r1));                         \
+		attr->ulValueLen = sizeof(pk11_ecc_secp384r1);               \
 	}
 
-#define FREECURVE()                                                            \
-	if (attr->pValue != NULL) {                                            \
-		memset(attr->pValue, 0, attr->ulValueLen);                     \
-		isc_mem_put(key->mctx, attr->pValue, attr->ulValueLen);        \
-		attr->pValue = NULL;                                           \
+#define FREECURVE()                                                     \
+	if (attr->pValue != NULL) {                                     \
+		memset(attr->pValue, 0, attr->ulValueLen);              \
+		isc_mem_put(key->mctx, attr->pValue, attr->ulValueLen); \
+		attr->pValue = NULL;                                    \
 	}
 
 static isc_result_t

@@ -151,33 +151,33 @@ typedef struct dns_include dns_include_t;
 
 #define DNS_ZONE_CHECKLOCK
 #ifdef DNS_ZONE_CHECKLOCK
-#define LOCK_ZONE(z)                                                           \
-	do {                                                                   \
-		LOCK(&(z)->lock);                                              \
-		INSIST((z)->locked == false);                                  \
-		(z)->locked = true;                                            \
+#define LOCK_ZONE(z)                          \
+	do {                                  \
+		LOCK(&(z)->lock);             \
+		INSIST((z)->locked == false); \
+		(z)->locked = true;           \
 	} while (0)
-#define UNLOCK_ZONE(z)                                                         \
-	do {                                                                   \
-		(z)->locked = false;                                           \
-		UNLOCK(&(z)->lock);                                            \
+#define UNLOCK_ZONE(z)               \
+	do {                         \
+		(z)->locked = false; \
+		UNLOCK(&(z)->lock);  \
 	} while (0)
 #define LOCKED_ZONE(z) ((z)->locked)
-#define TRYLOCK_ZONE(result, z)                                                \
-	do {                                                                   \
-		result = isc_mutex_trylock(&(z)->lock);                        \
-		if (result == ISC_R_SUCCESS) {                                 \
-			INSIST((z)->locked == false);                          \
-			(z)->locked = true;                                    \
-		}                                                              \
+#define TRYLOCK_ZONE(result, z)                         \
+	do {                                            \
+		result = isc_mutex_trylock(&(z)->lock); \
+		if (result == ISC_R_SUCCESS) {          \
+			INSIST((z)->locked == false);   \
+			(z)->locked = true;             \
+		}                                       \
 	} while (0)
 #else /* ifdef DNS_ZONE_CHECKLOCK */
 #define LOCK_ZONE(z) LOCK(&(z)->lock)
 #define UNLOCK_ZONE(z) UNLOCK(&(z)->lock)
 #define LOCKED_ZONE(z) true
-#define TRYLOCK_ZONE(result, z)                                                \
-	do {                                                                   \
-		result = isc_mutex_trylock(&(z)->lock);                        \
+#define TRYLOCK_ZONE(result, z)                         \
+	do {                                            \
+		result = isc_mutex_trylock(&(z)->lock); \
 	} while (0)
 #endif /* ifdef DNS_ZONE_CHECKLOCK */
 
@@ -439,23 +439,23 @@ struct dns_zone {
 	isc_stats_t *gluecachestats;
 };
 
-#define zonediff_init(z, d)                                                    \
-	do {                                                                   \
-		dns__zonediff_t *_z = (z);                                     \
-		(_z)->diff = (d);                                              \
-		(_z)->offline = false;                                         \
+#define zonediff_init(z, d)                \
+	do {                               \
+		dns__zonediff_t *_z = (z); \
+		(_z)->diff = (d);          \
+		(_z)->offline = false;     \
 	} while (0)
 
 #define DNS_ZONE_FLAG(z, f) ((z)->flags & (f))
-#define DNS_ZONE_SETFLAG(z, f)                                                 \
-	do {                                                                   \
-		INSIST(LOCKED_ZONE(z));                                        \
-		(z)->flags |= (f);                                             \
+#define DNS_ZONE_SETFLAG(z, f)          \
+	do {                            \
+		INSIST(LOCKED_ZONE(z)); \
+		(z)->flags |= (f);      \
 	} while (0)
-#define DNS_ZONE_CLRFLAG(z, f)                                                 \
-	do {                                                                   \
-		INSIST(LOCKED_ZONE(z));                                        \
-		(z)->flags &= ~(f);                                            \
+#define DNS_ZONE_CLRFLAG(z, f)          \
+	do {                            \
+		INSIST(LOCKED_ZONE(z)); \
+		(z)->flags &= ~(f);     \
 	} while (0)
 /* XXX MPA these may need to go back into zone.h */
 #define DNS_ZONEFLG_REFRESH 0x00000001U     /*%< refresh check in progress */
@@ -467,24 +467,24 @@ struct dns_zone {
 #define DNS_ZONEFLG_EXITING 0x00000040U     /*%< zone is being destroyed */
 #define DNS_ZONEFLG_EXPIRED 0x00000080U     /*%< zone has expired */
 #define DNS_ZONEFLG_NEEDREFRESH 0x00000100U /*%< refresh check needed */
-#define DNS_ZONEFLG_UPTODATE                                                   \
-	0x00000200U /*%< zone contents are                                     \
+#define DNS_ZONEFLG_UPTODATE               \
+	0x00000200U /*%< zone contents are \
 		     * uptodate */
-#define DNS_ZONEFLG_NEEDNOTIFY                                                 \
-	0x00000400U /*%< need to send out notify                               \
+#define DNS_ZONEFLG_NEEDNOTIFY                   \
+	0x00000400U /*%< need to send out notify \
 		     * messages */
-#define DNS_ZONEFLG_DIFFONRELOAD                                               \
-	0x00000800U /*%< generate a journal diff on                            \
+#define DNS_ZONEFLG_DIFFONRELOAD                    \
+	0x00000800U /*%< generate a journal diff on \
 		     * reload */
-#define DNS_ZONEFLG_NOMASTERS                                                  \
-	0x00001000U			/*%< an attempt to refresh a           \
-					 * zone with no masters                \
+#define DNS_ZONEFLG_NOMASTERS                                        \
+	0x00001000U			/*%< an attempt to refresh a \
+					 * zone with no masters      \
 					 * occurred */
 #define DNS_ZONEFLG_LOADING 0x00002000U /*%< load from disk in progress*/
-#define DNS_ZONEFLG_HAVETIMERS                                                 \
-	0x00004000U			  /*%< timer values have been set      \
-					   * from SOA (if not set, we          \
-					   * are still using                   \
+#define DNS_ZONEFLG_HAVETIMERS                                            \
+	0x00004000U			  /*%< timer values have been set \
+					   * from SOA (if not set, we     \
+					   * are still using              \
 					   * default timer values) */
 #define DNS_ZONEFLG_FORCEXFER 0x00008000U /*%< Force a zone xfer */
 #define DNS_ZONEFLG_NOREFRESH 0x00010000U
@@ -502,10 +502,10 @@ struct dns_zone {
 #define DNS_ZONEFLG_LOADPENDING 0x10000000U /*%< Loading scheduled */
 #define DNS_ZONEFLG_NODELAY 0x20000000U
 #define DNS_ZONEFLG_SENDSECURE 0x40000000U
-#define DNS_ZONEFLG_NEEDSTARTUPNOTIFY                                          \
-	0x80000000U /*%< need to send out notify                               \
-		     *   due to the zone just                                  \
-		     *   being loaded for the                                  \
+#define DNS_ZONEFLG_NEEDSTARTUPNOTIFY            \
+	0x80000000U /*%< need to send out notify \
+		     *   due to the zone just    \
+		     *   being loaded for the    \
 		     *   first time.  */
 
 #define DNS_ZONE_OPTION(z, o) (((z)->options & (o)) != 0)
@@ -513,18 +513,18 @@ struct dns_zone {
 
 /* Flags for zone_load() */
 #define DNS_ZONELOADFLAG_NOSTAT 0x00000001U /* Do not stat() master files */
-#define DNS_ZONELOADFLAG_THAW                                                  \
-	0x00000002U /* Thaw the zone on successful                             \
+#define DNS_ZONELOADFLAG_THAW                      \
+	0x00000002U /* Thaw the zone on successful \
 		     *                            load. */
 
 #define UNREACH_CACHE_SIZE 10U
 #define UNREACH_HOLD_TIME 600 /* 10 minutes */
 
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 struct dns_unreachable {
@@ -883,34 +883,34 @@ setrl(isc_ratelimiter_t *rl, unsigned int *rate, unsigned int value);
 static const unsigned int dbargc_default = 1;
 static const char *dbargv_default[] = { "rbt" };
 
-#define DNS_ZONE_JITTER_ADD(a, b, c)                                           \
-	do {                                                                   \
-		isc_interval_t _i;                                             \
-		uint32_t _j;                                                   \
-		_j = (b)-isc_random_uniform((b) / 4);                          \
-		isc_interval_set(&_i, _j, 0);                                  \
-		if (isc_time_add((a), &_i, (c)) != ISC_R_SUCCESS) {            \
-			dns_zone_log(zone, ISC_LOG_WARNING,                    \
-				     "epoch approaching: upgrade required: "   \
-				     "now + %s failed",                        \
-				     #b);                                      \
-			isc_interval_set(&_i, _j / 2, 0);                      \
-			(void)isc_time_add((a), &_i, (c));                     \
-		}                                                              \
+#define DNS_ZONE_JITTER_ADD(a, b, c)                                         \
+	do {                                                                 \
+		isc_interval_t _i;                                           \
+		uint32_t _j;                                                 \
+		_j = (b)-isc_random_uniform((b) / 4);                        \
+		isc_interval_set(&_i, _j, 0);                                \
+		if (isc_time_add((a), &_i, (c)) != ISC_R_SUCCESS) {          \
+			dns_zone_log(zone, ISC_LOG_WARNING,                  \
+				     "epoch approaching: upgrade required: " \
+				     "now + %s failed",                      \
+				     #b);                                    \
+			isc_interval_set(&_i, _j / 2, 0);                    \
+			(void)isc_time_add((a), &_i, (c));                   \
+		}                                                            \
 	} while (0)
 
-#define DNS_ZONE_TIME_ADD(a, b, c)                                             \
-	do {                                                                   \
-		isc_interval_t _i;                                             \
-		isc_interval_set(&_i, (b), 0);                                 \
-		if (isc_time_add((a), &_i, (c)) != ISC_R_SUCCESS) {            \
-			dns_zone_log(zone, ISC_LOG_WARNING,                    \
-				     "epoch approaching: upgrade required: "   \
-				     "now + %s failed",                        \
-				     #b);                                      \
-			isc_interval_set(&_i, (b) / 2, 0);                     \
-			(void)isc_time_add((a), &_i, (c));                     \
-		}                                                              \
+#define DNS_ZONE_TIME_ADD(a, b, c)                                           \
+	do {                                                                 \
+		isc_interval_t _i;                                           \
+		isc_interval_set(&_i, (b), 0);                               \
+		if (isc_time_add((a), &_i, (c)) != ISC_R_SUCCESS) {          \
+			dns_zone_log(zone, ISC_LOG_WARNING,                  \
+				     "epoch approaching: upgrade required: " \
+				     "now + %s failed",                      \
+				     #b);                                    \
+			isc_interval_set(&_i, (b) / 2, 0);                   \
+			(void)isc_time_add((a), &_i, (c));                   \
+		}                                                            \
 	} while (0)
 
 typedef struct nsec3param nsec3param_t;

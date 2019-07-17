@@ -56,7 +56,7 @@
  *  - IXFR over UDP
  */
 
-#define XFROUT_COMMON_LOGARGS                                                  \
+#define XFROUT_COMMON_LOGARGS \
 	ns_lctx, DNS_LOGCATEGORY_XFER_OUT, NS_LOGMODULE_XFER_OUT
 
 #define XFROUT_PROTOCOL_LOGARGS XFROUT_COMMON_LOGARGS, ISC_LOG_INFO
@@ -72,37 +72,37 @@
  * The test against ISC_R_SUCCESS is there to keep the Solaris compiler
  * from complaining about "end-of-loop code not reached".
  */
-#define FAILC(code, msg)                                                       \
-	do {                                                                   \
-		result = (code);                                               \
-		ns_client_log(client, DNS_LOGCATEGORY_XFER_OUT,                \
-			      NS_LOGMODULE_XFER_OUT, ISC_LOG_INFO,             \
-			      "bad zone transfer request: %s (%s)", msg,       \
-			      isc_result_totext(code));                        \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define FAILC(code, msg)                                                 \
+	do {                                                             \
+		result = (code);                                         \
+		ns_client_log(client, DNS_LOGCATEGORY_XFER_OUT,          \
+			      NS_LOGMODULE_XFER_OUT, ISC_LOG_INFO,       \
+			      "bad zone transfer request: %s (%s)", msg, \
+			      isc_result_totext(code));                  \
+		if (result != ISC_R_SUCCESS)                             \
+			goto failure;                                    \
 	} while (0)
 
-#define FAILQ(code, msg, question, rdclass)                                    \
-	do {                                                                   \
-		char _buf1[DNS_NAME_FORMATSIZE];                               \
-		char _buf2[DNS_RDATACLASS_FORMATSIZE];                         \
-		result = (code);                                               \
-		dns_name_format(question, _buf1, sizeof(_buf1));               \
-		dns_rdataclass_format(rdclass, _buf2, sizeof(_buf2));          \
-		ns_client_log(client, DNS_LOGCATEGORY_XFER_OUT,                \
-			      NS_LOGMODULE_XFER_OUT, ISC_LOG_INFO,             \
-			      "bad zone transfer request: '%s/%s': %s (%s)",   \
-			      _buf1, _buf2, msg, isc_result_totext(code));     \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define FAILQ(code, msg, question, rdclass)                                  \
+	do {                                                                 \
+		char _buf1[DNS_NAME_FORMATSIZE];                             \
+		char _buf2[DNS_RDATACLASS_FORMATSIZE];                       \
+		result = (code);                                             \
+		dns_name_format(question, _buf1, sizeof(_buf1));             \
+		dns_rdataclass_format(rdclass, _buf2, sizeof(_buf2));        \
+		ns_client_log(client, DNS_LOGCATEGORY_XFER_OUT,              \
+			      NS_LOGMODULE_XFER_OUT, ISC_LOG_INFO,           \
+			      "bad zone transfer request: '%s/%s': %s (%s)", \
+			      _buf1, _buf2, msg, isc_result_totext(code));   \
+		if (result != ISC_R_SUCCESS)                                 \
+			goto failure;                                        \
 	} while (0)
 
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 /**************************************************************************/

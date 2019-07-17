@@ -50,11 +50,11 @@
 #include <pk11/pk11.h>
 #endif /* if USE_PKCS11 */
 
-#define RETERR(x)                                                              \
-	do {                                                                   \
-		result = (x);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define RETERR(x)                            \
+	do {                                 \
+		result = (x);                \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 static void

@@ -35,7 +35,7 @@
 #define ROUTE_SOCKET_PROTOCOL PF_ROUTE
 #define MSGHDR rt_msghdr
 #define MSGTYPE rtm_type
-#endif /* if defined(RTM_VERSION) && defined(RTM_NEWADDR) &&                   \
+#endif /* if defined(RTM_VERSION) && defined(RTM_NEWADDR) && \
 	* defined(RTM_DELADDR) */
 #endif /* ifdef HAVE_NET_ROUTE_H */
 
@@ -48,7 +48,7 @@
 #define MSGHDR nlmsghdr
 #define MSGTYPE nlmsg_type
 #endif /* if defined(RTM_NEWADDR) && defined(RTM_DELADDR) */
-#endif /* if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)  \
+#endif /* if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H) \
 	*/
 
 #ifdef TUNE_LARGE
@@ -60,7 +60,7 @@
 #define IFMGR_MAGIC ISC_MAGIC('I', 'F', 'M', 'G')
 #define NS_INTERFACEMGR_VALID(t) ISC_MAGIC_VALID(t, IFMGR_MAGIC)
 
-#define IFMGR_COMMON_LOGARGS                                                   \
+#define IFMGR_COMMON_LOGARGS \
 	ns_lctx, NS_LOGCATEGORY_NETWORK, NS_LOGMODULE_INTERFACEMGR
 
 /*% nameserver interface manager structure */

@@ -38,16 +38,16 @@ isc_thread_create(isc_threadfunc_t func, isc_threadarg_t arg,
 		  isc_thread_t *thread)
 {
 	pthread_attr_t attr;
-#if defined(HAVE_PTHREAD_ATTR_GETSTACKSIZE) &&                                 \
+#if defined(HAVE_PTHREAD_ATTR_GETSTACKSIZE) && \
 	defined(HAVE_PTHREAD_ATTR_SETSTACKSIZE)
 	size_t stacksize;
-#endif /* if defined(HAVE_PTHREAD_ATTR_GETSTACKSIZE) &&                        \
+#endif /* if defined(HAVE_PTHREAD_ATTR_GETSTACKSIZE) && \
 	* defined(HAVE_PTHREAD_ATTR_SETSTACKSIZE) */
 	int ret;
 
 	pthread_attr_init(&attr);
 
-#if defined(HAVE_PTHREAD_ATTR_GETSTACKSIZE) &&                                 \
+#if defined(HAVE_PTHREAD_ATTR_GETSTACKSIZE) && \
 	defined(HAVE_PTHREAD_ATTR_SETSTACKSIZE)
 	ret = pthread_attr_getstacksize(&attr, &stacksize);
 	if (ret != 0) {
@@ -60,7 +60,7 @@ isc_thread_create(isc_threadfunc_t func, isc_threadarg_t arg,
 			return (ISC_R_UNEXPECTED);
 		}
 	}
-#endif /* if defined(HAVE_PTHREAD_ATTR_GETSTACKSIZE) &&                        \
+#endif /* if defined(HAVE_PTHREAD_ATTR_GETSTACKSIZE) && \
 	* defined(HAVE_PTHREAD_ATTR_SETSTACKSIZE) */
 
 	ret = pthread_create(thread, &attr, func, arg);

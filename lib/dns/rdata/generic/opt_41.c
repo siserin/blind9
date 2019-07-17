@@ -14,8 +14,8 @@
 #ifndef RDATA_GENERIC_OPT_41_C
 #define RDATA_GENERIC_OPT_41_C
 
-#define RRTYPE_OPT_ATTRIBUTES                                                  \
-	(DNS_RDATATYPEATTR_SINGLETON | DNS_RDATATYPEATTR_META |                \
+#define RRTYPE_OPT_ATTRIBUTES                                   \
+	(DNS_RDATATYPEATTR_SINGLETON | DNS_RDATATYPEATTR_META | \
 	 DNS_RDATATYPEATTR_NOTQUESTION)
 
 static inline isc_result_t fromtext_opt(ARGS_FROMTEXT)

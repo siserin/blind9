@@ -102,8 +102,8 @@ LPFN_GETACCEPTEXSOCKADDRS ISCGetAcceptExSockaddrs;
 #ifdef ISC_SOCKET_CONSISTENCY_CHECKS
 #define CONSISTENT(sock) consistent(sock)
 #else /* ifdef ISC_SOCKET_CONSISTENCY_CHECKS */
-#define CONSISTENT(sock)                                                       \
-	do {                                                                   \
+#define CONSISTENT(sock) \
+	do {             \
 	} while (0)
 #endif /* ifdef ISC_SOCKET_CONSISTENCY_CHECKS */
 static void
@@ -124,8 +124,8 @@ consistent(isc_socket_t *sock);
  * Define what the possible "soft" errors can be.  These are non-fatal returns
  * of various network related functions, like recv() and so on.
  */
-#define SOFT_ERROR(e)                                                          \
-	((e) == WSAEINTR || (e) == WSAEWOULDBLOCK || (e) == EWOULDBLOCK ||     \
+#define SOFT_ERROR(e)                                                      \
+	((e) == WSAEINTR || (e) == WSAEWOULDBLOCK || (e) == EWOULDBLOCK || \
 	 (e) == EINTR || (e) == EAGAIN || (e) == 0)
 
 /*
@@ -139,8 +139,8 @@ consistent(isc_socket_t *sock);
 #define DOIO_HARD 2    /* i/o error, event sent */
 #define DOIO_EOF 3     /* EOF, no event sent */
 #define DOIO_PENDING 4 /* status when i/o is in process */
-#define DOIO_NEEDMORE                                                          \
-	5 /* IO was processed, but we need more due to minimum                 \
+#define DOIO_NEEDMORE                                          \
+	5 /* IO was processed, but we need more due to minimum \
 	   */
 
 #define DLVL(x) ISC_LOGCATEGORY_GENERAL, ISC_LOGMODULE_SOCKET, ISC_LOG_DEBUG(x)
@@ -284,10 +284,10 @@ struct isc_socket {
 	int state_lineno;	    /* line which last touched state */
 };
 
-#define _set_state(sock, _state)                                               \
-	do {                                                                   \
-		(sock)->state = (_state);                                      \
-		(sock)->state_lineno = __LINE__;                               \
+#define _set_state(sock, _state)                 \
+	do {                                     \
+		(sock)->state = (_state);        \
+		(sock)->state_lineno = __LINE__; \
 	} while (0)
 
 /*
@@ -2102,9 +2102,9 @@ internal_connect(isc_socket_t *sock, IoCompletionInfo *lpo, int connect_errno)
 		 * Translate other errors into ISC_R_* flavors.
 		 */
 		switch (connect_errno) {
-#define ERROR_MATCH(a, b)                                                      \
-	case a:                                                                \
-		result = b;                                                    \
+#define ERROR_MATCH(a, b)   \
+	case a:             \
+		result = b; \
 		break;
 			ERROR_MATCH(WSAEACCES, ISC_R_NOPERM);
 			ERROR_MATCH(WSAEADDRNOTAVAIL, ISC_R_ADDRNOTAVAIL);
@@ -3782,11 +3782,11 @@ _socktype(isc_sockettype_t type)
 	}
 }
 
-#define TRY0(a)                                                                \
-	do {                                                                   \
-		xmlrc = (a);                                                   \
-		if (xmlrc < 0)                                                 \
-			goto error;                                            \
+#define TRY0(a)                     \
+	do {                        \
+		xmlrc = (a);        \
+		if (xmlrc < 0)      \
+			goto error; \
 	} while (0)
 int
 isc_socketmgr_renderxml(isc_socketmgr_t *mgr, void *writer0)
@@ -3910,12 +3910,12 @@ error:
 #endif /* HAVE_LIBXML2 */
 
 #ifdef HAVE_JSON_C
-#define CHECKMEM(m)                                                            \
-	do {                                                                   \
-		if (m == NULL) {                                               \
-			result = ISC_R_NOMEMORY;                               \
-			goto error;                                            \
-		}                                                              \
+#define CHECKMEM(m)                              \
+	do {                                     \
+		if (m == NULL) {                 \
+			result = ISC_R_NOMEMORY; \
+			goto error;              \
+		}                                \
 	} while (0)
 
 isc_result_t

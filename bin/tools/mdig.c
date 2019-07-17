@@ -52,23 +52,23 @@
 #include <bind9/getaddresses.h>
 #include <dst/result.h>
 
-#define CHECK(str, x)                                                          \
-	{                                                                      \
-		if ((x) != ISC_R_SUCCESS) {                                    \
-			fprintf(stderr, "mdig: %s failed with %s\n", (str),    \
-				isc_result_totext(x));                         \
-			exit(-1);                                              \
-		}                                                              \
+#define CHECK(str, x)                                                       \
+	{                                                                   \
+		if ((x) != ISC_R_SUCCESS) {                                 \
+			fprintf(stderr, "mdig: %s failed with %s\n", (str), \
+				isc_result_totext(x));                      \
+			exit(-1);                                           \
+		}                                                           \
 	}
 
 #define RUNCHECK(x) RUNTIME_CHECK((x) == ISC_R_SUCCESS)
 
-#define ADD_STRING(b, s)                                                       \
-	{                                                                      \
-		if (strlen(s) >= isc_buffer_availablelength(b))                \
-			return ((ISC_R_NOSPACE));                              \
-		else                                                           \
-			isc_buffer_putstr(b, s);                               \
+#define ADD_STRING(b, s)                                        \
+	{                                                       \
+		if (strlen(s) >= isc_buffer_availablelength(b)) \
+			return ((ISC_R_NOSPACE));               \
+		else                                            \
+			isc_buffer_putstr(b, s);                \
 	}
 
 #define MXNAME (DNS_NAME_MAXTEXT + 1)
@@ -1120,23 +1120,23 @@ plus_option(char *option, struct query *query, bool global)
 	/* parse the rest of the string */
 	value = strtok_r(NULL, "", &last);
 
-#define FULLCHECK(A)                                                           \
-	do {                                                                   \
-		size_t _l = strlen(cmd);                                       \
-		if (_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0)           \
-			goto invalid_option;                                   \
+#define FULLCHECK(A)                                                 \
+	do {                                                         \
+		size_t _l = strlen(cmd);                             \
+		if (_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0) \
+			goto invalid_option;                         \
 	} while (0)
-#define FULLCHECK2(A, B)                                                       \
-	do {                                                                   \
-		size_t _l = strlen(cmd);                                       \
-		if ((_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0) &&       \
-		    (_l >= sizeof(B) || strncasecmp(cmd, B, _l) != 0))         \
-			goto invalid_option;                                   \
+#define FULLCHECK2(A, B)                                                 \
+	do {                                                             \
+		size_t _l = strlen(cmd);                                 \
+		if ((_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0) && \
+		    (_l >= sizeof(B) || strncasecmp(cmd, B, _l) != 0))   \
+			goto invalid_option;                             \
 	} while (0)
-#define GLOBAL()                                                               \
-	do {                                                                   \
-		if (!global)                                                   \
-			goto global_option;                                    \
+#define GLOBAL()                            \
+	do {                                \
+		if (!global)                \
+			goto global_option; \
 	} while (0)
 
 	switch (cmd[0]) {

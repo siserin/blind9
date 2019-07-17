@@ -120,10 +120,10 @@ typedef uint16_t in_port_t;
 
 #define ISC__IPADDR(x) ((uint32_t)htonl((uint32_t)(x)))
 
-#define ISC_IPADDR_ISMULTICAST(i)                                              \
+#define ISC_IPADDR_ISMULTICAST(i) \
 	(((uint32_t)(i)&ISC__IPADDR(0xf0000000)) == ISC__IPADDR(0xe0000000))
 
-#define ISC_IPADDR_ISEXPERIMENTAL(i)                                           \
+#define ISC_IPADDR_ISEXPERIMENTAL(i) \
 	(((uint32_t)(i)&ISC__IPADDR(0xf0000000)) == ISC__IPADDR(0xf0000000))
 
 /*
@@ -150,22 +150,22 @@ typedef uint16_t in_port_t;
 	} while (0)
 
 #undef FD_SET
-#define FD_SET(fd, set)                                                        \
-	do {                                                                   \
-		u_int __i;                                                     \
-		for (__i = 0; __i < ((fd_set FAR *)(set))->fd_count; __i++) {  \
-			if (((fd_set FAR *)(set))->fd_array[__i] ==            \
-			    (SOCKET)(fd)) {                                    \
-				break;                                         \
-			}                                                      \
-		}                                                              \
-		if (__i == ((fd_set FAR *)(set))->fd_count) {                  \
-			if (((fd_set FAR *)(set))->fd_count < FD_SETSIZE) {    \
-				((fd_set FAR *)(set))->fd_array[__i] =         \
-					(SOCKET)(fd);                          \
-				((fd_set FAR *)(set))->fd_count++;             \
-			}                                                      \
-		}                                                              \
+#define FD_SET(fd, set)                                                       \
+	do {                                                                  \
+		u_int __i;                                                    \
+		for (__i = 0; __i < ((fd_set FAR *)(set))->fd_count; __i++) { \
+			if (((fd_set FAR *)(set))->fd_array[__i] ==           \
+			    (SOCKET)(fd)) {                                   \
+				break;                                        \
+			}                                                     \
+		}                                                             \
+		if (__i == ((fd_set FAR *)(set))->fd_count) {                 \
+			if (((fd_set FAR *)(set))->fd_count < FD_SETSIZE) {   \
+				((fd_set FAR *)(set))->fd_array[__i] =        \
+					(SOCKET)(fd);                         \
+				((fd_set FAR *)(set))->fd_count++;            \
+			}                                                     \
+		}                                                             \
 	} while (0)
 
 /*

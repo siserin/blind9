@@ -33,14 +33,14 @@
 #include <dns/result.h>
 #include <dns/time.h>
 
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
-#define DIFF_COMMON_LOGARGS                                                    \
+#define DIFF_COMMON_LOGARGS \
 	dns_lctx, DNS_LOGCATEGORY_GENERAL, DNS_LOGMODULE_DIFF
 
 static dns_rdatatype_t

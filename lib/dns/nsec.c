@@ -28,11 +28,11 @@
 
 #include <dst/dst.h>
 
-#define RETERR(x)                                                              \
-	do {                                                                   \
-		result = (x);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define RETERR(x)                            \
+	do {                                 \
+		result = (x);                \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 void

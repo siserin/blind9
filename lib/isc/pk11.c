@@ -482,17 +482,17 @@ token_login(pk11_session_t *sp)
 	return (ret);
 }
 
-#define PK11_TRACE(fmt)                                                        \
-	if (pk11_verbose_init)                                                 \
+#define PK11_TRACE(fmt)        \
+	if (pk11_verbose_init) \
 	fprintf(stderr, fmt)
-#define PK11_TRACE1(fmt, arg)                                                  \
-	if (pk11_verbose_init)                                                 \
+#define PK11_TRACE1(fmt, arg)  \
+	if (pk11_verbose_init) \
 	fprintf(stderr, fmt, arg)
-#define PK11_TRACE2(fmt, arg1, arg2)                                           \
-	if (pk11_verbose_init)                                                 \
+#define PK11_TRACE2(fmt, arg1, arg2) \
+	if (pk11_verbose_init)       \
 	fprintf(stderr, fmt, arg1, arg2)
-#define PK11_TRACEM(mech)                                                      \
-	if (pk11_verbose_init)                                                 \
+#define PK11_TRACEM(mech)      \
+	if (pk11_verbose_init) \
 	fprintf(stderr, #mech ": 0x%lx\n", rv)
 
 static void
@@ -633,7 +633,7 @@ scan_slots(void)
 				best_eddsa_token = token;
 			}
 		}
-#endif /* if defined(CKM_EDDSA_KEY_PAIR_GEN) && defined(CKM_EDDSA) &&          \
+#endif /* if defined(CKM_EDDSA_KEY_PAIR_GEN) && defined(CKM_EDDSA) && \
 	* defined(CKK_EDDSA) */
 	}
 
@@ -874,10 +874,10 @@ push_attribute(pk11_object_t *obj, isc_mem_t *mctx, size_t len)
 	return (attr);
 }
 
-#define DST_RET(a)                                                             \
-	{                                                                      \
-		ret = a;                                                       \
-		goto err;                                                      \
+#define DST_RET(a)        \
+	{                 \
+		ret = a;  \
+		goto err; \
 	}
 
 isc_result_t

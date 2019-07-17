@@ -84,8 +84,8 @@
 
 #define VALATTR_SHUTDOWN 0x0001 /*%< Shutting down. */
 #define VALATTR_CANCELED 0x0002 /*%< Canceled. */
-#define VALATTR_TRIEDVERIFY                                                    \
-	0x0004			  /*%< We have found a key and                 \
+#define VALATTR_TRIEDVERIFY                                    \
+	0x0004			  /*%< We have found a key and \
 				   * have attempted a verify. */
 #define VALATTR_INSECURITY 0x0010 /*%< Attempting proveunsecure. */
 #define VALATTR_DLVTRIED 0x0020   /*%< Looked for a DLV record. */

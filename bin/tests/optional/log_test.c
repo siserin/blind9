@@ -27,11 +27,11 @@
 
 char usage[] = "Usage: %s [-m] [-s syslog_logfile] [-r file_versions]\n";
 
-#define CHECK(expr)                                                            \
-	result = expr;                                                         \
-	if (result != ISC_R_SUCCESS) {                                         \
-		fprintf(stderr, "%s: " #expr "%s: exiting\n", progname,        \
-			isc_result_totext(result));                            \
+#define CHECK(expr)                                                     \
+	result = expr;                                                  \
+	if (result != ISC_R_SUCCESS) {                                  \
+		fprintf(stderr, "%s: " #expr "%s: exiting\n", progname, \
+			isc_result_totext(result));                     \
 	}
 
 int

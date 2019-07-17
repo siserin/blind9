@@ -11,7 +11,7 @@
 
 #pragma once
 
-#if defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) ||   \
+#if defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || \
 	defined(__OpenBSD__) || defined(__bsdi__)
 
 #include <sys/endian.h>
@@ -90,13 +90,13 @@
 #define bswap_32(x) BSWAP_32(x)
 #define bswap_64(x) BSWAP_64(x)
 
-#elif defined(__ANDROID__) || defined(__CYGWIN__) || defined(__GNUC__) ||      \
+#elif defined(__ANDROID__) || defined(__CYGWIN__) || defined(__GNUC__) || \
 	defined(__GNU__)
 
 #include <byteswap.h>
 #include <endian.h>
 
-#else /* if defined(__DragonFly__) || defined(__FreeBSD__) ||                  \
+#else /* if defined(__DragonFly__) || defined(__FreeBSD__) || \
        * defined(__NetBSD__) || defined(__OpenBSD__) || defined(__bsdi__) */
 
 #endif /* Specific platform support */
@@ -108,28 +108,28 @@
 #include <inttypes.h>
 
 #ifndef bswap_16
-#define bswap_16(x)                                                            \
-	((uint16_t)((((uint16_t)(x)&0xff00) >> 8) |                            \
+#define bswap_16(x)                                 \
+	((uint16_t)((((uint16_t)(x)&0xff00) >> 8) | \
 		    (((uint16_t)(x)&0x00ff) << 8)))
 #endif /* !bswap_16 */
 
 #ifndef bswap_32
-#define bswap_32(x)                                                            \
-	((uint32_t)((((uint32_t)(x)&0xff000000) >> 24) |                       \
-		    (((uint32_t)(x)&0x00ff0000) >> 8) |                        \
-		    (((uint32_t)(x)&0x0000ff00) << 8) |                        \
+#define bswap_32(x)                                      \
+	((uint32_t)((((uint32_t)(x)&0xff000000) >> 24) | \
+		    (((uint32_t)(x)&0x00ff0000) >> 8) |  \
+		    (((uint32_t)(x)&0x0000ff00) << 8) |  \
 		    (((uint32_t)(x)&0x000000ff) << 24)))
 #endif /* !bswap_32 */
 
 #ifndef bswap_64
-#define bswap_64(x)                                                            \
-	((uint64_t)((((uint64_t)(x)&0xff00000000000000ULL) >> 56) |            \
-		    (((uint64_t)(x)&0x00ff000000000000ULL) >> 40) |            \
-		    (((uint64_t)(x)&0x0000ff0000000000ULL) >> 24) |            \
-		    (((uint64_t)(x)&0x000000ff00000000ULL) >> 8) |             \
-		    (((uint64_t)(x)&0x00000000ff000000ULL) << 8) |             \
-		    (((uint64_t)(x)&0x0000000000ff0000ULL) << 24) |            \
-		    (((uint64_t)(x)&0x000000000000ff00ULL) << 40) |            \
+#define bswap_64(x)                                                 \
+	((uint64_t)((((uint64_t)(x)&0xff00000000000000ULL) >> 56) | \
+		    (((uint64_t)(x)&0x00ff000000000000ULL) >> 40) | \
+		    (((uint64_t)(x)&0x0000ff0000000000ULL) >> 24) | \
+		    (((uint64_t)(x)&0x000000ff00000000ULL) >> 8) |  \
+		    (((uint64_t)(x)&0x00000000ff000000ULL) << 8) |  \
+		    (((uint64_t)(x)&0x0000000000ff0000ULL) << 24) | \
+		    (((uint64_t)(x)&0x000000000000ff00ULL) << 40) | \
 		    (((uint64_t)(x)&0x00000000000000ffULL) << 56)))
 #endif /* !bswap_64 */
 

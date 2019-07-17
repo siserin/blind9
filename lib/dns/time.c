@@ -137,10 +137,10 @@ dns_time64_fromtext(const char *source, int64_t *target)
 	int secs;
 	int i;
 
-#define RANGE(min, max, value)                                                 \
-	do {                                                                   \
-		if (value < (min) || value > (max))                            \
-			return ((ISC_R_RANGE));                                \
+#define RANGE(min, max, value)                      \
+	do {                                        \
+		if (value < (min) || value > (max)) \
+			return ((ISC_R_RANGE));     \
 	} while (0)
 
 	if (strlen(source) != 14U) {

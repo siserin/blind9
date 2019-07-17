@@ -328,10 +328,10 @@ unload_all(void)
 	}
 }
 
-#define DBI_CHECK(dbi)                                                         \
-	if ((dbi) == NULL) {                                                   \
-		printf("You must first select a database with !DB\n");         \
-		continue;                                                      \
+#define DBI_CHECK(dbi)                                                 \
+	if ((dbi) == NULL) {                                           \
+		printf("You must first select a database with !DB\n"); \
+		continue;                                              \
 	}
 
 int

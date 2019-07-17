@@ -45,11 +45,11 @@
 #define ULLONG_MAX (~0ULL)
 #endif /* ifndef ULLONG_MAX */
 
-#define INSIST(cond)                                                           \
-	if (!(cond)) {                                                         \
-		fprintf(stderr, "%s:%d: INSIST(%s)\n", __FILE__, __LINE__,     \
-			#cond);                                                \
-		abort();                                                       \
+#define INSIST(cond)                                                       \
+	if (!(cond)) {                                                     \
+		fprintf(stderr, "%s:%d: INSIST(%s)\n", __FILE__, __LINE__, \
+			#cond);                                            \
+		abort();                                                   \
 	}
 
 #define FROMTEXTARGS "rdclass, type, lexer, origin, options, target, callbacks"
@@ -772,11 +772,11 @@ main(int argc, char **argv)
 
 #define PRINT_COMMA(x) (x == maxtype ? "" : ",")
 
-#define METANOTQUESTION                                                        \
-	"DNS_RDATATYPEATTR_META | "                                            \
+#define METANOTQUESTION             \
+	"DNS_RDATATYPEATTR_META | " \
 	"DNS_RDATATYPEATTR_NOTQUESTION"
-#define METAQUESTIONONLY                                                       \
-	"DNS_RDATATYPEATTR_META | "                                            \
+#define METAQUESTIONONLY            \
+	"DNS_RDATATYPEATTR_META | " \
 	"DNS_RDATATYPEATTR_QUESTIONONLY"
 #define RESERVEDNAME "0"
 #define RESERVED "DNS_RDATATYPEATTR_RESERVED"
@@ -965,16 +965,16 @@ main(int argc, char **argv)
 				"((dns_rdataclass_t)dns_rdataclass_reserved0)"
 				"\n");
 
-#define PRINTCLASS(name, num)                                                  \
-	do {                                                                   \
-		s = funname(name, buf1);                                       \
-		classnum = num;                                                \
-		fprintf(stdout, "\tdns_rdataclass_%s = %d%s\n", s, classnum,   \
-			classnum != 255 ? "," : "");                           \
-		fprintf(stdout,                                                \
-			"#define dns_rdataclass_%s\t"                          \
-			"((dns_rdataclass_t)dns_rdataclass_%s)\n",             \
-			s, s);                                                 \
+#define PRINTCLASS(name, num)                                                \
+	do {                                                                 \
+		s = funname(name, buf1);                                     \
+		classnum = num;                                              \
+		fprintf(stdout, "\tdns_rdataclass_%s = %d%s\n", s, classnum, \
+			classnum != 255 ? "," : "");                         \
+		fprintf(stdout,                                              \
+			"#define dns_rdataclass_%s\t"                        \
+			"((dns_rdataclass_t)dns_rdataclass_%s)\n",           \
+			s, s);                                               \
 	} while (0)
 
 		for (cc = classes; cc != NULL; cc = cc->next) {

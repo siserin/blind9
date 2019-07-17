@@ -520,12 +520,12 @@ printversion(bool verbose)
 	printf("compiled by Solaris Studio %x\n", __SUNPRO_C);
 #endif /* ifdef __SUNPRO_C */
 	printf("compiled with OpenSSL version: %s\n", OPENSSL_VERSION_TEXT);
-#if !defined(LIBRESSL_VERSION_NUMBER) &&                                       \
+#if !defined(LIBRESSL_VERSION_NUMBER) && \
 	OPENSSL_VERSION_NUMBER >= 0x10100000L /* 1.1.0 or higher */
 	printf("linked to OpenSSL version: %s\n",
 	       OpenSSL_version(OPENSSL_VERSION));
 
-#else  /* if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >=    \
+#else  /* if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= \
 	* 0x10100000L */
 	printf("linked to OpenSSL version: %s\n",
 	       SSLeay_version(SSLEAY_VERSION));
@@ -1103,13 +1103,13 @@ setup(void)
 		      NAMED_LOGMODULE_MAIN, ISC_LOG_NOTICE,
 		      "compiled with OpenSSL version: %s",
 		      OPENSSL_VERSION_TEXT);
-#if !defined(LIBRESSL_VERSION_NUMBER) &&                                       \
+#if !defined(LIBRESSL_VERSION_NUMBER) && \
 	OPENSSL_VERSION_NUMBER >= 0x10100000L /* 1.1.0 or higher */
 	isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
 		      NAMED_LOGMODULE_MAIN, ISC_LOG_NOTICE,
 		      "linked to OpenSSL version: %s",
 		      OpenSSL_version(OPENSSL_VERSION));
-#else  /* if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >=    \
+#else  /* if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= \
 	* 0x10100000L */
 	isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,
 		      NAMED_LOGMODULE_MAIN, ISC_LOG_NOTICE,

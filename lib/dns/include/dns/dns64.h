@@ -23,16 +23,16 @@ ISC_LANG_BEGINDECLS
 /*
  * dns_dns64_create() flags.
  */
-#define DNS_DNS64_RECURSIVE_ONLY                                               \
-	0x01 /* If set then this record                                        \
-	      * only applies to recursive                                      \
-	      * queries.                                                       \
+#define DNS_DNS64_RECURSIVE_ONLY          \
+	0x01 /* If set then this record   \
+	      * only applies to recursive \
+	      * queries.                  \
 	      */
-#define DNS_DNS64_BREAK_DNSSEC                                                 \
-	0x02 /* If set then still perform                                      \
-	      * DNSSEC synthesis even                                          \
-	      * though the result would                                        \
-	      * fail validation.                                               \
+#define DNS_DNS64_BREAK_DNSSEC            \
+	0x02 /* If set then still perform \
+	      * DNSSEC synthesis even     \
+	      * though the result would   \
+	      * fail validation.          \
 	      */
 
 /*

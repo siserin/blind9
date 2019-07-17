@@ -93,8 +93,8 @@ typedef struct hashlist hashlist_t;
 
 static int nsec_datatype = dns_rdatatype_nsec;
 
-#define check_dns_dbiterator_current(result)                                   \
-	check_result((result == DNS_R_NEWORIGIN) ? ISC_R_SUCCESS : result,     \
+#define check_dns_dbiterator_current(result)                               \
+	check_result((result == DNS_R_NEWORIGIN) ? ISC_R_SUCCESS : result, \
 		     "dns_dbiterator_current()")
 
 #define IS_NSEC3 (nsec_datatype == dns_rdatatype_nsec3)
@@ -181,11 +181,11 @@ static bool output_stdout = false;
 bool set_maxttl = false;
 static dns_ttl_t maxttl = 0;
 
-#define INCSTAT(counter)                                                       \
-	if (printstats) {                                                      \
-		LOCK(&statslock);                                              \
-		counter++;                                                     \
-		UNLOCK(&statslock);                                            \
+#define INCSTAT(counter)            \
+	if (printstats) {           \
+		LOCK(&statslock);   \
+		counter++;          \
+		UNLOCK(&statslock); \
 	}
 
 static void
@@ -3356,8 +3356,8 @@ main(int argc, char *argv[])
 	atomic_init(&finished, false);
 
 	/* Unused letters: Bb G J q Yy (and F is reserved). */
-#define CMDLINE_FLAGS                                                          \
-	"3:AaCc:Dd:E:e:f:FghH:i:I:j:K:k:L:l:m:M:n:N:o:O:PpQRr:s:ST:tuUv:VX:"   \
+#define CMDLINE_FLAGS                                                        \
+	"3:AaCc:Dd:E:e:f:FghH:i:I:j:K:k:L:l:m:M:n:N:o:O:PpQRr:s:ST:tuUv:VX:" \
 	"xzZ:"
 
 	/*

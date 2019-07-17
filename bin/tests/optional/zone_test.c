@@ -46,21 +46,21 @@ dns_zonemgr_t *zonemgr = NULL;
 dns_zonetype_t zonetype = dns_zone_master;
 isc_sockaddr_t addr;
 
-#define ERRRET(result, function)                                               \
-	do {                                                                   \
-		if (result != ISC_R_SUCCESS) {                                 \
-			fprintf(stderr, "%s() returned %s\n", function,        \
-				dns_result_totext(result));                    \
-			return;                                                \
-		}                                                              \
+#define ERRRET(result, function)                                        \
+	do {                                                            \
+		if (result != ISC_R_SUCCESS) {                          \
+			fprintf(stderr, "%s() returned %s\n", function, \
+				dns_result_totext(result));             \
+			return;                                         \
+		}                                                       \
 	} while (0)
 
-#define ERRCONT(result, function)                                              \
-	if (result != ISC_R_SUCCESS) {                                         \
-		fprintf(stderr, "%s() returned %s\n", function,                \
-			dns_result_totext(result));                            \
-		continue;                                                      \
-	} else                                                                 \
+#define ERRCONT(result, function)                               \
+	if (result != ISC_R_SUCCESS) {                          \
+		fprintf(stderr, "%s() returned %s\n", function, \
+			dns_result_totext(result));             \
+		continue;                                       \
+	} else                                                  \
 		(void)NULL
 
 static void

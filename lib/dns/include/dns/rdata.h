@@ -116,9 +116,9 @@ struct dns_rdata {
 	ISC_LINK(dns_rdata_t) link;
 };
 
-#define DNS_RDATA_INIT                                                         \
-	{                                                                      \
-		NULL, 0, 0, 0, 0, { (void *)(-1), (void *)(-1) }               \
+#define DNS_RDATA_INIT                                           \
+	{                                                        \
+		NULL, 0, 0, 0, 0, { (void *)(-1), (void *)(-1) } \
 	}
 
 #define DNS_RDATA_CHECKINITIALIZED
@@ -138,7 +138,7 @@ struct dns_rdata {
 #define DNS_RDATA_UPDATE 0x0001  /*%< update pseudo record. */
 #define DNS_RDATA_OFFLINE 0x0002 /*%< RRSIG has a offline key. */
 
-#define DNS_RDATA_VALIDFLAGS(rdata)                                            \
+#define DNS_RDATA_VALIDFLAGS(rdata) \
 	(((rdata)->flags & ~(DNS_RDATA_UPDATE | DNS_RDATA_OFFLINE)) == 0)
 
 /*

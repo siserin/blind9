@@ -10,38 +10,38 @@
 #ifndef DLZ_LIST_H
 #define DLZ_LIST_H 1
 
-#define DLZ_LIST(type)                                                         \
-	struct {                                                               \
-		type *head, *tail;                                             \
+#define DLZ_LIST(type)             \
+	struct {                   \
+		type *head, *tail; \
 	}
-#define DLZ_LIST_INIT(list)                                                    \
-	do {                                                                   \
-		(list).head = NULL;                                            \
-		(list).tail = NULL;                                            \
+#define DLZ_LIST_INIT(list)         \
+	do {                        \
+		(list).head = NULL; \
+		(list).tail = NULL; \
 	} while (0)
 
-#define DLZ_LINK(type)                                                         \
-	struct {                                                               \
-		type *prev, *next;                                             \
+#define DLZ_LINK(type)             \
+	struct {                   \
+		type *prev, *next; \
 	}
-#define DLZ_LINK_INIT(elt, link)                                               \
-	do {                                                                   \
-		(elt)->link.prev = (void *)(-1);                               \
-		(elt)->link.next = (void *)(-1);                               \
+#define DLZ_LINK_INIT(elt, link)                 \
+	do {                                     \
+		(elt)->link.prev = (void *)(-1); \
+		(elt)->link.next = (void *)(-1); \
 	} while (0)
 
 #define DLZ_LIST_HEAD(list) ((list).head)
 #define DLZ_LIST_TAIL(list) ((list).tail)
 
-#define DLZ_LIST_APPEND(list, elt, link)                                       \
-	do {                                                                   \
-		if ((list).tail != NULL)                                       \
-			(list).tail->link.next = (elt);                        \
-		else                                                           \
-			(list).head = (elt);                                   \
-		(elt)->link.prev = (list).tail;                                \
-		(elt)->link.next = NULL;                                       \
-		(list).tail = (elt);                                           \
+#define DLZ_LIST_APPEND(list, elt, link)                \
+	do {                                            \
+		if ((list).tail != NULL)                \
+			(list).tail->link.next = (elt); \
+		else                                    \
+			(list).head = (elt);            \
+		(elt)->link.prev = (list).tail;         \
+		(elt)->link.next = NULL;                \
+		(list).tail = (elt);                    \
 	} while (0)
 
 #define DLZ_LIST_PREV(elt, link) ((elt)->link.prev)

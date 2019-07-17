@@ -30,23 +30,23 @@
 /*@{*/
 /*% Operations on timevals; adapted from FreeBSD's sys/time.h */
 #define timevalclear(tvp) ((tvp)->tv_sec = (tvp)->tv_usec = 0)
-#define timevaladd(vvp, uvp)                                                   \
-	do {                                                                   \
-		(vvp)->tv_sec += (uvp)->tv_sec;                                \
-		(vvp)->tv_usec += (uvp)->tv_usec;                              \
-		if ((vvp)->tv_usec >= 1000000) {                               \
-			(vvp)->tv_sec++;                                       \
-			(vvp)->tv_usec -= 1000000;                             \
-		}                                                              \
+#define timevaladd(vvp, uvp)                       \
+	do {                                       \
+		(vvp)->tv_sec += (uvp)->tv_sec;    \
+		(vvp)->tv_usec += (uvp)->tv_usec;  \
+		if ((vvp)->tv_usec >= 1000000) {   \
+			(vvp)->tv_sec++;           \
+			(vvp)->tv_usec -= 1000000; \
+		}                                  \
 	} while (0)
-#define timevalsub(vvp, uvp)                                                   \
-	do {                                                                   \
-		(vvp)->tv_sec -= (uvp)->tv_sec;                                \
-		(vvp)->tv_usec -= (uvp)->tv_usec;                              \
-		if ((vvp)->tv_usec < 0) {                                      \
-			(vvp)->tv_sec--;                                       \
-			(vvp)->tv_usec += 1000000;                             \
-		}                                                              \
+#define timevalsub(vvp, uvp)                       \
+	do {                                       \
+		(vvp)->tv_sec -= (uvp)->tv_sec;    \
+		(vvp)->tv_usec -= (uvp)->tv_usec;  \
+		if ((vvp)->tv_usec < 0) {          \
+			(vvp)->tv_sec--;           \
+			(vvp)->tv_usec += 1000000; \
+		}                                  \
 	} while (0)
 
 /*@}*/
@@ -260,10 +260,10 @@ pthread_mutexattr_t isc__mutex_attrs = {
 	PTHREAD_MUTEX_ERRORCHECK, /* m_type */
 	0			  /* m_flags, which appears to be unused. */
 };
-#endif /* if ISC_MUTEX_DEBUG && defined(__NetBSD__) &&                         \
+#endif /* if ISC_MUTEX_DEBUG && defined(__NetBSD__) && \
 	* defined(PTHREAD_MUTEX_ERRORCHECK) */
 
-#if !(ISC_MUTEX_DEBUG && defined(PTHREAD_MUTEX_ERRORCHECK)) &&                 \
+#if !(ISC_MUTEX_DEBUG && defined(PTHREAD_MUTEX_ERRORCHECK)) && \
 	!ISC_MUTEX_PROFILE
 
 #ifdef HAVE_PTHREAD_MUTEX_ADAPTIVE_NP
@@ -304,5 +304,5 @@ isc__mutex_init(isc_mutex_t *mp, const char *file, unsigned int line)
 				strbuf);
 	}
 }
-#endif /* if !(ISC_MUTEX_DEBUG && defined(PTHREAD_MUTEX_ERRORCHECK)) &&        \
+#endif /* if !(ISC_MUTEX_DEBUG && defined(PTHREAD_MUTEX_ERRORCHECK)) && \
 	* !ISC_MUTEX_PROFILE */

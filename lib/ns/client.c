@@ -79,11 +79,11 @@
 
 #define NS_CLIENT_TRACE
 #ifdef NS_CLIENT_TRACE
-#define CTRACE(m)                                                              \
-	ns_client_log(client, NS_LOGCATEGORY_CLIENT, NS_LOGMODULE_CLIENT,      \
+#define CTRACE(m)                                                         \
+	ns_client_log(client, NS_LOGCATEGORY_CLIENT, NS_LOGMODULE_CLIENT, \
 		      ISC_LOG_DEBUG(3), "%s", (m))
-#define MTRACE(m)                                                              \
-	isc_log_write(ns_lctx, NS_LOGCATEGORY_CLIENT, NS_LOGMODULE_CLIENT,     \
+#define MTRACE(m)                                                          \
+	isc_log_write(ns_lctx, NS_LOGCATEGORY_CLIENT, NS_LOGMODULE_CLIENT, \
 		      ISC_LOG_DEBUG(3), "clientmgr @%p: %s", manager, (m))
 #else /* ifdef NS_CLIENT_TRACE */
 #define CTRACE(m) ((void)(m))

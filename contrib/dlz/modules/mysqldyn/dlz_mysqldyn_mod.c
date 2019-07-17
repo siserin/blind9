@@ -73,9 +73,9 @@
  * Get the NS RRset for a zone
  * Arguments: zone-name
  */
-#define Q_GETNS                                                                \
-	"SELECT d.data FROM ZoneData d, Zones z "                              \
-	"WHERE UPPER(d.type) = 'NS' AND LOWER(z.domain) = LOWER('%s') "        \
+#define Q_GETNS                                                         \
+	"SELECT d.data FROM ZoneData d, Zones z "                       \
+	"WHERE UPPER(d.type) = 'NS' AND LOWER(z.domain) = LOWER('%s') " \
 	"AND z.id = d.zone_id"
 
 /*
@@ -94,36 +94,36 @@
  * Get SOA data from zone apex
  * Arguments: zone-name
  */
-#define Q_GETSOA                                                               \
-	"SELECT host, admin, serial, refresh, retry, expire, minimum, ttl "    \
+#define Q_GETSOA                                                            \
+	"SELECT host, admin, serial, refresh, retry, expire, minimum, ttl " \
 	"FROM Zones WHERE LOWER(domain) = LOWER('%s')"
 
 /*
  * Get other data from zone apex
  * Arguments: zone-name, zone-name (repeated)
  */
-#define Q_GETAPEX                                                              \
-	"SELECT d.type, d.data, d.ttl FROM ZoneData d, Zones z "               \
-	"WHERE LOWER(z.domain) = LOWER('%s') AND z.id = d.zone_id "            \
-	"AND LOWER(d.name) IN (LOWER('%s'), '', '@') "                         \
+#define Q_GETAPEX                                                   \
+	"SELECT d.type, d.data, d.ttl FROM ZoneData d, Zones z "    \
+	"WHERE LOWER(z.domain) = LOWER('%s') AND z.id = d.zone_id " \
+	"AND LOWER(d.name) IN (LOWER('%s'), '', '@') "              \
 	"ORDER BY UPPER(d.type) ASC"
 
 /*
  * Get data from non-apex nodes
  * Arguments: zone-name, node-name (relative to zone name)
  */
-#define Q_GETNODE                                                              \
-	"SELECT d.type, d.data, d.ttl FROM ZoneData d, Zones z "               \
-	"WHERE LOWER(z.domain) = LOWER('%s') AND z.id = d.zone_id "            \
-	"AND LOWER(d.name) = LOWER('%s') "                                     \
+#define Q_GETNODE                                                   \
+	"SELECT d.type, d.data, d.ttl FROM ZoneData d, Zones z "    \
+	"WHERE LOWER(z.domain) = LOWER('%s') AND z.id = d.zone_id " \
+	"AND LOWER(d.name) = LOWER('%s') "                          \
 	"ORDER BY UPPER(d.type) ASC"
 
 /*
  * Get all data from a zone, for AXFR
  * Arguments: zone-name
  */
-#define Q_GETALL                                                               \
-	"SELECT d.name, d.type, d.data, d.ttl FROM ZoneData d, Zones z "       \
+#define Q_GETALL                                                         \
+	"SELECT d.name, d.type, d.data, d.ttl FROM ZoneData d, Zones z " \
 	"WHERE LOWER(z.domain) = LOWER('%s') AND z.id = d.zone_id"
 
 /*
@@ -136,8 +136,8 @@
  * Determine whether a zone is writeable, and if so, retrieve zone_id
  * Arguments: zone-name
  */
-#define Q_WRITEABLE                                                            \
-	"SELECT id FROM Zones WHERE "                                          \
+#define Q_WRITEABLE                   \
+	"SELECT id FROM Zones WHERE " \
 	"LOWER(domain) = LOWER('%s') AND writeable = 1"
 
 /*
@@ -145,8 +145,8 @@
  * Arguments: zone-id (from Q_WRITEABLE), node-name (relative to zone-name),
  * 	      rrtype, rdata text, TTL (in text format)
  */
-#define I_DATA                                                                 \
-	"INSERT INTO ZoneData (zone_id, name, type, data, ttl) "               \
+#define I_DATA                                                   \
+	"INSERT INTO ZoneData (zone_id, name, type, data, ttl) " \
 	"VALUES (%s, LOWER('%s'), UPPER('%s'), '%s', %s)"
 
 /*
@@ -161,9 +161,9 @@
  * Arguments: node-name (relative to zone-name), zone-id (from Q_WRITEABLE),
  * 	      rrtype, rdata text, TTL (in text format).
  */
-#define D_RECORD                                                               \
-	"DELETE FROM ZoneData WHERE zone_id = %s AND "                         \
-	"LOWER(name) = LOWER('%s') AND UPPER(type) = UPPER('%s') AND "         \
+#define D_RECORD                                                       \
+	"DELETE FROM ZoneData WHERE zone_id = %s AND "                 \
+	"LOWER(name) = LOWER('%s') AND UPPER(type) = UPPER('%s') AND " \
 	"data = '%s' AND ttl = %s"
 
 /*
@@ -171,8 +171,8 @@
  * Arguments: node-name (relative to zone-name), zone-id (from Q_WRITEABLE),
  * 	      rrtype.
  */
-#define D_RRSET                                                                \
-	"DELETE FROM ZoneData WHERE zone_id = %s AND "                         \
+#define D_RRSET                                        \
+	"DELETE FROM ZoneData WHERE zone_id = %s AND " \
 	"LOWER(name) = LOWER('%s') AND UPPER(type) = UPPER('%s')"
 
 /*

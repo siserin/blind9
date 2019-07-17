@@ -38,12 +38,12 @@
 #include <ns/log.h>
 #include <ns/query.h>
 
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS) {                                 \
-			goto cleanup;                                          \
-		}                                                              \
+#define CHECK(op)                              \
+	do {                                   \
+		result = (op);                 \
+		if (result != ISC_R_SUCCESS) { \
+			goto cleanup;          \
+		}                              \
 	} while (0)
 
 struct ns_plugin {

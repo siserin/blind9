@@ -92,9 +92,9 @@ typedef struct rbt_testdata {
 	data_holder_t data;
 } rbt_testdata_t;
 
-#define DATA_ITEM(name)                                                        \
-	{                                                                      \
-		(name), sizeof(name) - 1, { sizeof(name), (name) }             \
+#define DATA_ITEM(name)                                            \
+	{                                                          \
+		(name), sizeof(name) - 1, { sizeof(name), (name) } \
 	}
 
 rbt_testdata_t testdata[] = { DATA_ITEM("first.com."),

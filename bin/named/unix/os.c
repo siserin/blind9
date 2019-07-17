@@ -86,50 +86,50 @@ linux_setcaps(cap_t caps)
 	}
 }
 
-#define SET_CAP(flag)                                                          \
-	do {                                                                   \
-		cap_flag_value_t curval;                                       \
-		capval = (flag);                                               \
-		err = cap_get_flag(curcaps, capval, CAP_PERMITTED, &curval);   \
-		if (err != -1 && curval) {                                     \
-			err = cap_set_flag(caps, CAP_EFFECTIVE, 1, &capval,    \
-					   CAP_SET);                           \
-			if (err == -1) {                                       \
-				strerror_r(errno, strbuf, sizeof(strbuf));     \
-				named_main_earlyfatal("cap_set_proc failed: "  \
-						      "%s",                    \
-						      strbuf);                 \
-			}                                                      \
-                                                                               \
-			err = cap_set_flag(caps, CAP_PERMITTED, 1, &capval,    \
-					   CAP_SET);                           \
-			if (err == -1) {                                       \
-				strerror_r(errno, strbuf, sizeof(strbuf));     \
-				named_main_earlyfatal("cap_set_proc failed: "  \
-						      "%s",                    \
-						      strbuf);                 \
-			}                                                      \
-		}                                                              \
+#define SET_CAP(flag)                                                         \
+	do {                                                                  \
+		cap_flag_value_t curval;                                      \
+		capval = (flag);                                              \
+		err = cap_get_flag(curcaps, capval, CAP_PERMITTED, &curval);  \
+		if (err != -1 && curval) {                                    \
+			err = cap_set_flag(caps, CAP_EFFECTIVE, 1, &capval,   \
+					   CAP_SET);                          \
+			if (err == -1) {                                      \
+				strerror_r(errno, strbuf, sizeof(strbuf));    \
+				named_main_earlyfatal("cap_set_proc failed: " \
+						      "%s",                   \
+						      strbuf);                \
+			}                                                     \
+                                                                              \
+			err = cap_set_flag(caps, CAP_PERMITTED, 1, &capval,   \
+					   CAP_SET);                          \
+			if (err == -1) {                                      \
+				strerror_r(errno, strbuf, sizeof(strbuf));    \
+				named_main_earlyfatal("cap_set_proc failed: " \
+						      "%s",                   \
+						      strbuf);                \
+			}                                                     \
+		}                                                             \
 	} while (0)
-#define INIT_CAP                                                               \
-	do {                                                                   \
-		caps = cap_init();                                             \
-		if (caps == NULL) {                                            \
-			strerror_r(errno, strbuf, sizeof(strbuf));             \
-			named_main_earlyfatal("cap_init failed: %s", strbuf);  \
-		}                                                              \
-		curcaps = cap_get_proc();                                      \
-		if (curcaps == NULL) {                                         \
-			strerror_r(errno, strbuf, sizeof(strbuf));             \
-			named_main_earlyfatal("cap_get_proc failed: %s",       \
-					      strbuf);                         \
-		}                                                              \
+#define INIT_CAP                                                              \
+	do {                                                                  \
+		caps = cap_init();                                            \
+		if (caps == NULL) {                                           \
+			strerror_r(errno, strbuf, sizeof(strbuf));            \
+			named_main_earlyfatal("cap_init failed: %s", strbuf); \
+		}                                                             \
+		curcaps = cap_get_proc();                                     \
+		if (curcaps == NULL) {                                        \
+			strerror_r(errno, strbuf, sizeof(strbuf));            \
+			named_main_earlyfatal("cap_get_proc failed: %s",      \
+					      strbuf);                        \
+		}                                                             \
 	} while (0)
-#define FREE_CAP                                                               \
-	{                                                                      \
-		cap_free(caps);                                                \
-		cap_free(curcaps);                                             \
-	}                                                                      \
+#define FREE_CAP                   \
+	{                          \
+		cap_free(caps);    \
+		cap_free(curcaps); \
+	}                          \
 	while (0)
 
 static void

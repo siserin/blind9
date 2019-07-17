@@ -43,12 +43,12 @@
 #include <dst/dst.h>
 #include <dst/result.h>
 
-#define CHECK(str, x)                                                          \
-	{                                                                      \
-		if ((x) != ISC_R_SUCCESS) {                                    \
-			printf("%s: %s\n", (str), isc_result_totext(x));       \
-			exit(-1);                                              \
-		}                                                              \
+#define CHECK(str, x)                                                    \
+	{                                                                \
+		if ((x) != ISC_R_SUCCESS) {                              \
+			printf("%s: %s\n", (str), isc_result_totext(x)); \
+			exit(-1);                                        \
+		}                                                        \
 	}
 
 isc_mutex_t lock;

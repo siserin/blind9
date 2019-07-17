@@ -14,8 +14,8 @@
 #ifndef RDATA_GENERIC_RRSIG_46_C
 #define RDATA_GENERIC_RRSIG_46_C
 
-#define RRTYPE_RRSIG_ATTRIBUTES                                                \
-	(DNS_RDATATYPEATTR_DNSSEC | DNS_RDATATYPEATTR_ZONECUTAUTH |            \
+#define RRTYPE_RRSIG_ATTRIBUTES                                     \
+	(DNS_RDATATYPEATTR_DNSSEC | DNS_RDATATYPEATTR_ZONECUTAUTH | \
 	 DNS_RDATATYPEATTR_ATCNAME)
 
 static inline isc_result_t fromtext_rrsig(ARGS_FROMTEXT)

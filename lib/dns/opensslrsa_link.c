@@ -48,10 +48,10 @@
 #error Please upgrade OpenSSL to 1.0.0 or greater.
 #endif /* if defined(WIN32) && (OPENSSL_VERSION_NUMBER < 0x10000000L) */
 
-#define DST_RET(a)                                                             \
-	{                                                                      \
-		ret = a;                                                       \
-		goto err;                                                      \
+#define DST_RET(a)        \
+	{                 \
+		ret = a;  \
+		goto err; \
 	}
 
 #if !HAVE_RSA_SET0_KEY
@@ -466,7 +466,7 @@ opensslrsa_generate(dst_key_t *key, int exp, void (*callback)(int))
 	BIGNUM *e = BN_new();
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 	BN_GENCB _cb;
-#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L ||                           \
+#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L || \
 	* defined(LIBRESSL_VERSION_NUMBER) */
 	BN_GENCB *cb = BN_GENCB_new();
 	EVP_PKEY *pkey = EVP_PKEY_new();

@@ -67,90 +67,90 @@
 #include <dns/tsig.h>
 #include <dns/validator.h>
 #ifdef WANT_QUERYTRACE
-#define RTRACE(m)                                                              \
-	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                      \
-		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3), "res %p: %s",  \
+#define RTRACE(m)                                                             \
+	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                     \
+		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3), "res %p: %s", \
 		      res, (m))
-#define RRTRACE(r, m)                                                          \
-	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                      \
-		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3), "res %p: %s",  \
+#define RRTRACE(r, m)                                                         \
+	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                     \
+		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3), "res %p: %s", \
 		      (r), (m))
-#define FCTXTRACE(m)                                                           \
-	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                      \
-		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3),                \
+#define FCTXTRACE(m)                                            \
+	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,       \
+		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3), \
 		      "fctx %p(%s): %s", fctx, fctx->info, (m))
-#define FCTXTRACE2(m1, m2)                                                     \
-	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                      \
-		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3),                \
+#define FCTXTRACE2(m1, m2)                                      \
+	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,       \
+		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3), \
 		      "fctx %p(%s): %s %s", fctx, fctx->info, (m1), (m2))
-#define FCTXTRACE3(m, res)                                                     \
-	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                      \
-		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3),                \
-		      "fctx %p(%s): [result: %s] %s", fctx, fctx->info,        \
+#define FCTXTRACE3(m, res)                                              \
+	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,               \
+		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3),         \
+		      "fctx %p(%s): [result: %s] %s", fctx, fctx->info, \
 		      isc_result_totext(res), (m))
-#define FCTXTRACE4(m1, m2, res)                                                \
-	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                      \
-		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3),                \
-		      "fctx %p(%s): [result: %s] %s %s", fctx, fctx->info,     \
+#define FCTXTRACE4(m1, m2, res)                                            \
+	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                  \
+		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3),            \
+		      "fctx %p(%s): [result: %s] %s %s", fctx, fctx->info, \
 		      isc_result_totext(res), (m1), (m2))
-#define FCTXTRACE5(m1, m2, v)                                                  \
-	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                      \
-		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3),                \
-		      "fctx %p(%s): %s %s%u", fctx, fctx->info, (m1), (m2),    \
+#define FCTXTRACE5(m1, m2, v)                                               \
+	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                   \
+		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3),             \
+		      "fctx %p(%s): %s %s%u", fctx, fctx->info, (m1), (m2), \
 		      (v))
-#define FTRACE(m)                                                              \
-	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                      \
-		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3),                \
-		      "fetch %p (fctx %p(%s)): %s", fetch, fetch->private,     \
+#define FTRACE(m)                                                          \
+	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                  \
+		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3),            \
+		      "fetch %p (fctx %p(%s)): %s", fetch, fetch->private, \
 		      fetch->private->info, (m))
-#define QTRACE(m)                                                              \
-	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                      \
-		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3),                \
-		      "resquery %p (fctx %p(%s)): %s", query, query->fctx,     \
+#define QTRACE(m)                                                          \
+	isc_log_write(dns_lctx, DNS_LOGCATEGORY_RESOLVER,                  \
+		      DNS_LOGMODULE_RESOLVER, ISC_LOG_DEBUG(3),            \
+		      "resquery %p (fctx %p(%s)): %s", query, query->fctx, \
 		      query->fctx->info, (m))
 #else /* ifdef WANT_QUERYTRACE */
-#define RTRACE(m)                                                              \
-	do {                                                                   \
-		UNUSED(m);                                                     \
+#define RTRACE(m)          \
+	do {               \
+		UNUSED(m); \
 	} while (0)
-#define RRTRACE(r, m)                                                          \
-	do {                                                                   \
-		UNUSED(r);                                                     \
-		UNUSED(m);                                                     \
+#define RRTRACE(r, m)      \
+	do {               \
+		UNUSED(r); \
+		UNUSED(m); \
 	} while (0)
-#define FCTXTRACE(m)                                                           \
-	do {                                                                   \
-		UNUSED(m);                                                     \
+#define FCTXTRACE(m)       \
+	do {               \
+		UNUSED(m); \
 	} while (0)
-#define FCTXTRACE2(m1, m2)                                                     \
-	do {                                                                   \
-		UNUSED(m1);                                                    \
-		UNUSED(m2);                                                    \
+#define FCTXTRACE2(m1, m2)  \
+	do {                \
+		UNUSED(m1); \
+		UNUSED(m2); \
 	} while (0)
-#define FCTXTRACE3(m1, res)                                                    \
-	do {                                                                   \
-		UNUSED(m1);                                                    \
-		UNUSED(res);                                                   \
+#define FCTXTRACE3(m1, res)  \
+	do {                 \
+		UNUSED(m1);  \
+		UNUSED(res); \
 	} while (0)
-#define FCTXTRACE4(m1, m2, res)                                                \
-	do {                                                                   \
-		UNUSED(m1);                                                    \
-		UNUSED(m2);                                                    \
-		UNUSED(res);                                                   \
+#define FCTXTRACE4(m1, m2, res) \
+	do {                    \
+		UNUSED(m1);     \
+		UNUSED(m2);     \
+		UNUSED(res);    \
 	} while (0)
-#define FCTXTRACE5(m1, m2, v)                                                  \
-	do {                                                                   \
-		UNUSED(m1);                                                    \
-		UNUSED(m2);                                                    \
-		UNUSED(v);                                                     \
+#define FCTXTRACE5(m1, m2, v) \
+	do {                  \
+		UNUSED(m1);   \
+		UNUSED(m2);   \
+		UNUSED(v);    \
 	} while (0)
-#define FTRACE(m)                                                              \
-	do {                                                                   \
-		UNUSED(m);                                                     \
+#define FTRACE(m)          \
+	do {               \
+		UNUSED(m); \
 	} while (0)
-#define QTRACE(m)                                                              \
-	do {                                                                   \
-		UNUSED(m);                                                     \
+#define QTRACE(m)          \
+	do {               \
+		UNUSED(m); \
 	} while (0)
 #endif /* WANT_QUERYTRACE */
 
@@ -205,7 +205,7 @@
 #define MAX_EDNS0_TIMEOUTS 3
 
 #define DNS_RESOLVER_BADCACHESIZE 1021
-#define DNS_RESOLVER_BADCACHETTL(fctx)                                         \
+#define DNS_RESOLVER_BADCACHETTL(fctx) \
 	(((fctx)->res->lame_ttl > 30) ? (fctx)->res->lame_ttl : 30)
 
 typedef struct fetchctx fetchctx_t;
@@ -566,10 +566,10 @@ struct dns_resolver {
 #define NXDOMAIN(r) (((r)->attributes & DNS_RDATASETATTR_NXDOMAIN) != 0)
 #define NEGATIVE(r) (((r)->attributes & DNS_RDATASETATTR_NEGATIVE) != 0)
 
-#define NXDOMAIN_RESULT(r)                                                     \
+#define NXDOMAIN_RESULT(r) \
 	((r) == DNS_R_NXDOMAIN || (r) == DNS_R_NCACHENXDOMAIN)
-#define NXRRSET_RESULT(r)                                                      \
-	((r) == DNS_R_NCACHENXRRSET || (r) == DNS_R_NXRRSET ||                 \
+#define NXRRSET_RESULT(r)                                      \
+	((r) == DNS_R_NCACHENXRRSET || (r) == DNS_R_NXRRSET || \
 	 (r) == DNS_R_HINTNXRRSET)
 
 #ifdef ENABLE_AFL

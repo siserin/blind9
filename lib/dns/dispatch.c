@@ -253,8 +253,8 @@ struct dns_dispatch {
 #define DNS_DISPATCHMGR_MAGIC ISC_MAGIC('D', 'M', 'g', 'r')
 #define VALID_DISPATCHMGR(e) ISC_MAGIC_VALID((e), DNS_DISPATCHMGR_MAGIC)
 
-#define DNS_QID(disp)                                                          \
-	((disp)->socktype == isc_sockettype_tcp) ? (disp)->qid                 \
+#define DNS_QID(disp)                                          \
+	((disp)->socktype == isc_sockettype_tcp) ? (disp)->qid \
 						 : (disp)->mgr->qid
 
 /*%
@@ -264,11 +264,11 @@ struct dns_dispatch {
  * however, this should be safe because qid isn't created until the first
  * dispatch is created and there should be no contending situation until then.
  */
-#define PORTBUFLOCK(mgr)                                                       \
-	if ((mgr)->qid != NULL)                                                \
+#define PORTBUFLOCK(mgr)        \
+	if ((mgr)->qid != NULL) \
 	LOCK(&((mgr)->qid->lock))
-#define PORTBUFUNLOCK(mgr)                                                     \
-	if ((mgr)->qid != NULL)                                                \
+#define PORTBUFUNLOCK(mgr)      \
+	if ((mgr)->qid != NULL) \
 	UNLOCK((&(mgr)->qid->lock))
 
 /*

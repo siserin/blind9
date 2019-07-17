@@ -60,11 +60,11 @@
 #define CHECK_LOCAL 1
 #endif /* ifndef CHECK_LOCAL */
 
-#define CHECK(r)                                                               \
-	do {                                                                   \
-		result = (r);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto cleanup;                                          \
+#define CHECK(r)                             \
+	do {                                 \
+		result = (r);                \
+		if (result != ISC_R_SUCCESS) \
+			goto cleanup;        \
 	} while (0)
 
 #define ERR_IS_CNAME 1

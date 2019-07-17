@@ -52,14 +52,14 @@ static const char *prog_name = NULL;
 static const dns_master_style_t *outputstyle = NULL;
 static enum { progmode_check, progmode_compile } progmode;
 
-#define ERRRET(result, function)                                               \
-	do {                                                                   \
-		if (result != ISC_R_SUCCESS) {                                 \
-			if (!quiet)                                            \
-				fprintf(stderr, "%s() returned %s\n",          \
-					function, dns_result_totext(result));  \
-			return (result);                                       \
-		}                                                              \
+#define ERRRET(result, function)                                              \
+	do {                                                                  \
+		if (result != ISC_R_SUCCESS) {                                \
+			if (!quiet)                                           \
+				fprintf(stderr, "%s() returned %s\n",         \
+					function, dns_result_totext(result)); \
+			return (result);                                      \
+		}                                                             \
 	} while (0)
 
 ISC_PLATFORM_NORETURN_PRE static void
@@ -140,7 +140,7 @@ main(int argc, char **argv)
 		prog_name += 3;
 	}
 
-#define PROGCMP(X)                                                             \
+#define PROGCMP(X) \
 	(strcasecmp(prog_name, X) == 0 || strcasecmp(prog_name, X ".exe") == 0)
 
 	if (PROGCMP("named-checkzone")) {

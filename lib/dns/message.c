@@ -83,18 +83,18 @@ hexdump(const char *msg, const char *msg2, void *base, size_t len)
 #define DNS_MESSAGE_EDNSVERSION_MASK 0x00ff0000U
 #define DNS_MESSAGE_EDNSVERSION_SHIFT 16
 
-#define VALID_NAMED_SECTION(s)                                                 \
+#define VALID_NAMED_SECTION(s) \
 	(((s) > DNS_SECTION_ANY) && ((s) < DNS_SECTION_MAX))
 #define VALID_SECTION(s) (((s) >= DNS_SECTION_ANY) && ((s) < DNS_SECTION_MAX))
-#define ADD_STRING(b, s)                                                       \
-	{                                                                      \
-		if (strlen(s) >= isc_buffer_availablelength(b)) {              \
-			result = ISC_R_NOSPACE;                                \
-			goto cleanup;                                          \
-		} else                                                         \
-			isc_buffer_putstr(b, s);                               \
+#define ADD_STRING(b, s)                                          \
+	{                                                         \
+		if (strlen(s) >= isc_buffer_availablelength(b)) { \
+			result = ISC_R_NOSPACE;                   \
+			goto cleanup;                             \
+		} else                                            \
+			isc_buffer_putstr(b, s);                  \
 	}
-#define VALID_PSEUDOSECTION(s)                                                 \
+#define VALID_PSEUDOSECTION(s) \
 	(((s) >= DNS_PSEUDOSECTION_ANY) && ((s) < DNS_PSEUDOSECTION_MAX))
 
 #define OPTOUT(x) (((x)->attributes & DNS_RDATASETATTR_OPTOUT) != 0)
@@ -142,7 +142,7 @@ struct dns_msgblock {
 static inline dns_msgblock_t *
 msgblock_allocate(isc_mem_t *, unsigned int, unsigned int);
 
-#define msgblock_get(block, type)                                              \
+#define msgblock_get(block, type) \
 	((type *)msgblock_internalget(block, sizeof(type)))
 
 static inline void *
@@ -998,14 +998,14 @@ getrdata(isc_buffer_t *source, dns_message_t *msg, dns_decompress_t *dctx,
 	}
 }
 
-#define DO_ERROR(r)                                                            \
-	do {                                                                   \
-		if (best_effort)                                               \
-			seen_problem = true;                                   \
-		else {                                                         \
-			result = r;                                            \
-			goto cleanup;                                          \
-		}                                                              \
+#define DO_ERROR(r)                          \
+	do {                                 \
+		if (best_effort)             \
+			seen_problem = true; \
+		else {                       \
+			result = r;          \
+			goto cleanup;        \
+		}                            \
 	} while (0)
 
 static isc_result_t
@@ -3399,16 +3399,16 @@ dns_message_checksig(dns_message_t *msg, dns_view_t *view)
 	}
 }
 
-#define INDENT(sp)                                                             \
-	do {                                                                   \
-		unsigned int __i;                                              \
-		dns_masterstyle_flags_t __flags = dns_master_styleflags(sp);   \
-		if ((__flags & DNS_STYLEFLAG_INDENT) == 0ULL &&                \
-		    (__flags & DNS_STYLEFLAG_YAML) == 0ULL)                    \
-			break;                                                 \
-		for (__i = 0; __i < dns_master_indent; __i++) {                \
-			ADD_STRING(target, dns_master_indentstr);              \
-		}                                                              \
+#define INDENT(sp)                                                           \
+	do {                                                                 \
+		unsigned int __i;                                            \
+		dns_masterstyle_flags_t __flags = dns_master_styleflags(sp); \
+		if ((__flags & DNS_STYLEFLAG_INDENT) == 0ULL &&              \
+		    (__flags & DNS_STYLEFLAG_YAML) == 0ULL)                  \
+			break;                                               \
+		for (__i = 0; __i < dns_master_indent; __i++) {              \
+			ADD_STRING(target, dns_master_indentstr);            \
+		}                                                            \
 	} while (0)
 
 isc_result_t

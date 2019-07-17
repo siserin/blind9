@@ -92,38 +92,38 @@ static unsigned char maptolower[] = {
 #define CONVERTTOASCII(c)
 #define CONVERTFROMASCII(c)
 
-#define INIT_OFFSETS(name, var, default_offsets)                               \
-	if ((name)->offsets != NULL)                                           \
-		var = (name)->offsets;                                         \
-	else                                                                   \
+#define INIT_OFFSETS(name, var, default_offsets) \
+	if ((name)->offsets != NULL)             \
+		var = (name)->offsets;           \
+	else                                     \
 		var = (default_offsets);
 
-#define SETUP_OFFSETS(name, var, default_offsets)                              \
-	if ((name)->offsets != NULL)                                           \
-		var = (name)->offsets;                                         \
-	else {                                                                 \
-		var = (default_offsets);                                       \
-		set_offsets(name, var, NULL);                                  \
+#define SETUP_OFFSETS(name, var, default_offsets) \
+	if ((name)->offsets != NULL)              \
+		var = (name)->offsets;            \
+	else {                                    \
+		var = (default_offsets);          \
+		set_offsets(name, var, NULL);     \
 	}
 
 /*%
  * Note:  If additional attributes are added that should not be set for
  *	  empty names, MAKE_EMPTY() must be changed so it clears them.
  */
-#define MAKE_EMPTY(name)                                                       \
-	do {                                                                   \
-		name->ndata = NULL;                                            \
-		name->length = 0;                                              \
-		name->labels = 0;                                              \
-		name->attributes &= ~DNS_NAMEATTR_ABSOLUTE;                    \
+#define MAKE_EMPTY(name)                                    \
+	do {                                                \
+		name->ndata = NULL;                         \
+		name->length = 0;                           \
+		name->labels = 0;                           \
+		name->attributes &= ~DNS_NAMEATTR_ABSOLUTE; \
 	} while (0);
 
 /*%
  * A name is "bindable" if it can be set to point to a new value, i.e.
  * name->ndata and name->length may be changed.
  */
-#define BINDABLE(name)                                                         \
-	((name->attributes &                                                   \
+#define BINDABLE(name)       \
+	((name->attributes & \
 	  (DNS_NAMEATTR_READONLY | DNS_NAMEATTR_DYNAMIC)) == 0)
 
 /*%
@@ -289,7 +289,7 @@ dns_name_isabsolute(const dns_name_t *name)
 
 #define hyphenchar(c) ((c) == 0x2d)
 #define asterchar(c) ((c) == 0x2a)
-#define alphachar(c)                                                           \
+#define alphachar(c) \
 	(((c) >= 0x41 && (c) <= 0x5a) || ((c) >= 0x61 && (c) <= 0x7a))
 #define digitchar(c) ((c) >= 0x30 && (c) <= 0x39)
 #define borderchar(c) (alphachar(c) || digitchar(c))
@@ -873,7 +873,7 @@ dns_name_matcheswildcard(const dns_name_t *name, const dns_name_t *wname)
 	REQUIRE(labels > 0);
 	REQUIRE(dns_name_iswildcard(wname));
 
-#if defined(__clang__) &&                                                      \
+#if defined(__clang__) && \
 	(__clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ < 2))
 	memset(&tname, 0, sizeof(tname));
 #endif /* if defined(__clang__) && (__clang_major__ < 3 || (__clang_major__ == \
@@ -2072,7 +2072,7 @@ dns_name_towire2(const dns_name_t *name, dns_compress_t *cctx,
 	 * has one.
 	 */
 	if (name->offsets == NULL) {
-#if defined(__clang__) &&                                                      \
+#if defined(__clang__) && \
 	(__clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ < 2))
 		memset(&clname, 0, sizeof(clname));
 #endif /* if defined(__clang__) && (__clang_major__ < 3 || (__clang_major__ == \
@@ -2408,7 +2408,7 @@ dns_name_digest(const dns_name_t *name, dns_digestfunc_t digest, void *arg)
 	REQUIRE(VALID_NAME(name));
 	REQUIRE(digest != NULL);
 
-#if defined(__clang__) &&                                                      \
+#if defined(__clang__) && \
 	(__clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ < 2))
 	memset(&downname, 0, sizeof(downname));
 #endif /* if defined(__clang__) && (__clang_major__ < 3 || (__clang_major__ == \

@@ -79,11 +79,11 @@
  * the function using them has a 'result' variable and a 'failure'
  * label.
  */
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 /*%
@@ -95,11 +95,11 @@
  * from complaining about "end-of-loop code not reached".
  */
 
-#define FAIL(code)                                                             \
-	do {                                                                   \
-		result = (code);                                               \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define FAIL(code)                           \
+	do {                                 \
+		result = (code);             \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 /*%
@@ -107,83 +107,83 @@
  * The test against ISC_R_SUCCESS is there to keep the Solaris compiler
  * from complaining about "end-of-loop code not reached".
  */
-#define FAILC(code, msg)                                                       \
-	do {                                                                   \
-		const char *_what = "failed";                                  \
-		result = (code);                                               \
-		switch (result) {                                              \
-		case DNS_R_NXDOMAIN:                                           \
-		case DNS_R_YXDOMAIN:                                           \
-		case DNS_R_YXRRSET:                                            \
-		case DNS_R_NXRRSET:                                            \
-			_what = "unsuccessful";                                \
-		}                                                              \
-		update_log(client, zone, LOGLEVEL_PROTOCOL,                    \
-			   "update %s: %s (%s)", _what, msg,                   \
-			   isc_result_totext(result));                         \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define FAILC(code, msg)                                     \
+	do {                                                 \
+		const char *_what = "failed";                \
+		result = (code);                             \
+		switch (result) {                            \
+		case DNS_R_NXDOMAIN:                         \
+		case DNS_R_YXDOMAIN:                         \
+		case DNS_R_YXRRSET:                          \
+		case DNS_R_NXRRSET:                          \
+			_what = "unsuccessful";              \
+		}                                            \
+		update_log(client, zone, LOGLEVEL_PROTOCOL,  \
+			   "update %s: %s (%s)", _what, msg, \
+			   isc_result_totext(result));       \
+		if (result != ISC_R_SUCCESS)                 \
+			goto failure;                        \
 	} while (0)
-#define PREREQFAILC(code, msg)                                                 \
-	do {                                                                   \
-		inc_stats(client, zone, ns_statscounter_updatebadprereq);      \
-		FAILC(code, msg);                                              \
-	} while (0)
-
-#define FAILN(code, name, msg)                                                 \
-	do {                                                                   \
-		const char *_what = "failed";                                  \
-		result = (code);                                               \
-		switch (result) {                                              \
-		case DNS_R_NXDOMAIN:                                           \
-		case DNS_R_YXDOMAIN:                                           \
-		case DNS_R_YXRRSET:                                            \
-		case DNS_R_NXRRSET:                                            \
-			_what = "unsuccessful";                                \
-		}                                                              \
-		if (isc_log_wouldlog(ns_lctx, LOGLEVEL_PROTOCOL)) {            \
-			char _nbuf[DNS_NAME_FORMATSIZE];                       \
-			dns_name_format(name, _nbuf, sizeof(_nbuf));           \
-			update_log(client, zone, LOGLEVEL_PROTOCOL,            \
-				   "update %s: %s: %s (%s)", _what, _nbuf,     \
-				   msg, isc_result_totext(result));            \
-		}                                                              \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
-	} while (0)
-#define PREREQFAILN(code, name, msg)                                           \
-	do {                                                                   \
-		inc_stats(client, zone, ns_statscounter_updatebadprereq);      \
-		FAILN(code, name, msg);                                        \
+#define PREREQFAILC(code, msg)                                            \
+	do {                                                              \
+		inc_stats(client, zone, ns_statscounter_updatebadprereq); \
+		FAILC(code, msg);                                         \
 	} while (0)
 
-#define FAILNT(code, name, type, msg)                                          \
-	do {                                                                   \
-		const char *_what = "failed";                                  \
-		result = (code);                                               \
-		switch (result) {                                              \
-		case DNS_R_NXDOMAIN:                                           \
-		case DNS_R_YXDOMAIN:                                           \
-		case DNS_R_YXRRSET:                                            \
-		case DNS_R_NXRRSET:                                            \
-			_what = "unsuccessful";                                \
-		}                                                              \
-		if (isc_log_wouldlog(ns_lctx, LOGLEVEL_PROTOCOL)) {            \
-			char _nbuf[DNS_NAME_FORMATSIZE];                       \
-			char _tbuf[DNS_RDATATYPE_FORMATSIZE];                  \
-			dns_name_format(name, _nbuf, sizeof(_nbuf));           \
-			dns_rdatatype_format(type, _tbuf, sizeof(_tbuf));      \
-			update_log(client, zone, LOGLEVEL_PROTOCOL,            \
-				   "update %s: %s/%s: %s (%s)", _what, _nbuf,  \
-				   _tbuf, msg, isc_result_totext(result));     \
-		}                                                              \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define FAILN(code, name, msg)                                             \
+	do {                                                               \
+		const char *_what = "failed";                              \
+		result = (code);                                           \
+		switch (result) {                                          \
+		case DNS_R_NXDOMAIN:                                       \
+		case DNS_R_YXDOMAIN:                                       \
+		case DNS_R_YXRRSET:                                        \
+		case DNS_R_NXRRSET:                                        \
+			_what = "unsuccessful";                            \
+		}                                                          \
+		if (isc_log_wouldlog(ns_lctx, LOGLEVEL_PROTOCOL)) {        \
+			char _nbuf[DNS_NAME_FORMATSIZE];                   \
+			dns_name_format(name, _nbuf, sizeof(_nbuf));       \
+			update_log(client, zone, LOGLEVEL_PROTOCOL,        \
+				   "update %s: %s: %s (%s)", _what, _nbuf, \
+				   msg, isc_result_totext(result));        \
+		}                                                          \
+		if (result != ISC_R_SUCCESS)                               \
+			goto failure;                                      \
 	} while (0)
-#define PREREQFAILNT(code, name, type, msg)                                    \
-	do {                                                                   \
-		inc_stats(client, zone, ns_statscounter_updatebadprereq);      \
-		FAILNT(code, name, type, msg);                                 \
+#define PREREQFAILN(code, name, msg)                                      \
+	do {                                                              \
+		inc_stats(client, zone, ns_statscounter_updatebadprereq); \
+		FAILN(code, name, msg);                                   \
+	} while (0)
+
+#define FAILNT(code, name, type, msg)                                         \
+	do {                                                                  \
+		const char *_what = "failed";                                 \
+		result = (code);                                              \
+		switch (result) {                                             \
+		case DNS_R_NXDOMAIN:                                          \
+		case DNS_R_YXDOMAIN:                                          \
+		case DNS_R_YXRRSET:                                           \
+		case DNS_R_NXRRSET:                                           \
+			_what = "unsuccessful";                               \
+		}                                                             \
+		if (isc_log_wouldlog(ns_lctx, LOGLEVEL_PROTOCOL)) {           \
+			char _nbuf[DNS_NAME_FORMATSIZE];                      \
+			char _tbuf[DNS_RDATATYPE_FORMATSIZE];                 \
+			dns_name_format(name, _nbuf, sizeof(_nbuf));          \
+			dns_rdatatype_format(type, _tbuf, sizeof(_tbuf));     \
+			update_log(client, zone, LOGLEVEL_PROTOCOL,           \
+				   "update %s: %s/%s: %s (%s)", _what, _nbuf, \
+				   _tbuf, msg, isc_result_totext(result));    \
+		}                                                             \
+		if (result != ISC_R_SUCCESS)                                  \
+			goto failure;                                         \
+	} while (0)
+#define PREREQFAILNT(code, name, type, msg)                               \
+	do {                                                              \
+		inc_stats(client, zone, ns_statscounter_updatebadprereq); \
+		FAILNT(code, name, type, msg);                            \
 	} while (0)
 
 /*%
@@ -191,13 +191,13 @@
  * The test against ISC_R_SUCCESS is there to keep the Solaris compiler
  * from complaining about "end-of-loop code not reached".
  */
-#define FAILS(code, msg)                                                       \
-	do {                                                                   \
-		result = (code);                                               \
-		update_log(client, zone, LOGLEVEL_PROTOCOL, "error: %s: %s",   \
-			   msg, isc_result_totext(result));                    \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define FAILS(code, msg)                                                     \
+	do {                                                                 \
+		result = (code);                                             \
+		update_log(client, zone, LOGLEVEL_PROTOCOL, "error: %s: %s", \
+			   msg, isc_result_totext(result));                  \
+		if (result != ISC_R_SUCCESS)                                 \
+			goto failure;                                        \
 	} while (0)
 
 /*
@@ -785,11 +785,11 @@ rrset_exists_action(void *data, rr_t *rr)
  * This would be more readable as "do { if ... } while(0)",
  * but that form generates tons of warnings on Solaris 2.6.
  */
-#define RETURN_EXISTENCE_FLAG                                                  \
-	return ((result == ISC_R_EXISTS)                                       \
-			? (*exists = true, ISC_R_SUCCESS)                      \
-			: ((result == ISC_R_SUCCESS)                           \
-				   ? (*exists = false, ISC_R_SUCCESS)          \
+#define RETURN_EXISTENCE_FLAG                                         \
+	return ((result == ISC_R_EXISTS)                              \
+			? (*exists = true, ISC_R_SUCCESS)             \
+			: ((result == ISC_R_SUCCESS)                  \
+				   ? (*exists = false, ISC_R_SUCCESS) \
 				   : result))
 
 /*%
@@ -3235,7 +3235,7 @@ update_action(isc_task_t *task, isc_event_t *event)
 		CHECK(rrset_exists(db, ver, zonename, dns_rdatatype_dnskey, 0,
 				   &has_dnskey));
 
-#define ALLOW_SECURE_TO_INSECURE(zone)                                         \
+#define ALLOW_SECURE_TO_INSECURE(zone) \
 	((dns_zone_getoptions(zone) & DNS_ZONEOPT_SECURETOINSECURE) != 0)
 
 		CHECK(rrset_exists(db, oldver, zonename, dns_rdatatype_dnskey,

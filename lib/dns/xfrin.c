@@ -53,18 +53,18 @@
  * ISC_R_SUCCESS code, but the test is there to keep the Solaris compiler
  * from complaining about "end-of-loop code not reached".
  */
-#define FAIL(code)                                                             \
-	do {                                                                   \
-		result = (code);                                               \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define FAIL(code)                           \
+	do {                                 \
+		result = (code);             \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 /*%

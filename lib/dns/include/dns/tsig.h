@@ -84,9 +84,9 @@ struct dns_tsigkey {
 	ISC_LINK(dns_tsigkey_t) link;
 };
 
-#define dns_tsigkey_identity(tsigkey)                                          \
-	((tsigkey) == NULL ? NULL                                              \
-			   : (tsigkey)->generated ? ((tsigkey)->creator)       \
+#define dns_tsigkey_identity(tsigkey)                                    \
+	((tsigkey) == NULL ? NULL                                        \
+			   : (tsigkey)->generated ? ((tsigkey)->creator) \
 						  : (&((tsigkey)->name)))
 
 ISC_LANG_BEGINDECLS

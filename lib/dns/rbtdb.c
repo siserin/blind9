@@ -75,11 +75,11 @@
 
 #define RBTDB_MAGIC ISC_MAGIC('R', 'B', 'D', '4')
 
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 /*
@@ -108,7 +108,7 @@ struct rbtdb_file_header {
  * Note that "impmagic" is not the first four bytes of the struct, so
  * ISC_MAGIC_VALID cannot be used.
  */
-#define VALID_RBTDB(rbtdb)                                                     \
+#define VALID_RBTDB(rbtdb) \
 	((rbtdb) != NULL && (rbtdb)->common.impmagic == RBTDB_MAGIC)
 
 typedef uint32_t rbtdb_serial_t;
@@ -116,21 +116,21 @@ typedef uint32_t rbtdb_rdatatype_t;
 
 #define RBTDB_RDATATYPE_BASE(type) ((dns_rdatatype_t)((type)&0xFFFF))
 #define RBTDB_RDATATYPE_EXT(type) ((dns_rdatatype_t)((type) >> 16))
-#define RBTDB_RDATATYPE_VALUE(base, ext)                                       \
-	((rbtdb_rdatatype_t)(((uint32_t)ext) << 16) |                          \
+#define RBTDB_RDATATYPE_VALUE(base, ext)              \
+	((rbtdb_rdatatype_t)(((uint32_t)ext) << 16) | \
 	 (((uint32_t)base) & 0xffff))
 
-#define RBTDB_RDATATYPE_SIGNSEC                                                \
+#define RBTDB_RDATATYPE_SIGNSEC \
 	RBTDB_RDATATYPE_VALUE(dns_rdatatype_rrsig, dns_rdatatype_nsec)
-#define RBTDB_RDATATYPE_SIGNSEC3                                               \
+#define RBTDB_RDATATYPE_SIGNSEC3 \
 	RBTDB_RDATATYPE_VALUE(dns_rdatatype_rrsig, dns_rdatatype_nsec3)
-#define RBTDB_RDATATYPE_SIGNS                                                  \
+#define RBTDB_RDATATYPE_SIGNS \
 	RBTDB_RDATATYPE_VALUE(dns_rdatatype_rrsig, dns_rdatatype_ns)
-#define RBTDB_RDATATYPE_SIGCNAME                                               \
+#define RBTDB_RDATATYPE_SIGCNAME \
 	RBTDB_RDATATYPE_VALUE(dns_rdatatype_rrsig, dns_rdatatype_cname)
-#define RBTDB_RDATATYPE_SIGDNAME                                               \
+#define RBTDB_RDATATYPE_SIGDNAME \
 	RBTDB_RDATATYPE_VALUE(dns_rdatatype_rrsig, dns_rdatatype_dname)
-#define RBTDB_RDATATYPE_SIGDDS                                                 \
+#define RBTDB_RDATATYPE_SIGDDS \
 	RBTDB_RDATATYPE_VALUE(dns_rdatatype_rrsig, dns_rdatatype_ds)
 #define RBTDB_RDATATYPE_NCACHEANY RBTDB_RDATATYPE_VALUE(0, dns_rdatatype_any)
 
@@ -280,7 +280,7 @@ typedef ISC_LIST(dns_rbtnode_t) rbtnodelist_t;
 #undef IGNORE /* WIN32 winbase.h defines this. */
 
 #define EXISTS(header) (((header)->attributes & RDATASET_ATTR_NONEXISTENT) == 0)
-#define NONEXISTENT(header)                                                    \
+#define NONEXISTENT(header) \
 	(((header)->attributes & RDATASET_ATTR_NONEXISTENT) != 0)
 #define IGNORE(header) (((header)->attributes & RDATASET_ATTR_IGNORE) != 0)
 #define RETAIN(header) (((header)->attributes & RDATASET_ATTR_RETAIN) != 0)
@@ -292,12 +292,12 @@ typedef ISC_LIST(dns_rbtnode_t) rbtnodelist_t;
 #define PREFETCH(header) (((header)->attributes & RDATASET_ATTR_PREFETCH) != 0)
 #define CASESET(header) (((header)->attributes & RDATASET_ATTR_CASESET) != 0)
 #define ZEROTTL(header) (((header)->attributes & RDATASET_ATTR_ZEROTTL) != 0)
-#define CASEFULLYLOWER(header)                                                 \
+#define CASEFULLYLOWER(header) \
 	(((header)->attributes & RDATASET_ATTR_CASEFULLYLOWER) != 0)
 #define ANCIENT(header) (((header)->attributes & RDATASET_ATTR_ANCIENT) != 0)
 
-#define ACTIVE(header, now)                                                    \
-	(((header)->rdh_ttl > (now)) ||                                        \
+#define ACTIVE(header, now)             \
+	(((header)->rdh_ttl > (now)) || \
 	 ((header)->rdh_ttl == (now) && ZEROTTL(header)))
 
 #define DEFAULT_NODE_LOCK_COUNT 7 /*%< Should be prime. */
@@ -1990,8 +1990,8 @@ decrement_reference(dns_rbtdb_t *rbtdb, dns_rbtnode_t *node,
 
 	nodelock = &rbtdb->node_locks[bucket];
 
-#define KEEP_NODE(n, r)                                                        \
-	((n)->data != NULL || (n)->down != NULL || (n) == (r)->origin_node ||  \
+#define KEEP_NODE(n, r)                                                       \
+	((n)->data != NULL || (n)->down != NULL || (n) == (r)->origin_node || \
 	 (n) == (r)->nsec3_origin_node)
 
 	/* Handle easy and typical case first. */

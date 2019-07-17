@@ -25,9 +25,9 @@ typedef struct {
 #define ISC_ONCE_INIT_NEEDED 0
 #define ISC_ONCE_INIT_DONE 1
 
-#define ISC_ONCE_INIT                                                          \
-	{                                                                      \
-		ISC_ONCE_INIT_NEEDED, 1                                        \
+#define ISC_ONCE_INIT                   \
+	{                               \
+		ISC_ONCE_INIT_NEEDED, 1 \
 	}
 
 isc_result_t

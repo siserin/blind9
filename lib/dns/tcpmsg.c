@@ -141,10 +141,10 @@ dns_tcpmsg_init(isc_mem_t *mctx, isc_socket_t *sock, dns_tcpmsg_t *tcpmsg)
 	tcpmsg->sock = sock;
 	tcpmsg->task = NULL;		   /* None yet. */
 	tcpmsg->result = ISC_R_UNEXPECTED; /* None yet. */
-					   /*
-					    * Should probably initialize the
-					    *event here, but it can wait.
-					    */
+	/*
+	 * Should probably initialize the
+	 *event here, but it can wait.
+	 */
 }
 
 void

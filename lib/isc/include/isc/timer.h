@@ -112,7 +112,7 @@ struct isc_timermgr {
 };
 
 #define ISCAPI_TIMERMGR_MAGIC ISC_MAGIC('A', 't', 'm', 'g')
-#define ISCAPI_TIMERMGR_VALID(m)                                               \
+#define ISCAPI_TIMERMGR_VALID(m) \
 	((m) != NULL && (m)->magic == ISCAPI_TIMERMGR_MAGIC)
 
 /*%

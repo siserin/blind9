@@ -52,11 +52,11 @@ ISC_LANG_BEGINDECLS
 #define DNS_RDATASLAB_EXACT 0x2
 
 #define DNS_RDATASLAB_OFFLINE 0x01 /* RRSIG is for offline DNSKEY */
-#define DNS_RDATASLAB_WARNMASK                                                 \
-	0x0E /*%< RRSIG(DNSKEY) expired                                        \
+#define DNS_RDATASLAB_WARNMASK          \
+	0x0E /*%< RRSIG(DNSKEY) expired \
 	      * warnings number mask. */
-#define DNS_RDATASLAB_WARNSHIFT                                                \
-	1 /*%< How many bits to shift to find                                  \
+#define DNS_RDATASLAB_WARNSHIFT               \
+	1 /*%< How many bits to shift to find \
 	   * remaining expired warning number. */
 
 /***

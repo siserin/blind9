@@ -212,7 +212,7 @@ extern "C" {
  */
 
 #define CK_NEED_ARG_LIST 1
-#define CK_PKCS11_FUNCTION_INFO(name)                                          \
+#define CK_PKCS11_FUNCTION_INFO(name) \
 	typedef CK_DECLARE_FUNCTION_POINTER(CK_RV, __PASTE(CK_, name))
 
 /* pkcs11f.h has all the information about the Cryptoki

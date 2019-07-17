@@ -35,16 +35,16 @@ typedef struct ns_test_id {
 	int lineno;
 } ns_test_id_t;
 
-#define NS_TEST_ID(desc)                                                       \
-	{                                                                      \
-		.description = desc, .lineno = __LINE__                        \
+#define NS_TEST_ID(desc)                                \
+	{                                               \
+		.description = desc, .lineno = __LINE__ \
 	}
 
-#define CHECK(r)                                                               \
-	do {                                                                   \
-		result = (r);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto cleanup;                                          \
+#define CHECK(r)                             \
+	do {                                 \
+		result = (r);                \
+		if (result != ISC_R_SUCCESS) \
+			goto cleanup;        \
 	} while (0)
 
 extern isc_mem_t *mctx;

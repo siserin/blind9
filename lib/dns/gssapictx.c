@@ -87,23 +87,23 @@ static gss_OID_set_desc mech_oid_set = { sizeof(mech_oid_set_array) /
 
 #endif /* ifdef GSSAPI */
 
-#define REGION_TO_GBUFFER(r, gb)                                               \
-	do {                                                                   \
-		(gb).length = (r).length;                                      \
-		(gb).value = (r).base;                                         \
+#define REGION_TO_GBUFFER(r, gb)          \
+	do {                              \
+		(gb).length = (r).length; \
+		(gb).value = (r).base;    \
 	} while (0)
 
-#define GBUFFER_TO_REGION(gb, r)                                               \
-	do {                                                                   \
-		(r).length = (unsigned int)(gb).length;                        \
-		(r).base = (gb).value;                                         \
+#define GBUFFER_TO_REGION(gb, r)                        \
+	do {                                            \
+		(r).length = (unsigned int)(gb).length; \
+		(r).base = (gb).value;                  \
 	} while (0)
 
-#define RETERR(x)                                                              \
-	do {                                                                   \
-		result = (x);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto out;                                              \
+#define RETERR(x)                            \
+	do {                                 \
+		result = (x);                \
+		if (result != ISC_R_SUCCESS) \
+			goto out;            \
 	} while (0)
 
 #ifdef GSSAPI

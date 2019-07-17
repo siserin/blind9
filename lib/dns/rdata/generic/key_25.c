@@ -16,7 +16,7 @@
 
 #include <dst/dst.h>
 
-#define RRTYPE_KEY_ATTRIBUTES                                                  \
+#define RRTYPE_KEY_ATTRIBUTES \
 	(DNS_RDATATYPEATTR_ATCNAME | DNS_RDATATYPEATTR_ZONECUTAUTH)
 
 /*

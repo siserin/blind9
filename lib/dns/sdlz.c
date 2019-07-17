@@ -144,7 +144,7 @@ typedef struct sdlz_rdatasetiter {
  * ISC_MAGIC_VALID cannot be used.
  */
 
-#define VALID_SDLZDB(sdlzdb)                                                   \
+#define VALID_SDLZDB(sdlzdb) \
 	((sdlzdb) != NULL && (sdlzdb)->common.impmagic == SDLZDB_MAGIC)
 
 #define SDLZLOOKUP_MAGIC ISC_MAGIC('D', 'L', 'Z', 'L')
@@ -164,18 +164,18 @@ typedef struct sdlz_rdatasetiter {
 #define MAYBE_LOCK(imp) LOCK(&imp->driverlock)
 #define MAYBE_UNLOCK(imp) UNLOCK(&imp->driverlock)
 #else /* ifdef __COVERITY__ */
-#define MAYBE_LOCK(imp)                                                        \
-	do {                                                                   \
-		unsigned int flags = imp->flags;                               \
-		if ((flags & DNS_SDLZFLAG_THREADSAFE) == 0)                    \
-			LOCK(&imp->driverlock);                                \
+#define MAYBE_LOCK(imp)                                     \
+	do {                                                \
+		unsigned int flags = imp->flags;            \
+		if ((flags & DNS_SDLZFLAG_THREADSAFE) == 0) \
+			LOCK(&imp->driverlock);             \
 	} while (0)
 
-#define MAYBE_UNLOCK(imp)                                                      \
-	do {                                                                   \
-		unsigned int flags = imp->flags;                               \
-		if ((flags & DNS_SDLZFLAG_THREADSAFE) == 0)                    \
-			UNLOCK(&imp->driverlock);                              \
+#define MAYBE_UNLOCK(imp)                                   \
+	do {                                                \
+		unsigned int flags = imp->flags;            \
+		if ((flags & DNS_SDLZFLAG_THREADSAFE) == 0) \
+			UNLOCK(&imp->driverlock);           \
 	} while (0)
 #endif /* ifdef __COVERITY__ */
 

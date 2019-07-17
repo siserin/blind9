@@ -113,7 +113,7 @@ struct isc_taskmgr {
 };
 
 #define ISCAPI_TASKMGR_MAGIC ISC_MAGIC('A', 't', 'm', 'g')
-#define ISCAPI_TASKMGR_VALID(m)                                                \
+#define ISCAPI_TASKMGR_VALID(m) \
 	((m) != NULL && (m)->magic == ISCAPI_TASKMGR_MAGIC)
 
 /*%

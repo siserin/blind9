@@ -58,18 +58,18 @@ typedef enum {
 	allow_update_forwarding
 } acl_type_t;
 
-#define RETERR(x)                                                              \
-	do {                                                                   \
-		isc_result_t _r = (x);                                         \
-		if (_r != ISC_R_SUCCESS)                                       \
-			return ((_r));                                         \
+#define RETERR(x)                        \
+	do {                             \
+		isc_result_t _r = (x);   \
+		if (_r != ISC_R_SUCCESS) \
+			return ((_r));   \
 	} while (0)
 
-#define CHECK(x)                                                               \
-	do {                                                                   \
-		result = (x);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto cleanup;                                          \
+#define CHECK(x)                             \
+	do {                                 \
+		result = (x);                \
+		if (result != ISC_R_SUCCESS) \
+			goto cleanup;        \
 	} while (0)
 
 /*%

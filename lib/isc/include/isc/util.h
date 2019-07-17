@@ -60,14 +60,14 @@
  * (as with gcc -Wcast-qual) when there is just no other good way to avoid the
  * situation.
  */
-#define DE_CONST(konst, var)                                                   \
-	do {                                                                   \
-		union {                                                        \
-			const void *k;                                         \
-			void *v;                                               \
-		} _u;                                                          \
-		_u.k = konst;                                                  \
-		var = _u.v;                                                    \
+#define DE_CONST(konst, var)           \
+	do {                           \
+		union {                \
+			const void *k; \
+			void *v;       \
+		} _u;                  \
+		_u.k = konst;          \
+		var = _u.v;            \
 	} while (0)
 
 /*%
@@ -92,42 +92,42 @@
 
 #include <isc/result.h> /* Contractual promise. */
 
-#define LOCK(lp)                                                               \
-	do {                                                                   \
-		ISC_UTIL_TRACE(fprintf(stderr, "LOCKING %p %s %d\n", (lp),     \
-				       __FILE__, __LINE__));                   \
-		RUNTIME_CHECK(isc_mutex_lock((lp)) == ISC_R_SUCCESS);          \
-		ISC_UTIL_TRACE(fprintf(stderr, "LOCKED %p %s %d\n", (lp),      \
-				       __FILE__, __LINE__));                   \
+#define LOCK(lp)                                                           \
+	do {                                                               \
+		ISC_UTIL_TRACE(fprintf(stderr, "LOCKING %p %s %d\n", (lp), \
+				       __FILE__, __LINE__));               \
+		RUNTIME_CHECK(isc_mutex_lock((lp)) == ISC_R_SUCCESS);      \
+		ISC_UTIL_TRACE(fprintf(stderr, "LOCKED %p %s %d\n", (lp),  \
+				       __FILE__, __LINE__));               \
 	} while (0)
-#define UNLOCK(lp)                                                             \
-	do {                                                                   \
-		RUNTIME_CHECK(isc_mutex_unlock((lp)) == ISC_R_SUCCESS);        \
-		ISC_UTIL_TRACE(fprintf(stderr, "UNLOCKED %p %s %d\n", (lp),    \
-				       __FILE__, __LINE__));                   \
+#define UNLOCK(lp)                                                          \
+	do {                                                                \
+		RUNTIME_CHECK(isc_mutex_unlock((lp)) == ISC_R_SUCCESS);     \
+		ISC_UTIL_TRACE(fprintf(stderr, "UNLOCKED %p %s %d\n", (lp), \
+				       __FILE__, __LINE__));                \
 	} while (0)
 
-#define BROADCAST(cvp)                                                         \
-	do {                                                                   \
-		ISC_UTIL_TRACE(fprintf(stderr, "BROADCAST %p %s %d\n", (cvp),  \
-				       __FILE__, __LINE__));                   \
-		RUNTIME_CHECK(isc_condition_broadcast((cvp)) ==                \
-			      ISC_R_SUCCESS);                                  \
+#define BROADCAST(cvp)                                                        \
+	do {                                                                  \
+		ISC_UTIL_TRACE(fprintf(stderr, "BROADCAST %p %s %d\n", (cvp), \
+				       __FILE__, __LINE__));                  \
+		RUNTIME_CHECK(isc_condition_broadcast((cvp)) ==               \
+			      ISC_R_SUCCESS);                                 \
 	} while (0)
-#define SIGNAL(cvp)                                                            \
-	do {                                                                   \
-		ISC_UTIL_TRACE(fprintf(stderr, "SIGNAL %p %s %d\n", (cvp),     \
-				       __FILE__, __LINE__));                   \
-		RUNTIME_CHECK(isc_condition_signal((cvp)) == ISC_R_SUCCESS);   \
+#define SIGNAL(cvp)                                                          \
+	do {                                                                 \
+		ISC_UTIL_TRACE(fprintf(stderr, "SIGNAL %p %s %d\n", (cvp),   \
+				       __FILE__, __LINE__));                 \
+		RUNTIME_CHECK(isc_condition_signal((cvp)) == ISC_R_SUCCESS); \
 	} while (0)
-#define WAIT(cvp, lp)                                                          \
-	do {                                                                   \
-		ISC_UTIL_TRACE(fprintf(stderr, "WAIT %p LOCK %p %s %d\n",      \
-				       (cvp), (lp), __FILE__, __LINE__));      \
-		RUNTIME_CHECK(isc_condition_wait((cvp), (lp)) ==               \
-			      ISC_R_SUCCESS);                                  \
-		ISC_UTIL_TRACE(fprintf(stderr, "WAITED %p LOCKED %p %s %d\n",  \
-				       (cvp), (lp), __FILE__, __LINE__));      \
+#define WAIT(cvp, lp)                                                         \
+	do {                                                                  \
+		ISC_UTIL_TRACE(fprintf(stderr, "WAIT %p LOCK %p %s %d\n",     \
+				       (cvp), (lp), __FILE__, __LINE__));     \
+		RUNTIME_CHECK(isc_condition_wait((cvp), (lp)) ==              \
+			      ISC_R_SUCCESS);                                 \
+		ISC_UTIL_TRACE(fprintf(stderr, "WAITED %p LOCKED %p %s %d\n", \
+				       (cvp), (lp), __FILE__, __LINE__));     \
 	} while (0)
 
 /*
@@ -139,19 +139,19 @@
 
 #define WAITUNTIL(cvp, lp, tp) isc_condition_waituntil((cvp), (lp), (tp))
 
-#define RWLOCK(lp, t)                                                          \
-	do {                                                                   \
-		ISC_UTIL_TRACE(fprintf(stderr, "RWLOCK %p, %d %s %d\n", (lp),  \
-				       (t), __FILE__, __LINE__));              \
-		RUNTIME_CHECK(isc_rwlock_lock((lp), (t)) == ISC_R_SUCCESS);    \
-		ISC_UTIL_TRACE(fprintf(stderr, "RWLOCKED %p, %d %s %d\n",      \
-				       (lp), (t), __FILE__, __LINE__));        \
+#define RWLOCK(lp, t)                                                         \
+	do {                                                                  \
+		ISC_UTIL_TRACE(fprintf(stderr, "RWLOCK %p, %d %s %d\n", (lp), \
+				       (t), __FILE__, __LINE__));             \
+		RUNTIME_CHECK(isc_rwlock_lock((lp), (t)) == ISC_R_SUCCESS);   \
+		ISC_UTIL_TRACE(fprintf(stderr, "RWLOCKED %p, %d %s %d\n",     \
+				       (lp), (t), __FILE__, __LINE__));       \
 	} while (0)
-#define RWUNLOCK(lp, t)                                                        \
-	do {                                                                   \
-		ISC_UTIL_TRACE(fprintf(stderr, "RWUNLOCK %p, %d %s %d\n",      \
-				       (lp), (t), __FILE__, __LINE__));        \
-		RUNTIME_CHECK(isc_rwlock_unlock((lp), (t)) == ISC_R_SUCCESS);  \
+#define RWUNLOCK(lp, t)                                                       \
+	do {                                                                  \
+		ISC_UTIL_TRACE(fprintf(stderr, "RWUNLOCK %p, %d %s %d\n",     \
+				       (lp), (t), __FILE__, __LINE__));       \
+		RUNTIME_CHECK(isc_rwlock_unlock((lp), (t)) == ISC_R_SUCCESS); \
 	} while (0)
 
 /*
@@ -215,27 +215,27 @@ mock_assert(const int result, const char *const expression,
  *	never be executed as mock_assert() and _assert_true() longjmp
  *	or exit if the condition is false.
  */
-#define REQUIRE(expression)                                                    \
-	((!(expression))                                                       \
-		 ? (mock_assert(0, #expression, __FILE__, __LINE__), abort())  \
+#define REQUIRE(expression)                                                   \
+	((!(expression))                                                      \
+		 ? (mock_assert(0, #expression, __FILE__, __LINE__), abort()) \
 		 : (void)0)
-#define ENSURE(expression)                                                     \
-	((!(int)(expression))                                                  \
-		 ? (mock_assert(0, #expression, __FILE__, __LINE__), abort())  \
+#define ENSURE(expression)                                                    \
+	((!(int)(expression))                                                 \
+		 ? (mock_assert(0, #expression, __FILE__, __LINE__), abort()) \
 		 : (void)0)
-#define INSIST(expression)                                                     \
-	((!(expression))                                                       \
-		 ? (mock_assert(0, #expression, __FILE__, __LINE__), abort())  \
+#define INSIST(expression)                                                    \
+	((!(expression))                                                      \
+		 ? (mock_assert(0, #expression, __FILE__, __LINE__), abort()) \
 		 : (void)0)
-#define INVARIANT(expression)                                                  \
-	((!(expression))                                                       \
-		 ? (mock_assert(0, #expression, __FILE__, __LINE__), abort())  \
+#define INVARIANT(expression)                                                 \
+	((!(expression))                                                      \
+		 ? (mock_assert(0, #expression, __FILE__, __LINE__), abort()) \
 		 : (void)0)
-#define _assert_true(c, e, f, l)                                               \
+#define _assert_true(c, e, f, l) \
 	((c) ? (void)0 : (_assert_true(0, e, f, l), abort()))
-#define _assert_int_equal(a, b, f, l)                                          \
+#define _assert_int_equal(a, b, f, l) \
 	(((a) == (b)) ? (void)0 : (_assert_int_equal(a, b, f, l), abort()))
-#define _assert_int_not_equal(a, b, f, l)                                      \
+#define _assert_int_not_equal(a, b, f, l) \
 	(((a) != (b)) ? (void)0 : (_assert_int_not_equal(a, b, f, l), abort()))
 #else			    /* UNIT_TESTING */
 /*
@@ -266,7 +266,7 @@ mock_assert(const int result, const char *const expression,
 
 #ifdef UNIT_TESTING
 
-#define RUNTIME_CHECK(expression)                                              \
+#define RUNTIME_CHECK(expression) \
 	mock_assert((int)(expression), #expression, __FILE__, __LINE__)
 
 #else /* UNIT_TESTING */

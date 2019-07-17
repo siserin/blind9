@@ -650,7 +650,7 @@ setoption(char *opt)
 {
 	size_t l = strlen(opt);
 
-#define CHECKOPT(A, N)                                                         \
+#define CHECKOPT(A, N) \
 	((l >= N) && (l < sizeof(A)) && (strncasecmp(opt, A, l) == 0))
 
 	if (CHECKOPT("all", 3)) {

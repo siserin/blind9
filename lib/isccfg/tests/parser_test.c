@@ -33,11 +33,11 @@
 #include <isccfg/grammar.h>
 #include <isccfg/namedconf.h>
 
-#define CHECK(r)                                                               \
-	do {                                                                   \
-		result = (r);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto cleanup;                                          \
+#define CHECK(r)                             \
+	do {                                 \
+		result = (r);                \
+		if (result != ISC_R_SUCCESS) \
+			goto cleanup;        \
 	} while (0)
 
 isc_mem_t *mctx = NULL;

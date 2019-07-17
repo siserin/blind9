@@ -171,11 +171,11 @@ static const char *gluecachestats_xmldesc[dns_gluecachestatscounter_max];
 #define gluecachestats_xmldesc NULL
 #endif /* EXTENDED_STATS */
 
-#define TRY0(a)                                                                \
-	do {                                                                   \
-		xmlrc = (a);                                                   \
-		if (xmlrc < 0)                                                 \
-			goto error;                                            \
+#define TRY0(a)                     \
+	do {                        \
+		xmlrc = (a);        \
+		if (xmlrc < 0)      \
+			goto error; \
 	} while (0)
 
 /*%
@@ -228,11 +228,11 @@ init_desc(void)
 		nsstats_xmldesc[i] = NULL;
 #endif /* if defined(EXTENDED_STATS) */
 
-#define SET_NSSTATDESC(counterid, desc, xmldesc)                               \
-	do {                                                                   \
-		set_desc(ns_statscounter_##counterid, ns_statscounter_max,     \
-			 desc, nsstats_desc, xmldesc, nsstats_xmldesc);        \
-		nsstats_index[i++] = ns_statscounter_##counterid;              \
+#define SET_NSSTATDESC(counterid, desc, xmldesc)                           \
+	do {                                                               \
+		set_desc(ns_statscounter_##counterid, ns_statscounter_max, \
+			 desc, nsstats_desc, xmldesc, nsstats_xmldesc);    \
+		nsstats_index[i++] = ns_statscounter_##counterid;          \
 	} while (0)
 
 	i = 0;
@@ -341,12 +341,12 @@ init_desc(void)
 		resstats_xmldesc[i] = NULL;
 #endif /* if defined(EXTENDED_STATS) */
 
-#define SET_RESSTATDESC(counterid, desc, xmldesc)                              \
-	do {                                                                   \
-		set_desc(dns_resstatscounter_##counterid,                      \
-			 dns_resstatscounter_max, desc, resstats_desc,         \
-			 xmldesc, resstats_xmldesc);                           \
-		resstats_index[i++] = dns_resstatscounter_##counterid;         \
+#define SET_RESSTATDESC(counterid, desc, xmldesc)                      \
+	do {                                                           \
+		set_desc(dns_resstatscounter_##counterid,              \
+			 dns_resstatscounter_max, desc, resstats_desc, \
+			 xmldesc, resstats_xmldesc);                   \
+		resstats_index[i++] = dns_resstatscounter_##counterid; \
 	} while (0)
 
 	i = 0;
@@ -430,11 +430,11 @@ init_desc(void)
 		adbstats_xmldesc[i] = NULL;
 #endif /* if defined(EXTENDED_STATS) */
 
-#define SET_ADBSTATDESC(id, desc, xmldesc)                                     \
-	do {                                                                   \
-		set_desc(dns_adbstats_##id, dns_adbstats_max, desc,            \
-			 adbstats_desc, xmldesc, adbstats_xmldesc);            \
-		adbstats_index[i++] = dns_adbstats_##id;                       \
+#define SET_ADBSTATDESC(id, desc, xmldesc)                          \
+	do {                                                        \
+		set_desc(dns_adbstats_##id, dns_adbstats_max, desc, \
+			 adbstats_desc, xmldesc, adbstats_xmldesc); \
+		adbstats_index[i++] = dns_adbstats_##id;            \
 	} while (0)
 	i = 0;
 	SET_ADBSTATDESC(nentries, "Address hash table size", "nentries");
@@ -452,12 +452,12 @@ init_desc(void)
 		zonestats_xmldesc[i] = NULL;
 #endif /* if defined(EXTENDED_STATS) */
 
-#define SET_ZONESTATDESC(counterid, desc, xmldesc)                             \
-	do {                                                                   \
-		set_desc(dns_zonestatscounter_##counterid,                     \
-			 dns_zonestatscounter_max, desc, zonestats_desc,       \
-			 xmldesc, zonestats_xmldesc);                          \
-		zonestats_index[i++] = dns_zonestatscounter_##counterid;       \
+#define SET_ZONESTATDESC(counterid, desc, xmldesc)                       \
+	do {                                                             \
+		set_desc(dns_zonestatscounter_##counterid,               \
+			 dns_zonestatscounter_max, desc, zonestats_desc, \
+			 xmldesc, zonestats_xmldesc);                    \
+		zonestats_index[i++] = dns_zonestatscounter_##counterid; \
 	} while (0)
 
 	i = 0;
@@ -485,12 +485,12 @@ init_desc(void)
 		sockstats_xmldesc[i] = NULL;
 #endif /* if defined(EXTENDED_STATS) */
 
-#define SET_SOCKSTATDESC(counterid, desc, xmldesc)                             \
-	do {                                                                   \
-		set_desc(isc_sockstatscounter_##counterid,                     \
-			 isc_sockstatscounter_max, desc, sockstats_desc,       \
-			 xmldesc, sockstats_xmldesc);                          \
-		sockstats_index[i++] = isc_sockstatscounter_##counterid;       \
+#define SET_SOCKSTATDESC(counterid, desc, xmldesc)                       \
+	do {                                                             \
+		set_desc(isc_sockstatscounter_##counterid,               \
+			 isc_sockstatscounter_max, desc, sockstats_desc, \
+			 xmldesc, sockstats_xmldesc);                    \
+		sockstats_index[i++] = isc_sockstatscounter_##counterid; \
 	} while (0)
 
 	i = 0;
@@ -604,12 +604,12 @@ init_desc(void)
 		dnssecstats_xmldesc[i] = NULL;
 #endif /* if defined(EXTENDED_STATS) */
 
-#define SET_DNSSECSTATDESC(counterid, desc, xmldesc)                           \
-	do {                                                                   \
-		set_desc(dns_dnssecstats_##counterid, dns_dnssecstats_max,     \
-			 desc, dnssecstats_desc, xmldesc,                      \
-			 dnssecstats_xmldesc);                                 \
-		dnssecstats_index[i++] = dns_dnssecstats_##counterid;          \
+#define SET_DNSSECSTATDESC(counterid, desc, xmldesc)                       \
+	do {                                                               \
+		set_desc(dns_dnssecstats_##counterid, dns_dnssecstats_max, \
+			 desc, dnssecstats_desc, xmldesc,                  \
+			 dnssecstats_xmldesc);                             \
+		dnssecstats_index[i++] = dns_dnssecstats_##counterid;      \
 	} while (0)
 
 	i = 0;
@@ -646,14 +646,14 @@ init_desc(void)
 	SET_DNSTAPSTATDESC(drop, "dnstap messages dropped", "DNSTAPdropped");
 	INSIST(i == dns_dnstapcounter_max);
 
-#define SET_GLUECACHESTATDESC(counterid, desc, xmldesc)                        \
-	do {                                                                   \
-		set_desc(dns_gluecachestatscounter_##counterid,                \
-			 dns_gluecachestatscounter_max, desc,                  \
-			 gluecachestats_desc, xmldesc,                         \
-			 gluecachestats_xmldesc);                              \
-		gluecachestats_index[i++] =                                    \
-			dns_gluecachestatscounter_##counterid;                 \
+#define SET_GLUECACHESTATDESC(counterid, desc, xmldesc)         \
+	do {                                                    \
+		set_desc(dns_gluecachestatscounter_##counterid, \
+			 dns_gluecachestatscounter_max, desc,   \
+			 gluecachestats_desc, xmldesc,          \
+			 gluecachestats_xmldesc);               \
+		gluecachestats_index[i++] =                     \
+			dns_gluecachestatscounter_##counterid;  \
 	} while (0)
 	i = 0;
 	SET_GLUECACHESTATDESC(hits_present, "Hits for present glue (cached)",
@@ -723,21 +723,21 @@ init_desc(void)
 #endif /* if defined(EXTENDED_STATS) */
 	}
 
-#define SET_SIZESTATDESC(counterid, desc, xmldesc, inout)                      \
-	do {                                                                   \
-		set_desc(dns_sizecounter_##inout##_##counterid,                \
-			 dns_sizecounter_##inout##_max, desc,                  \
-			 udp##inout##sizestats_desc, xmldesc,                  \
-			 udp##inout##sizestats_xmldesc);                       \
-		set_desc(dns_sizecounter_##inout##_##counterid,                \
-			 dns_sizecounter_##inout##_max, desc,                  \
-			 tcp##inout##sizestats_desc, xmldesc,                  \
-			 tcp##inout##sizestats_xmldesc);                       \
-		udp##inout##sizestats_index[i] =                               \
-			dns_sizecounter_##inout##_##counterid;                 \
-		tcp##inout##sizestats_index[i] =                               \
-			dns_sizecounter_##inout##_##counterid;                 \
-		i++;                                                           \
+#define SET_SIZESTATDESC(counterid, desc, xmldesc, inout)       \
+	do {                                                    \
+		set_desc(dns_sizecounter_##inout##_##counterid, \
+			 dns_sizecounter_##inout##_max, desc,   \
+			 udp##inout##sizestats_desc, xmldesc,   \
+			 udp##inout##sizestats_xmldesc);        \
+		set_desc(dns_sizecounter_##inout##_##counterid, \
+			 dns_sizecounter_##inout##_max, desc,   \
+			 tcp##inout##sizestats_desc, xmldesc,   \
+			 tcp##inout##sizestats_xmldesc);        \
+		udp##inout##sizestats_index[i] =                \
+			dns_sizecounter_##inout##_##counterid;  \
+		tcp##inout##sizestats_index[i] =                \
+			dns_sizecounter_##inout##_##counterid;  \
+		i++;                                            \
 	} while (0)
 
 	i = 0;
@@ -2514,19 +2514,19 @@ render_xml_traffic(const char *url, isc_httpdurl_t *urlinfo,
 #define STATS_JSON_TRAFFIC 0x20
 #define STATS_JSON_ALL 0xff
 
-#define CHECK(m)                                                               \
-	do {                                                                   \
-		result = (m);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto error;                                            \
+#define CHECK(m)                             \
+	do {                                 \
+		result = (m);                \
+		if (result != ISC_R_SUCCESS) \
+			goto error;          \
 	} while (0)
 
-#define CHECKMEM(m)                                                            \
-	do {                                                                   \
-		if (m == NULL) {                                               \
-			result = ISC_R_NOMEMORY;                               \
-			goto error;                                            \
-		}                                                              \
+#define CHECKMEM(m)                              \
+	do {                                     \
+		if (m == NULL) {                 \
+			result = ISC_R_NOMEMORY; \
+			goto error;              \
+		}                                \
 	} while (0)
 
 static void

@@ -43,75 +43,75 @@
 #include <dns/time.h>
 #include <dns/ttl.h>
 
-#define RETERR(x)                                                              \
-	do {                                                                   \
-		isc_result_t _r = (x);                                         \
-		if (_r != ISC_R_SUCCESS)                                       \
-			return ((_r));                                         \
+#define RETERR(x)                        \
+	do {                             \
+		isc_result_t _r = (x);   \
+		if (_r != ISC_R_SUCCESS) \
+			return ((_r));   \
 	} while (0)
 
-#define RETTOK(x)                                                              \
-	do {                                                                   \
-		isc_result_t _r = (x);                                         \
-		if (_r != ISC_R_SUCCESS) {                                     \
-			isc_lex_ungettoken(lexer, &token);                     \
-			return (_r);                                           \
-		}                                                              \
+#define RETTOK(x)                                          \
+	do {                                               \
+		isc_result_t _r = (x);                     \
+		if (_r != ISC_R_SUCCESS) {                 \
+			isc_lex_ungettoken(lexer, &token); \
+			return (_r);                       \
+		}                                          \
 	} while (0)
 
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto cleanup;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto cleanup;        \
 	} while (0)
 
-#define CHECKTOK(op)                                                           \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS) {                                 \
-			isc_lex_ungettoken(lexer, &token);                     \
-			goto cleanup;                                          \
-		}                                                              \
+#define CHECKTOK(op)                                       \
+	do {                                               \
+		result = (op);                             \
+		if (result != ISC_R_SUCCESS) {             \
+			isc_lex_ungettoken(lexer, &token); \
+			goto cleanup;                      \
+		}                                          \
 	} while (0)
 
 #define DNS_AS_STR(t) ((t).value.as_textregion.base)
 
-#define ARGS_FROMTEXT                                                          \
-	int rdclass, dns_rdatatype_t type, isc_lex_t *lexer,                   \
-		const dns_name_t *origin, unsigned int options,                \
+#define ARGS_FROMTEXT                                           \
+	int rdclass, dns_rdatatype_t type, isc_lex_t *lexer,    \
+		const dns_name_t *origin, unsigned int options, \
 		isc_buffer_t *target, dns_rdatacallbacks_t *callbacks
 
-#define ARGS_TOTEXT                                                            \
+#define ARGS_TOTEXT \
 	dns_rdata_t *rdata, dns_rdata_textctx_t *tctx, isc_buffer_t *target
 
-#define ARGS_FROMWIRE                                                          \
-	int rdclass, dns_rdatatype_t type, isc_buffer_t *source,               \
-		dns_decompress_t *dctx, unsigned int options,                  \
+#define ARGS_FROMWIRE                                            \
+	int rdclass, dns_rdatatype_t type, isc_buffer_t *source, \
+		dns_decompress_t *dctx, unsigned int options,    \
 		isc_buffer_t *target
 
-#define ARGS_TOWIRE                                                            \
+#define ARGS_TOWIRE \
 	dns_rdata_t *rdata, dns_compress_t *cctx, isc_buffer_t *target
 
 #define ARGS_COMPARE const dns_rdata_t *rdata1, const dns_rdata_t *rdata2
 
-#define ARGS_FROMSTRUCT                                                        \
+#define ARGS_FROMSTRUCT \
 	int rdclass, dns_rdatatype_t type, void *source, isc_buffer_t *target
 
 #define ARGS_TOSTRUCT const dns_rdata_t *rdata, void *target, isc_mem_t *mctx
 
 #define ARGS_FREESTRUCT void *source
 
-#define ARGS_ADDLDATA                                                          \
+#define ARGS_ADDLDATA \
 	dns_rdata_t *rdata, dns_additionaldatafunc_t add, void *arg
 
 #define ARGS_DIGEST dns_rdata_t *rdata, dns_digestfunc_t digest, void *arg
 
-#define ARGS_CHECKOWNER                                                        \
-	const dns_name_t *name, dns_rdataclass_t rdclass,                      \
+#define ARGS_CHECKOWNER                                   \
+	const dns_name_t *name, dns_rdataclass_t rdclass, \
 		dns_rdatatype_t type, bool wildcard
 
-#define ARGS_CHECKNAMES                                                        \
+#define ARGS_CHECKNAMES \
 	dns_rdata_t *rdata, const dns_name_t *owner, dns_name_t *bad
 
 /*%

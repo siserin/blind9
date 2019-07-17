@@ -27,16 +27,16 @@
 #include <dst/gssapi.h>
 #include <named/tkeyconf.h>
 
-#define RETERR(x)                                                              \
-	do {                                                                   \
-		result = (x);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define RETERR(x)                            \
+	do {                                 \
+		result = (x);                \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 #include <named/log.h>
-#define LOG(msg)                                                               \
-	isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL,                 \
+#define LOG(msg)                                               \
+	isc_log_write(named_g_lctx, NAMED_LOGCATEGORY_GENERAL, \
 		      NAMED_LOGMODULE_SERVER, ISC_LOG_ERROR, "%s", msg)
 
 isc_result_t

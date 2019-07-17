@@ -31,22 +31,22 @@
 #include <dns/dlz_dlopen.h>
 #include <dns/types.h>
 
-#define CHECK(x)                                                               \
-	do {                                                                   \
-		result = (x);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define CHECK(x)                             \
+	do {                                 \
+		result = (x);                \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
-#define loginfo(...)                                                           \
-	({                                                                     \
-		if ((state != NULL) && (state->log != NULL))                   \
-			state->log(ISC_LOG_INFO, __VA_ARGS__);                 \
+#define loginfo(...)                                           \
+	({                                                     \
+		if ((state != NULL) && (state->log != NULL))   \
+			state->log(ISC_LOG_INFO, __VA_ARGS__); \
 	})
-#define logerr(...)                                                            \
-	({                                                                     \
-		if ((state != NULL) && (state->log != NULL))                   \
-			state->log(ISC_LOG_ERROR, __VA_ARGS__);                \
+#define logerr(...)                                             \
+	({                                                      \
+		if ((state != NULL) && (state->log != NULL))    \
+			state->log(ISC_LOG_ERROR, __VA_ARGS__); \
 	})
 
 /* For this simple example, use fixed sized strings */

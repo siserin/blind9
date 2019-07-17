@@ -34,10 +34,10 @@
 #include <openssl/objects.h>
 #include <openssl/x509.h>
 
-#define DST_RET(a)                                                             \
-	{                                                                      \
-		ret = a;                                                       \
-		goto err;                                                      \
+#define DST_RET(a)        \
+	{                 \
+		ret = a;  \
+		goto err; \
 	}
 
 #if HAVE_OPENSSL_ED25519

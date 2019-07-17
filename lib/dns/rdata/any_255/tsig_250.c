@@ -12,7 +12,7 @@
 #ifndef RDATA_ANY_255_TSIG_250_C
 #define RDATA_ANY_255_TSIG_250_C
 
-#define RRTYPE_TSIG_ATTRIBUTES                                                 \
+#define RRTYPE_TSIG_ATTRIBUTES \
 	(DNS_RDATATYPEATTR_META | DNS_RDATATYPEATTR_NOTQUESTION)
 
 static inline isc_result_t fromtext_any_tsig(ARGS_FROMTEXT)

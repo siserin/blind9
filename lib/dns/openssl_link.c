@@ -47,7 +47,7 @@ static isc_mem_t *dst__mctx = NULL;
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 static isc_mutex_t *locks = NULL;
 static int nlocks;
-#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L ||                           \
+#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L || \
 	* defined(LIBRESSL_VERSION_NUMBER) */
 
 #if !defined(OPENSSL_NO_ENGINE)
@@ -84,7 +84,7 @@ lock_callback(int mode, int type, const char *file, int line)
 		UNLOCK(&locks[type]);
 	}
 }
-#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L ||                           \
+#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L || \
 	* defined(LIBRESSL_VERSION_NUMBER) */
 
 #if defined(LIBRESSL_VERSION_NUMBER)
@@ -131,7 +131,7 @@ dst__openssl_init(isc_mem_t *mctx, const char *engine)
 	CRYPTO_THREADID_set_callback(_set_thread_id);
 #endif /* if defined(LIBRESSL_VERSION_NUMBER) */
 	ERR_load_crypto_strings();
-#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L ||                           \
+#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L || \
 	* defined(LIBRESSL_VERSION_NUMBER) */
 
 #if !defined(OPENSSL_NO_ENGINE)
@@ -191,7 +191,7 @@ cleanup_rm:
 	isc_mutexblock_destroy(locks, nlocks);
 	isc_mem_free(dst__mctx, locks);
 	locks = NULL;
-#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L ||                           \
+#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L || \
 	* defined(LIBRESSL_VERSION_NUMBER) */
 	return (result);
 }
@@ -232,7 +232,7 @@ dst__openssl_destroy(void)
 		isc_mem_free(dst__mctx, locks);
 		locks = NULL;
 	}
-#endif /* if (OPENSSL_VERSION_NUMBER < 0x10100000L) ||                         \
+#endif /* if (OPENSSL_VERSION_NUMBER < 0x10100000L) || \
 	* defined(LIBRESSL_VERSION_NUMBER) */
 	isc_mem_detach(&dst__mctx);
 }

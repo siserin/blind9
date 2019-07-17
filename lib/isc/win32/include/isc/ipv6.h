@@ -40,27 +40,27 @@
 #endif /* if _MSC_VER < 1300 */
 
 #ifndef IN6ADDR_ANY_INIT
-#define IN6ADDR_ANY_INIT                                                       \
-	{                                                                      \
-		{                                                              \
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0         \
-		}                                                              \
+#define IN6ADDR_ANY_INIT                                               \
+	{                                                              \
+		{                                                      \
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
+		}                                                      \
 	}
 #endif /* ifndef IN6ADDR_ANY_INIT */
 #ifndef IN6ADDR_LOOPBACK_INIT
-#define IN6ADDR_LOOPBACK_INIT                                                  \
-	{                                                                      \
-		{                                                              \
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1         \
-		}                                                              \
+#define IN6ADDR_LOOPBACK_INIT                                          \
+	{                                                              \
+		{                                                      \
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 \
+		}                                                      \
 	}
 #endif /* ifndef IN6ADDR_LOOPBACK_INIT */
 #ifndef IN6ADDR_V4MAPPED_INIT
-#define IN6ADDR_V4MAPPED_INIT                                                  \
-	{                                                                      \
-		{                                                              \
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0, 0, 0, 0   \
-		}                                                              \
+#define IN6ADDR_V4MAPPED_INIT                                                \
+	{                                                                    \
+		{                                                            \
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0, 0, 0, 0 \
+		}                                                            \
 	}
 #endif /* ifndef IN6ADDR_V4MAPPED_INIT */
 
@@ -71,10 +71,10 @@ LIBISC_EXTERNAL_DATA extern const struct in6_addr isc_in6addr_loopback;
  * Unspecified
  */
 #ifndef IN6_IS_ADDR_UNSPECIFIED
-#define IN6_IS_ADDR_UNSPECIFIED(a)                                             \
-	(*((u_long *)((a)->s6_addr)) == 0 &&                                   \
-	 *((u_long *)((a)->s6_addr) + 1) == 0 &&                               \
-	 *((u_long *)((a)->s6_addr) + 2) == 0 &&                               \
+#define IN6_IS_ADDR_UNSPECIFIED(a)               \
+	(*((u_long *)((a)->s6_addr)) == 0 &&     \
+	 *((u_long *)((a)->s6_addr) + 1) == 0 && \
+	 *((u_long *)((a)->s6_addr) + 2) == 0 && \
 	 *((u_long *)((a)->s6_addr) + 3) == 0)
 #endif /* ifndef IN6_IS_ADDR_UNSPECIFIED */
 
@@ -82,29 +82,29 @@ LIBISC_EXTERNAL_DATA extern const struct in6_addr isc_in6addr_loopback;
  * Loopback
  */
 #ifndef IN6_IS_ADDR_LOOPBACK
-#define IN6_IS_ADDR_LOOPBACK(a)                                                \
-	(*((u_long *)((a)->s6_addr)) == 0 &&                                   \
-	 *((u_long *)((a)->s6_addr) + 1) == 0 &&                               \
-	 *((u_long *)((a)->s6_addr) + 2) == 0 &&                               \
+#define IN6_IS_ADDR_LOOPBACK(a)                  \
+	(*((u_long *)((a)->s6_addr)) == 0 &&     \
+	 *((u_long *)((a)->s6_addr) + 1) == 0 && \
+	 *((u_long *)((a)->s6_addr) + 2) == 0 && \
 	 *((u_long *)((a)->s6_addr) + 3) == htonl(1))
 #endif /* ifndef IN6_IS_ADDR_LOOPBACK */
 
 /*
  * IPv4 compatible
  */
-#define IN6_IS_ADDR_V4COMPAT(a)                                                \
-	(*((u_long *)((a)->s6_addr)) == 0 &&                                   \
-	 *((u_long *)((a)->s6_addr) + 1) == 0 &&                               \
-	 *((u_long *)((a)->s6_addr) + 2) == 0 &&                               \
-	 *((u_long *)((a)->s6_addr) + 3) != 0 &&                               \
+#define IN6_IS_ADDR_V4COMPAT(a)                  \
+	(*((u_long *)((a)->s6_addr)) == 0 &&     \
+	 *((u_long *)((a)->s6_addr) + 1) == 0 && \
+	 *((u_long *)((a)->s6_addr) + 2) == 0 && \
+	 *((u_long *)((a)->s6_addr) + 3) != 0 && \
 	 *((u_long *)((a)->s6_addr) + 3) != htonl(1))
 
 /*
  * Mapped
  */
-#define IN6_IS_ADDR_V4MAPPED(a)                                                \
-	(*((u_long *)((a)->s6_addr)) == 0 &&                                   \
-	 *((u_long *)((a)->s6_addr) + 1) == 0 &&                               \
+#define IN6_IS_ADDR_V4MAPPED(a)                  \
+	(*((u_long *)((a)->s6_addr)) == 0 &&     \
+	 *((u_long *)((a)->s6_addr) + 1) == 0 && \
 	 *((u_long *)((a)->s6_addr) + 2) == htonl(0x0000ffff))
 
 /*
@@ -116,12 +116,12 @@ LIBISC_EXTERNAL_DATA extern const struct in6_addr isc_in6addr_loopback;
  * Unicast link / site local.
  */
 #ifndef IN6_IS_ADDR_LINKLOCAL
-#define IN6_IS_ADDR_LINKLOCAL(a)                                               \
+#define IN6_IS_ADDR_LINKLOCAL(a) \
 	(((a)->s6_addr[0] == 0xfe) && (((a)->s6_addr[1] & 0xc0) == 0x80))
 #endif /* ifndef IN6_IS_ADDR_LINKLOCAL */
 
 #ifndef IN6_IS_ADDR_SITELOCAL
-#define IN6_IS_ADDR_SITELOCAL(a)                                               \
+#define IN6_IS_ADDR_SITELOCAL(a) \
 	(((a)->s6_addr[0] == 0xfe) && (((a)->s6_addr[1] & 0xc0) == 0xc0))
 #endif /* ifndef IN6_IS_ADDR_SITELOCAL */
 

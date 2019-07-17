@@ -52,16 +52,16 @@ isc_fsaccess_set(const char *path, isc_fsaccess_t access)
 	 */
 	mode = 0;
 
-#define SET_AND_CLEAR1(modebit)                                                \
-	if ((access & bits) != 0) {                                            \
-		mode |= modebit;                                               \
-		access &= ~bits;                                               \
+#define SET_AND_CLEAR1(modebit)     \
+	if ((access & bits) != 0) { \
+		mode |= modebit;    \
+		access &= ~bits;    \
 	}
-#define SET_AND_CLEAR(user, group, other)                                      \
-	SET_AND_CLEAR1(user);                                                  \
-	bits <<= STEP;                                                         \
-	SET_AND_CLEAR1(group);                                                 \
-	bits <<= STEP;                                                         \
+#define SET_AND_CLEAR(user, group, other) \
+	SET_AND_CLEAR1(user);             \
+	bits <<= STEP;                    \
+	SET_AND_CLEAR1(group);            \
+	bits <<= STEP;                    \
 	SET_AND_CLEAR1(other);
 
 	bits = ISC_FSACCESS_READ | ISC_FSACCESS_LISTDIRECTORY;

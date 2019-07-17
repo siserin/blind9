@@ -28,11 +28,11 @@
 
 #include "../modules/include/dlz_minimal.h"
 
-#define CHECK(x)                                                               \
-	do {                                                                   \
-		result = (x);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define CHECK(x)                             \
+	do {                                 \
+		result = (x);                \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 /* For this simple example, use fixed sized strings */

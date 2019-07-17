@@ -59,10 +59,10 @@
  */
 #define ALT_E 0x01
 #define ALT_O 0x02
-#define LEGAL_ALT(x)                                                           \
-	{                                                                      \
-		if ((alt_format & ~(x)) != 0)                                  \
-			return ((0));                                          \
+#define LEGAL_ALT(x)                          \
+	{                                     \
+		if ((alt_format & ~(x)) != 0) \
+			return ((0));         \
 	}
 
 #ifndef TM_YEAR_BASE

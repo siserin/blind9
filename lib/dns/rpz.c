@@ -110,20 +110,20 @@ typedef struct {
 } dns_rpz_cidr_key_t;
 
 #define ADDR_V4MAPPED 0xffff
-#define KEY_IS_IPV4(prefix, ip)                                                \
-	((prefix) >= 96 && (ip)->w[0] == 0 && (ip)->w[1] == 0 &&               \
+#define KEY_IS_IPV4(prefix, ip)                                  \
+	((prefix) >= 96 && (ip)->w[0] == 0 && (ip)->w[1] == 0 && \
 	 (ip)->w[2] == ADDR_V4MAPPED)
 
-#define DNS_RPZ_WORD_MASK(b)                                                   \
-	((b) == 0 ? (dns_rpz_cidr_word_t)(-1)                                  \
-		  : ((dns_rpz_cidr_word_t)(-1)                                 \
+#define DNS_RPZ_WORD_MASK(b)                   \
+	((b) == 0 ? (dns_rpz_cidr_word_t)(-1)  \
+		  : ((dns_rpz_cidr_word_t)(-1) \
 		     << (DNS_RPZ_CIDR_WORD_BITS - (b))))
 
 /*
  * Get bit #n from the array of words of an IP address.
  */
-#define DNS_RPZ_IP_BIT(ip, n)                                                  \
-	(1 & ((ip)->w[(n) / DNS_RPZ_CIDR_WORD_BITS] >>                         \
+#define DNS_RPZ_IP_BIT(ip, n)                          \
+	(1 & ((ip)->w[(n) / DNS_RPZ_CIDR_WORD_BITS] >> \
 	      (DNS_RPZ_CIDR_WORD_BITS - 1 - ((n) % DNS_RPZ_CIDR_WORD_BITS))))
 
 /*

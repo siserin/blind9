@@ -42,12 +42,12 @@
 #include <dig/dig.h>
 #include <pk11/site.h>
 
-#define ADD_STRING(b, s)                                                       \
-	{                                                                      \
-		if (strlen(s) >= isc_buffer_availablelength(b))                \
-			return ((ISC_R_NOSPACE));                              \
-		else                                                           \
-			isc_buffer_putstr(b, s);                               \
+#define ADD_STRING(b, s)                                        \
+	{                                                       \
+		if (strlen(s) >= isc_buffer_availablelength(b)) \
+			return ((ISC_R_NOSPACE));               \
+		else                                            \
+			isc_buffer_putstr(b, s);                \
 	}
 
 #define DIG_MAX_ADDRESSES 20
@@ -870,18 +870,18 @@ plus_option(char *option, bool is_batchfile, dig_lookup_t *lookup)
 	/* parse the rest of the string */
 	value = strtok_r(NULL, "", &last);
 
-#define FULLCHECK(A)                                                           \
-	do {                                                                   \
-		size_t _l = strlen(cmd);                                       \
-		if (_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0)           \
-			goto invalid_option;                                   \
+#define FULLCHECK(A)                                                 \
+	do {                                                         \
+		size_t _l = strlen(cmd);                             \
+		if (_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0) \
+			goto invalid_option;                         \
 	} while (0)
-#define FULLCHECK2(A, B)                                                       \
-	do {                                                                   \
-		size_t _l = strlen(cmd);                                       \
-		if ((_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0) &&       \
-		    (_l >= sizeof(B) || strncasecmp(cmd, B, _l) != 0))         \
-			goto invalid_option;                                   \
+#define FULLCHECK2(A, B)                                                 \
+	do {                                                             \
+		size_t _l = strlen(cmd);                                 \
+		if ((_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0) && \
+		    (_l >= sizeof(B) || strncasecmp(cmd, B, _l) != 0))   \
+			goto invalid_option;                             \
 	} while (0)
 
 	switch (cmd[0]) {

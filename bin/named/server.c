@@ -160,20 +160,20 @@
  * Check an operation for failure.  Assumes that the function
  * using it has a 'result' variable and a 'cleanup' label.
  */
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto cleanup;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto cleanup;        \
 	} while (0)
 
-#define TCHECK(op)                                                             \
-	do {                                                                   \
-		tresult = (op);                                                \
-		if (tresult != ISC_R_SUCCESS) {                                \
-			isc_buffer_clear(*text);                               \
-			goto cleanup;                                          \
-		}                                                              \
+#define TCHECK(op)                               \
+	do {                                     \
+		tresult = (op);                  \
+		if (tresult != ISC_R_SUCCESS) {  \
+			isc_buffer_clear(*text); \
+			goto cleanup;            \
+		}                                \
 	} while (0)
 
 #define CHECKM(op, msg)                                                        \
@@ -200,11 +200,11 @@
 		}                                                              \
 	} while (0)
 
-#define CHECKFATAL(op, msg)                                                    \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			fatal(msg, result);                                    \
+#define CHECKFATAL(op, msg)                  \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			fatal(msg, result);  \
 	} while (0)
 
 /*%
@@ -3088,29 +3088,29 @@ cleanup:
 	return (result);
 }
 
-#define CHECK_RRL(cond, pat, val1, val2)                                       \
-	do {                                                                   \
-		if (!(cond)) {                                                 \
-			cfg_obj_log(obj, named_g_lctx, ISC_LOG_ERROR, pat,     \
-				    val1, val2);                               \
-			result = ISC_R_RANGE;                                  \
-			goto cleanup;                                          \
-		}                                                              \
+#define CHECK_RRL(cond, pat, val1, val2)                                   \
+	do {                                                               \
+		if (!(cond)) {                                             \
+			cfg_obj_log(obj, named_g_lctx, ISC_LOG_ERROR, pat, \
+				    val1, val2);                           \
+			result = ISC_R_RANGE;                              \
+			goto cleanup;                                      \
+		}                                                          \
 	} while (0)
 
-#define CHECK_RRL_RATE(rate, def, max_rate, name)                              \
-	do {                                                                   \
-		obj = NULL;                                                    \
-		rrl->rate.str = name;                                          \
-		result = cfg_map_get(map, name, &obj);                         \
-		if (result == ISC_R_SUCCESS) {                                 \
-			rrl->rate.r = cfg_obj_asuint32(obj);                   \
-			CHECK_RRL(rrl->rate.r <= max_rate, name " %d > %d",    \
-				  rrl->rate.r, max_rate);                      \
-		} else {                                                       \
-			rrl->rate.r = def;                                     \
-		}                                                              \
-		rrl->rate.scaled = rrl->rate.r;                                \
+#define CHECK_RRL_RATE(rate, def, max_rate, name)                           \
+	do {                                                                \
+		obj = NULL;                                                 \
+		rrl->rate.str = name;                                       \
+		result = cfg_map_get(map, name, &obj);                      \
+		if (result == ISC_R_SUCCESS) {                              \
+			rrl->rate.r = cfg_obj_asuint32(obj);                \
+			CHECK_RRL(rrl->rate.r <= max_rate, name " %d > %d", \
+				  rrl->rate.r, max_rate);                   \
+		} else {                                                    \
+			rrl->rate.r = def;                                  \
+		}                                                           \
+		rrl->rate.scaled = rrl->rate.r;                             \
 	} while (0)
 
 static isc_result_t
@@ -7155,8 +7155,8 @@ set_limit(const cfg_obj_t **maps, const char *configname,
 		isc_result_totext(result));
 }
 
-#define SETLIMIT(cfgvar, resource, description)                                \
-	set_limit(maps, cfgvar, description, isc_resource_##resource,          \
+#define SETLIMIT(cfgvar, resource, description)                       \
+	set_limit(maps, cfgvar, description, isc_resource_##resource, \
 		  named_g_init##resource)
 
 static void
@@ -12329,8 +12329,8 @@ named_smf_add_message(isc_buffer_t **text)
  * Expects the fp to already be open for writing
  */
 #define HEADER1 "# New zone file for view: "
-#define HEADER2                                                                \
-	"\n# This file contains configuration for zones added by\n"            \
+#define HEADER2                                                     \
+	"\n# This file contains configuration for zones added by\n" \
 	"# the 'rndc addzone' command. DO NOT EDIT BY HAND.\n"
 static isc_result_t
 add_comment(FILE *fp, const char *viewname)

@@ -25,7 +25,7 @@
  * \li The first parameter is 1, not 0.
  */
 #ifdef __GNUC__
-#define ISC_FORMAT_PRINTF(fmt, args)                                           \
+#define ISC_FORMAT_PRINTF(fmt, args) \
 	__attribute__((__format__(__printf__, fmt, args)))
 #else /* ifdef __GNUC__ */
 #define ISC_FORMAT_PRINTF(fmt, args)

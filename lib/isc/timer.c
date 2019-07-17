@@ -36,13 +36,13 @@
 #ifdef ISC_TIMER_TRACE
 #define XTRACE(s) fprintf(stderr, "%s\n", (s))
 #define XTRACEID(s, t) fprintf(stderr, "%s %p\n", (s), (t))
-#define XTRACETIME(s, d)                                                       \
+#define XTRACETIME(s, d) \
 	fprintf(stderr, "%s %u.%09u\n", (s), (d).seconds, (d).nanoseconds)
-#define XTRACETIME2(s, d, n)                                                   \
-	fprintf(stderr, "%s %u.%09u %u.%09u\n", (s), (d).seconds,              \
+#define XTRACETIME2(s, d, n)                                      \
+	fprintf(stderr, "%s %u.%09u %u.%09u\n", (s), (d).seconds, \
 		(d).nanoseconds, (n).seconds, (n).nanoseconds)
-#define XTRACETIMER(s, t, d)                                                   \
-	fprintf(stderr, "%s %p %u.%09u\n", (s), (t), (d).seconds,              \
+#define XTRACETIMER(s, t, d)                                      \
+	fprintf(stderr, "%s %p %u.%09u\n", (s), (t), (d).seconds, \
 		(d).nanoseconds)
 #else /* ifdef ISC_TIMER_TRACE */
 #define XTRACE(s)

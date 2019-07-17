@@ -23,11 +23,11 @@
  * Redefine CHECK here so cppcheck "sees" the define.
  */
 #ifndef CHECK
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto cleanup;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto cleanup;        \
 	} while (0)
 #endif /* ifndef CHECK */
 

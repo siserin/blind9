@@ -240,8 +240,8 @@ iterate(dns_rbt_t *rbt, bool forward)
 }
 
 #define CMDCHECK(s) (strncasecmp(command, (s), length) == 0)
-#define PRINTERR(r)                                                            \
-	if (r != ISC_R_SUCCESS)                                                \
+#define PRINTERR(r)             \
+	if (r != ISC_R_SUCCESS) \
 		printf("... %s\n", dns_result_totext(r));
 
 int

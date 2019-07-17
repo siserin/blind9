@@ -47,13 +47,13 @@
 #ifdef GSSAPI
 #include ISC_PLATFORM_GSSAPIHEADER
 
-#define CHECK(str, x)                                                          \
-	{                                                                      \
-		if ((x) != ISC_R_SUCCESS) {                                    \
-			fprintf(stderr, "I:%d:%s: %s\n", __LINE__, (str),      \
-				isc_result_totext(x));                         \
-			goto end;                                              \
-		}                                                              \
+#define CHECK(str, x)                                                     \
+	{                                                                 \
+		if ((x) != ISC_R_SUCCESS) {                               \
+			fprintf(stderr, "I:%d:%s: %s\n", __LINE__, (str), \
+				isc_result_totext(x));                    \
+			goto end;                                         \
+		}                                                         \
 	}
 
 static dns_fixedname_t servername, gssname;

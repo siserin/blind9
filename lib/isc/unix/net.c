@@ -65,7 +65,7 @@
 #define SYSCTL_V4PORTRANGE_HIGH "net.inet.ip.portrange.hilast"
 #define SYSCTL_V6PORTRANGE_LOW "net.inet.ip.portrange.hifirst"
 #define SYSCTL_V6PORTRANGE_HIGH "net.inet.ip.portrange.hilast"
-#endif /* if defined(__FreeBSD__) || defined(__APPLE__) ||                     \
+#endif /* if defined(__FreeBSD__) || defined(__APPLE__) || \
 	* defined(__DragonFly__) */
 
 #ifdef __NetBSD__
@@ -80,13 +80,13 @@
 
 #ifdef __OpenBSD__
 #define USE_SYSCTL_PORTRANGE
-#define SYSCTL_V4PORTRANGE_LOW                                                 \
-	{                                                                      \
-		CTL_NET, PF_INET, IPPROTO_IP, IPCTL_IPPORT_HIFIRSTAUTO         \
+#define SYSCTL_V4PORTRANGE_LOW                                         \
+	{                                                              \
+		CTL_NET, PF_INET, IPPROTO_IP, IPCTL_IPPORT_HIFIRSTAUTO \
 	}
-#define SYSCTL_V4PORTRANGE_HIGH                                                \
-	{                                                                      \
-		CTL_NET, PF_INET, IPPROTO_IP, IPCTL_IPPORT_HILASTAUTO          \
+#define SYSCTL_V4PORTRANGE_HIGH                                       \
+	{                                                             \
+		CTL_NET, PF_INET, IPPROTO_IP, IPCTL_IPPORT_HILASTAUTO \
 	}
 /* Same for IPv6 */
 #define SYSCTL_V6PORTRANGE_LOW SYSCTL_V4PORTRANGE_LOW

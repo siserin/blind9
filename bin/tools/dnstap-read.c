@@ -58,14 +58,14 @@ bool yaml = false;
 
 const char *program = "dnstap-read";
 
-#define CHECKM(op, msg)                                                        \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS) {                                 \
-			fprintf(stderr, "%s: %s: %s\n", program, msg,          \
-				isc_result_totext(result));                    \
-			goto cleanup;                                          \
-		}                                                              \
+#define CHECKM(op, msg)                                               \
+	do {                                                          \
+		result = (op);                                        \
+		if (result != ISC_R_SUCCESS) {                        \
+			fprintf(stderr, "%s: %s: %s\n", program, msg, \
+				isc_result_totext(result));           \
+			goto cleanup;                                 \
+		}                                                     \
 	} while (0)
 
 ISC_PLATFORM_NORETURN_PRE static void

@@ -49,10 +49,10 @@ ISC_LANG_BEGINDECLS
 #define DNS_RRL_LOG_DEBUG3 ISC_LOG_DEBUG(9)
 
 #define DNS_RRL_LOG_ERR_LEN 64
-#define DNS_RRL_LOG_BUF_LEN                                                    \
-	(sizeof("would continue limiting") + DNS_RRL_LOG_ERR_LEN +             \
-	 sizeof(" responses to ") + ISC_NETADDR_FORMATSIZE +                   \
-	 sizeof("/128 for IN ") + DNS_RDATATYPE_FORMATSIZE +                   \
+#define DNS_RRL_LOG_BUF_LEN                                        \
+	(sizeof("would continue limiting") + DNS_RRL_LOG_ERR_LEN + \
+	 sizeof(" responses to ") + ISC_NETADDR_FORMATSIZE +       \
+	 sizeof("/128 for IN ") + DNS_RDATATYPE_FORMATSIZE +       \
 	 DNS_NAME_FORMATSIZE)
 
 typedef struct dns_rrl_hash dns_rrl_hash_t;
@@ -138,7 +138,7 @@ struct dns_rrl_entry {
 #define DNS_RRL_MAX_RATE 1000
 #if DNS_RRL_MAX_RATE >= (DNS_RRL_MAX_RESPONSES / DNS_RRL_MAX_WINDOW)
 #error "DNS_RRL_MAX_rate is too large"
-#endif /* if DNS_RRL_MAX_RATE >= (DNS_RRL_MAX_RESPONSES / DNS_RRL_MAX_WINDOW)  \
+#endif /* if DNS_RRL_MAX_RATE >= (DNS_RRL_MAX_RESPONSES / DNS_RRL_MAX_WINDOW) \
 	*/
 
 #if (1 << DNS_RRL_LOG_BITS) >= DNS_RRL_FOREVER

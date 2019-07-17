@@ -130,11 +130,11 @@ static struct afd {
  * The test against 0 is there to keep the Solaris compiler
  * from complaining about "end-of-loop code not reached".
  */
-#define ERR(code)                                                              \
-	do {                                                                   \
-		result = (code);                                               \
-		if (result != 0)                                               \
-			goto cleanup;                                          \
+#define ERR(code)                     \
+	do {                          \
+		result = (code);      \
+		if (result != 0)      \
+			goto cleanup; \
 	} while (0)
 
 int

@@ -48,8 +48,8 @@
  * holds true: for every element i > 1, heap_parent(i) has a priority
  * higher than or equal to that of i.
  */
-#define HEAPCONDITION(i)                                                       \
-	((i) == 1 ||                                                           \
+#define HEAPCONDITION(i) \
+	((i) == 1 ||     \
 	 !heap->compare(heap->array[(i)], heap->array[heap_parent(i)]))
 
 /*% ISC heap structure. */

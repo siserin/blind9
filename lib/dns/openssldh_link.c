@@ -50,20 +50,20 @@
 	"F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A63A3620FFFFFFFFFFFFFFF" \
 	"F"
 
-#define PRIME1024                                                              \
-	"FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E08"             \
-	"8A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF2"   \
-	"5F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406"   \
+#define PRIME1024                                                            \
+	"FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E08"           \
+	"8A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF2" \
+	"5F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406" \
 	"B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE65381FFFFFFFFFFFFFFFF"
 
-#define PRIME1536                                                              \
-	"FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"                     \
-	"29024E088A67CC74020BBEA63B139B22514A08798E3404DD"                     \
-	"EF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245"                     \
-	"E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7ED"                     \
-	"EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3D"                     \
-	"C2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F"                     \
-	"83655D23DCA3AD961C62F356208552BB9ED529077096966D"                     \
+#define PRIME1536                                          \
+	"FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1" \
+	"29024E088A67CC74020BBEA63B139B22514A08798E3404DD" \
+	"EF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245" \
+	"E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7ED" \
+	"EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3D" \
+	"C2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F" \
+	"83655D23DCA3AD961C62F356208552BB9ED529077096966D" \
 	"670C354E4ABC9804F1746C08CA237327FFFFFFFFFFFFFFFF"
 
 static isc_result_t
@@ -269,7 +269,7 @@ openssldh_generate(dst_key_t *key, int generator, void (*callback)(int))
 	BN_GENCB *cb;
 #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 	BN_GENCB _cb;
-#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L ||                           \
+#endif /* if OPENSSL_VERSION_NUMBER < 0x10100000L || \
 	* defined(LIBRESSL_VERSION_NUMBER) */
 	union {
 		void *dptr;
@@ -318,7 +318,7 @@ openssldh_generate(dst_key_t *key, int generator, void (*callback)(int))
 			DH_free(dh);
 			return (dst__openssl_toresult(ISC_R_NOMEMORY));
 		}
-#endif /* if OPENSSL_VERSION_NUMBER >= 0x10100000L &&                          \
+#endif /* if OPENSSL_VERSION_NUMBER >= 0x10100000L && \
 	* !defined(LIBRESSL_VERSION_NUMBER) */
 		if (callback == NULL) {
 			BN_GENCB_set_old(cb, NULL, NULL);
@@ -579,7 +579,7 @@ openssldh_fromdns(dst_key_t *key, isc_buffer_t *data)
 		DH_free(dh);
 		return (dst__openssl_toresult(ISC_R_NOMEMORY));
 	}
-#if (LIBRESSL_VERSION_NUMBER >= 0x2070000fL) &&                                \
+#if (LIBRESSL_VERSION_NUMBER >= 0x2070000fL) && \
 	(LIBRESSL_VERSION_NUMBER <= 0x2070200fL)
 	/*
 	 * LibreSSL << 2.7.3 DH_get0_key requires priv_key to be set when
@@ -678,10 +678,10 @@ openssldh_parse(dst_key_t *key, isc_lex_t *lexer, dst_key_t *pub)
 	DH *dh = NULL;
 	BIGNUM *pub_key = NULL, *priv_key = NULL, *p = NULL, *g = NULL;
 	isc_mem_t *mctx;
-#define DST_RET(a)                                                             \
-	{                                                                      \
-		ret = a;                                                       \
-		goto err;                                                      \
+#define DST_RET(a)        \
+	{                 \
+		ret = a;  \
+		goto err; \
 	}
 
 	UNUSED(pub);

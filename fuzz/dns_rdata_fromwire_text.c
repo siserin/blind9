@@ -26,10 +26,10 @@
 #include <dns/rdata.h>
 #include <dns/rdatatype.h>
 
-#define CHECK(x)                                                               \
-	({                                                                     \
-		if ((result = (x)) != ISC_R_SUCCESS)                           \
-			goto done;                                             \
+#define CHECK(x)                                     \
+	({                                           \
+		if ((result = (x)) != ISC_R_SUCCESS) \
+			goto done;                   \
 	})
 
 /*

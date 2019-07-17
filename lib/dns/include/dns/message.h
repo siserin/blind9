@@ -165,15 +165,15 @@ typedef int dns_messagetextflag_t;
  * Control behavior of parsing
  */
 #define DNS_MESSAGEPARSE_PRESERVEORDER 0x0001 /*%< preserve rdata order */
-#define DNS_MESSAGEPARSE_BESTEFFORT                                            \
-	0x0002 /*%< return a message if a                                      \
-		*                                  recoverable parse error     \
+#define DNS_MESSAGEPARSE_BESTEFFORT                                        \
+	0x0002 /*%< return a message if a                                  \
+		*                                  recoverable parse error \
 		*                                  occurs */
-#define DNS_MESSAGEPARSE_CLONEBUFFER                                           \
-	0x0004 /*%< save a copy of the                                         \
+#define DNS_MESSAGEPARSE_CLONEBUFFER   \
+	0x0004 /*%< save a copy of the \
 		*                                  source buffer */
-#define DNS_MESSAGEPARSE_IGNORETRUNCATION                                      \
-	0x0008 /*%< truncation errors are                                      \
+#define DNS_MESSAGEPARSE_IGNORETRUNCATION \
+	0x0008 /*%< truncation errors are \
 		* not fatal. */
 
 /*
@@ -182,11 +182,11 @@ typedef int dns_messagetextflag_t;
 #define DNS_MESSAGERENDER_ORDERED 0x0001    /*%< don't change order */
 #define DNS_MESSAGERENDER_PARTIAL 0x0002    /*%< allow a partial rdataset */
 #define DNS_MESSAGERENDER_OMITDNSSEC 0x0004 /*%< omit DNSSEC records */
-#define DNS_MESSAGERENDER_PREFER_A                                             \
-	0x0008 /*%< prefer A records in                                        \
+#define DNS_MESSAGERENDER_PREFER_A      \
+	0x0008 /*%< prefer A records in \
 		*                                    additional section. */
-#define DNS_MESSAGERENDER_PREFER_AAAA                                          \
-	0x0010 /*%< prefer AAAA records in                                     \
+#define DNS_MESSAGERENDER_PREFER_AAAA      \
+	0x0010 /*%< prefer AAAA records in \
 		*                                    additional section. */
 /* Obsolete: DNS_MESSAGERENDER_FILTER_AAAA	0x0020	*/
 

@@ -183,7 +183,7 @@
 
 #define DNS_R_NRCODERESULTS 17 /*%< Number of rcode results */
 
-#define DNS_RESULT_ISRCODE(result)                                             \
+#define DNS_RESULT_ISRCODE(result) \
 	(ISC_RESULTCLASS_INCLASS(ISC_RESULTCLASS_DNSRCODE, (result)))
 
 ISC_LANG_BEGINDECLS

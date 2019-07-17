@@ -45,11 +45,11 @@ LIBDNS_EXTERNAL_DATA isc_stats_t *dns_dnssec_stats;
 
 #define is_response(msg) ((msg->flags & DNS_MESSAGEFLAG_QR) != 0)
 
-#define RETERR(x)                                                              \
-	do {                                                                   \
-		result = (x);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define RETERR(x)                            \
+	do {                                 \
+		result = (x);                \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 #define TYPE_SIGN 0
@@ -763,7 +763,7 @@ syncdelete(dst_key_t *key, isc_stdtime_t now)
 	return (false);
 }
 
-#define is_zone_key(key)                                                       \
+#define is_zone_key(key) \
 	((dst_key_flags(key) & DNS_KEYFLAG_OWNERMASK) == DNS_KEYOWNER_ZONE)
 
 isc_result_t

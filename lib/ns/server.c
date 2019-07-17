@@ -27,10 +27,10 @@
 #define SCTX_MAGIC ISC_MAGIC('S', 'c', 't', 'x')
 #define SCTX_VALID(s) ISC_MAGIC_VALID(s, SCTX_MAGIC)
 
-#define CHECKFATAL(op)                                                         \
-	do {                                                                   \
-		result = (op);                                                 \
-		RUNTIME_CHECK(result == ISC_R_SUCCESS);                        \
+#define CHECKFATAL(op)                                  \
+	do {                                            \
+		result = (op);                          \
+		RUNTIME_CHECK(result == ISC_R_SUCCESS); \
 	} while (0)
 
 isc_result_t

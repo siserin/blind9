@@ -21,13 +21,13 @@
 #define NS_CONTROL_PORT 953
 
 #undef DO
-#define DO(name, function)                                                     \
-	do {                                                                   \
-		result = function;                                             \
-		if (result != ISC_R_SUCCESS)                                   \
-			fatal("%s: %s", name, isc_result_totext(result));      \
-		else                                                           \
-			notify("%s", name);                                    \
+#define DO(name, function)                                                \
+	do {                                                              \
+		result = function;                                        \
+		if (result != ISC_R_SUCCESS)                              \
+			fatal("%s: %s", name, isc_result_totext(result)); \
+		else                                                      \
+			notify("%s", name);                               \
 	} while (0)
 
 ISC_LANG_BEGINDECLS

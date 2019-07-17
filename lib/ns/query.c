@@ -85,15 +85,15 @@
  */
 #define MAX_RESTARTS 16
 
-#define QUERY_ERROR(qctx, r)                                                   \
-	do {                                                                   \
-		qctx->result = r;                                              \
-		qctx->want_restart = false;                                    \
-		qctx->line = __LINE__;                                         \
+#define QUERY_ERROR(qctx, r)                \
+	do {                                \
+		qctx->result = r;           \
+		qctx->want_restart = false; \
+		qctx->line = __LINE__;      \
 	} while (0)
 
 /*% Partial answer? */
-#define PARTIALANSWER(c)                                                       \
+#define PARTIALANSWER(c) \
 	(((c)->query.attributes & NS_QUERYATTR_PARTIALANSWER) != 0)
 /*% Use Cache? */
 #define USECACHE(c) (((c)->query.attributes & NS_QUERYATTR_CACHEOK) != 0)
@@ -102,7 +102,7 @@
 /*% Recursing? */
 #define RECURSING(c) (((c)->query.attributes & NS_QUERYATTR_RECURSING) != 0)
 /*% Want Recursion? */
-#define WANTRECURSION(c)                                                       \
+#define WANTRECURSION(c) \
 	(((c)->query.attributes & NS_QUERYATTR_WANTRECURSION) != 0)
 /*% Is TCP? */
 #define TCP(c) (((c)->attributes & NS_CLIENTATTR_TCP) != 0)
@@ -120,14 +120,14 @@
 /*% No authority? */
 #define NOAUTHORITY(c) (((c)->query.attributes & NS_QUERYATTR_NOAUTHORITY) != 0)
 /*% No additional? */
-#define NOADDITIONAL(c)                                                        \
+#define NOADDITIONAL(c) \
 	(((c)->query.attributes & NS_QUERYATTR_NOADDITIONAL) != 0)
 /*% Secure? */
 #define SECURE(c) (((c)->query.attributes & NS_QUERYATTR_SECURE) != 0)
 /*% DNS64 A lookup? */
 #define DNS64(c) (((c)->query.attributes & NS_QUERYATTR_DNS64) != 0)
 
-#define DNS64EXCLUDE(c)                                                        \
+#define DNS64EXCLUDE(c) \
 	(((c)->query.attributes & NS_QUERYATTR_DNS64EXCLUDE) != 0)
 
 #define REDIRECT(c) (((c)->query.attributes & NS_QUERYATTR_REDIRECT) != 0)
@@ -192,11 +192,11 @@ client_trace(ns_client_t *client, int level, const char *message)
  *
  * We use SAVE and RESTORE as that shows the operation being performed.
  */
-#define SAVE(a, b)                                                             \
-	do {                                                                   \
-		INSIST(a == NULL);                                             \
-		a = b;                                                         \
-		b = NULL;                                                      \
+#define SAVE(a, b)                 \
+	do {                       \
+		INSIST(a == NULL); \
+		a = b;             \
+		b = NULL;          \
 	} while (0)
 #define RESTORE(a, b) SAVE(a, b)
 
@@ -249,27 +249,27 @@ get_hooktab(query_ctx_t *qctx)
  * is a macro instead of an inline function; it needs to be able to use
  * 'goto cleanup' regardless of the return value.)
  */
-#define CALL_HOOK(_id, _qctx)                                                  \
-	do {                                                                   \
-		isc_result_t _res;                                             \
-		ns_hooktable_t *_tab = get_hooktab(_qctx);                     \
-		ns_hook_t *_hook;                                              \
-		_hook = ISC_LIST_HEAD((*_tab)[_id]);                           \
-		while (_hook != NULL) {                                        \
-			ns_hook_action_t _func = _hook->action;                \
-			void *_data = _hook->action_data;                      \
-			INSIST(_func != NULL);                                 \
-			switch (_func(_qctx, _data, &_res)) {                  \
-			case NS_HOOK_CONTINUE:                                 \
-				_hook = ISC_LIST_NEXT(_hook, link);            \
-				break;                                         \
-			case NS_HOOK_RETURN:                                   \
-				result = _res;                                 \
-				goto cleanup;                                  \
-			default:                                               \
-				INSIST(0);                                     \
-			}                                                      \
-		}                                                              \
+#define CALL_HOOK(_id, _qctx)                                       \
+	do {                                                        \
+		isc_result_t _res;                                  \
+		ns_hooktable_t *_tab = get_hooktab(_qctx);          \
+		ns_hook_t *_hook;                                   \
+		_hook = ISC_LIST_HEAD((*_tab)[_id]);                \
+		while (_hook != NULL) {                             \
+			ns_hook_action_t _func = _hook->action;     \
+			void *_data = _hook->action_data;           \
+			INSIST(_func != NULL);                      \
+			switch (_func(_qctx, _data, &_res)) {       \
+			case NS_HOOK_CONTINUE:                      \
+				_hook = ISC_LIST_NEXT(_hook, link); \
+				break;                              \
+			case NS_HOOK_RETURN:                        \
+				result = _res;                      \
+				goto cleanup;                       \
+			default:                                    \
+				INSIST(0);                          \
+			}                                           \
+		}                                                   \
 	} while (false)
 
 /*
@@ -281,19 +281,19 @@ get_hooktab(query_ctx_t *qctx)
  * (This could be implemented as an inline void function, but is left as a
  * macro for symmetry with CALL_HOOK above.)
  */
-#define CALL_HOOK_NORETURN(_id, _qctx)                                         \
-	do {                                                                   \
-		isc_result_t _res;                                             \
-		ns_hooktable_t *_tab = get_hooktab(_qctx);                     \
-		ns_hook_t *_hook;                                              \
-		_hook = ISC_LIST_HEAD((*_tab)[_id]);                           \
-		while (_hook != NULL) {                                        \
-			ns_hook_action_t _func = _hook->action;                \
-			void *_data = _hook->action_data;                      \
-			INSIST(_func != NULL);                                 \
-			_func(_qctx, _data, &_res);                            \
-			_hook = ISC_LIST_NEXT(_hook, link);                    \
-		}                                                              \
+#define CALL_HOOK_NORETURN(_id, _qctx)                          \
+	do {                                                    \
+		isc_result_t _res;                              \
+		ns_hooktable_t *_tab = get_hooktab(_qctx);      \
+		ns_hook_t *_hook;                               \
+		_hook = ISC_LIST_HEAD((*_tab)[_id]);            \
+		while (_hook != NULL) {                         \
+			ns_hook_action_t _func = _hook->action; \
+			void *_data = _hook->action_data;       \
+			INSIST(_func != NULL);                  \
+			_func(_qctx, _data, &_res);             \
+			_hook = ISC_LIST_NEXT(_hook, link);     \
+		}                                               \
 	} while (false)
 
 /*

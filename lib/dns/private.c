@@ -42,11 +42,11 @@
 #define INITIAL(x) (((x)&DNS_NSEC3FLAG_INITIAL) != 0)
 #define NONSEC(x) (((x)&DNS_NSEC3FLAG_NONSEC) != 0)
 
-#define CHECK(x)                                                               \
-	do {                                                                   \
-		result = (x);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define CHECK(x)                             \
+	do {                                 \
+		result = (x);                \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 /*

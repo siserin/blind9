@@ -52,10 +52,10 @@
  *    attribute CKA_VALUE (big int k)
  */
 
-#define DST_RET(a)                                                             \
-	{                                                                      \
-		ret = a;                                                       \
-		goto err;                                                      \
+#define DST_RET(a)        \
+	{                 \
+		ret = a;  \
+		goto err; \
 	}
 
 static CK_BBOOL truevalue = TRUE;
@@ -449,11 +449,11 @@ pkcs11eddsa_compare(const dst_key_t *key1, const dst_key_t *key2)
 		attr->ulValueLen = sizeof(pk11_ecc_ed448);                     \
 	}
 
-#define FREECURVE()                                                            \
-	if (attr->pValue != NULL) {                                            \
-		memset(attr->pValue, 0, attr->ulValueLen);                     \
-		isc_mem_put(key->mctx, attr->pValue, attr->ulValueLen);        \
-		attr->pValue = NULL;                                           \
+#define FREECURVE()                                                     \
+	if (attr->pValue != NULL) {                                     \
+		memset(attr->pValue, 0, attr->ulValueLen);              \
+		isc_mem_put(key->mctx, attr->pValue, attr->ulValueLen); \
+		attr->pValue = NULL;                                    \
 	}
 
 static isc_result_t

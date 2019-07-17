@@ -127,7 +127,7 @@ LIBISC_EXTERNAL_DATA extern unsigned int isc_mem_defaultflags;
  */
 #define ISC_MEMFLAG_NOLOCK 0x00000001   /* no lock is necessary */
 #define ISC_MEMFLAG_INTERNAL 0x00000002 /* use internal malloc */
-#define ISC_MEMFLAG_FILL                                                       \
+#define ISC_MEMFLAG_FILL \
 	0x00000004 /* fill with pattern after alloc and frees */
 
 #if !ISC_MEM_USE_INTERNAL_MALLOC
@@ -206,7 +206,7 @@ struct isc_mempool {
 };
 
 #define ISCAPI_MPOOL_MAGIC ISC_MAGIC('A', 'm', 'p', 'l')
-#define ISCAPI_MPOOL_VALID(mp)                                                 \
+#define ISCAPI_MPOOL_VALID(mp) \
 	((mp) != NULL && (mp)->magic == ISCAPI_MPOOL_MAGIC)
 
 /*%
@@ -226,30 +226,30 @@ struct isc_mempool {
 
 #define isc_mem_get(c, s) ISCMEMFUNC(get)((c), (s)_ISC_MEM_FILELINE)
 #define isc_mem_allocate(c, s) ISCMEMFUNC(allocate)((c), (s)_ISC_MEM_FILELINE)
-#define isc_mem_reallocate(c, p, s)                                            \
+#define isc_mem_reallocate(c, p, s) \
 	ISCMEMFUNC(reallocate)((c), (p), (s)_ISC_MEM_FILELINE)
 #define isc_mem_strdup(c, p) ISCMEMFUNC(strdup)((c), (p)_ISC_MEM_FILELINE)
 #define isc_mempool_get(c) ISCMEMPOOLFUNC(get)((c)_ISC_MEM_FILELINE)
 
-#define isc_mem_put(c, p, s)                                                   \
-	do {                                                                   \
-		ISCMEMFUNC(put)((c), (p), (s)_ISC_MEM_FILELINE);               \
-		(p) = NULL;                                                    \
+#define isc_mem_put(c, p, s)                                     \
+	do {                                                     \
+		ISCMEMFUNC(put)((c), (p), (s)_ISC_MEM_FILELINE); \
+		(p) = NULL;                                      \
 	} while (0)
-#define isc_mem_putanddetach(c, p, s)                                          \
-	do {                                                                   \
-		ISCMEMFUNC(putanddetach)((c), (p), (s)_ISC_MEM_FILELINE);      \
-		(p) = NULL;                                                    \
+#define isc_mem_putanddetach(c, p, s)                                     \
+	do {                                                              \
+		ISCMEMFUNC(putanddetach)((c), (p), (s)_ISC_MEM_FILELINE); \
+		(p) = NULL;                                               \
 	} while (0)
-#define isc_mem_free(c, p)                                                     \
-	do {                                                                   \
-		ISCMEMFUNC(free)((c), (p)_ISC_MEM_FILELINE);                   \
-		(p) = NULL;                                                    \
+#define isc_mem_free(c, p)                                   \
+	do {                                                 \
+		ISCMEMFUNC(free)((c), (p)_ISC_MEM_FILELINE); \
+		(p) = NULL;                                  \
 	} while (0)
-#define isc_mempool_put(c, p)                                                  \
-	do {                                                                   \
-		ISCMEMPOOLFUNC(put)((c), (p)_ISC_MEM_FILELINE);                \
-		(p) = NULL;                                                    \
+#define isc_mempool_put(c, p)                                   \
+	do {                                                    \
+		ISCMEMPOOLFUNC(put)((c), (p)_ISC_MEM_FILELINE); \
+		(p) = NULL;                                     \
 	} while (0)
 
 /*@{*/

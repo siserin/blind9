@@ -44,27 +44,27 @@
 #define MSETSHUTTINGDOWN(cm) (cm->flags |= ISC_HTTPDMGR_FLAGSHUTTINGDOWN)
 
 #ifdef DEBUG_HTTPD
-#define ENTER(x)                                                               \
-	do {                                                                   \
-		fprintf(stderr, "ENTER %s\n", (x));                            \
+#define ENTER(x)                                    \
+	do {                                        \
+		fprintf(stderr, "ENTER %s\n", (x)); \
 	} while (0)
-#define EXIT(x)                                                                \
-	do {                                                                   \
-		fprintf(stderr, "EXIT %s\n", (x));                             \
+#define EXIT(x)                                    \
+	do {                                       \
+		fprintf(stderr, "EXIT %s\n", (x)); \
 	} while (0)
-#define NOTICE(x)                                                              \
-	do {                                                                   \
-		fprintf(stderr, "NOTICE %s\n", (x));                           \
+#define NOTICE(x)                                    \
+	do {                                         \
+		fprintf(stderr, "NOTICE %s\n", (x)); \
 	} while (0)
 #else /* ifdef DEBUG_HTTPD */
-#define ENTER(x)                                                               \
-	do {                                                                   \
+#define ENTER(x) \
+	do {     \
 	} while (0)
-#define EXIT(x)                                                                \
-	do {                                                                   \
+#define EXIT(x) \
+	do {    \
 	} while (0)
-#define NOTICE(x)                                                              \
-	do {                                                                   \
+#define NOTICE(x) \
+	do {      \
 	} while (0)
 #endif /* ifdef DEBUG_HTTPD */
 

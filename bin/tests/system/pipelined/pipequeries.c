@@ -45,13 +45,13 @@
 
 #include <dst/result.h>
 
-#define CHECK(str, x)                                                          \
-	{                                                                      \
-		if ((x) != ISC_R_SUCCESS) {                                    \
-			fprintf(stderr, "I:%s: %s\n", (str),                   \
-				isc_result_totext(x));                         \
-			exit(-1);                                              \
-		}                                                              \
+#define CHECK(str, x)                                        \
+	{                                                    \
+		if ((x) != ISC_R_SUCCESS) {                  \
+			fprintf(stderr, "I:%s: %s\n", (str), \
+				isc_result_totext(x));       \
+			exit(-1);                            \
+		}                                            \
 	}
 
 #define RUNCHECK(x) RUNTIME_CHECK((x) == ISC_R_SUCCESS)

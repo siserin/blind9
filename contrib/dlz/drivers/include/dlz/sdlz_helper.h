@@ -114,7 +114,7 @@ sdlzh_get_parameter_value(isc_mem_t *mctx, const char *input, const char *key);
 #define build_sqldbinstance sdlzh_build_sqldbinstance
 #define destroy_sqldbinstance sdlzh_destroy_sqldbinstance
 
-#define getParameterValue(x, y)                                                \
+#define getParameterValue(x, y) \
 	sdlzh_get_parameter_value(named_g_mctx, (x), (y))
 
 #endif /* SDLZHELPER_H */

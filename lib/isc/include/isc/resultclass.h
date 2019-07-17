@@ -26,7 +26,7 @@
 #define ISC_RESULTCLASS_FROMNUM(num) ((num) << 16)
 #define ISC_RESULTCLASS_TONUM(rclass) ((rclass) >> 16)
 #define ISC_RESULTCLASS_SIZE 65536
-#define ISC_RESULTCLASS_INCLASS(rclass, result)                                \
+#define ISC_RESULTCLASS_INCLASS(rclass, result) \
 	((rclass) == ((result)&0xFFFF0000))
 
 #define ISC_RESULTCLASS_ISC ISC_RESULTCLASS_FROMNUM(0)

@@ -46,31 +46,31 @@ struct isc_consttextregion {
  * Some macros are defined below for convenience.
  */
 
-#define isc_region_consume(r, l)                                               \
-	do {                                                                   \
-		isc_region_t *_r = (r);                                        \
-		unsigned int _l = (l);                                         \
-		INSIST(_r->length >= _l);                                      \
-		_r->base += _l;                                                \
-		_r->length -= _l;                                              \
+#define isc_region_consume(r, l)          \
+	do {                              \
+		isc_region_t *_r = (r);   \
+		unsigned int _l = (l);    \
+		INSIST(_r->length >= _l); \
+		_r->base += _l;           \
+		_r->length -= _l;         \
 	} while (0)
 
-#define isc_textregion_consume(r, l)                                           \
-	do {                                                                   \
-		isc_textregion_t *_r = (r);                                    \
-		unsigned int _l = (l);                                         \
-		INSIST(_r->length >= _l);                                      \
-		_r->base += _l;                                                \
-		_r->length -= _l;                                              \
+#define isc_textregion_consume(r, l)        \
+	do {                                \
+		isc_textregion_t *_r = (r); \
+		unsigned int _l = (l);      \
+		INSIST(_r->length >= _l);   \
+		_r->base += _l;             \
+		_r->length -= _l;           \
 	} while (0)
 
-#define isc_constregion_consume(r, l)                                          \
-	do {                                                                   \
-		isc_constregion_t *_r = (r);                                   \
-		unsigned int _l = (l);                                         \
-		INSIST(_r->length >= _l);                                      \
-		_r->base += _l;                                                \
-		_r->length -= _l;                                              \
+#define isc_constregion_consume(r, l)        \
+	do {                                 \
+		isc_constregion_t *_r = (r); \
+		unsigned int _l = (l);       \
+		INSIST(_r->length >= _l);    \
+		_r->base += _l;              \
+		_r->length -= _l;            \
 	} while (0)
 /*@}*/
 

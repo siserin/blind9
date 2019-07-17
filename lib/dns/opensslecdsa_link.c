@@ -39,10 +39,10 @@
 #error "P-384 group is not known (NID_secp384r1)"
 #endif /* ifndef NID_secp384r1 */
 
-#define DST_RET(a)                                                             \
-	{                                                                      \
-		ret = a;                                                       \
-		goto err;                                                      \
+#define DST_RET(a)        \
+	{                 \
+		ret = a;  \
+		goto err; \
 	}
 
 #if !HAVE_ECDSA_SIG_GET0

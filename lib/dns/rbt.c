@@ -43,11 +43,11 @@
 #include <dns/result.h>
 #include <dns/version.h>
 
-#define CHECK(x)                                                               \
-	do {                                                                   \
-		result = (x);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto cleanup;                                          \
+#define CHECK(x)                             \
+	do {                                 \
+		result = (x);                \
+		if (result != ISC_R_SUCCESS) \
+			goto cleanup;        \
 	} while (0)
 
 #define RBT_MAGIC ISC_MAGIC('R', 'B', 'T', '+')
@@ -247,7 +247,7 @@ getdata(dns_rbtnode_t *node, file_header_t *header)
 #define OFFSETS(node) (NAME(node) + OLDNAMELEN(node) + 1)
 #define OLDOFFSETLEN(node) (OFFSETS(node)[-1])
 
-#define NODE_SIZE(node)                                                        \
+#define NODE_SIZE(node) \
 	(sizeof(*node) + OLDNAMELEN(node) + OLDOFFSETLEN(node) + 1)
 
 /*%
@@ -265,10 +265,10 @@ getdata(dns_rbtnode_t *node, file_header_t *header)
  * being wholly handled by parent pointers (which didn't exist, because
  * of memory concerns, when chains were first implemented).
  */
-#define ADD_LEVEL(chain, node)                                                 \
-	do {                                                                   \
-		INSIST((chain)->level_count < DNS_RBT_LEVELBLOCK);             \
-		(chain)->levels[(chain)->level_count++] = (node);              \
+#define ADD_LEVEL(chain, node)                                     \
+	do {                                                       \
+		INSIST((chain)->level_count < DNS_RBT_LEVELBLOCK); \
+		(chain)->levels[(chain)->level_count++] = (node);  \
 	} while (0)
 
 /*%
@@ -751,12 +751,12 @@ cleanup:
 	return (result);
 }
 
-#define CONFIRM(a)                                                             \
-	do {                                                                   \
-		if (!(a)) {                                                    \
-			result = ISC_R_INVALIDFILE;                            \
-			goto cleanup;                                          \
-		}                                                              \
+#define CONFIRM(a)                                  \
+	do {                                        \
+		if (!(a)) {                         \
+			result = ISC_R_INVALIDFILE; \
+			goto cleanup;               \
+		}                                   \
 	} while (0);
 
 static isc_result_t

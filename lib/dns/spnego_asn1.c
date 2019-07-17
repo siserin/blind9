@@ -37,20 +37,20 @@ typedef struct oid {
 	unsigned *components;
 } oid;
 
-#define ASN1_MALLOC_ENCODE(T, B, BL, S, L, R)                                  \
-	do {                                                                   \
-		(BL) = length_##T((S));                                        \
-		(B) = malloc((BL));                                            \
-		if ((B) == NULL) {                                             \
-			(R) = ENOMEM;                                          \
-		} else {                                                       \
-			(R) = encode_##T(((unsigned char *)(B)) + (BL)-1,      \
-					 (BL), (S), (L));                      \
-			if ((R) != 0) {                                        \
-				free((B));                                     \
-				(B) = NULL;                                    \
-			}                                                      \
-		}                                                              \
+#define ASN1_MALLOC_ENCODE(T, B, BL, S, L, R)                             \
+	do {                                                              \
+		(BL) = length_##T((S));                                   \
+		(B) = malloc((BL));                                       \
+		if ((B) == NULL) {                                        \
+			(R) = ENOMEM;                                     \
+		} else {                                                  \
+			(R) = encode_##T(((unsigned char *)(B)) + (BL)-1, \
+					 (BL), (S), (L));                 \
+			if ((R) != 0) {                                   \
+				free((B));                                \
+				(B) = NULL;                               \
+			}                                                 \
+		}                                                         \
 	} while (0)
 
 #endif /* ifndef __asn1_common_definitions__ */
@@ -169,14 +169,14 @@ free_NegTokenResp(NegTokenResp *);
 /* Generated from spnego.asn1 */
 /* Do not edit */
 
-#define BACK                                                                   \
-	if (e)                                                                 \
-		return (e);                                                    \
-	p -= l;                                                                \
-	len -= l;                                                              \
-	ret += l;                                                              \
-	POST(p);                                                               \
-	POST(len);                                                             \
+#define BACK                \
+	if (e)              \
+		return (e); \
+	p -= l;             \
+	len -= l;           \
+	ret += l;           \
+	POST(p);            \
+	POST(len);          \
 	POST(ret)
 
 static int
@@ -193,14 +193,14 @@ encode_MechType(unsigned char *p, size_t len, const MechType *data,
 	return (0);
 }
 
-#define FORW                                                                   \
-	if (e)                                                                 \
-		goto fail;                                                     \
-	p += l;                                                                \
-	len -= l;                                                              \
-	ret += l;                                                              \
-	POST(p);                                                               \
-	POST(len);                                                             \
+#define FORW               \
+	if (e)             \
+		goto fail; \
+	p += l;            \
+	len -= l;          \
+	ret += l;          \
+	POST(p);           \
+	POST(len);         \
 	POST(ret)
 
 static int

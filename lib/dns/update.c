@@ -75,11 +75,11 @@
  * the function using them has a 'result' variable and a 'failure'
  * label.
  */
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 /*%
@@ -91,11 +91,11 @@
  * from complaining about "end-of-loop code not reached".
  */
 
-#define FAIL(code)                                                             \
-	do {                                                                   \
-		result = (code);                                               \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define FAIL(code)                           \
+	do {                                 \
+		result = (code);             \
+		if (result != ISC_R_SUCCESS) \
+			goto failure;        \
 	} while (0)
 
 /*%
@@ -120,50 +120,50 @@
 			goto failure;                                          \
 	} while (0)
 
-#define FAILN(code, name, msg)                                                 \
-	do {                                                                   \
-		const char *_what = "failed";                                  \
-		result = (code);                                               \
-		switch (result) {                                              \
-		case DNS_R_NXDOMAIN:                                           \
-		case DNS_R_YXDOMAIN:                                           \
-		case DNS_R_YXRRSET:                                            \
-		case DNS_R_NXRRSET:                                            \
-			_what = "unsuccessful";                                \
-		}                                                              \
-		if (isc_log_wouldlog(dns_lctx, LOGLEVEL_PROTOCOL)) {           \
-			char _nbuf[DNS_NAME_FORMATSIZE];                       \
-			dns_name_format(name, _nbuf, sizeof(_nbuf));           \
-			update_log(log, zone, LOGLEVEL_PROTOCOL,               \
-				   "update %s: %s: %s (%s)", _what, _nbuf,     \
-				   msg, isc_result_totext(result));            \
-		}                                                              \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define FAILN(code, name, msg)                                             \
+	do {                                                               \
+		const char *_what = "failed";                              \
+		result = (code);                                           \
+		switch (result) {                                          \
+		case DNS_R_NXDOMAIN:                                       \
+		case DNS_R_YXDOMAIN:                                       \
+		case DNS_R_YXRRSET:                                        \
+		case DNS_R_NXRRSET:                                        \
+			_what = "unsuccessful";                            \
+		}                                                          \
+		if (isc_log_wouldlog(dns_lctx, LOGLEVEL_PROTOCOL)) {       \
+			char _nbuf[DNS_NAME_FORMATSIZE];                   \
+			dns_name_format(name, _nbuf, sizeof(_nbuf));       \
+			update_log(log, zone, LOGLEVEL_PROTOCOL,           \
+				   "update %s: %s: %s (%s)", _what, _nbuf, \
+				   msg, isc_result_totext(result));        \
+		}                                                          \
+		if (result != ISC_R_SUCCESS)                               \
+			goto failure;                                      \
 	} while (0)
 
-#define FAILNT(code, name, type, msg)                                          \
-	do {                                                                   \
-		const char *_what = "failed";                                  \
-		result = (code);                                               \
-		switch (result) {                                              \
-		case DNS_R_NXDOMAIN:                                           \
-		case DNS_R_YXDOMAIN:                                           \
-		case DNS_R_YXRRSET:                                            \
-		case DNS_R_NXRRSET:                                            \
-			_what = "unsuccessful";                                \
-		}                                                              \
-		if (isc_log_wouldlog(dns_lctx, LOGLEVEL_PROTOCOL)) {           \
-			char _nbuf[DNS_NAME_FORMATSIZE];                       \
-			char _tbuf[DNS_RDATATYPE_FORMATSIZE];                  \
-			dns_name_format(name, _nbuf, sizeof(_nbuf));           \
-			dns_rdatatype_format(type, _tbuf, sizeof(_tbuf));      \
-			update_log(log, zone, LOGLEVEL_PROTOCOL,               \
-				   "update %s: %s/%s: %s (%s)", _what, _nbuf,  \
-				   _tbuf, msg, isc_result_totext(result));     \
-		}                                                              \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto failure;                                          \
+#define FAILNT(code, name, type, msg)                                         \
+	do {                                                                  \
+		const char *_what = "failed";                                 \
+		result = (code);                                              \
+		switch (result) {                                             \
+		case DNS_R_NXDOMAIN:                                          \
+		case DNS_R_YXDOMAIN:                                          \
+		case DNS_R_YXRRSET:                                           \
+		case DNS_R_NXRRSET:                                           \
+			_what = "unsuccessful";                               \
+		}                                                             \
+		if (isc_log_wouldlog(dns_lctx, LOGLEVEL_PROTOCOL)) {          \
+			char _nbuf[DNS_NAME_FORMATSIZE];                      \
+			char _tbuf[DNS_RDATATYPE_FORMATSIZE];                 \
+			dns_name_format(name, _nbuf, sizeof(_nbuf));          \
+			dns_rdatatype_format(type, _tbuf, sizeof(_tbuf));     \
+			update_log(log, zone, LOGLEVEL_PROTOCOL,              \
+				   "update %s: %s/%s: %s (%s)", _what, _nbuf, \
+				   _tbuf, msg, isc_result_totext(result));    \
+		}                                                             \
+		if (result != ISC_R_SUCCESS)                                  \
+			goto failure;                                         \
 	} while (0)
 
 /*%
@@ -523,11 +523,11 @@ rrset_exists_action(void *data, rr_t *rr)
  * This would be more readable as "do { if ... } while(0)",
  * but that form generates tons of warnings on Solaris 2.6.
  */
-#define RETURN_EXISTENCE_FLAG                                                  \
-	return ((result == ISC_R_EXISTS)                                       \
-			? (*exists = true, ISC_R_SUCCESS)                      \
-			: ((result == ISC_R_SUCCESS)                           \
-				   ? (*exists = false, ISC_R_SUCCESS)          \
+#define RETURN_EXISTENCE_FLAG                                         \
+	return ((result == ISC_R_EXISTS)                              \
+			? (*exists = true, ISC_R_SUCCESS)             \
+			: ((result == ISC_R_SUCCESS)                  \
+				   ? (*exists = false, ISC_R_SUCCESS) \
 				   : result))
 
 /*%

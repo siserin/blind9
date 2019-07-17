@@ -107,28 +107,28 @@ typedef enum { dns_quotatype_zone = 0, dns_quotatype_server } dns_quotatype_t;
 /* RESERVED ECS				0x00002000 */
 /* RESERVED TCPCLIENT			0x00004000 */
 #define DNS_FETCHOPT_NOCACHED 0x00008000 /*%< Force cache update. */
-#define DNS_FETCHOPT_QMINIMIZE                                                 \
-	0x00010000 /*%< Use qname                                              \
+#define DNS_FETCHOPT_QMINIMIZE    \
+	0x00010000 /*%< Use qname \
 		    *                                   minimization. */
-#define DNS_FETCHOPT_NOFOLLOW                                                  \
-	0x00020000 /*%< Don't follow                                           \
+#define DNS_FETCHOPT_NOFOLLOW        \
+	0x00020000 /*%< Don't follow \
 		    *                                   delegations */
-#define DNS_FETCHOPT_QMIN_STRICT                                               \
-	0x00040000 /*%< Do not work around                                     \
-		    *                                   servers that return    \
-		    *                                   errors on non-empty    \
+#define DNS_FETCHOPT_QMIN_STRICT                                            \
+	0x00040000 /*%< Do not work around                                  \
+		    *                                   servers that return \
+		    *                                   errors on non-empty \
 		    *                                   terminals. */
-#define DNS_FETCHOPT_QMIN_USE_A                                                \
-	0x00080000 /*%< Use A type queries                                     \
-		    *                                   instead of NS when     \
+#define DNS_FETCHOPT_QMIN_USE_A                                            \
+	0x00080000 /*%< Use A type queries                                 \
+		    *                                   instead of NS when \
 		    *                                   doing minimization */
-#define DNS_FETCHOPT_QMIN_SKIP_IP6A                                            \
-	0x00100000 /*%< Skip some labels                                       \
-		    *                                   when doing qname       \
-		    *                                   minimization on        \
+#define DNS_FETCHOPT_QMIN_SKIP_IP6A                                      \
+	0x00100000 /*%< Skip some labels                                 \
+		    *                                   when doing qname \
+		    *                                   minimization on  \
 		    *                                   ip6.arpa. */
-#define DNS_FETCHOPT_NOFORWARD                                                 \
-	0x00200000 /*%< Do not use forwarders                                  \
+#define DNS_FETCHOPT_NOFORWARD                \
+	0x00200000 /*%< Do not use forwarders \
 		    *                                   if possible. */
 
 /* Reserved in use by adb.c		0x00400000 */

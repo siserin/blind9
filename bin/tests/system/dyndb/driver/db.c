@@ -33,7 +33,7 @@
 #include "util.h"
 
 #define SAMPLEDB_MAGIC ISC_MAGIC('S', 'M', 'D', 'B')
-#define VALID_SAMPLEDB(sampledb)                                               \
+#define VALID_SAMPLEDB(sampledb) \
 	((sampledb) != NULL && (sampledb)->common.impmagic == SAMPLEDB_MAGIC)
 
 struct sampledb {

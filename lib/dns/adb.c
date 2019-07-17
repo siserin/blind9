@@ -458,7 +458,7 @@ log_quota(dns_adbentry_t *entry, const char *fmt, ...) ISC_FORMAT_PRINTF(2, 3);
 #define GLUE_OK(nf, o) (!NAME_GLUEOK(nf) || (((o)&DNS_ADBFIND_GLUEOK) != 0))
 #define HINT_OK(nf, o) (!NAME_HINTOK(nf) || (((o)&DNS_ADBFIND_HINTOK) != 0))
 #define GLUEHINT_OK(nf, o) (GLUE_OK(nf, o) || HINT_OK(nf, o))
-#define STARTATZONE_MATCHES(nf, o)                                             \
+#define STARTATZONE_MATCHES(nf, o) \
 	(((nf)->flags & NAME_STARTATZONE) == ((o)&DNS_ADBFIND_STARTATZONE))
 
 #define ENTER_LEVEL ISC_LOG_DEBUG(50)
@@ -467,13 +467,13 @@ log_quota(dns_adbentry_t *entry, const char *fmt, ...) ISC_FORMAT_PRINTF(2, 3);
 #define DEF_LEVEL ISC_LOG_DEBUG(5)
 #define NCACHE_LEVEL ISC_LOG_DEBUG(20)
 
-#define NCACHE_RESULT(r)                                                       \
+#define NCACHE_RESULT(r) \
 	((r) == DNS_R_NCACHENXDOMAIN || (r) == DNS_R_NCACHENXRRSET)
 #define AUTH_NX(r) ((r) == DNS_R_NXDOMAIN || (r) == DNS_R_NXRRSET)
-#define NXDOMAIN_RESULT(r)                                                     \
+#define NXDOMAIN_RESULT(r) \
 	((r) == DNS_R_NXDOMAIN || (r) == DNS_R_NCACHENXDOMAIN)
-#define NXRRSET_RESULT(r)                                                      \
-	((r) == DNS_R_NCACHENXRRSET || (r) == DNS_R_NXRRSET ||                 \
+#define NXRRSET_RESULT(r)                                      \
+	((r) == DNS_R_NCACHENXRRSET || (r) == DNS_R_NXRRSET || \
 	 (r) == DNS_R_HINTNXRRSET)
 
 /*
@@ -2747,14 +2747,14 @@ dns_adb_create(isc_mem_t *mem, dns_view_t *view, isc_timermgr_t *timermgr,
 	ALLOCENTRY(adb, entry_refcnt);
 #undef ALLOCENTRY
 
-#define ALLOCNAME(adb, el)                                                     \
-	do {                                                                   \
-		(adb)->el = isc_mem_get((adb)->mctx,                           \
-					sizeof(*(adb)->el) * (adb)->nnames);   \
-		if ((adb)->el == NULL) {                                       \
-			result = ISC_R_NOMEMORY;                               \
-			goto fail1;                                            \
-		}                                                              \
+#define ALLOCNAME(adb, el)                                                   \
+	do {                                                                 \
+		(adb)->el = isc_mem_get((adb)->mctx,                         \
+					sizeof(*(adb)->el) * (adb)->nnames); \
+		if ((adb)->el == NULL) {                                     \
+			result = ISC_R_NOMEMORY;                             \
+			goto fail1;                                          \
+		}                                                            \
 	} while (0)
 	ALLOCNAME(adb, names);
 	ALLOCNAME(adb, deadnames);
@@ -2788,15 +2788,15 @@ dns_adb_create(isc_mem_t *mem, dns_view_t *view, isc_timermgr_t *timermgr,
 	/*
 	 * Memory pools
 	 */
-#define MPINIT(t, p, n)                                                        \
-	do {                                                                   \
-		result = isc_mempool_create(mem, sizeof(t), &(p));             \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto fail2;                                            \
-		isc_mempool_setfreemax((p), FREE_ITEMS);                       \
-		isc_mempool_setfillcount((p), FILL_COUNT);                     \
-		isc_mempool_setname((p), n);                                   \
-		isc_mempool_associatelock((p), &adb->mplock);                  \
+#define MPINIT(t, p, n)                                            \
+	do {                                                       \
+		result = isc_mempool_create(mem, sizeof(t), &(p)); \
+		if (result != ISC_R_SUCCESS)                       \
+			goto fail2;                                \
+		isc_mempool_setfreemax((p), FREE_ITEMS);           \
+		isc_mempool_setfillcount((p), FILL_COUNT);         \
+		isc_mempool_setname((p), n);                       \
+		isc_mempool_associatelock((p), &adb->mplock);      \
 	} while (0)
 
 	MPINIT(dns_adbname_t, adb->nmp, "adbname");

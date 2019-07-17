@@ -243,8 +243,8 @@ main(int argc, char **argv)
 	/*
 	 * Process memory debugging argument first.
 	 */
-#define CMDLINE_FLAGS                                                          \
-	"3A:a:b:Cc:D:d:E:eFf:Gg:hI:i:K:L:m:n:P:p:qR:r:S:s:T:t:"                \
+#define CMDLINE_FLAGS                                           \
+	"3A:a:b:Cc:D:d:E:eFf:Gg:hI:i:K:L:m:n:P:p:qR:r:S:s:T:t:" \
 	"v:V"
 	while ((ch = isc_commandline_parse(argc, argv, CMDLINE_FLAGS)) != -1) {
 		switch (ch) {

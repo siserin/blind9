@@ -37,113 +37,113 @@
 
 #include <pk11/site.h>
 
-#define RETERR(x)                                                              \
-	do {                                                                   \
-		isc_result_t _r = (x);                                         \
-		if (_r != ISC_R_SUCCESS)                                       \
-			return ((_r));                                         \
+#define RETERR(x)                        \
+	do {                             \
+		isc_result_t _r = (x);   \
+		if (_r != ISC_R_SUCCESS) \
+			return ((_r));   \
 	} while (0)
 
 #define NUMBERSIZE sizeof("037777777777") /* 2^32-1 octal + NUL */
 
 #define TOTEXTONLY 0x01
 
-#define RCODENAMES                                                             \
-	/* standard rcodes */                                                  \
-	{ dns_rcode_noerror, "NOERROR", 0 },                                   \
-		{ dns_rcode_formerr, "FORMERR", 0 },                           \
-		{ dns_rcode_servfail, "SERVFAIL", 0 },                         \
-		{ dns_rcode_nxdomain, "NXDOMAIN", 0 },                         \
-		{ dns_rcode_notimp, "NOTIMP", 0 },                             \
-		{ dns_rcode_refused, "REFUSED", 0 },                           \
-		{ dns_rcode_yxdomain, "YXDOMAIN", 0 },                         \
-		{ dns_rcode_yxrrset, "YXRRSET", 0 },                           \
-		{ dns_rcode_nxrrset, "NXRRSET", 0 },                           \
-		{ dns_rcode_notauth, "NOTAUTH", 0 },                           \
-		{ dns_rcode_notzone, "NOTZONE", 0 },                           \
-		{ 11, "RESERVED11", TOTEXTONLY },                              \
-		{ 12, "RESERVED12", TOTEXTONLY },                              \
-		{ 13, "RESERVED13", TOTEXTONLY },                              \
-		{ 14, "RESERVED14", TOTEXTONLY },                              \
+#define RCODENAMES                                     \
+	/* standard rcodes */                          \
+	{ dns_rcode_noerror, "NOERROR", 0 },           \
+		{ dns_rcode_formerr, "FORMERR", 0 },   \
+		{ dns_rcode_servfail, "SERVFAIL", 0 }, \
+		{ dns_rcode_nxdomain, "NXDOMAIN", 0 }, \
+		{ dns_rcode_notimp, "NOTIMP", 0 },     \
+		{ dns_rcode_refused, "REFUSED", 0 },   \
+		{ dns_rcode_yxdomain, "YXDOMAIN", 0 }, \
+		{ dns_rcode_yxrrset, "YXRRSET", 0 },   \
+		{ dns_rcode_nxrrset, "NXRRSET", 0 },   \
+		{ dns_rcode_notauth, "NOTAUTH", 0 },   \
+		{ dns_rcode_notzone, "NOTZONE", 0 },   \
+		{ 11, "RESERVED11", TOTEXTONLY },      \
+		{ 12, "RESERVED12", TOTEXTONLY },      \
+		{ 13, "RESERVED13", TOTEXTONLY },      \
+		{ 14, "RESERVED14", TOTEXTONLY },      \
 		{ 15, "RESERVED15", TOTEXTONLY },
 
-#define ERCODENAMES                                                            \
-	/* extended rcodes */                                                  \
-	{ dns_rcode_badvers, "BADVERS", 0 },                                   \
-		{ dns_rcode_badcookie, "BADCOOKIE", 0 },                       \
-	{                                                                      \
-		0, NULL, 0                                                     \
+#define ERCODENAMES                                      \
+	/* extended rcodes */                            \
+	{ dns_rcode_badvers, "BADVERS", 0 },             \
+		{ dns_rcode_badcookie, "BADCOOKIE", 0 }, \
+	{                                                \
+		0, NULL, 0                               \
 	}
 
-#define TSIGRCODENAMES                                                         \
-	/* extended rcodes */                                                  \
-	{ dns_tsigerror_badsig, "BADSIG", 0 },                                 \
-		{ dns_tsigerror_badkey, "BADKEY", 0 },                         \
-		{ dns_tsigerror_badtime, "BADTIME", 0 },                       \
-		{ dns_tsigerror_badmode, "BADMODE", 0 },                       \
-		{ dns_tsigerror_badname, "BADNAME", 0 },                       \
-		{ dns_tsigerror_badalg, "BADALG", 0 },                         \
-		{ dns_tsigerror_badtrunc, "BADTRUNC", 0 },                     \
-	{                                                                      \
-		0, NULL, 0                                                     \
+#define TSIGRCODENAMES                                     \
+	/* extended rcodes */                              \
+	{ dns_tsigerror_badsig, "BADSIG", 0 },             \
+		{ dns_tsigerror_badkey, "BADKEY", 0 },     \
+		{ dns_tsigerror_badtime, "BADTIME", 0 },   \
+		{ dns_tsigerror_badmode, "BADMODE", 0 },   \
+		{ dns_tsigerror_badname, "BADNAME", 0 },   \
+		{ dns_tsigerror_badalg, "BADALG", 0 },     \
+		{ dns_tsigerror_badtrunc, "BADTRUNC", 0 }, \
+	{                                                  \
+		0, NULL, 0                                 \
 	}
 
 /* RFC4398 section 2.1 */
 
-#define CERTNAMES                                                              \
-	{ 1, "PKIX", 0 }, { 2, "SPKI", 0 }, { 3, "PGP", 0 },                   \
-		{ 4, "IPKIX", 0 }, { 5, "ISPKI", 0 }, { 6, "IPGP", 0 },        \
-		{ 7, "ACPKIX", 0 }, { 8, "IACPKIX", 0 }, { 253, "URI", 0 },    \
-		{ 254, "OID", 0 },                                             \
-	{                                                                      \
-		0, NULL, 0                                                     \
+#define CERTNAMES                                                           \
+	{ 1, "PKIX", 0 }, { 2, "SPKI", 0 }, { 3, "PGP", 0 },                \
+		{ 4, "IPKIX", 0 }, { 5, "ISPKI", 0 }, { 6, "IPGP", 0 },     \
+		{ 7, "ACPKIX", 0 }, { 8, "IACPKIX", 0 }, { 253, "URI", 0 }, \
+		{ 254, "OID", 0 },                                          \
+	{                                                                   \
+		0, NULL, 0                                                  \
 	}
 
 /* RFC2535 section 7, RFC3110 */
 
-#define SECALGNAMES                                                            \
-	{ DNS_KEYALG_RSAMD5, "RSAMD5", 0 }, { DNS_KEYALG_DH, "DH", 0 },        \
-		{ DNS_KEYALG_DSA, "DSA", 0 },                                  \
-		{ DNS_KEYALG_RSASHA1, "RSASHA1", 0 },                          \
-		{ DNS_KEYALG_NSEC3DSA, "NSEC3DSA", 0 },                        \
-		{ DNS_KEYALG_NSEC3RSASHA1, "NSEC3RSASHA1", 0 },                \
-		{ DNS_KEYALG_RSASHA256, "RSASHA256", 0 },                      \
-		{ DNS_KEYALG_RSASHA512, "RSASHA512", 0 },                      \
-		{ DNS_KEYALG_ECCGOST, "ECCGOST", 0 },                          \
-		{ DNS_KEYALG_ECDSA256, "ECDSAP256SHA256", 0 },                 \
-		{ DNS_KEYALG_ECDSA256, "ECDSA256", 0 },                        \
-		{ DNS_KEYALG_ECDSA384, "ECDSAP384SHA384", 0 },                 \
-		{ DNS_KEYALG_ECDSA384, "ECDSA384", 0 },                        \
-		{ DNS_KEYALG_ED25519, "ED25519", 0 },                          \
-		{ DNS_KEYALG_ED448, "ED448", 0 },                              \
-		{ DNS_KEYALG_INDIRECT, "INDIRECT", 0 },                        \
-		{ DNS_KEYALG_PRIVATEDNS, "PRIVATEDNS", 0 },                    \
-		{ DNS_KEYALG_PRIVATEOID, "PRIVATEOID", 0 },                    \
-	{                                                                      \
-		0, NULL, 0                                                     \
+#define SECALGNAMES                                                     \
+	{ DNS_KEYALG_RSAMD5, "RSAMD5", 0 }, { DNS_KEYALG_DH, "DH", 0 }, \
+		{ DNS_KEYALG_DSA, "DSA", 0 },                           \
+		{ DNS_KEYALG_RSASHA1, "RSASHA1", 0 },                   \
+		{ DNS_KEYALG_NSEC3DSA, "NSEC3DSA", 0 },                 \
+		{ DNS_KEYALG_NSEC3RSASHA1, "NSEC3RSASHA1", 0 },         \
+		{ DNS_KEYALG_RSASHA256, "RSASHA256", 0 },               \
+		{ DNS_KEYALG_RSASHA512, "RSASHA512", 0 },               \
+		{ DNS_KEYALG_ECCGOST, "ECCGOST", 0 },                   \
+		{ DNS_KEYALG_ECDSA256, "ECDSAP256SHA256", 0 },          \
+		{ DNS_KEYALG_ECDSA256, "ECDSA256", 0 },                 \
+		{ DNS_KEYALG_ECDSA384, "ECDSAP384SHA384", 0 },          \
+		{ DNS_KEYALG_ECDSA384, "ECDSA384", 0 },                 \
+		{ DNS_KEYALG_ED25519, "ED25519", 0 },                   \
+		{ DNS_KEYALG_ED448, "ED448", 0 },                       \
+		{ DNS_KEYALG_INDIRECT, "INDIRECT", 0 },                 \
+		{ DNS_KEYALG_PRIVATEDNS, "PRIVATEDNS", 0 },             \
+		{ DNS_KEYALG_PRIVATEOID, "PRIVATEOID", 0 },             \
+	{                                                               \
+		0, NULL, 0                                              \
 	}
 
 /* RFC2535 section 7.1 */
 
-#define SECPROTONAMES                                                          \
-	{ 0, "NONE", 0 }, { 1, "TLS", 0 }, { 2, "EMAIL", 0 },                  \
-		{ 3, "DNSSEC", 0 }, { 4, "IPSEC", 0 }, { 255, "ALL", 0 },      \
-	{                                                                      \
-		0, NULL, 0                                                     \
+#define SECPROTONAMES                                                     \
+	{ 0, "NONE", 0 }, { 1, "TLS", 0 }, { 2, "EMAIL", 0 },             \
+		{ 3, "DNSSEC", 0 }, { 4, "IPSEC", 0 }, { 255, "ALL", 0 }, \
+	{                                                                 \
+		0, NULL, 0                                                \
 	}
 
-#define HASHALGNAMES                                                           \
+#define HASHALGNAMES \
 	{ 1, "SHA-1", 0 }, { 0, NULL, 0 }
 
 /* RFC3658, RFC4509, RFC5933, RFC6605 */
 
-#define DSDIGESTNAMES                                                          \
-	{ DNS_DSDIGEST_SHA1, "SHA-1", 0 },                                     \
-		{ DNS_DSDIGEST_SHA256, "SHA-256", 0 },                         \
-		{ DNS_DSDIGEST_GOST, "GOST", 0 },                              \
-		{ DNS_DSDIGEST_SHA384, "SHA-384", 0 },                         \
-	{                                                                      \
-		0, NULL, 0                                                     \
+#define DSDIGESTNAMES                                  \
+	{ DNS_DSDIGEST_SHA1, "SHA-1", 0 },             \
+		{ DNS_DSDIGEST_SHA256, "SHA-256", 0 }, \
+		{ DNS_DSDIGEST_GOST, "GOST", 0 },      \
+		{ DNS_DSDIGEST_SHA384, "SHA-384", 0 }, \
+	{                                              \
+		0, NULL, 0                             \
 	}
 
 struct tbl {
@@ -488,11 +488,11 @@ dns_dsdigest_format(dns_dsdigest_t typ, char *cp, unsigned int size)
 isc_result_t
 dns_rdataclass_fromtext(dns_rdataclass_t *classp, isc_textregion_t *source)
 {
-#define COMPARE(string, rdclass)                                               \
-	if (((sizeof(string) - 1) == source->length) &&                        \
-	    (strncasecmp(source->base, string, source->length) == 0)) {        \
-		*classp = rdclass;                                             \
-		return (ISC_R_SUCCESS);                                        \
+#define COMPARE(string, rdclass)                                        \
+	if (((sizeof(string) - 1) == source->length) &&                 \
+	    (strncasecmp(source->base, string, source->length) == 0)) { \
+		*classp = rdclass;                                      \
+		return (ISC_R_SUCCESS);                                 \
 	}
 
 	switch (tolower((unsigned char)source->base[0])) {

@@ -97,19 +97,19 @@ static isc_result_t
 addsuffix(char *filename, int len, const char *dirname, const char *ofilename,
 	  const char *suffix);
 
-#define RETERR(x)                                                              \
-	do {                                                                   \
-		result = (x);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto out;                                              \
+#define RETERR(x)                            \
+	do {                                 \
+		result = (x);                \
+		if (result != ISC_R_SUCCESS) \
+			goto out;            \
 	} while (0)
 
-#define CHECKALG(alg)                                                          \
-	do {                                                                   \
-		isc_result_t _r;                                               \
-		_r = algorithm_status(alg);                                    \
-		if (_r != ISC_R_SUCCESS)                                       \
-			return ((_r));                                         \
+#define CHECKALG(alg)                       \
+	do {                                \
+		isc_result_t _r;            \
+		_r = algorithm_status(alg); \
+		if (_r != ISC_R_SUCCESS)    \
+			return ((_r));      \
 	} while (0);
 
 isc_result_t
@@ -1462,17 +1462,17 @@ dst_key_read_public(const char *filename, int type, isc_mem_t *mctx,
 		goto cleanup;
 	}
 
-#define NEXTTOKEN(lex, opt, token)                                             \
-	{                                                                      \
-		ret = isc_lex_gettoken(lex, opt, token);                       \
-		if (ret != ISC_R_SUCCESS)                                      \
-			goto cleanup;                                          \
+#define NEXTTOKEN(lex, opt, token)                       \
+	{                                                \
+		ret = isc_lex_gettoken(lex, opt, token); \
+		if (ret != ISC_R_SUCCESS)                \
+			goto cleanup;                    \
 	}
 
-#define BADTOKEN()                                                             \
-	{                                                                      \
-		ret = ISC_R_UNEXPECTEDTOKEN;                                   \
-		goto cleanup;                                                  \
+#define BADTOKEN()                           \
+	{                                    \
+		ret = ISC_R_UNEXPECTEDTOKEN; \
+		goto cleanup;                \
 	}
 
 	/* Read the domain name */

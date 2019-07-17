@@ -29,27 +29,27 @@
  * Flags to be passed in the 'options' argument in the functions below.
  */
 #define DNS_MASTER_AGETTL 0x00000001 /*%< Age the ttl based on $DATE. */
-#define DNS_MASTER_MANYERRORS                                                  \
-	0x00000002			/*%< Continue processing on errors.    \
+#define DNS_MASTER_MANYERRORS                                               \
+	0x00000002			/*%< Continue processing on errors. \
 					 */
 #define DNS_MASTER_NOINCLUDE 0x00000004 /*%< Disallow $INCLUDE directives. */
 #define DNS_MASTER_ZONE 0x00000008      /*%< Loading a zone master file. */
 #define DNS_MASTER_HINT 0x00000010      /*%< Loading a hint master file. */
 #define DNS_MASTER_SLAVE 0x00000020     /*%< Loading a slave master file. */
-#define DNS_MASTER_CHECKNS                                                     \
-	0x00000040 /*%<                                                        \
-		    * Check NS records to see                                  \
-		    * if they are an address                                   \
+#define DNS_MASTER_CHECKNS                    \
+	0x00000040 /*%<                       \
+		    * Check NS records to see \
+		    * if they are an address  \
 		    */
-#define DNS_MASTER_FATALNS                                                     \
-	0x00000080 /*%<                                                        \
-		    * Treat DNS_MASTER_CHECKNS                                 \
-		    * matches as fatal                                         \
+#define DNS_MASTER_FATALNS                     \
+	0x00000080 /*%<                        \
+		    * Treat DNS_MASTER_CHECKNS \
+		    * matches as fatal         \
 		    */
 #define DNS_MASTER_CHECKNAMES 0x00000100
 #define DNS_MASTER_CHECKNAMESFAIL 0x00000200
-#define DNS_MASTER_CHECKWILDCARD                                               \
-	0x00000400 /* Check for internal wildcards.                            \
+#define DNS_MASTER_CHECKWILDCARD                    \
+	0x00000400 /* Check for internal wildcards. \
 		    */
 #define DNS_MASTER_CHECKMX 0x00000800
 #define DNS_MASTER_CHECKMXFAIL 0x00001000

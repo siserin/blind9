@@ -121,7 +121,7 @@ main(int argc, char **argv)
 		progname += 3;
 	}
 
-#define PROGCMP(X)                                                             \
+#define PROGCMP(X) \
 	(strcasecmp(progname, X) == 0 || strcasecmp(progname, X ".exe") == 0)
 
 	if (PROGCMP("tsig-keygen")) {

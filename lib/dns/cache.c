@@ -84,10 +84,10 @@ typedef enum {
 /*
  * Convenience macros for comprehensive assertion checking.
  */
-#define CLEANER_IDLE(c)                                                        \
+#define CLEANER_IDLE(c) \
 	((c)->state == cleaner_s_idle && (c)->resched_event != NULL)
-#define CLEANER_BUSY(c)                                                        \
-	((c)->state == cleaner_s_busy && (c)->iterator != NULL &&              \
+#define CLEANER_BUSY(c)                                           \
+	((c)->state == cleaner_s_busy && (c)->iterator != NULL && \
 	 (c)->resched_event == NULL)
 
 /*%
@@ -1417,11 +1417,11 @@ dns_cache_dumpstats(dns_cache_t *cache, FILE *fp)
 }
 
 #ifdef HAVE_LIBXML2
-#define TRY0(a)                                                                \
-	do {                                                                   \
-		xmlrc = (a);                                                   \
-		if (xmlrc < 0)                                                 \
-			goto error;                                            \
+#define TRY0(a)                     \
+	do {                        \
+		xmlrc = (a);        \
+		if (xmlrc < 0)      \
+			goto error; \
 	} while (0)
 static int
 renderstat(const char *name, uint64_t value, xmlTextWriterPtr writer)
@@ -1479,12 +1479,12 @@ error:
 #endif /* ifdef HAVE_LIBXML2 */
 
 #ifdef HAVE_JSON_C
-#define CHECKMEM(m)                                                            \
-	do {                                                                   \
-		if (m == NULL) {                                               \
-			result = ISC_R_NOMEMORY;                               \
-			goto error;                                            \
-		}                                                              \
+#define CHECKMEM(m)                              \
+	do {                                     \
+		if (m == NULL) {                 \
+			result = ISC_R_NOMEMORY; \
+			goto error;              \
+		}                                \
 	} while (0)
 
 isc_result_t

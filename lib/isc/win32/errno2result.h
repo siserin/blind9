@@ -22,7 +22,7 @@
 
 ISC_LANG_BEGINDECLS
 
-#define isc__errno2result(posixerrno)                                          \
+#define isc__errno2result(posixerrno) \
 	isc__errno2resultx(posixerrno, true, __FILE__, __LINE__)
 
 isc_result_t

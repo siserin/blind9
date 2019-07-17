@@ -218,35 +218,35 @@ task_send(dns_loadctx_t *lctx);
 static void
 loadctx_destroy(dns_loadctx_t *lctx);
 
-#define GETTOKENERR(lexer, options, token, eol, err)                           \
-	do {                                                                   \
-		result = gettoken(lexer, options, token, eol, callbacks);      \
-		switch (result) {                                              \
-		case ISC_R_SUCCESS:                                            \
-			break;                                                 \
-		case ISC_R_UNEXPECTED:                                         \
-			goto insist_and_cleanup;                               \
-		default:                                                       \
-			if (MANYERRS(lctx, result)) {                          \
-				SETRESULT(lctx, result);                       \
-				LOGIT(result);                                 \
-				read_till_eol = true;                          \
-				err goto next_line;                            \
-			} else                                                 \
-				goto log_and_cleanup;                          \
-		}                                                              \
-		if ((token)->type == isc_tokentype_special) {                  \
-			result = DNS_R_SYNTAX;                                 \
-			if (MANYERRS(lctx, result)) {                          \
-				SETRESULT(lctx, result);                       \
-				LOGIT(result);                                 \
-				read_till_eol = true;                          \
-				goto next_line;                                \
-			} else                                                 \
-				goto log_and_cleanup;                          \
-		}                                                              \
+#define GETTOKENERR(lexer, options, token, eol, err)                      \
+	do {                                                              \
+		result = gettoken(lexer, options, token, eol, callbacks); \
+		switch (result) {                                         \
+		case ISC_R_SUCCESS:                                       \
+			break;                                            \
+		case ISC_R_UNEXPECTED:                                    \
+			goto insist_and_cleanup;                          \
+		default:                                                  \
+			if (MANYERRS(lctx, result)) {                     \
+				SETRESULT(lctx, result);                  \
+				LOGIT(result);                            \
+				read_till_eol = true;                     \
+				err goto next_line;                       \
+			} else                                            \
+				goto log_and_cleanup;                     \
+		}                                                         \
+		if ((token)->type == isc_tokentype_special) {             \
+			result = DNS_R_SYNTAX;                            \
+			if (MANYERRS(lctx, result)) {                     \
+				SETRESULT(lctx, result);                  \
+				LOGIT(result);                            \
+				read_till_eol = true;                     \
+				goto next_line;                           \
+			} else                                            \
+				goto log_and_cleanup;                     \
+		}                                                         \
 	} while (0)
-#define GETTOKEN(lexer, options, token, eol)                                   \
+#define GETTOKEN(lexer, options, token, eol) \
 	GETTOKENERR(lexer, options, token, eol, {})
 
 #define COMMITALL                                                              \
@@ -270,39 +270,39 @@ loadctx_destroy(dns_loadctx_t *lctx);
 		rdlcount_save = rdlcount;                                      \
 	} while (0)
 
-#define WARNUNEXPECTEDEOF(lexer)                                               \
-	do {                                                                   \
-		if (isc_lex_isfile(lexer))                                     \
-			(*callbacks->warn)(callbacks,                          \
-					   "%s: file does not end with "       \
-					   "newline",                          \
-					   source);                            \
+#define WARNUNEXPECTEDEOF(lexer)                                         \
+	do {                                                             \
+		if (isc_lex_isfile(lexer))                               \
+			(*callbacks->warn)(callbacks,                    \
+					   "%s: file does not end with " \
+					   "newline",                    \
+					   source);                      \
 	} while (0)
 
-#define EXPECTEOL                                                              \
-	do {                                                                   \
-		GETTOKEN(lctx->lex, 0, &token, true);                          \
-		if (token.type != isc_tokentype_eol) {                         \
-			isc_lex_ungettoken(lctx->lex, &token);                 \
-			result = DNS_R_EXTRATOKEN;                             \
-			if (MANYERRS(lctx, result)) {                          \
-				SETRESULT(lctx, result);                       \
-				LOGIT(result);                                 \
-				read_till_eol = true;                          \
-				break;                                         \
-			} else if (result != ISC_R_SUCCESS)                    \
-				goto log_and_cleanup;                          \
-		}                                                              \
+#define EXPECTEOL                                              \
+	do {                                                   \
+		GETTOKEN(lctx->lex, 0, &token, true);          \
+		if (token.type != isc_tokentype_eol) {         \
+			isc_lex_ungettoken(lctx->lex, &token); \
+			result = DNS_R_EXTRATOKEN;             \
+			if (MANYERRS(lctx, result)) {          \
+				SETRESULT(lctx, result);       \
+				LOGIT(result);                 \
+				read_till_eol = true;          \
+				break;                         \
+			} else if (result != ISC_R_SUCCESS)    \
+				goto log_and_cleanup;          \
+		}                                              \
 	} while (0)
 
-#define MANYERRS(lctx, result)                                                 \
-	((result != ISC_R_SUCCESS) && (result != ISC_R_IOERROR) &&             \
+#define MANYERRS(lctx, result)                                     \
+	((result != ISC_R_SUCCESS) && (result != ISC_R_IOERROR) && \
 	 ((lctx)->options & DNS_MASTER_MANYERRORS) != 0)
 
-#define SETRESULT(lctx, r)                                                     \
-	do {                                                                   \
-		if ((lctx)->result == ISC_R_SUCCESS)                           \
-			(lctx)->result = r;                                    \
+#define SETRESULT(lctx, r)                           \
+	do {                                         \
+		if ((lctx)->result == ISC_R_SUCCESS) \
+			(lctx)->result = r;          \
 	} while (0)
 
 #define LOGITFILE(result, filename)                                            \
@@ -315,13 +315,13 @@ loadctx_destroy(dns_loadctx_t *lctx);
 	else                                                                   \
 		LOGIT(result)
 
-#define LOGIT(result)                                                          \
-	if (result == ISC_R_NOMEMORY)                                          \
-		(*callbacks->error)(callbacks, "dns_master_load: %s",          \
-				    dns_result_totext(result));                \
-	else                                                                   \
-		(*callbacks->error)(callbacks, "%s: %s:%lu: %s",               \
-				    "dns_master_load", source, line,           \
+#define LOGIT(result)                                                 \
+	if (result == ISC_R_NOMEMORY)                                 \
+		(*callbacks->error)(callbacks, "dns_master_load: %s", \
+				    dns_result_totext(result));       \
+	else                                                          \
+		(*callbacks->error)(callbacks, "%s: %s:%lu: %s",      \
+				    "dns_master_load", source, line,  \
 				    dns_result_totext(result))
 
 static unsigned char in_addr_arpa_data[] = "\007IN-ADDR\004ARPA";

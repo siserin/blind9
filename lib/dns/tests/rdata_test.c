@@ -88,33 +88,33 @@ typedef struct wire_ok {
 	bool ok;		 /* is this RDATA valid? */
 } wire_ok_t;
 
-#define COMPARE(r1, r2, answer)                                                \
-	{                                                                      \
-		r1, r2, answer, __LINE__                                       \
+#define COMPARE(r1, r2, answer)          \
+	{                                \
+		r1, r2, answer, __LINE__ \
 	}
-#define COMPARE_SENTINEL()                                                     \
-	{                                                                      \
-		NULL, NULL, 0, __LINE__                                        \
+#define COMPARE_SENTINEL()              \
+	{                               \
+		NULL, NULL, 0, __LINE__ \
 	}
 
-#define TEXT_VALID_CHANGED(data_in, data_out)                                  \
-	{                                                                      \
-		data_in, data_out                                              \
+#define TEXT_VALID_CHANGED(data_in, data_out) \
+	{                                     \
+		data_in, data_out             \
 	}
-#define TEXT_VALID(data)                                                       \
-	{                                                                      \
-		data, data                                                     \
+#define TEXT_VALID(data)   \
+	{                  \
+		data, data \
 	}
-#define TEXT_INVALID(data)                                                     \
-	{                                                                      \
-		data, NULL                                                     \
+#define TEXT_INVALID(data) \
+	{                  \
+		data, NULL \
 	}
 #define TEXT_SENTINEL() TEXT_INVALID(NULL)
 
 #define VARGC(...) (sizeof((unsigned char[]){ __VA_ARGS__ }))
-#define WIRE_TEST(ok, ...)                                                     \
-	{                                                                      \
-		{ __VA_ARGS__ }, VARGC(__VA_ARGS__), ok                        \
+#define WIRE_TEST(ok, ...)                              \
+	{                                               \
+		{ __VA_ARGS__ }, VARGC(__VA_ARGS__), ok \
 	}
 #define WIRE_VALID(...) WIRE_TEST(true, __VA_ARGS__)
 /*

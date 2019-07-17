@@ -291,7 +291,7 @@ struct isc_socketmgr {
 #endif /* ifndef WIN32 */
 
 #define ISCAPI_SOCKETMGR_MAGIC ISC_MAGIC('A', 's', 'm', 'g')
-#define ISCAPI_SOCKETMGR_VALID(m)                                              \
+#define ISCAPI_SOCKETMGR_VALID(m) \
 	((m) != NULL && (m)->magic == ISCAPI_SOCKETMGR_MAGIC)
 
 /*%
@@ -306,7 +306,7 @@ struct isc_socket {
 #endif /* ifndef WIN32 */
 
 #define ISCAPI_SOCKET_MAGIC ISC_MAGIC('A', 's', 'c', 't')
-#define ISCAPI_SOCKET_VALID(s)                                                 \
+#define ISCAPI_SOCKET_VALID(s) \
 	((s) != NULL && (s)->magic == ISCAPI_SOCKET_MAGIC)
 
 /***

@@ -12,7 +12,7 @@
 #ifndef RDATA_GENERIC_CNAME_5_C
 #define RDATA_GENERIC_CNAME_5_C
 
-#define RRTYPE_CNAME_ATTRIBUTES                                                \
+#define RRTYPE_CNAME_ATTRIBUTES \
 	(DNS_RDATATYPEATTR_EXCLUSIVE | DNS_RDATATYPEATTR_SINGLETON)
 
 static inline isc_result_t fromtext_cname(ARGS_FROMTEXT)

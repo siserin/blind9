@@ -11,6 +11,7 @@ AlignAfterOpenBracket: Align
 AlwaysBreakBeforeMultilineStrings: false
 BreakBeforeBinaryOperators: None
 BreakBeforeTernaryOperators: true
+AlignEscapedNewlines: Left
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex:           '^<isc/'

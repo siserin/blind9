@@ -36,10 +36,10 @@
 #define RSA_MAX_PUBEXP_BITS 35
 #endif /* ifndef RSA_MAX_PUBEXP_BITS */
 
-#define DST_RET(a)                                                             \
-	{                                                                      \
-		ret = a;                                                       \
-		goto err;                                                      \
+#define DST_RET(a)        \
+	{                 \
+		ret = a;  \
+		goto err; \
 	}
 
 static CK_BBOOL truevalue = TRUE;

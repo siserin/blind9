@@ -391,8 +391,8 @@ void
 ns_client_aclmsg(const char *msg, const dns_name_t *name, dns_rdatatype_t type,
 		 dns_rdataclass_t rdclass, char *buf, size_t len);
 
-#define NS_CLIENT_ACLMSGSIZE(x)                                                \
-	(DNS_NAME_FORMATSIZE + DNS_RDATATYPE_FORMATSIZE +                      \
+#define NS_CLIENT_ACLMSGSIZE(x)                           \
+	(DNS_NAME_FORMATSIZE + DNS_RDATATYPE_FORMATSIZE + \
 	 DNS_RDATACLASS_FORMATSIZE + sizeof(x) + sizeof("'/'"))
 
 void

@@ -61,12 +61,12 @@
  */
 
 #ifdef ISC_TASK_TRACE
-#define XTRACE(m)                                                              \
-	fprintf(stderr, "task %p thread %lu: %s\n", task, isc_thread_self(),   \
+#define XTRACE(m)                                                            \
+	fprintf(stderr, "task %p thread %lu: %s\n", task, isc_thread_self(), \
 		(m))
-#define XTTRACE(t, m)                                                          \
+#define XTTRACE(t, m) \
 	fprintf(stderr, "task %p thread %lu: %s\n", (t), isc_thread_self(), (m))
-#define XTHREADTRACE(m)                                                        \
+#define XTHREADTRACE(m) \
 	fprintf(stderr, "thread %lu: %s\n", isc_thread_self(), (m))
 #else /* ifdef ISC_TASK_TRACE */
 #define XTRACE(m)
@@ -187,8 +187,8 @@ void
 isc__taskmgr_resume(isc_taskmgr_t *manager0);
 
 #define DEFAULT_DEFAULT_QUANTUM 25
-#define FINISHED(m)                                                            \
-	(atomic_load_relaxed(&((m)->exiting)) == true &&                       \
+#define FINISHED(m)                                      \
+	(atomic_load_relaxed(&((m)->exiting)) == true && \
 	 atomic_load(&(m)->tasks_count) == 0)
 
 /*%
@@ -1718,11 +1718,11 @@ isc_task_exiting(isc_task_t *t)
 }
 
 #ifdef HAVE_LIBXML2
-#define TRY0(a)                                                                \
-	do {                                                                   \
-		xmlrc = (a);                                                   \
-		if (xmlrc < 0)                                                 \
-			goto error;                                            \
+#define TRY0(a)                     \
+	do {                        \
+		xmlrc = (a);        \
+		if (xmlrc < 0)      \
+			goto error; \
 	} while (0)
 int
 isc_taskmgr_renderxml(isc_taskmgr_t *mgr0, void *writer0)
@@ -1827,12 +1827,12 @@ error:
 #endif /* HAVE_LIBXML2 */
 
 #ifdef HAVE_JSON_C
-#define CHECKMEM(m)                                                            \
-	do {                                                                   \
-		if (m == NULL) {                                               \
-			result = ISC_R_NOMEMORY;                               \
-			goto error;                                            \
-		}                                                              \
+#define CHECKMEM(m)                              \
+	do {                                     \
+		if (m == NULL) {                 \
+			result = ISC_R_NOMEMORY; \
+			goto error;              \
+		}                                \
 	} while (0)
 
 isc_result_t

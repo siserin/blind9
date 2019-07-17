@@ -59,14 +59,14 @@
 #include <dlz_list.h>
 #include <dlz_minimal.h>
 
-#define DE_CONST(konst, var)                                                   \
-	do {                                                                   \
-		union {                                                        \
-			const void *k;                                         \
-			void *v;                                               \
-		} _u;                                                          \
-		_u.k = konst;                                                  \
-		var = _u.v;                                                    \
+#define DE_CONST(konst, var)           \
+	do {                           \
+		union {                \
+			const void *k; \
+			void *v;       \
+		} _u;                  \
+		_u.k = konst;          \
+		var = _u.v;            \
 	} while (0)
 
 /* fnmatch() return values. */

@@ -72,11 +72,11 @@
 #include <irs/netdb.h>
 #include <irs/resconf.h>
 
-#define CHECK(r)                                                               \
-	do {                                                                   \
-		result = (r);                                                  \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto cleanup;                                          \
+#define CHECK(r)                             \
+	do {                                 \
+		result = (r);                \
+		if (result != ISC_R_SUCCESS) \
+			goto cleanup;        \
 	} while (0)
 
 #define MAXNAME (DNS_NAME_MAXTEXT + 1)
@@ -1052,11 +1052,11 @@ plus_option(char *option)
 
 	value = strtok_r(NULL, "\0", &last);
 
-#define FULLCHECK(A)                                                           \
-	do {                                                                   \
-		size_t _l = strlen(cmd);                                       \
-		if (_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0)           \
-			goto invalid_option;                                   \
+#define FULLCHECK(A)                                                 \
+	do {                                                         \
+		size_t _l = strlen(cmd);                             \
+		if (_l >= sizeof(A) || strncasecmp(cmd, A, _l) != 0) \
+			goto invalid_option;                         \
 	} while (0)
 
 	switch (cmd[0]) {

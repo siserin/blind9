@@ -21,24 +21,24 @@
 #include <isc/refcount.h>
 #include <isc/types.h>
 
-#define NETADDR_TO_PREFIX_T(na, pt, bits)                                      \
-	do {                                                                   \
-		const void *p = na;                                            \
-		memset(&(pt), 0, sizeof(pt));                                  \
-		if (p != NULL) {                                               \
-			(pt).family = (na)->family;                            \
-			(pt).bitlen = (bits);                                  \
-			if ((pt).family == AF_INET6) {                         \
-				memmove(&(pt).add.sin6, &(na)->type.in6,       \
-					((bits) + 7) / 8);                     \
-			} else                                                 \
-				memmove(&(pt).add.sin, &(na)->type.in,         \
-					((bits) + 7) / 8);                     \
-		} else {                                                       \
-			(pt).family = AF_UNSPEC;                               \
-			(pt).bitlen = 0;                                       \
-		}                                                              \
-		isc_refcount_init(&(pt).refcount, 0);                          \
+#define NETADDR_TO_PREFIX_T(na, pt, bits)                                \
+	do {                                                             \
+		const void *p = na;                                      \
+		memset(&(pt), 0, sizeof(pt));                            \
+		if (p != NULL) {                                         \
+			(pt).family = (na)->family;                      \
+			(pt).bitlen = (bits);                            \
+			if ((pt).family == AF_INET6) {                   \
+				memmove(&(pt).add.sin6, &(na)->type.in6, \
+					((bits) + 7) / 8);               \
+			} else                                           \
+				memmove(&(pt).add.sin, &(na)->type.in,   \
+					((bits) + 7) / 8);               \
+		} else {                                                 \
+			(pt).family = AF_UNSPEC;                         \
+			(pt).bitlen = 0;                                 \
+		}                                                        \
+		isc_refcount_init(&(pt).refcount, 0);                    \
 	} while (0)
 
 typedef struct isc_prefix {
@@ -194,29 +194,29 @@ isc_radix_process(isc_radix_tree_t *radix, isc_radix_processfunc_t func);
 #define RADIX_NBIT(x) (0x80 >> ((x)&0x7f))
 #define RADIX_NBYTE(x) ((x) >> 3)
 
-#define RADIX_WALK(Xhead, Xnode)                                               \
-	do {                                                                   \
-		isc_radix_node_t *Xstack[RADIX_MAXBITS + 1];                   \
-		isc_radix_node_t **Xsp = Xstack;                               \
-		isc_radix_node_t *Xrn = (Xhead);                               \
-		while ((Xnode = Xrn)) {                                        \
+#define RADIX_WALK(Xhead, Xnode)                             \
+	do {                                                 \
+		isc_radix_node_t *Xstack[RADIX_MAXBITS + 1]; \
+		isc_radix_node_t **Xsp = Xstack;             \
+		isc_radix_node_t *Xrn = (Xhead);             \
+		while ((Xnode = Xrn)) {                      \
 			if (Xnode->prefix)
 
-#define RADIX_WALK_END                                                         \
-	if (Xrn->l) {                                                          \
-		if (Xrn->r) {                                                  \
-			*Xsp++ = Xrn->r;                                       \
-		}                                                              \
-		Xrn = Xrn->l;                                                  \
-	} else if (Xrn->r) {                                                   \
-		Xrn = Xrn->r;                                                  \
-	} else if (Xsp != Xstack) {                                            \
-		Xrn = *(--Xsp);                                                \
-	} else {                                                               \
-		Xrn = (isc_radix_node_t *)0;                                   \
-	}                                                                      \
-	}                                                                      \
-	}                                                                      \
+#define RADIX_WALK_END                       \
+	if (Xrn->l) {                        \
+		if (Xrn->r) {                \
+			*Xsp++ = Xrn->r;     \
+		}                            \
+		Xrn = Xrn->l;                \
+	} else if (Xrn->r) {                 \
+		Xrn = Xrn->r;                \
+	} else if (Xsp != Xstack) {          \
+		Xrn = *(--Xsp);              \
+	} else {                             \
+		Xrn = (isc_radix_node_t *)0; \
+	}                                    \
+	}                                    \
+	}                                    \
 	while (0)
 
 #endif /* _RADIX_H */

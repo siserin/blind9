@@ -43,18 +43,18 @@
 #define TOKEN_STRING(pctx) (pctx->token.value.as_textregion.base)
 
 /* Check a return value. */
-#define CHECK(op)                                                              \
-	do {                                                                   \
-		result = (op);                                                 \
-		if (result != ISC_R_SUCCESS)                                   \
-			goto cleanup;                                          \
+#define CHECK(op)                            \
+	do {                                 \
+		result = (op);               \
+		if (result != ISC_R_SUCCESS) \
+			goto cleanup;        \
 	} while (0)
 
 /* Clean up a configuration object if non-NULL. */
-#define CLEANUP_OBJ(obj)                                                       \
-	do {                                                                   \
-		if ((obj) != NULL)                                             \
-			cfg_obj_destroy(pctx, &(obj));                         \
+#define CLEANUP_OBJ(obj)                               \
+	do {                                           \
+		if ((obj) != NULL)                     \
+			cfg_obj_destroy(pctx, &(obj)); \
 	} while (0)
 
 /*
