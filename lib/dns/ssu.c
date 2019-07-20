@@ -525,19 +525,39 @@ dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
 					      name, addr, type, key))
 				continue;
 			break;
-		case dns_ssumatchtype_addnew: {
-			dns_name_t suffix;
-			unsigned int labels = dns_name_countlabels(name);
+		case dns_ssumatchtype_addnew:
 
-			if (signer != NULL || labels < 2)
+			if (signer != NULL)
 				continue;
 
-			dns_name_init(&suffix, NULL);
-			dns_name_getlabelsequence(name, 1, labels - 1, &suffix);
-			if (!dns_name_equal(rule->identity, &suffix))
+			/*
+			 * Wildcard matches a single label for addnew.
+			 */
+			if (dns_name_iswildcard(rule->identity)) {
+				dns_name_t suffix;
+				dns_name_t identity;
+				unsigned int labels;
+
+				dns_name_init(&suffix, NULL);
+
+				labels = dns_name_countlabels(name);
+				if (labels < 2) {
+					continue;
+				}
+				dns_name_getlabelsequence(name, 1, labels - 1,
+							  &suffix);
+				dns_name_init(&identity, NULL);
+				labels = dns_name_countlabels(rule->identity);
+				dns_name_getlabelsequence(rule->identity, 1,
+							  labels - 1,
+							  &identity);
+				if (!dns_name_equal(&identity, &suffix)) {
+					continue;
+				}
+			} else if (!dns_name_equal(rule->identity, name)) {
 				continue;
-			break;
 			}
+			break;
 		}
 
 		if (rule->ntypes == 0) {
