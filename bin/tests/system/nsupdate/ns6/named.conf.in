@@ -39,9 +39,9 @@ zone "in-addr.arpa" {
 
 zone "add-new.example" {
 	type master;
-	file "add-new-test.db";
+	file "add-new.example.db";
 	update-policy {
-		grant * add-new add-new.example KEY;
+		grant * add-new * KEY;
 		grant * self *;
 	};
 };

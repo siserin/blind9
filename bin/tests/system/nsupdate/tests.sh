@@ -1246,7 +1246,38 @@ EOF
   n=`expr $n + 1`
   ret=0
   echo_i "check add-new ($n)"
+  key1=`$KEYGEN -q -a NSEC3RSASHA1 -b 1024 -T KEY -n ENTITY -L 3600 xxx.add-new.example`
+  key2=`$KEYGEN -q -a NSEC3RSASHA1 -b 1024 -T KEY -n ENTITY -L 3600 xxx.add-new.example`
+  key=`cat $key1.key`
+  $NSUPDATE << EOF > nsupdate.out-$n 2>&1 || ret=1
+  server 10.53.0.6 ${PORT}
+  zone add-new.example
+  add $key
+  send
+EOF
 
+  # Resend should not error out
+
+  $NSUPDATE << EOF > nsupdate.out-resend-$n 2>&1 || ret=1
+  server 10.53.0.6 ${PORT}
+  zone add-new.example
+  add $key
+  send
+EOF
+
+  # A different key should be rejected.
+
+  key=`cat $key2.key`
+  $NSUPDATE << EOF > nsupdate.out-fail-$n 2>&1 && ret=1
+  server 10.53.0.6 ${PORT}
+  zone add-new.example
+  add $key
+  send
+EOF
+
+  $DIG $DIGOPTS @10.53.0.6 key xxx.add-new.example
+
+  [ $ret = 0 ] || { echo_i "failed"; status=1; }
 
 fi
 #
