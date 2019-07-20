@@ -44,3 +44,14 @@ keyname2=`$KEYGEN -q -a RSASHA256 -3 $zone`
 cat $infile $keyname1.key $keyname2.key >$zonefile
 
 $SIGNER -A -3 - -P -o $zone -k $keyname1 $zonefile $keyname2 > /dev/null
+
+zone=timeout-signed.test.
+infile=timeout-signed.test.db.in
+zonefile=timeout-signed.test.db
+
+keyname1=`$KEYGEN -q -a RSASHA256 -3 -f KSK $zone`
+keyname2=`$KEYGEN -q -a RSASHA256 -3 $zone`
+
+cat $infile $keyname1.key $keyname2.key >$zonefile
+
+$SIGNER -A -3 - -P -o $zone -k $keyname1 $zonefile $keyname2 > /dev/null
