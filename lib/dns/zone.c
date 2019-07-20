@@ -3749,9 +3749,13 @@ set_timeouttime(dns_zone_t *zone) {
 	if (zone->update_disabled)
 		return;
 
-	if (!inline_secure(zone) && (zone->type != dns_zone_master ||
+	/*
+	 * Don't process timeout in inline secure zones or non master zone
+	 * or zones with updates disabled.
+	 */
+	if (inline_secure(zone) || zone->type != dns_zone_master ||
 	    (zone->ssutable == NULL &&
-	     (zone->update_acl == NULL || dns_acl_isnone(zone->update_acl)))))
+	     (zone->update_acl == NULL || dns_acl_isnone(zone->update_acl))))
 		return;
 
 	dns_rdataset_init(&rdataset);
