@@ -320,10 +320,10 @@ stf_from_address(dns_name_t *stfself, const isc_netaddr_t *tcpaddr) {
 
 bool
 dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
-			const dns_name_t *name, const isc_netaddr_t *addr,
-			bool tcp, const dns_aclenv_t *env,
-			dns_rdatatype_t type, const dst_key_t *key,
-			const dns_ssurule_t **rulep)
+			const dns_name_t *name, const dns_name_t *origin,
+			const isc_netaddr_t *addr, bool tcp,
+			const dns_aclenv_t *env, dns_rdatatype_t type,
+			const dst_key_t *key, const dns_ssurule_t **rulep)
 {
 	dns_ssurule_t *rule;
 	unsigned int i;
@@ -551,6 +551,9 @@ dns_ssutable_checkrules(dns_ssutable_t *table, const dns_name_t *signer,
 				dns_name_getlabelsequence(rule->identity, 1,
 							  labels - 1,
 							  &identity);
+				if (dns_name_equal(&identity, dns_rootname)) {
+					dns_name_clone(origin, &identity);
+				}
 				if (!dns_name_equal(&identity, &suffix)) {
 					continue;
 				}
