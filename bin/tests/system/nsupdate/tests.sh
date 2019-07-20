@@ -1245,7 +1245,7 @@ EOF
 
   n=`expr $n + 1`
   ret=0
-  echo_i "check add-new ($n)"
+  echo_i "check 'update-policy add-new' ($n)"
   key1=`$KEYGEN -q -a NSEC3RSASHA1 -b 1024 -T KEY -n ENTITY -L 3600 xxx.add-new.example`
   key2=`$KEYGEN -q -a NSEC3RSASHA1 -b 1024 -T KEY -n ENTITY -L 3600 xxx.add-new.example`
   key=`cat $key1.key`
@@ -1265,6 +1265,9 @@ EOF
   send
 EOF
 
+  $DIG $DIGOPTS @10.53.0.6 key xxx.add-new.example > dig.out.ns6.test$n
+  grep "ANSWER: 1," dig.out.ns6.test$n > /dev/null 2>&1 || ret=1
+
   # A different key should be rejected.
 
   key=`cat $key2.key`
@@ -1275,7 +1278,15 @@ EOF
   send
 EOF
 
-  $DIG $DIGOPTS @10.53.0.6 key xxx.add-new.example
+  # A different two labels should be rejected.
+
+  key=`cat $key2.key`
+  $NSUPDATE << EOF > nsupdate.out-fail-$n 2>&1 && ret=1
+  server 10.53.0.6 ${PORT}
+  zone add-new.example
+  add foo.$key
+  send
+EOF
 
   [ $ret = 0 ] || { echo_i "failed"; status=1; }
 
