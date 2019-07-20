@@ -683,23 +683,22 @@ dns_view_weakattach(dns_view_t *source, dns_view_t **targetp) {
 void
 dns_view_weakdetach(dns_view_t **viewp) {
 	dns_view_t *view;
-	bool done = false;
 
 	REQUIRE(viewp != NULL);
 	view = *viewp;
 	REQUIRE(DNS_VIEW_VALID(view));
 
-	isc_refcount_decrement(&view->weakrefs);;
-
-	LOCK(&view->lock);
-	done = all_done(view);
-	UNLOCK(&view->lock);
+	if (isc_refcount_decrement(&view->weakrefs) == 1) {
+		bool done = false;
+		LOCK(&view->lock);
+		done = all_done(view);
+		UNLOCK(&view->lock);
+		if (done) {
+			destroy(view);
+		}
+	}
 
 	*viewp = NULL;
-
-	if (done) {
-		destroy(view);
-	}
 }
 
 static void
