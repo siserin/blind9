@@ -332,14 +332,12 @@ asyncload(dns_zone_t *zone, void *zt_) {
 	REQUIRE(zone != NULL);
 
 	isc_refcount_increment(&zt->references);
-
 	isc_refcount_increment(&zt->loads_pending);
 
 	result = dns_zone_asyncload(zone, zt->loadparams->newonly, *zt->loadparams->dl, zt);
 	if (result != ISC_R_SUCCESS) {
-
-		isc_refcount_decrement(&zt->references);
 		isc_refcount_decrement(&zt->loads_pending);
+		isc_refcount_decrement(&zt->references);
 	}
 	return (ISC_R_SUCCESS);
 }
@@ -485,6 +483,8 @@ dns_zt_apply(dns_zt_t *zt, bool stop, isc_result_t *sub,
 	REQUIRE(VALID_ZT(zt));
 	REQUIRE(action != NULL);
 
+	isc_refcount_increment(&zt->references);
+
 	dns_rbtnodechain_init(&chain, zt->mctx);
 	result = dns_rbtnodechain_first(&chain, zt->table, NULL, NULL);
 	if (result == ISC_R_NOTFOUND) {
@@ -514,9 +514,12 @@ dns_zt_apply(dns_zt_t *zt, bool stop, isc_result_t *sub,
 		result = ISC_R_SUCCESS;
 
  cleanup:
+	isc_refcount_decrement(&zt->references);
+
 	dns_rbtnodechain_invalidate(&chain);
-	if (sub != NULL)
+	if (sub != NULL) {
 		*sub = tresult;
+	}
 
 	return (result);
 }
@@ -548,9 +551,7 @@ doneloading(dns_zt_t *zt, dns_zone_t *zone, isc_task_t *task) {
 		}
 	}
 
-	if (isc_refcount_decrement(&zt->references) == 1) {
-		zt_destroy(zt);
-	}
+	isc_refcount_decrement(&zt->references);
 
 	return (ISC_R_SUCCESS);
 }
