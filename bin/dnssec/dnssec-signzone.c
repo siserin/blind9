@@ -139,10 +139,10 @@ static dns_masterformat_t inputformat = dns_masterformat_text;
 static dns_masterformat_t outputformat = dns_masterformat_text;
 static uint32_t rawversion = 1, serialnum = 0;
 static bool snset = false;
-static unsigned int nsigned = 0, nretained = 0, ndropped = 0;
-static unsigned int nverified = 0, nverifyfailed = 0;
+static atomic_uint nsigned, nretained, ndropped;
+static atomic_uint nverified, nverifyfailed;
 static const char *directory = NULL, *dsdir = NULL;
-static isc_mutex_t namelock, statslock;
+static isc_mutex_t namelock;
 static isc_taskmgr_t *taskmgr = NULL;
 static dns_db_t *gdb;			/* The database */
 static dns_dbversion_t *gversion;	/* The database version */
@@ -180,13 +180,6 @@ static bool output_dnssec_only = false;
 static bool output_stdout = false;
 bool set_maxttl = false;
 static dns_ttl_t maxttl = 0;
-
-#define INCSTAT(counter)		\
-	if (printstats) {		\
-		LOCK(&statslock);	\
-		counter++;		\
-		UNLOCK(&statslock);	\
-	}
 
 static void
 sign(isc_task_t *task, isc_event_t *event);
@@ -303,17 +296,17 @@ signwithkey(dns_name_t *name, dns_rdataset_t *rdataset, dst_key_t *key,
 		fatal("dnskey '%s' failed to sign data: %s",
 		      keystr, isc_result_totext(result));
 	}
-	INCSTAT(nsigned);
+	atomic_fetch_add(&nsigned, 1);
 
 	if (tryverify) {
 		result = dns_dnssec_verify(name, rdataset, key,
 					   true, 0, mctx, &trdata, NULL);
 		if (result == ISC_R_SUCCESS || result == DNS_R_FROMWILDCARD) {
 			vbprintf(3, "\tsignature verified\n");
-			INCSTAT(nverified);
+			atomic_fetch_add(&nverified, 1);
 		} else {
 			vbprintf(3, "\tsignature failed to verify\n");
-			INCSTAT(nverifyfailed);
+			atomic_fetch_add(&nverifyfailed, 1);
 		}
 	}
 
@@ -471,10 +464,10 @@ setverifies(dns_name_t *name, dns_rdataset_t *set, dst_key_t *key,
 	result = dns_dnssec_verify(name, set, key, false, 0, mctx, rrsig,
 				   NULL);
 	if (result == ISC_R_SUCCESS || result == DNS_R_FROMWILDCARD) {
-		INCSTAT(nverified);
+		atomic_fetch_add(&nverified, 1);
 		return (true);
 	} else {
-		INCSTAT(nverifyfailed);
+		atomic_fetch_add(&nverifyfailed, 1);
 		return (false);
 	}
 }
@@ -615,7 +608,7 @@ signset(dns_diff_t *del, dns_diff_t *add, dns_dbnode_t *node, dns_name_t *name,
 		if (keep) {
 			if (key != NULL)
 				nowsignedby[key->index] = true;
-			INCSTAT(nretained);
+			atomic_fetch_add(&nretained, 1);
 			if (sigset.ttl != ttl) {
 				vbprintf(2, "\tfixing ttl %s\n", sigstr);
 				tuple = NULL;
@@ -641,7 +634,7 @@ signset(dns_diff_t *del, dns_diff_t *add, dns_dbnode_t *node, dns_name_t *name,
 						      &sigrdata, &tuple);
 			check_result(result, "dns_difftuple_create");
 			dns_diff_append(del, &tuple);
-			INCSTAT(ndropped);
+			atomic_fetch_add(&ndropped, 1);
 		}
 
 		if (resign) {
@@ -3851,10 +3844,6 @@ main(int argc, char *argv[]) {
 
 	isc_mutex_init(&namelock);
 
-	if (printstats) {
-		isc_mutex_init(&statslock);
-	}
-
 	presign();
 	TIME_NOW(&sign_start);
 	signapex();
@@ -3913,8 +3902,6 @@ main(int argc, char *argv[]) {
 	}
 
 	isc_mutex_destroy(&namelock);
-	if (printstats)
-		isc_mutex_destroy(&statslock);
 
 	if (!output_stdout) {
 		result = isc_stdio_close(outfp);
