@@ -119,6 +119,7 @@ isc_result_t
 isc_netaddr_totext(const isc_netaddr_t *netaddr, isc_buffer_t *target) {
 	char abuf[sizeof("xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:255.255.255.255")];
 	char zbuf[sizeof("%4294967295")];
+	unsigned char wkp[12] = { 0x00, 0x64, 0xff, 0x9b };
 	unsigned int alen;
 	int zlen;
 	const char *r;
@@ -146,9 +147,17 @@ isc_netaddr_totext(const isc_netaddr_t *netaddr, isc_buffer_t *target) {
 	default:
 		return (ISC_R_FAILURE);
 	}
-	r = inet_ntop(netaddr->family, type, abuf, sizeof(abuf));
-	if (r == NULL)
-		return (ISC_R_FAILURE);
+	if (netaddr->family == AF_INET6 && memcmp(type, wkp, sizeof(wkp)) == 0) {
+		char buf[sizeof("255.255.255.255")];
+		r = inet_ntop(AF_INET, &((const char *)type)[12], buf, sizeof(buf));
+		if (r == NULL)
+			return (ISC_R_FAILURE);
+		snprintf(abuf, sizeof(abuf), "64:ffb9::%s", buf);
+	} else {
+		r = inet_ntop(netaddr->family, type, abuf, sizeof(abuf));
+		if (r == NULL)
+			return (ISC_R_FAILURE);
+	}
 
 	alen = strlen(abuf);
 	INSIST(alen < sizeof(abuf));
