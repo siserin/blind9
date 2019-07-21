@@ -2855,8 +2855,9 @@ cfg_parse_netprefix(cfg_parser_t *pctx, const cfg_type_t *type,
 
 	result = cfg_parse_rawaddr(pctx, CFG_ADDR_V4OK | CFG_ADDR_V4PREFIXOK |
 				   CFG_ADDR_V6OK, &netaddr);
-	if (result != ISC_R_SUCCESS && result != ISC_R_IPV4PREFIX)
+	if (result != ISC_R_SUCCESS && result != ISC_R_IPV4PREFIX) {
 		CHECK(result);
+	}
 	switch (netaddr.family) {
 	case AF_INET:
 		addrlen = 32;
