@@ -4081,6 +4081,11 @@ configure_view(dns_view_t *view, dns_viewlist_t *viewlist,
 	zero_no_soattl = cfg_obj_asboolean(obj);
 
 	obj = NULL;
+	result = named_config_get(maps, "use-dns64", &obj);
+	INSIST(result == ISC_R_SUCCESS);
+	view->usedns64 = cfg_obj_asboolean(obj);
+
+	obj = NULL;
 	result = named_config_get(maps, "dns64", &obj);
 	if (result == ISC_R_SUCCESS && strcmp(view->name, "_bind") &&
 	    strcmp(view->name, "_meta")) {

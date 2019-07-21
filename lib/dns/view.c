@@ -161,6 +161,7 @@ dns_view_create(isc_mem_t *mctx, dns_rdataclass_t rdclass,
 	view->cacheshared = false;
 	ISC_LIST_INIT(view->dns64);
 	view->dns64cnt = 0;
+	view->usedns64 = false;
 
 	/*
 	 * Initialize configuration data with default values.

@@ -34,6 +34,7 @@
 #include <dns/cache.h>
 #include <dns/db.h>
 #include <dns/dispatch.h>
+#include <dns/dns64.h>
 #include <dns/dnstap.h>
 #include <dns/ds.h>
 #include <dns/edns.h>
@@ -61,6 +62,7 @@
 #include <dns/stats.h>
 #include <dns/tsig.h>
 #include <dns/validator.h>
+
 #ifdef WANT_QUERYTRACE
 #define RTRACE(m)       isc_log_write(dns_lctx, \
 				      DNS_LOGCATEGORY_RESOLVER, \
@@ -503,7 +505,7 @@ struct dns_resolver {
 	unsigned int			spillatmax;
 	unsigned int			spillatmin;
 	isc_timer_t *			spillattimer;
-	bool			zero_no_soa_ttl;
+	bool				zero_no_soa_ttl;
 	unsigned int			query_timeout;
 	unsigned int			maxdepth;
 	unsigned int			maxqueries;
@@ -1904,10 +1906,11 @@ fctx_query(fetchctx_t *fctx, dns_adbaddrinfo_t *addrinfo,
 	   unsigned int options)
 {
 	dns_resolver_t *res;
+	dns_dns64_t *dns64;
 	isc_task_t *task;
 	isc_result_t result;
 	resquery_t *query;
-	isc_sockaddr_t addr;
+	isc_sockaddr_t addr, sockaddr;
 	bool have_addr = false;
 	unsigned int srtt;
 	isc_dscp_t dscp = -1;
@@ -1968,11 +1971,32 @@ fctx_query(fetchctx_t *fctx, dns_adbaddrinfo_t *addrinfo,
 	query->dispatch = NULL;
 	query->exclusivesocket = false;
 	query->tcpsocket = NULL;
+	sockaddr = addrinfo->sockaddr;
+	dns64 = ISC_LIST_HEAD(fctx->res->view->dns64);
+	if (isc_sockaddr_pf(&sockaddr) == AF_INET &&
+	    fctx->res->view->usedns64 && dns64 != NULL) {
+		struct in6_addr aaaa;
+
+		result = dns_dns64_aaaafroma(dns64, NULL, NULL,
+					     &fctx->res->view->aclenv, 0,
+					     (unsigned char *)&sockaddr.type.sin.sin_addr.s_addr,
+					     aaaa.s6_addr);
+		if (result == ISC_R_SUCCESS) {
+char sockaddrbuf1[ISC_SOCKADDR_FORMATSIZE];
+char sockaddrbuf2[ISC_SOCKADDR_FORMATSIZE];
+isc_sockaddr_format(&sockaddr, sockaddrbuf1, sizeof(sockaddrbuf1));
+			isc_sockaddr_fromin6(&sockaddr, &aaaa,
+					     ntohs(sockaddr.type.sin.sin_port));
+isc_sockaddr_format(&sockaddr, sockaddrbuf2, sizeof(sockaddrbuf2));
+fprintf(stderr, "DNS64 %s -> %s\n", sockaddrbuf1, sockaddrbuf2);
+			addrinfo->sockaddr = sockaddr;
+		}
+	}
 	if (res->view->peers != NULL) {
 		dns_peer_t *peer = NULL;
 		isc_netaddr_t dstip;
 		bool usetcp = false;
-		isc_netaddr_fromsockaddr(&dstip, &addrinfo->sockaddr);
+		isc_netaddr_fromsockaddr(&dstip, &sockaddr);
 		result = dns_peerlist_peerbyaddr(res->view->peers,
 						 &dstip, &peer);
 		if (result == ISC_R_SUCCESS) {
@@ -1992,7 +2016,7 @@ fctx_query(fetchctx_t *fctx, dns_adbaddrinfo_t *addrinfo,
 	if ((query->options & DNS_FETCHOPT_TCP) != 0) {
 		int pf;
 
-		pf = isc_sockaddr_pf(&addrinfo->sockaddr);
+		pf = isc_sockaddr_pf(&sockaddr);
 		if (!have_addr) {
 			switch (pf) {
 			case PF_INET:
@@ -2062,7 +2086,7 @@ fctx_query(fetchctx_t *fctx, dns_adbaddrinfo_t *addrinfo,
 			if (result != ISC_R_SUCCESS)
 				goto cleanup_query;
 		} else {
-			switch (isc_sockaddr_pf(&addrinfo->sockaddr)) {
+			switch (isc_sockaddr_pf(&sockaddr)) {
 			case PF_INET:
 				dns_dispatch_attach(
 				    dns_resolver_dispatchv4(res),
@@ -2111,7 +2135,7 @@ fctx_query(fetchctx_t *fctx, dns_adbaddrinfo_t *addrinfo,
 		if (query->dscp != -1)
 			isc_socket_dscp(query->tcpsocket, query->dscp);
 		result = isc_socket_connect(query->tcpsocket,
-					    &addrinfo->sockaddr, task,
+					    &sockaddr, task,
 					    resquery_connected, query);
 		if (result != ISC_R_SUCCESS)
 			goto cleanup_socket;
@@ -2133,7 +2157,7 @@ fctx_query(fetchctx_t *fctx, dns_adbaddrinfo_t *addrinfo,
 
 	ISC_LIST_APPEND(fctx->queries, query, link);
 	query->fctx->nqueries++;
-	if (isc_sockaddr_pf(&addrinfo->sockaddr) == PF_INET)
+	if (isc_sockaddr_pf(&sockaddr) == PF_INET)
 		inc_stats(res, dns_resstatscounter_queryv4);
 	else
 		inc_stats(res, dns_resstatscounter_queryv6);
