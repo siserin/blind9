@@ -1464,7 +1464,7 @@ cat signer/example.db.in "${unsupportedkey}.key" > signer/example.db
 # If dnssec-signzone fails, the test script will exit immediately.  Prevent that
 # from happening, and also trigger a test failure if dnssec-signzone
 # unexpectedly succeeds, by using "&& ret=1".
-$SIGNER -o example signer/example.db ${unsupportedkey} > dnssectools.out.test$n 2>&1 && ret=1
+$SIGNER -o example signer/example.db ${unsupportedkey} > dnssectools.out.test$n && ret=1
 grep -q "algorithm is unsupported" dnssectools.out.test$n || ret=1
 n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
