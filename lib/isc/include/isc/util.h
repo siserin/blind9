@@ -287,4 +287,6 @@ extern void mock_assert(const int result, const char* const expression,
  */
 #include <isc/deprecated.h>
 
+#define ARRAY_SIZE(a)	(sizeof(a)/sizeof(a[0]))
+
 #endif /* ISC_UTIL_H */

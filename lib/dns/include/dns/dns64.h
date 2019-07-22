@@ -166,6 +166,25 @@ dns_dns64_aaaaok(const dns_dns64_t *dns64, const isc_netaddr_t *reqaddr,
  *			if 'aaaaok' in non NULL.
  */
 
+isc_result_t
+dns_dns64_findprefix(dns_rdataset_t *rdataset, isc_netprefix_t *prefix,
+		     size_t *len);
+/*
+ * Look through 'rdataset' for AAAA pairs which define encode DNS64 prefixes.
+ * 'len' should be set to the number of entries in prefix and returns
+ * the number of prefixes discovered.
+ *
+ * Requires
+ * 	'rdataset'	to be valid and to be for type AAAA and class IN.
+ *	'prefix'	to be non NULL.
+ *	'len'		to be non NULL and non zero.
+ *
+ * Returns
+ * 	ISC_R_SUCCESS
+ *	ISC_R_NOSPACE
+ *	ISC_R_NOTFOUND
+ */
+
 ISC_LANG_ENDDECLS
 
 #endif /* DNS_DNS64_H */
