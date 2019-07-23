@@ -218,6 +218,8 @@ main(int argc, char **argv) {
 			break;
 		case 'l':
 			label = isc_mem_strdup(mctx, isc_commandline_argument);
+            if (label == NULL)
+                fatal("Failed to allocate memory for label");
 			break;
 		case 'n':
 			nametype = isc_commandline_argument;
