@@ -314,10 +314,9 @@ cleanup_filelock:
 
 static void
 cache_free(dns_cache_t *cache) {
-	int i;
-
 	REQUIRE(VALID_CACHE(cache));
-	REQUIRE(isc_refcount_current(&cache->references) == 0);
+
+	isc_refcount_destroy(&cache->references);
 
 	isc_mem_setwater(cache->mctx, NULL, NULL, 0, 0);
 
@@ -349,11 +348,14 @@ cache_free(dns_cache_t *cache) {
 		 * as it's a pointer to hmctx
 		 */
 		int extra = 0;
-		if (strcmp(cache->db_type, "rbt") == 0)
+		if (strcmp(cache->db_type, "rbt") == 0) {
 			extra = 1;
-		for (i = extra; i < cache->db_argc; i++)
-			if (cache->db_argv[i] != NULL)
+		}
+		for (int i = extra; i < cache->db_argc; i++) {
+			if (cache->db_argv[i] != NULL) {
 				isc_mem_free(cache->mctx, cache->db_argv[i]);
+			}
+		}
 		isc_mem_put(cache->mctx, cache->db_argv,
 			    cache->db_argc * sizeof(char *));
 	}
@@ -421,7 +423,6 @@ dns_cache_detach(dns_cache_t **cachep) {
 		}
 		UNLOCK(&cache->lock);
 	}
-
 
 	if (free_cache) {
 		cache_free(cache);
@@ -1010,8 +1011,9 @@ cleaner_shutdown_action(isc_task_t *task, isc_event_t *event) {
 
 	UNLOCK(&cache->lock);
 
-	if (should_free)
+	if (should_free) {
 		cache_free(cache);
+	}
 }
 
 isc_result_t

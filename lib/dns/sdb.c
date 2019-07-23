@@ -526,6 +526,8 @@ destroy(dns_sdb_t *sdb) {
 	isc_mem_t *mctx;
 	dns_sdbimplementation_t *imp = sdb->implementation;
 
+	isc_refcount_destroy(&sdb->references);
+
 	mctx = sdb->common.mctx;
 
 	if (imp->methods->destroy != NULL) {

@@ -91,6 +91,7 @@ isc_counter_attach(isc_counter_t *source, isc_counter_t **targetp) {
 static void
 destroy(isc_counter_t *counter) {
 	counter->magic = 0;
+	isc_refcount_destroy(&counter->references);
 	isc_mem_putanddetach(&counter->mctx, counter, sizeof(*counter));
 }
 

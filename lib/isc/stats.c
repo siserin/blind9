@@ -80,6 +80,7 @@ isc_stats_detach(isc_stats_t **statsp) {
 	*statsp = NULL;
 
 	if (isc_refcount_decrement(&stats->references) == 1) {
+		isc_refcount_destroy(&stats->references);
 		isc_mem_put(stats->mctx, stats->counters,
 			    sizeof(isc_stat_t) * stats->ncounters);
 		isc_mem_putanddetach(&stats->mctx, stats, sizeof(*stats));

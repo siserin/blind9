@@ -201,8 +201,9 @@ detach(dns_db_t **dbp) {
 	}
 	UNLOCK(&ecdb->lock);
 
-	if (need_destroy)
+	if (need_destroy) {
 		destroy_ecdb(&ecdb);
+	}
 
 	*dbp = NULL;
 }
@@ -256,8 +257,9 @@ destroynode(dns_ecdbnode_t *node) {
 	node->magic = 0;
 	isc_mem_put(mctx, node, sizeof(*node));
 
-	if (need_destroydb)
+	if (need_destroydb) {
 		destroy_ecdb(&ecdb);
+	}
 }
 
 static void
