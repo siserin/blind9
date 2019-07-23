@@ -340,8 +340,12 @@ isc_netaddr_fromsockaddr(isc_netaddr_t *t, const isc_sockaddr_t *s) {
 		break;
 #endif
 	default:
+		t->family = AF_UNSPEC;
+		/* TODO: Generate warning? */
+		/*
 		INSIST(0);
 		ISC_UNREACHABLE();
+		*/
 	}
 }
 
