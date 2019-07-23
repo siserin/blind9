@@ -3536,7 +3536,7 @@ ns_client_attach(ns_client_t *source, ns_client_t **targetp) {
 	REQUIRE(NS_CLIENT_VALID(source));
 	REQUIRE(targetp != NULL && *targetp == NULL);
 
-	oldrefs = isc_refcount_increment(&source->references);
+	oldrefs = isc_refcount_increment0(&source->references);
 	ns_client_log(source, NS_LOGCATEGORY_CLIENT,
 		      NS_LOGMODULE_CLIENT, ISC_LOG_DEBUG(10),
 		      "ns_client_attach: ref = %d", oldrefs+1);
@@ -3910,7 +3910,7 @@ ns__clientmgr_getclient(ns_clientmgr_t *manager, ns_interface_t *ifp,
 	INSIST(client->recursionquota == NULL);
 
 	client->dscp = ifp->dscp;
-	isc_refcount_increment(&client->references);
+	isc_refcount_increment0(&client->references);
 
 	if (tcp) {
 		client->attributes |= NS_CLIENTATTR_TCP;

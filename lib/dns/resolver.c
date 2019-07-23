@@ -9775,7 +9775,7 @@ destroy(dns_resolver_t *res) {
 
 	RTRACE("destroy");
 
-	isc_refcount_decrement(&res->nfcfx);
+	isc_refcount_decrement(&res->nfctx);
 	isc_refcount_destroy(&res->nfctx);
 
 	isc_mutex_destroy(&res->primelock);
