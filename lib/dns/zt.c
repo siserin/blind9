@@ -50,7 +50,7 @@ struct dns_zt {
 	/* Atomic */
 	atomic_bool		flush;
 	isc_refcount_t		references;
-	isc_refcount_t		loads_pending;
+	atomic_uint_fast32_t	loads_pending;
 
 	/* Locked by lock. */
 	dns_rbt_t		*table;
@@ -102,7 +102,7 @@ dns_zt_create(isc_mem_t *mctx, dns_rdataclass_t rdclass, dns_zt_t **ztp) {
 	zt->loaddone = NULL;
 	zt->loaddone_arg = NULL;
 	zt->loadparams = NULL;
-	isc_refcount_init(&zt->loads_pending, 0);
+	atomic_init(&zt->loads_pending, 0);
 	*ztp = zt;
 
 	return (ISC_R_SUCCESS);
@@ -299,11 +299,11 @@ dns_zt_asyncload(dns_zt_t *zt, bool newonly,
 
 	RWLOCK(&zt->rwlock, isc_rwlocktype_write);
 
-	INSIST(isc_refcount_current(&zt->loads_pending) == 0);
+	INSIST(atomic_load_acquire(&zt->loads_pending) == 0);
 
 	result = dns_zt_apply(zt, false, NULL, asyncload, zt);
 
-	pending = isc_refcount_current(&zt->loads_pending);
+	pending = atomic_load_acquire(&zt->loads_pending);
 
 	if (pending != 0) {
 		zt->loaddone = alldone;
@@ -333,13 +333,15 @@ asyncload(dns_zone_t *zone, void *zt_) {
 	REQUIRE(zone != NULL);
 
 	isc_refcount_increment(&zt->references);
-	isc_refcount_increment(&zt->loads_pending);
+	uint_fast32_t loads_pending =
+		atomic_fetch_add_relaxed(&zt->loads_pending, 1);
+	INSIST(loads_pending > 0 && loads_pending < UINT32_MAX);
 
-	result = dns_zone_asyncload(zone, zt->loadparams->newonly, *zt->loadparams->dl, zt);
+	result = dns_zone_asyncload(zone, zt->loadparams->newonly,
+				    *zt->loadparams->dl, zt);
 	if (result != ISC_R_SUCCESS) {
-
+		INSIST(atomic_fetch_sub_release(&zt->loads_pending, 1) > 0);
 		isc_refcount_decrement(&zt->references);
-		isc_refcount_decrement(&zt->loads_pending);
 	}
 	return (ISC_R_SUCCESS);
 }
@@ -542,12 +544,16 @@ doneloading(dns_zt_t *zt, dns_zone_t *zone, isc_task_t *task) {
 		destroy = true;
 	}
 
-	if (isc_refcount_decrement(&zt->loads_pending) == 1) {
+	uint_fast32_t loads_pending =
+		atomic_fetch_sub_release(&zt->loads_pending, 1);
+	INSIST(loads_pending > 0);
+	if (loads_pending == 1) {
 		alldone = zt->loaddone;
 		arg = zt->loaddone_arg;
 		zt->loaddone = NULL;
 		zt->loaddone_arg = NULL;
-		isc_mem_put(zt->mctx, zt->loadparams, sizeof(struct zt_load_params));
+		isc_mem_put(zt->mctx, zt->loadparams,
+			    sizeof(struct zt_load_params));
 		zt->loadparams = NULL;
 	}
 
