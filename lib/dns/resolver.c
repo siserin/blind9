@@ -4594,7 +4594,7 @@ fctx_start(isc_task_t *task, isc_event_t *event) {
 		else
 			fctx_try(fctx, false, false);
 	} else if (dodestroy) {
-			fctx_destroy(fctx);
+		fctx_destroy(fctx);
 		if (bucket_empty)
 			empty_bucket(res);
 	}
@@ -6983,7 +6983,7 @@ static void
 fctx_increference(fetchctx_t *fctx) {
 	REQUIRE(VALID_FCTX(fctx));
 
-	isc_refcount_increment(&fctx->references);
+	isc_refcount_increment0(&fctx->references);
 }
 
 static bool
@@ -9775,6 +9775,7 @@ destroy(dns_resolver_t *res) {
 
 	RTRACE("destroy");
 
+	isc_refcount_decrement(&res->nfcfx);
 	isc_refcount_destroy(&res->nfctx);
 
 	isc_mutex_destroy(&res->primelock);
@@ -10026,7 +10027,7 @@ dns_resolver_create(dns_view_t *view,
 	res->priming = false;
 	res->primefetch = NULL;
 
-	isc_refcount_init(&res->nfctx, 0);
+	isc_refcount_init(&res->nfctx, 1);
 
 	isc_mutex_init(&res->lock);
 	isc_mutex_init(&res->primelock);
@@ -10783,11 +10784,6 @@ void
 dns_resolver_setlamettl(dns_resolver_t *resolver, uint32_t lame_ttl) {
 	REQUIRE(VALID_RESOLVER(resolver));
 	resolver->lame_ttl = lame_ttl;
-}
-
-unsigned int
-dns_resolver_nrunning(dns_resolver_t *resolver) {
-	return (isc_refcount_current(&resolver->nfctx));
 }
 
 isc_result_t
