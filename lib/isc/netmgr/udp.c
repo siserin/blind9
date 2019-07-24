@@ -29,7 +29,7 @@
 #include <isc/sockaddr.h>
 #include <isc/thread.h>
 #include <isc/util.h>
-
+#include "netmgr-int.h"
 
 /*
  *  U   U  DDD   PPP
@@ -38,6 +38,23 @@
  *  U   U  D  D  P
  *   UUU   DDD   P
  */
+
+static isc_result_t
+udp_send_direct(isc_nmsocket_t *socket,
+		isc__nm_uvreq_t *req,
+		isc_sockaddr_t *peer);
+
+static void
+udp_recv_cb(uv_udp_t *handle,
+	    ssize_t nrecv,
+	    const uv_buf_t *buf,
+	    const struct sockaddr *addr,
+	    unsigned flags);
+
+static void
+udp_send_cb(uv_udp_send_t *req, int status);
+
+
 isc_result_t
 isc_nm_udp_listen(isc_nm_t *mgr,
 		  isc_nmiface_t *iface,
@@ -56,7 +73,7 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 	nsocket = malloc(sizeof(*nsocket)); /* TODO for debugging
 	                                     * isc_mem_get(mgr->mctx,
 	                                     * sizeof(*nsocket)); */
-	nmsocket_init(nsocket, mgr, isc_nm_udplistener);
+	isc__nmsocket_init(nsocket, mgr, isc_nm_udplistener);
 	nsocket->iface = iface;
 	nsocket->nchildren = mgr->nworkers;
 	nsocket->rchildren = mgr->nworkers;
@@ -70,7 +87,7 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 	for (int i = 0; i < mgr->nworkers; i++) {
 		isc__netievent_udplisten_t *ievent;
 		isc_nmsocket_t *csocket = &nsocket->children[i];
-		nmsocket_init(csocket, mgr, isc_nm_udpsocket);
+		isc__nmsocket_init(csocket, mgr, isc_nm_udpsocket);
 		csocket->parent = nsocket;
 		csocket->iface = iface;
 		csocket->tid = i;
@@ -85,9 +102,9 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 				 &(int){1},
 				 sizeof(int));
 		INSIST(res == 0);
-		ievent = get_ievent(mgr, netievent_udplisten);
+		ievent = isc__nm_get_ievent(mgr, netievent_udplisten);
 		ievent->socket = csocket;
-		enqueue_ievent(&mgr->workers[i], (isc__netievent_t*) ievent);
+		isc__nm_enqueue_ievent(&mgr->workers[i], (isc__netievent_t*) ievent);
 	}
 	*rv = nsocket;
 	return (ISC_R_SUCCESS);
@@ -99,14 +116,14 @@ isc_nm_udp_stoplistening(isc_nmsocket_t *socket) {
 
 	INSIST(VALID_NMSOCK(socket));
 	/* We can't be launched from network thread */
-	INSIST(isc_netmgr_tid == ISC_NETMGR_TID_UNKNOWN);
+	INSIST(isc__nm_tid() == ISC_NETMGR_TID_UNKNOWN);
 	INSIST(socket->type == isc_nm_udplistener);
 
 	for (i = 0; i < socket->nchildren; i++) {
 		isc__netievent_udpstoplisten_t *ievent;
-		ievent = get_ievent(socket->mgr, netievent_udpstoplisten);
+		ievent = isc__nm_get_ievent(socket->mgr, netievent_udpstoplisten);
 		ievent->socket = &socket->children[i];
-		enqueue_ievent(&socket->mgr->workers[i],
+		isc__nm_enqueue_ievent(&socket->mgr->workers[i],
 			       (isc__netievent_t*) ievent);
 	}
 }
@@ -114,8 +131,8 @@ isc_nm_udp_stoplistening(isc_nmsocket_t *socket) {
 /*
  * handle 'udplisten' async call - start listening on a socket.
  */
-static void
-handle_udplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
+void
+isc__nm_handle_udplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	isc__netievent_udplisten_t *ievent =
 		(isc__netievent_udplisten_t *) ievent0;
 	isc_nmsocket_t *socket = ievent->socket;
@@ -132,7 +149,7 @@ handle_udplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	uv_udp_bind(&socket->uv_handle.udp,
 		    &socket->parent->iface->addr.type.sa,
 		    0);
-	uv_udp_recv_start(&socket->uv_handle.udp, alloc_cb, udp_recv_cb);
+	uv_udp_recv_start(&socket->uv_handle.udp, isc__nm_alloc_cb, udp_recv_cb);
 }
 
 static void
@@ -143,8 +160,8 @@ udp_close_cb(uv_handle_t *handle) {
 /*
  * handle 'udpstoplisten' async call - stop listening on a socket.
  */
-static void
-handle_udpstoplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
+void
+isc__nm_handle_udpstoplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	(void) worker;
 	ck_stack_entry_t *sentry;
 	isc__netievent_udplisten_t *ievent =
@@ -165,7 +182,7 @@ handle_udpstoplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	       NULL)
 	{
 		isc_nmhandle_t *handle = nm_handle_is_get(sentry);
-		nmhandle_free(handle);
+		isc_nmhandle_detach(&handle);
 	}
 	while ((sentry = ck_stack_pop_mpmc(&socket->inactivereqs)) != NULL) {
 		isc__nm_uvreq_t *uvreq = uvreq_is_get(sentry);
@@ -203,20 +220,20 @@ udp_recv_cb(uv_udp_t *handle,
 	 * free the buffer and bail.
 	 */
 	if (addr == NULL) {
-		free_uvbuf(socket, buf);
+		isc__nm_free_uvbuf(socket, buf);
 		return;
 	}
 
 	result = isc_sockaddr_fromsockaddr(&sockaddr, addr);
 	REQUIRE(result == ISC_R_SUCCESS);
 
-	nmhandle = get_handle(socket, &sockaddr);
+	nmhandle = isc__nm_get_handle(socket, &sockaddr);
 	region.base = (unsigned char *) buf->base;
 	/* not buf->len, that'd be the whole buffer! */
 	region.length = nrecv;
 
 	socket->rcb.recv(socket->rcbarg, nmhandle, &region);
-	free_uvbuf(socket, buf);
+	isc__nm_free_uvbuf(socket, buf);
 
 	/* If recv callback wants it it should attach to it */
 	isc_nmhandle_detach(&nmhandle);
@@ -227,7 +244,7 @@ udp_recv_cb(uv_udp_t *handle,
  * It tries to find a proper sibling/child socket so that we won't have
  * to jump to other thread.
  */
-static isc_result_t
+isc_result_t
 isc__nm_udp_send(isc_nmhandle_t *handle,
 		 isc_region_t *region,
 		 isc_nm_send_cb_t cb,
@@ -248,8 +265,8 @@ isc__nm_udp_send(isc_nmhandle_t *handle,
 		return (ISC_R_UNEXPECTED);
 	}
 
-	ntid = isc_netmgr_tid >= 0 ?
-	       isc_netmgr_tid : (int) isc_random_uniform(socket->nchildren);
+	ntid = isc__nm_tid() >= 0 ?
+	       isc__nm_tid() : (int) isc_random_uniform(socket->nchildren);
 
 	rsocket = &psocket->children[ntid];
 
@@ -260,21 +277,21 @@ isc__nm_udp_send(isc_nmhandle_t *handle,
 	uvreq->cb.send = cb;
 	uvreq->cbarg = cbarg;
 
-	if (isc_netmgr_tid == rsocket->tid) {
+	if (isc__nm_tid() == rsocket->tid) {
 		/*
 		 * If we're in the same thread as the socket we can send the
 		 * data directly
 		 */
-		return (isc__nm_udp_send_direct(rsocket, uvreq, peer));
+		return (udp_send_direct(rsocket, uvreq, peer));
 	} else {
 		/*
 		 * We need to create an event and pass it using async channel
 		 */
-		ievent = get_ievent(socket->mgr, netievent_udpsend);
+		ievent = isc__nm_get_ievent(socket->mgr, netievent_udpsend);
 		ievent->handle.socket = rsocket;
 		ievent->handle.peer = *peer;
 		ievent->req = uvreq;
-		enqueue_ievent(&socket->mgr->workers[rsocket->tid],
+		isc__nm_enqueue_ievent(&socket->mgr->workers[rsocket->tid],
 			       (isc__netievent_t*) ievent);
 		return (ISC_R_SUCCESS);
 	}
@@ -285,14 +302,14 @@ isc__nm_udp_send(isc_nmhandle_t *handle,
 /*
  * handle 'udpsend' async event - send a packet on the socket
  */
-static void
-handle_udpsend(isc__networker_t *worker, isc__netievent_t *ievent0) {
+void
+isc__nm_handle_udpsend(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	isc__netievent_udpsend_t *ievent =
 		(isc__netievent_udpsend_t *) ievent0;
 	INSIST(worker->id == ievent->handle.socket->tid);
-	isc__nm_udp_send_direct(ievent->handle.socket,
-				ievent->req,
-				&ievent->handle.peer);
+	udp_send_direct(ievent->handle.socket,
+			ievent->req,
+			&ievent->handle.peer);
 }
 
 /*
@@ -314,16 +331,16 @@ udp_send_cb(uv_udp_send_t *req, int status) {
 }
 
 /*
- * isc__nm_udp_send_direct sends buf to a peer on a socket. Sock has to be in
+ * udp_send_direct sends buf to a peer on a socket. Sock has to be in
  * the same thread as the callee.
  */
 static isc_result_t
-isc__nm_udp_send_direct(isc_nmsocket_t *socket,
+udp_send_direct(isc_nmsocket_t *socket,
 			isc__nm_uvreq_t *req,
 			isc_sockaddr_t *peer)
 {
 	int rv;
-	INSIST(socket->tid == isc_netmgr_tid);
+	INSIST(socket->tid == isc__nm_tid());
 	INSIST(socket->type == isc_nm_udpsocket);
 
 	rv = uv_udp_send(&req->uv_req.udp_send,

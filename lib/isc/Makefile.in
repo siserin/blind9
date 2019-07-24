@@ -52,7 +52,9 @@ OBJS =		pk11.@O@ pk11_result.@O@ \
 		event.@O@ hash.@O@ ht.@O@ heap.@O@ hex.@O@ hmac.@O@ \
 		httpd.@O@ iterated_hash.@O@ \
 		lex.@O@ lfsr.@O@ lib.@O@ log.@O@ \
-		md.@O@ mem.@O@ mutexblock.@O@ netmgr/netmgr.@O@ \
+		md.@O@ mem.@O@ mutexblock.@O@ \
+		netmgr/netmgr.@O@ netmgr/tcp.@O@ netmgr/udp.@O@ \
+		netmgr/tcpdns.@O@ \
 		netaddr.@O@ netscope.@O@ nonce.@O@ openssl_shim.@O@ pool.@O@ \
 		parseint.@O@ portset.@O@ quota.@O@ radix.@O@ random.@O@ \
 		ratelimiter.@O@ region.@O@ regex.@O@ result.@O@ \
