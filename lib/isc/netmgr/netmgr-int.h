@@ -30,6 +30,8 @@
 #include <isc/thread.h>
 #include <isc/util.h>
 
+#define ISC_NETMGR_TID_UNKNOWN -1
+#define ISC_NETMGR_TID_NOTLS -2
 
 /*
  * Single network event loop worker.
@@ -285,97 +287,89 @@ struct isc_nmsocket {
 	void *			    wcbarg;
 };
 
-static void *
-isc__net_thread(void *worker0);
-static void
-async_cb(uv_async_t *handle);
-static void *
-get_ievent(isc_nm_t *mgr, isc__netievent_type type);
-static void
-enqueue_ievent(isc__networker_t *worker, isc__netievent_t *event);
-static void
-alloc_cb(uv_handle_t *handle, size_t size, uv_buf_t *buf);
-static void
-free_uvbuf(isc_nmsocket_t *socket, const uv_buf_t *buf);
-static isc_nmhandle_t *
-alloc_handle(isc_nmsocket_t *socket);
-static isc_nmhandle_t *
-get_handle(isc_nmsocket_t *socket, isc_sockaddr_t *peer);
-static isc__nm_uvreq_t *
+/* Return thread id of current thread, or ISC_NETMGR_TID_UNKNOWN */
+int
+isc__nm_tid(void);
+
+
+void
+isc__nmhandle_free(isc_nmhandle_t *handle);
+
+void *
+isc__nm_get_ievent(isc_nm_t *mgr, isc__netievent_type type);
+
+void
+isc__nm_enqueue_ievent(isc__networker_t *worker, isc__netievent_t *event);
+
+void
+isc__nm_alloc_cb(uv_handle_t *handle, size_t size, uv_buf_t *buf);
+
+void
+isc__nm_free_uvbuf(isc_nmsocket_t *socket, const uv_buf_t *buf);
+
+isc_nmhandle_t *
+isc__nm_get_handle(isc_nmsocket_t *socket, isc_sockaddr_t *peer);
+
+isc__nm_uvreq_t *
 isc__nm_uvreq_get(isc_nm_t *mgr, isc_nmsocket_t *socket);
-static void
+
+void
 isc__nm_uvreq_put(isc__nm_uvreq_t **req, isc_nmsocket_t *socket);
 
-static isc_result_t
-isc__nm_udp_send_direct(isc_nmsocket_t *socket,
-			isc__nm_uvreq_t *req,
-			isc_sockaddr_t *peer);
-static isc_result_t
+void
+isc__nmsocket_init(isc_nmsocket_t *socket, isc_nm_t *mgr, isc_nmsocket_type type);
+
+/*
+ * Send for UDP handle
+ */
+isc_result_t
 isc__nm_udp_send(isc_nmhandle_t *handle,
 		 isc_region_t *region,
 		 isc_nm_send_cb_t cb,
 		 void *cbarg);
-static void
-udp_recv_cb(uv_udp_t *handle,
-	    ssize_t nrecv,
-	    const uv_buf_t *buf,
-	    const struct sockaddr *addr,
-	    unsigned flags);
-static void
-handle_udplisten(isc__networker_t *worker, isc__netievent_t *ievent0);
+/*
+ * Async callbacks for UDP
+ */
+void
+isc__nm_handle_udplisten(isc__networker_t *worker, isc__netievent_t *ievent0);
+void
+isc__nm_handle_udpstoplisten(isc__networker_t *worker, isc__netievent_t *ievent0);
+void
+isc__nm_handle_udpsend(isc__networker_t *worker, isc__netievent_t *ievent0);
 
-static void
-handle_udpstoplisten(isc__networker_t *worker, isc__netievent_t *ievent0);
 
-static void
-handle_udpsend(isc__networker_t *worker, isc__netievent_t *ievent0);
-
-static void
-udp_send_cb(uv_udp_send_t *req, int status);
-
-static int
-isc__nm_tcp_connect_direct(isc_nmsocket_t *socket, isc__nm_uvreq_t *req);
-
-static isc_result_t
+/*
+ * Send for TCP handle
+ */
+isc_result_t
 isc__nm_tcp_send(isc_nmhandle_t *handle,
 		 isc_region_t *region,
 		 isc_nm_send_cb_t cb,
 		 void *cbarg);
 
-static isc_result_t
-isc__nm_tcp_send_direct(isc_nmsocket_t *socket,
-			isc__nm_uvreq_t *req);
 
+/*
+ * Async callbacks for TCP
+ */
+ 
+void
+isc__nm_handle_tcpconnect(isc__networker_t *worker, isc__netievent_t *ievent0);
+void
+isc__nm_handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0);
+void
+isc__nm_handle_tcpsend(isc__networker_t *worker, isc__netievent_t *ievent0);
+void
+isc__nm_handle_startread(isc__networker_t *worker, isc__netievent_t *ievent0);
 
-
-static void
-handle_tcpconnect(isc__networker_t *worker, isc__netievent_t *ievent0);
-static void
-tcp_connect_cb(uv_connect_t *uvreq, int status);
-
-static void
-handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0);
-static void
-handle_tcpsend(isc__networker_t *worker, isc__netievent_t *ievent0);
-static void
-tcp_connection_cb(uv_stream_t *server, int status);
-
-static void
-handle_startread(isc__networker_t *worker, isc__netievent_t *ievent0);
 /* static void
 handle_stopread(isc__networker_t *worker, isc__netievent_t *ievent0);
 */
-static void
-read_cb(uv_stream_t* stream,
-        ssize_t nread,
-        const uv_buf_t* buf);
 
 
-static void
-dnslisten_readcb(void *arg, isc_nmhandle_t* handle, isc_region_t *region);
-
-static isc_result_t
+isc_result_t
 isc__nm_tcpdns_send(isc_nmhandle_t *handle,
 		    isc_region_t *region,
 		    isc_nm_send_cb_t cb,
 		    void *cbarg);
+
+

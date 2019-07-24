@@ -40,22 +40,33 @@
  * request using async_cb
  */
 
-#define ISC_NETMGR_TID_UNKNOWN -1
-#define ISC_NETMGR_TID_NOTLS -2
 #if defined(HAVE_TLS)
 #if defined(HAVE_THREAD_LOCAL)
 #include <threads.h>
-static thread_local int isc_netmgr_tid = ISC_NETMGR_TID_UNKNOWN;
+static thread_local int isc__nm_tid_v = ISC_NETMGR_TID_UNKNOWN;
 #elif defined(HAVE___THREAD)
-static __thread int isc_netmgr_tid = ISC_NETMGR_TID_UNKNOWN;
+static __thread int isc__nm_tid_v = ISC_NETMGR_TID_UNKNOWN;
 #elif defined(HAVE___DECLSPEC_THREAD)
-static __declspec( thread ) int isc_netmgr_tid = ISC_NETMGR_TID_UNKNOWN;
+static __declspec( thread ) int isc__nm_tid_v = ISC_NETMGR_TID_UNKNOWN;
 #else  /* if defined(HAVE_THREAD_LOCAL) */
 #error "Unknown method for defining a TLS variable!"
 #endif /* if defined(HAVE_THREAD_LOCAL) */
 #else  /* if defined(HAVE_TLS) */
-static int isc_netmgr_tid = ISC_NETMGR_TID_NOTLS;
+static int isc__nm_tid_v = ISC_NETMGR_TID_NOTLS;
 #endif /* if defined(HAVE_TLS) */
+
+static void *
+nm_thread(void *worker0);
+
+static void
+async_cb(uv_async_t *handle);
+
+
+
+int
+isc__nm_tid() {
+	return (isc__nm_tid_v);
+}
 
 /*
  * isc_nm_start creates and starts a network manager, with `workers` workers.
@@ -106,7 +117,7 @@ isc_nm_start(isc_mem_t *mctx, int workers) {
 		worker->pktcount = 0;
 		worker->udprecvbuf_inuse = false;
 
-		result = isc_thread_create(isc__net_thread, &mgr->workers[i],
+		result = isc_thread_create(nm_thread, &mgr->workers[i],
 					   &worker->thread);
 		RUNTIME_CHECK(result == ISC_R_SUCCESS);
 
@@ -132,8 +143,8 @@ isc_nm_shutdown(isc_nm_t **mgr0) {
 		LOCK(&mgr->workers[i].lock);
 		mgr->workers[i].finished = true;
 		UNLOCK(&mgr->workers[i].lock);
-		isc__netievent_t *ievent = get_ievent(mgr, netievent_stop);
-		enqueue_ievent(&mgr->workers[i], ievent);
+		isc__netievent_t *ievent = isc__nm_get_ievent(mgr, netievent_stop);
+		isc__nm_enqueue_ievent(&mgr->workers[i], ievent);
 	}
 	while (mgr->workers_running > 0) {
 		isc_condition_wait(&mgr->wkstatecond, &mgr->lock);
@@ -180,15 +191,15 @@ isc_nm_detach(isc_nm_t **mgr0) {
 
 
 /*
- * isc__net_thread is a single worker thread, that runs uv_run event loop
+ * nm_thread is a single worker thread, that runs uv_run event loop
  * until asked to stop.
  */
 static void *
-isc__net_thread(void *worker0) {
+nm_thread(void *worker0) {
 	isc__networker_t *worker = (isc__networker_t*) worker0;
 	atomic_fetch_add_explicit(&worker->mgr->workers_running, 1,
 				  memory_order_relaxed);
-	isc_netmgr_tid = worker->id;
+	isc__nm_tid_v = worker->id;
 	while (true) {
 		int r = uv_run(&worker->loop, UV_RUN_DEFAULT);
 		/*
@@ -244,29 +255,29 @@ async_cb(uv_async_t *handle) {
 			uv_stop(handle->loop);
 			break;
 		case netievent_udplisten:
-			handle_udplisten(worker, ievent);
+			isc__nm_handle_udplisten(worker, ievent);
 			break;
 		case netievent_udpstoplisten:
-			handle_udpstoplisten(worker, ievent);
+			isc__nm_handle_udpstoplisten(worker, ievent);
 			break;
 		case netievent_udpsend:
-			handle_udpsend(worker, ievent);
+			isc__nm_handle_udpsend(worker, ievent);
 			break;
 		case netievent_tcpconnect:
-			handle_tcpconnect(worker, ievent);
+			isc__nm_handle_tcpconnect(worker, ievent);
 			break;
 		case netievent_tcplisten:
-			handle_tcplisten(worker, ievent);
+			isc__nm_handle_tcplisten(worker, ievent);
 			break;
         	case netievent_tcpstartread:
-                	handle_startread(worker, ievent);
+                	isc__nm_handle_startread(worker, ievent);
                 	break;
 /*        	case netievent_tcpstopread:
                 	handle_stopread(worker, ievent);
                 	break; */
 		case netievent_tcpsend:
-                       handle_tcpsend(worker, ievent);
-                       break;
+                        isc__nm_handle_tcpsend(worker, ievent);
+                        break;
  
  
 /*              case netievent_tcpstoplisten:
@@ -281,11 +292,11 @@ async_cb(uv_async_t *handle) {
 	}
 }
 /*
- * get_ievent allocates an ievent and sets the type
+ * isc__nm_get_ievent allocates an ievent and sets the type
  * xxxwpk: use pool?
  */
-static void *
-get_ievent(isc_nm_t *mgr, isc__netievent_type type) {
+void *
+isc__nm_get_ievent(isc_nm_t *mgr, isc__netievent_type type) {
 	isc__netievent_t *event =
 		isc_mem_get(mgr->mctx, sizeof(isc__netievent_storage_t));
 	*event = (isc__netievent_t) { .type = type };
@@ -296,8 +307,8 @@ get_ievent(isc_nm_t *mgr, isc__netievent_type type) {
  * enqueue ievent on a specific worker queue. This the only safe
  * way to use isc__networker_t from another thread.
  */
-static void
-enqueue_ievent(isc__networker_t *worker, isc__netievent_t *event) {
+void
+isc__nm_enqueue_ievent(isc__networker_t *worker, isc__netievent_t *event) {
 	struct ck_fifo_mpmc_entry *entry = isc_mem_get(worker->mgr->mctx,
 						       sizeof(*entry));
 	ck_fifo_mpmc_enqueue(&worker->ievents, entry, event);
@@ -337,8 +348,8 @@ isc_nmsocket_detach(isc_nmsocket_t **socketp) {
 	*socketp = NULL;
 }
 
-static void
-nmsocket_init(isc_nmsocket_t *socket, isc_nm_t *mgr, isc_nmsocket_type type) {
+void
+isc__nmsocket_init(isc_nmsocket_t *socket, isc_nm_t *mgr, isc_nmsocket_type type) {
 	*socket = (isc_nmsocket_t) {
 		.type = type,
 		.fd = -1
@@ -358,8 +369,8 @@ nmsocket_init(isc_nmsocket_t *socket, isc_nm_t *mgr, isc_nmsocket_type type) {
 /*
  * alloc_cb for recv operations. XXXWPK TODO use a pool
  */
-static void
-alloc_cb(uv_handle_t *handle, size_t size, uv_buf_t *buf) {
+void
+isc__nm_alloc_cb(uv_handle_t *handle, size_t size, uv_buf_t *buf) {
 	isc_nmsocket_t *socket = (isc_nmsocket_t *) handle->data;
 	REQUIRE(VALID_NMSOCK(socket));
 	REQUIRE(socket->tid >= 0);
@@ -373,8 +384,8 @@ alloc_cb(uv_handle_t *handle, size_t size, uv_buf_t *buf) {
 	buf->len = size;
 }
 
-static void
-free_uvbuf(isc_nmsocket_t *socket, const uv_buf_t *buf) {
+void
+isc__nm_free_uvbuf(isc_nmsocket_t *socket, const uv_buf_t *buf) {
 	REQUIRE(VALID_NMSOCK(socket));
 	(void) buf;
 	isc__networker_t *worker = &socket->mgr->workers[socket->tid];
@@ -392,6 +403,9 @@ free_uvbuf(isc_nmsocket_t *socket, const uv_buf_t *buf) {
  */
 
 static isc_nmhandle_t *
+alloc_handle(isc_nmsocket_t *socket);
+
+static isc_nmhandle_t *
 alloc_handle(isc_nmsocket_t *socket) {
 	isc_nmhandle_t *handle;
 	handle = isc_mem_get(socket->mgr->mctx,
@@ -404,8 +418,8 @@ alloc_handle(isc_nmsocket_t *socket) {
 	return (handle);
 }
 
-static isc_nmhandle_t *
-get_handle(isc_nmsocket_t *socket, isc_sockaddr_t *peer) {
+isc_nmhandle_t *
+isc__nm_get_handle(isc_nmsocket_t *socket, isc_sockaddr_t *peer) {
 	isc_nmhandle_t *handle = NULL;
 	ck_stack_entry_t *sentry;
 	REQUIRE(VALID_NMSOCK(socket));
@@ -448,8 +462,8 @@ isc_nmhandle_is_stream(isc_nmhandle_t *handle) {
 	return handle->socket->type == isc_nm_tcpsocket || handle->socket->type == isc_nm_tcpdnssocket;
 }
 
-static void
-nmhandle_free(isc_nmhandle_t *handle) {
+void
+isc__nmhandle_free(isc_nmhandle_t *handle) {
 	isc_nm_t *mgr = NULL;
 	size_t extra = handle->socket->extrahandlesize;
 	if (handle->dofree) {
@@ -477,7 +491,7 @@ isc_nmhandle_detach(isc_nmhandle_t **handlep) {
 		reuse = ck_stack_trypush_mpmc(&handle->socket->inactivehandles,
 					      &handle->ilink);
 		if (!reuse) {
-			nmhandle_free(handle);
+			isc__nmhandle_free(handle);
 		}
 	}
 	*handlep = NULL;
@@ -518,7 +532,7 @@ isc_nmhandle_peeraddr(isc_nmhandle_t *handle) {
  * with data field set up.
  */
 
-static isc__nm_uvreq_t *
+isc__nm_uvreq_t *
 isc__nm_uvreq_get(isc_nm_t *mgr, isc_nmsocket_t *socket) {
 	isc__nm_uvreq_t *req = NULL;
 	if (socket != NULL) {
@@ -543,7 +557,7 @@ isc__nm_uvreq_get(isc_nm_t *mgr, isc_nmsocket_t *socket) {
 /*
  * isc__nm_uvreq_put frees uv_req_t of specified type
  */
-static void
+void
 isc__nm_uvreq_put(isc__nm_uvreq_t **req0, isc_nmsocket_t *socket) {
 	isc__nm_uvreq_t *req;
 	isc_nm_t *mgr;
@@ -591,9 +605,3 @@ isc_nm_send(isc_nmhandle_t *handle,
 	return (ISC_R_FAILURE);
 }
 
-
-#include "udp.c"
-
-#include "tcp.c"
-
-#include "tcpdns.c"
