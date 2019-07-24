@@ -80,6 +80,9 @@ isc_nmhandle_getextra(isc_nmhandle_t *handle);
 
 typedef void (*isc_nm_opaquecb)(void *arg);
 
+bool
+isc_nmhandle_is_stream(isc_nmhandle_t *handle);
+
 /* 
  * isc_nmhandle_t has a void* opaque field (usually - ns_client_t).
  * We reuse handle and `opaque` can also be reused between calls.
@@ -107,12 +110,13 @@ typedef void (*isc_nm_recv_cb_t)(void *arg, isc_nmhandle_t* handle,
  * isc_nm_udp_listen starts listening for UDP packets on iface using mgr.
  * When a packet is received cb is called with cbarg as its first argument
  */
-isc_nmsocket_t *
+isc_result_t
 isc_nm_udp_listen(isc_nm_t *mgr,
 		  isc_nmiface_t *iface,
 		  isc_nm_recv_cb_t cb,
 		  size_t extrasize,
-		  void *cbarg);
+		  void *cbarg,
+		  isc_nmsocket_t **rv);
 
 void
 isc_nm_udp_stoplistening(isc_nmsocket_t *socket);
@@ -145,6 +149,10 @@ isc_nm_udp_socket();
 isc_result_t
 isc_nm_dnsread(isc_nmsocket_t *socket, isc_buffer_t*buf);
 
+
+isc_result_t
+isc_nm_read(isc_nmhandle_t *handle, isc_nm_recv_cb_t cb, void* cbarg);
+
 /*
  * isc_nm_send sends region to handle, after finishing cb is called. 
  * region is not copied, it has to be allocated beforehand and freed in cb.
@@ -153,17 +161,19 @@ isc_nm_dnsread(isc_nmsocket_t *socket, isc_buffer_t*buf);
 isc_result_t
 isc_nm_send(isc_nmhandle_t *handle, isc_region_t *region, isc_nm_send_cb_t cb, void *cbarg);
 
-isc_nmsocket_t *
+isc_result_t
 isc_nm_tcp_listen(isc_nm_t *mgr,
 		  isc_nmiface_t *iface,
-		  size_t extrahandlesize,
 		  isc_nm_accept_cb_t cb,
-		  void *cbarg);
+		  size_t extrahandlesize,
+		  void *cbarg,
+		  isc_nmsocket_t **rv);
 
 
-isc_nmsocket_t *
+isc_result_t
 isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 		     isc_nmiface_t *iface,
-		     size_t extrahandlesize,
 		     isc_nm_recv_cb_t cb,
-		     void *arg);
+		     size_t extrahandlesize,
+		     void *arg,
+		     isc_nmsocket_t **rv);

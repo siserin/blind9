@@ -117,8 +117,10 @@ typedef enum isc__netievent_type {
 	netievent_udpsend,
 	netievent_udprecv,
 	netievent_tcpconnect,
-	netievent_tcprecv,
 	netievent_tcpsend,
+	netievent_tcprecv,
+	netievent_tcpstartread,
+	netievent_tcpstopread,
 	netievent_tcplisten,
 	netievent_tcpstoplisten,
 } isc__netievent_type;
@@ -127,13 +129,23 @@ typedef struct isc__netievent_stop {
 	isc__netievent_type        type;
 } isc__netievent_stop_t;
 
+/* We have to split it because we can read and write on a socket simultaneously */
 typedef union {
 	isc_nm_recv_cb_t	   recv;
+	isc_nm_accept_cb_t	   accept;
+} isc__nm_readcb_t;
+
+typedef union {
 	isc_nm_send_cb_t	   send;
 	isc_nm_connect_cb_t	   connect;
-	isc_nm_accept_cb_t	   accept;
-} isc__nm_cb_t;
+} isc__nm_writecb_t;
 
+typedef union {
+	isc_nm_recv_cb_t	   recv;
+	isc_nm_accept_cb_t	   accept;
+	isc_nm_send_cb_t	   send;
+	isc_nm_connect_cb_t	   connect;
+} isc__nm_cb_t;
 
 /*
  * Wrapper around uv_req_t with 'our' fields in it.
@@ -151,7 +163,7 @@ typedef struct isc__nm_uvreq {
 	                              * received */
 	isc_sockaddr_t	      local; /* local address */
 	isc_sockaddr_t	      peer;  /* peer address */
-	isc__nm_cb_t	      cb;    /* callback */
+	isc__nm_cb_t 	      cb;    /* callback */
 	void *		      cbarg;
 	isc_nmhandle_t *      handle;
 	ck_stack_entry_t      ilink;
@@ -203,6 +215,18 @@ typedef struct isc__netievent_tcplisten {
 	isc__nm_uvreq_t *	   req;
 } isc__netievent_tcplisten_t;
 
+typedef struct isc__netievent_tcpsend {
+	isc__netievent_type	   type;
+	isc_nmhandle_t		   handle;
+	isc__nm_uvreq_t *	   req;
+} isc__netievent_tcpsend_t;
+
+typedef struct isc__netievent_startread {
+	isc__netievent_type	   type;
+	isc_nmsocket_t *	   socket;
+	isc__nm_uvreq_t *	   req;
+} isc__netievent_startread_t;
+
 typedef struct isc__netievent {
 	isc__netievent_type        type;
 } isc__netievent_t;
@@ -239,7 +263,9 @@ typedef enum isc_nmsocket_type {
 	isc_nm_udpsocket,
 	isc_nm_udplistener, /* Aggregate of nm_udpsocks */
 	isc_nm_tcpsocket,
-	isc_nm_tcplistener
+	isc_nm_tcplistener,
+	isc_nm_tcpdnslistener,
+	isc_nm_tcpdnssocket
 } isc_nmsocket_type;
 
 
@@ -261,7 +287,11 @@ struct isc_nmsocket {
 	atomic_int_fast32_t		  rchildren;
 	int				  tid;
 	isc_nmiface_t *			  iface;
-	/* 'spare' handles that can be reused to avoid allocations */
+	isc_nmhandle_t			  tcphandle;
+	/*
+	 * 'spare' handles for that can be reused to avoid allocations,
+	 * for UDP.
+	 */
 	ck_stack_t inactivehandles	  CK_CC_CACHELINE;
 	ck_stack_t inactivereqs		  CK_CC_CACHELINE;
 	/* extra data allocated at the end of each isc_nmhandle_t */
@@ -275,8 +305,10 @@ struct isc_nmsocket {
 		uv_tcp_t	   tcp;
 	} uv_handle;
 
-	isc__nm_cb_t	    cb;
-	void *		    cbarg;
+	isc__nm_readcb_t	    rcb;
+	void *		 	    rcbarg;
+	isc__nm_writecb_t	    wcb;
+	void *			    wcbarg;
 };
 
 static void *
@@ -329,6 +361,19 @@ udp_send_cb(uv_udp_send_t *req, int status);
 
 static int
 isc__nm_tcp_connect_direct(isc_nmsocket_t *socket, isc__nm_uvreq_t *req);
+
+static isc_result_t
+isc__nm_tcp_send(isc_nmhandle_t *handle,
+		 isc_region_t *region,
+		 isc_nm_send_cb_t cb,
+		 void *cbarg);
+
+static isc_result_t
+isc__nm_tcp_send_direct(isc_nmsocket_t *socket,
+			isc__nm_uvreq_t *req);
+
+
+
 static void
 handle_tcpconnect(isc__networker_t *worker, isc__netievent_t *ievent0);
 static void
@@ -337,8 +382,29 @@ tcp_connect_cb(uv_connect_t *uvreq, int status);
 static void
 handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0);
 static void
+handle_tcpsend(isc__networker_t *worker, isc__netievent_t *ievent0);
+static void
 tcp_connection_cb(uv_stream_t *server, int status);
 
+static void
+handle_startread(isc__networker_t *worker, isc__netievent_t *ievent0);
+/* static void
+handle_stopread(isc__networker_t *worker, isc__netievent_t *ievent0);
+*/
+static void
+read_cb(uv_stream_t* stream,
+        ssize_t nread,
+        const uv_buf_t* buf);
+
+
+static void
+dnslisten_readcb(void *arg, isc_nmhandle_t* handle, isc_region_t *region);
+
+static isc_result_t
+isc__nm_tcpdns_send(isc_nmhandle_t *handle,
+		    isc_region_t *region,
+		    isc_nm_send_cb_t cb,
+		    void *cbarg);
 
 /*
  * isc_nm_start creates and starts a network manager, with `workers` workers.
@@ -541,13 +607,18 @@ async_cb(uv_async_t *handle) {
 		case netievent_tcplisten:
 			handle_tcplisten(worker, ievent);
 			break;
-/*		case netievent_tcpsend:
- *                      handle_tcpsend(worker, ievent);
- *                      break;
- *              case netievent_tcprecv:
- *                      handle_tcprecv(worker, ievent);
- *                      break;
- *              case netievent_tcpstoplisten:
+        	case netievent_tcpstartread:
+                	handle_startread(worker, ievent);
+                	break;
+/*        	case netievent_tcpstopread:
+                	handle_stopread(worker, ievent);
+                	break; */
+		case netievent_tcpsend:
+                       handle_tcpsend(worker, ievent);
+                       break;
+ 
+ 
+/*              case netievent_tcpstoplisten:
  *                      handle_tcpstoplisten(worker, ievent);
  *                      break; */
 		default:
@@ -566,7 +637,7 @@ static void *
 get_ievent(isc_nm_t *mgr, isc__netievent_type type) {
 	isc__netievent_t *event =
 		isc_mem_get(mgr->mctx, sizeof(isc__netievent_storage_t));
-	event->type = type;
+	*event = (isc__netievent_t) { .type = type };
 	return (event);
 }
 
@@ -617,24 +688,21 @@ isc_nmsocket_detach(isc_nmsocket_t **socketp) {
 
 static void
 nmsocket_init(isc_nmsocket_t *socket, isc_nm_t *mgr, isc_nmsocket_type type) {
-	socket->iface = NULL;
-	socket->mgr = NULL;
+	*socket = (isc_nmsocket_t) {
+		.type = type,
+		.fd = -1
+	};
+
 	isc_nm_attach(mgr, &socket->mgr);
-	socket->type = type;
-	socket->nchildren = 0;
-	socket->rchildren = 0;
-	socket->children = NULL;
-	socket->cb.accept = NULL; /* First of the union */
-	socket->cbarg = NULL;
-	socket->parent = NULL;
-	socket->fd = -1;
-	socket->extrahandlesize = 0;
 	uv_handle_set_data(&socket->uv_handle.handle, socket);
 
 	ck_stack_init(&socket->inactivehandles);
 	ck_stack_init(&socket->inactivereqs);
 	socket->magic = NMSOCK_MAGIC;
 	isc_refcount_init(&socket->refs, 1);
+	if (type == isc_nm_tcpsocket) {
+		socket->tcphandle = (isc_nmhandle_t) { .socket = socket};
+	}
 }
 /*
  * alloc_cb for recv operations. XXXWPK TODO use a pool
@@ -678,10 +746,7 @@ alloc_handle(isc_nmsocket_t *socket) {
 	handle = isc_mem_get(socket->mgr->mctx,
 			     sizeof(isc_nmhandle_t) +
 			     socket->extrahandlesize);
-	handle->socket = NULL;
-	handle->opaque = NULL;
-	handle->doreset = NULL;
-	handle->dofree = NULL;
+	*handle = (isc_nmhandle_t) {};
 	isc_nmsocket_attach(socket, &handle->socket);
 	isc_refcount_init(&handle->refs, 1);
 	handle->magic = NMHANDLE_MAGIC;
@@ -693,17 +758,29 @@ get_handle(isc_nmsocket_t *socket, isc_sockaddr_t *peer) {
 	isc_nmhandle_t *handle = NULL;
 	ck_stack_entry_t *sentry;
 	REQUIRE(VALID_NMSOCK(socket));
-	sentry = ck_stack_pop_mpmc(&socket->inactivehandles);
-	if (sentry != NULL) {
-		handle = nm_handle_is_get(sentry);
-	}
-	if (handle == NULL) {
-		handle = alloc_handle(socket);
+	if (socket->type == isc_nm_tcpsocket) {
+		handle = &socket->tcphandle;
+		/* XXXWPK this should be more elegant */
+		INSIST(!VALID_NMHANDLE(handle));
+		*handle = (isc_nmhandle_t) {};
+		isc_nmsocket_attach(socket, &handle->socket);
+		isc_refcount_init(&handle->refs, 1);
+		handle->magic = NMHANDLE_MAGIC;
 	} else {
-		INSIST(VALID_NMHANDLE(handle));
-		isc_refcount_increment(&handle->refs);
+		sentry = ck_stack_pop_mpmc(&socket->inactivehandles);
+		if (sentry != NULL) {
+			handle = nm_handle_is_get(sentry);
+		}
+		if (handle == NULL) {
+			handle = alloc_handle(socket);
+		} else {
+			INSIST(VALID_NMHANDLE(handle));
+			isc_refcount_increment(&handle->refs);
+		}
 	}
-	memcpy(&handle->peer, peer, sizeof(isc_sockaddr_t));
+	if (peer != NULL) {
+		memcpy(&handle->peer, peer, sizeof(isc_sockaddr_t));
+	}
 	return(handle);
 }
 
@@ -715,6 +792,10 @@ isc_nmhandle_attach(isc_nmhandle_t *handle, isc_nmhandle_t **handlep) {
 	*handlep = handle;
 }
 
+bool
+isc_nmhandle_is_stream(isc_nmhandle_t *handle) {
+	return handle->socket->type == isc_nm_tcpsocket || handle->socket->type == isc_nm_tcpdnssocket;
+}
 
 static void
 nmhandle_free(isc_nmhandle_t *handle) {
@@ -850,8 +931,10 @@ isc_nm_send(isc_nmhandle_t *handle,
 	case isc_nm_udplistener:
 		return (isc__nm_udp_send(handle, region, cb, cbarg));
 		break;
-/*	case isc_nm_tcpsocket: */
-/*		return (isc__nm_tcp_send(handle, region, cb, cbarg)); */
+	case isc_nm_tcpsocket:
+		return (isc__nm_tcp_send(handle, region, cb, cbarg));
+	case isc_nm_tcpdnssocket:
+		return (isc__nm_tcpdns_send(handle, region, cb, cbarg));
 	default:
 		INSIST(0);
 	}
@@ -866,16 +949,15 @@ isc_nm_send(isc_nmhandle_t *handle,
  *  U   U  D  D  P
  *   UUU   DDD   P
  */
-
-isc_nmsocket_t *
+isc_result_t
 isc_nm_udp_listen(isc_nm_t *mgr,
 		  isc_nmiface_t *iface,
 		  isc_nm_recv_cb_t cb,
 		  size_t extrahandlesize,
-		  void *arg) {
+		  void *arg,
+		  isc_nmsocket_t **rv) {
 	isc_nmsocket_t *nsocket;
-	int i, res;
-	int one = 1;
+	int res;
 
 	/*
 	 * We are creating nworkers duplicated sockets, one for each worker
@@ -892,11 +974,11 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 	nsocket->children = malloc(mgr->nworkers * sizeof(*nsocket));
 /* TODO for debugging		isc_mem_get(mgr->mctx, mgr->nworkers *
  * sizeof(*nsocket)); */
-	nsocket->cb.recv = cb;
-	nsocket->cbarg = arg;
+	nsocket->rcb.recv = cb;
+	nsocket->rcbarg = arg;
 	nsocket->extrahandlesize = extrahandlesize;
 
-	for (i = 0; i < mgr->nworkers; i++) {
+	for (int i = 0; i < mgr->nworkers; i++) {
 		isc__netievent_udplisten_t *ievent;
 		isc_nmsocket_t *csocket = &nsocket->children[i];
 		nmsocket_init(csocket, mgr, isc_nm_udpsocket);
@@ -904,21 +986,22 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 		csocket->iface = iface;
 		csocket->tid = i;
 		csocket->extrahandlesize = extrahandlesize;
-		csocket->cb.recv = cb;
-		csocket->cbarg = arg;
+		csocket->rcb.recv = cb;
+		csocket->rcbarg = arg;
 		csocket->fd = socket(AF_INET, SOCK_DGRAM, 0);
 		INSIST(csocket->fd >= 0);
 		res = setsockopt(csocket->fd,
 				 SOL_SOCKET,
 				 SO_REUSEPORT,
-				 &one,
-				 sizeof(one));
+				 &(int){1},
+				 sizeof(int));
 		INSIST(res == 0);
 		ievent = get_ievent(mgr, netievent_udplisten);
 		ievent->socket = csocket;
 		enqueue_ievent(&mgr->workers[i], (isc__netievent_t*) ievent);
 	}
-	return (nsocket);
+	*rv = nsocket;
+	return (ISC_R_SUCCESS);
 }
 
 void
@@ -1024,6 +1107,7 @@ udp_recv_cb(uv_udp_t *handle,
 	(void) flags;
 	isc_nmsocket_t *socket = (isc_nmsocket_t *) handle->data;
 	REQUIRE(VALID_NMSOCK(socket));
+	INSIST(socket->rcb.recv != NULL);
 
 	/*
 	 * If addr == NULL that's the end of stream - we can
@@ -1042,7 +1126,7 @@ udp_recv_cb(uv_udp_t *handle,
 	/* not buf->len, that'd be the whole buffer! */
 	region.length = nrecv;
 
-	socket->cb.recv(socket->cbarg, nmhandle, &region);
+	socket->rcb.recv(socket->rcbarg, nmhandle, &region);
 	free_uvbuf(socket, buf);
 
 	/* If recv callback wants it it should attach to it */
@@ -1175,20 +1259,6 @@ isc__nm_udp_send_direct(isc_nmsocket_t *socket,
  *   T    C   C  P
  *   T     CCC   P
  */
-/*
- *
- * static void
- * tcp_listen_cb(uv_stream_t *server, int status) {
- *
- * }
- *
- * isc_result_t
- * isc_nm_tcp_listen(isc_nm_t *mgr, isc_nmiface_t *iface, isc_nm_accept_cb_t cb,
- * void *cbarg)
- * {
- *
- * }
- */
 
 /*
  * isc_nm_tcp_connect connects to 'peer' using (optional) 'iface' as the
@@ -1301,37 +1371,35 @@ tcp_connect_cb(uv_connect_t *uvreq, int status) {
 	isc__nm_uvreq_put(&req, socket);
 }
 
-isc_nmsocket_t *
+isc_result_t
 isc_nm_tcp_listen(isc_nm_t *mgr,
 		  isc_nmiface_t *iface,
-		  size_t extrahandlesize,
 		  isc_nm_accept_cb_t cb,
-		  void *cbarg)
+		  size_t extrahandlesize,
+		  void *cbarg,
+		  isc_nmsocket_t ** rv)
 {
 	isc__netievent_tcplisten_t *ievent;
 	INSIST(VALID_NM(mgr));
 	isc_nmsocket_t *nsocket;
 
 	nsocket = isc_mem_get(mgr->mctx, sizeof(*nsocket));
+	nmsocket_init(nsocket, mgr, isc_nm_tcplistener);
 	nsocket->iface = iface;
-	isc_nm_attach(mgr, &nsocket->mgr);
-	nsocket->type = isc_nm_tcplistener;
-	nsocket->nchildren = 0;
-	nsocket->children = NULL;
-	nsocket->cb.accept = cb;
-	nsocket->cbarg = cbarg;
-	nsocket->parent = NULL;
+	nsocket->rcb.accept = cb;
+	nsocket->rcbarg = cbarg;
 	nsocket->extrahandlesize = extrahandlesize;
+	nsocket->tid = isc_random_uniform(mgr->nworkers);
 	/*
 	 * Listening to TCP is rare enough not to care about the
 	 * added overhead from passing this to another thread.
 	 */
 	ievent = get_ievent(mgr, netievent_tcplisten);
 	ievent->socket = nsocket;
-	enqueue_ievent(&mgr->workers[isc_random_uniform(
-					     mgr->nworkers)],
+	enqueue_ievent(&mgr->workers[nsocket->tid],
 		       (isc__netievent_t*) ievent);
-	return (nsocket);
+	*rv = nsocket;
+	return (ISC_R_SUCCESS);
 }
 
 static void
@@ -1343,20 +1411,70 @@ handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 
 	REQUIRE(isc_netmgr_tid >= 0);
 	REQUIRE(socket->type == isc_nm_tcplistener);
-	REQUIRE(worker->id == ievent->req->mgr->workers[isc_netmgr_tid].id);
+//	REQUIRE(worker->id == ievent->req->mgr->workers[isc_netmgr_tid].id);
 
 	r = uv_tcp_init(&worker->loop, &socket->uv_handle.tcp);
 	if (r != 0) {
 		return;
 	}
 
-/*	uv_tcp_bind(&socket->uv_handle.tcp, ) */
-	/* XXXWPK TODO bind address */
+	uv_tcp_bind(&socket->uv_handle.tcp, &socket->iface->addr.type.sa, 0);
 	r = uv_listen((uv_stream_t*) &socket->uv_handle.tcp,
 		      10,
 		      tcp_connection_cb);
 	return;
 	/* issue callback? */
+}
+
+
+isc_result_t
+isc_nm_read(isc_nmhandle_t *handle, isc_nm_recv_cb_t cb, void* cbarg) {
+	INSIST(VALID_NMHANDLE(handle));
+	isc_nmsocket_t *socket = handle->socket;
+	INSIST(VALID_NMSOCK(socket));
+	socket->rcb.recv = cb;
+	socket->rcbarg = cbarg; /* THat's obviously broken... */
+	if (socket->tid == isc_netmgr_tid) {
+		uv_read_start(&socket->uv_handle.stream, alloc_cb, read_cb);
+	} else {
+		isc__netievent_startread_t *ievent =
+			get_ievent(socket->mgr, netievent_tcpstartread);
+		ievent->socket = socket;
+		enqueue_ievent(&socket->mgr->workers[socket->tid],
+			       (isc__netievent_t*) ievent);
+
+	}
+	return (ISC_R_SUCCESS);
+}
+
+static void
+handle_startread(isc__networker_t *worker, isc__netievent_t *ievent0) {
+	isc__netievent_startread_t *ievent =
+		(isc__netievent_startread_t *) ievent0;
+	REQUIRE(worker->id == isc_netmgr_tid);
+	
+	isc_nmsocket_t *socket = ievent->socket;
+
+	uv_read_start(&socket->uv_handle.stream, alloc_cb, read_cb);
+}
+
+static void
+read_cb(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
+	isc_nmsocket_t *socket = uv_handle_get_data((uv_handle_t*) stream);
+	INSIST(buf != NULL);
+	if (nread < 0) {
+		free_uvbuf(socket, buf);
+		/* XXXWPK TODO clean up handles! */
+		return;
+	}
+	isc_region_t region = { .base = (unsigned char *) buf->base, 
+				.length = nread };
+
+	INSIST(VALID_NMSOCK(socket));
+	INSIST(socket->rcb.recv != NULL);
+
+	socket->rcb.recv(socket->rcbarg, &socket->tcphandle, &region);
+	free_uvbuf(socket, buf);
 }
 
 static void
@@ -1366,102 +1484,239 @@ tcp_connection_cb(uv_stream_t *server, int status) {
 	isc__networker_t *worker;
 
 	ssocket = uv_handle_get_data((uv_handle_t*) server);
-	REQUIRE(VALID_NMSOCK(socket));
+	REQUIRE(VALID_NMSOCK(ssocket));
 	REQUIRE(ssocket->tid == isc_netmgr_tid);
+	INSIST(ssocket->rcb.accept != NULL);
 
 	worker = &ssocket->mgr->workers[isc_netmgr_tid];
 
 	csocket = isc_mem_get(ssocket->mgr->mctx, sizeof(isc_nmsocket_t));
 	nmsocket_init(csocket, ssocket->mgr, isc_nm_tcpsocket);
+	csocket->tid = isc_netmgr_tid;
 	csocket->extrahandlesize = ssocket->extrahandlesize;
+
 	uv_tcp_init(&worker->loop, &csocket->uv_handle.tcp);
 	int r = uv_accept(server, &csocket->uv_handle.stream);
 	if (r != 0) {
 		return; /* XXXWPK TODO LOG */
 	}
-	isc_nmhandle_t *handle = alloc_handle(csocket);
-	ssocket->cb.accept(handle, ISC_R_SUCCESS, ssocket->cbarg);
+	isc_sockaddr_t peer;
+	struct sockaddr_storage ss;
+	int l = sizeof(ss);
+	uv_tcp_getpeername(&csocket->uv_handle.tcp, (struct sockaddr*) &ss, &l);
+	isc_result_t result = isc_sockaddr_fromsockaddr(&peer, (struct sockaddr*) &ss);
+	INSIST(result == ISC_R_SUCCESS);
+	isc_nmhandle_t *handle = get_handle(csocket, &peer);
+	ssocket->rcb.accept(handle, ISC_R_SUCCESS, ssocket->rcbarg);
 }
 
 /*
- *
- * isc_result_t
- * isc_nm_pause(isc_nm_t* mgr);
- *
- * isc_result_t
- * isc_nm_resume(isc_nm_t* mgr);
- *
- * isc_nmsocket_t*
- * isc_nm_tcp_connect(isc_nm_t* mgr);
- *
- * isc_nmsocket_t*
- * isc_nm_udp_socket();
- *
- * isc_result_t
- * isc_nm_recv(isc_nmsocket_t* socket, isc_buffer_t buf)
- *
- * isc_result_t
- * isc_nm_dnsrecv()
- *
- * isc_result_t
- * isc_nm_send(isc_nmsocket_t* socket, isc_buffer_t buf)
- *
+ * isc__nm_tcp_send sends buf to a peer on a socket.
  */
+static isc_result_t
+isc__nm_tcp_send(isc_nmhandle_t *handle,
+		 isc_region_t *region,
+		 isc_nm_send_cb_t cb,
+		 void *cbarg)
+{
+	isc_nmsocket_t *socket = handle->socket;
+	isc__netievent_udpsend_t *ievent;
+	isc__nm_uvreq_t *uvreq;
 
-typedef struct isc__nm_dnstcpconn {
-	isc_nmsocket_t *socket; /* The 'original' listening socket. */
-	isc_buffer_t remainder; /* Operational buffer. */
-	isc_nmhandle_t *tcphandle; /* TCP handle we're using. */
-	isc_nmhandle_t *dnshandle; /* DNS handle given to clients. */
-} isc__nm_dnstcpconn_t;
+	INSIST(socket->type == isc_nm_tcpsocket);
+	
+	uvreq = isc__nm_uvreq_get(socket->mgr, socket);
+	uvreq->uvbuf.base = (char *) region->base;
+	uvreq->uvbuf.len = region->length;
+	isc_nmhandle_attach(handle, &uvreq->handle);
+	uvreq->cb.send = cb;
+	uvreq->cbarg = cbarg;
 
+	if (socket->tid == isc_netmgr_tid) {
+		/*
+		 * If we're in the same thread as the socket we can send the
+		 * data directly
+		 */
+		return (isc__nm_tcp_send_direct(socket, uvreq));
+	} else {
+		/*
+		 * We need to create an event and pass it using async channel
+		 */
+		ievent = get_ievent(socket->mgr, netievent_tcpsend);
+		ievent->handle.socket = socket;
+		ievent->req = uvreq;
+		enqueue_ievent(&socket->mgr->workers[socket->tid],
+			       (isc__netievent_t*) ievent);
+		return (ISC_R_SUCCESS);
+	}
+	return (ISC_R_UNEXPECTED);
+}
+
+
+/*
+ * handle 'tcpsend' async event - send a packet on the socket
+ */
+static void
+handle_tcpsend(isc__networker_t *worker, isc__netievent_t *ievent0) {
+	isc__netievent_udpsend_t *ievent =
+		(isc__netievent_udpsend_t *) ievent0;
+	INSIST(worker->id == ievent->handle.socket->tid);
+	isc__nm_tcp_send_direct(ievent->handle.socket,
+				ievent->req);
+}
+
+/*
+ * udp_send_cb - callback
+ */
+static void
+tcp_send_cb(uv_write_t *req, int status) {
+	isc_result_t result;
+	isc__nm_uvreq_t *uvreq = (isc__nm_uvreq_t*)req->data;
+	INSIST(VALID_UVREQ(uvreq));
+	if (status == 0) {
+		result = ISC_R_SUCCESS;
+	} else {
+		result = ISC_R_FAILURE;
+	}
+	INSIST(VALID_NMHANDLE(uvreq->handle));
+	uvreq->cb.send(uvreq->handle, result, uvreq->cbarg);
+	isc__nm_uvreq_put(&uvreq, uvreq->handle->socket);
+}
+
+/*
+ * isc__nm_udp_send_direct sends buf to a peer on a socket. Sock has to be in
+ * the same thread as the callee.
+ */
+static isc_result_t
+isc__nm_tcp_send_direct(isc_nmsocket_t *socket,
+			isc__nm_uvreq_t *req)
+{
+	int rv;
+	INSIST(socket->tid == isc_netmgr_tid);
+	INSIST(socket->type == isc_nm_tcpsocket);
+
+	rv = uv_write(&req->uv_req.write, 
+			 &socket->uv_handle.stream,
+			 &req->uvbuf,
+			 1,
+			 tcp_send_cb);
+	if (rv == 0) {
+		return (ISC_R_SUCCESS);
+	} else {
+		/* TODO call cb! */
+		return (ISC_R_FAILURE);
+	}
+}
+
+
+/*
+ * Accept callback for TCP-DNS connection
+ */
 static void
 dnslisten_acceptcb(isc_nmhandle_t *handle, isc_result_t result, void *cbarg) {
 	INSIST(result == ISC_R_SUCCESS); /* XXXWPK TODO */
-	isc_nmsocket_t *dnssocket = (isc_nmsocket_t*) cbarg;
-	INSIST(VALID_NMSOCK(dnssocket));
-	isc_nmhandle_setdata(handle, dnssocket, NULL, NULL);
+	isc_nmsocket_t *dnslistensocket = (isc_nmsocket_t*) cbarg;
+	INSIST(VALID_NMSOCK(dnslistensocket));
+	INSIST(dnslistensocket->type == isc_nm_tcpdnslistener);
 
-
+	/* We need to create a 'wrapper' dnssocket for this connection */
+	isc_nmsocket_t *dnssocket = isc_mem_get(handle->socket->mgr->mctx, sizeof(*dnssocket));
+	nmsocket_init(dnssocket, handle->socket->mgr, isc_nm_tcpdnssocket);
+	/* We need to copy read callbacks from parent socket */
+	dnssocket->rcb.recv = dnslistensocket->rcb.recv;
+	dnssocket->rcbarg = dnslistensocket->rcbarg;
+	dnssocket->extrahandlesize = dnslistensocket->extrahandlesize;
+	isc_nmsocket_attach(handle->socket, &dnssocket->parent);
+	isc_nm_read(handle, dnslisten_readcb, dnssocket);
 }
+
+/*
+ * We've got a read on our underlying socket, need to check if we have
+ * a complete DNS packet and, if so - call the callback
+ */
+static void
+dnslisten_readcb(void *arg, isc_nmhandle_t* handle, isc_region_t *region) {
+	/* A 'wrapper' handle */
+	(void)handle;
+	isc_nmsocket_t *dnssocket = (isc_nmsocket_t*) arg;
+	/* XXXWPK for the love of all that is holy fix it, that's so wrong */
+	INSIST(((region->base[0] << 8) + (region->base[1]) == (int) region->length - 2));
+	isc_nmhandle_t *dnshandle = get_handle(dnssocket, &handle->peer);
+	isc_region_t r2 = {.base = region->base+2, .length = region->length-2};
+	dnssocket->rcb.recv(dnssocket->rcbarg, dnshandle, &r2);
+}
+
 /*
  * isc_nm_tcp_dnslistens listens for connections and accepts
  * them immediately, then calls the cb for each incoming DNS packet
  * (with 2-byte length stripped) - just like for UDP packet.
  */
-
-isc_nmsocket_t *
+isc_result_t
 isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 		     isc_nmiface_t *iface,
-		     size_t extrahandlesize,
 		     isc_nm_recv_cb_t cb,
-		     void *cbarg)
+		     size_t extrahandlesize,
+		     void *cbarg,
+		     isc_nmsocket_t **rv)
 {
-	isc_nmsocket_t *tcpsocket;
-	isc_nmsocket_t *dnssocket;
+	isc_result_t result;
 
-	dnssocket = isc_mem_get(mgr->mctx, sizeof(*dnssocket));
-	dnssocket->iface = iface;
-	isc_nm_attach(mgr, &dnssocket->mgr);
-	dnssocket->type = isc_nm_tcplistener;
-	dnssocket->nchildren = 0;
-	dnssocket->children = NULL;
-	dnssocket->cb.recv = cb;
-	dnssocket->cbarg = cbarg;
-	dnssocket->parent = NULL;
-	dnssocket->extrahandlesize = extrahandlesize;
+	/* A 'wrapper' socket object with parent set to true TCP socket */
+	isc_nmsocket_t *dnslistensocket = isc_mem_get(mgr->mctx, sizeof(*dnslistensocket));
+	nmsocket_init(dnslistensocket, mgr, isc_nm_tcpdnslistener);
+	dnslistensocket->iface = iface;
+	dnslistensocket->rcb.recv = cb;
+	dnslistensocket->rcbarg = cbarg;
+	dnslistensocket->extrahandlesize = extrahandlesize;
 	
-	tcpsocket = isc_nm_tcp_listen(mgr,
-				      iface,
-				      extrahandlesize,
-				      dnslisten_acceptcb,
-				      dnssocket);
-	return (tcpsocket);
+	/* We set dnslistensocket->parent to a true listening socket */
+	result = isc_nm_tcp_listen(mgr,
+			 	   iface,
+				   dnslisten_acceptcb,
+				   extrahandlesize,
+				   dnslistensocket,
+				   &dnslistensocket->parent);
+	*rv = dnslistensocket;
+	return (result);
 }
- 
-		   
-/*	isc_nm_tcp_listen(mgr, iface, tisc_nm_t *mgr,
- *                isc_nmiface_t *iface,
- *                isc_nm_accept_cb_t cb,
- *                void *cbarg)
- * }	 */
+
+typedef struct tcpsend {
+	isc_nmhandle_t *handle;
+	isc_region_t region;
+	isc_nmhandle_t *orighandle;
+	isc_nm_send_cb_t cb;
+	void* cbarg;
+} tcpsend_t;
+
+static void
+tcpdnssend_cb(isc_nmhandle_t *handle, isc_result_t result, void *cbarg) {
+	tcpsend_t* ts = (tcpsend_t*) cbarg;
+	(void) handle;
+	ts->cb(ts->orighandle, result, ts->cbarg);
+}
+/*
+ * isc__nm_tcp_send sends buf to a peer on a socket.
+ */
+static isc_result_t
+isc__nm_tcpdns_send(isc_nmhandle_t *handle,
+		    isc_region_t *region,
+		    isc_nm_send_cb_t cb,
+		    void *cbarg)
+{
+	isc_nmsocket_t *socket = handle->socket;
+
+	INSIST(socket->type == isc_nm_tcpdnssocket);
+	tcpsend_t * t = malloc(sizeof(*t));
+	*t = (tcpsend_t) {};
+	t->handle = &handle->socket->parent->tcphandle;
+	t->cb = cb;
+	t->cbarg = cbarg;
+	t->region = (isc_region_t) { .base = malloc(region->length+2), .length=region->length+2 };
+	memmove(t->region.base+2, region->base, region->length);
+	t->region.base[0] = region->length<<8;
+	t->region.base[1] = region->length&0xff;
+	isc_nmhandle_attach(handle, &t->orighandle);
+
+	return (isc__nm_tcp_send(t->handle, &t->region, tcpdnssend_cb, t));
+}
+

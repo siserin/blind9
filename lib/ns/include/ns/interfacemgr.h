@@ -78,6 +78,7 @@ struct ns_interface {
 						/*%< UDP dispatchers. */
 	isc_socket_t *		tcpsocket;	/*%< TCP socket. */
 	isc_nmsocket_t *	udplistensocket;
+	isc_nmsocket_t *	tcplistensocket;
 	isc_dscp_t		dscp;		/*%< "listen-on" DSCP value */
 	isc_refcount_t		ntcpaccepting;	/*%< Number of clients
 						     ready to accept new
