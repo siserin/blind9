@@ -448,83 +448,41 @@ ns_interface_create(ns_interfacemgr_t *mgr, isc_sockaddr_t *addr,
 
 static isc_result_t
 ns_interface_listenudp(ns_interface_t *ifp) {
-	ifp->udplistensocket = isc_nm_udp_listen(ifp->mgr->nm, 
-						 (isc_nmiface_t*) &ifp->addr, /* XXXWPK TODO! */
-						 ns__client_request,
-						 sizeof(ns_client_t),
-						 ifp);
-	if (ifp->udplistensocket == NULL) {
-		UNEXPECTED_ERROR(__FILE__, __LINE__,
-				 "UDP ns_clientmgr_createclients()");
-		return (ISC_R_UNEXPECTED);
-	}
-
-	return (ISC_R_SUCCESS);
+	isc_result_t result;
+	result = isc_nm_udp_listen(ifp->mgr->nm, 
+				   (isc_nmiface_t*) &ifp->addr, /* XXXWPK TODO! */
+				   ns__client_request,
+				   sizeof(ns_client_t),
+				   ifp,
+				   &ifp->udplistensocket);
+	return (result);
 }
 
 static isc_result_t
-ns_interface_accepttcp(ns_interface_t *ifp) {
+ns_interface_listentcp(ns_interface_t *ifp) {
 	isc_result_t result;
-
-	/*
-	 * Open a TCP socket.
-	 */
-	result = isc_socket_create(ifp->mgr->socketmgr,
-				   isc_sockaddr_pf(&ifp->addr),
-				   isc_sockettype_tcp,
-				   &ifp->tcpsocket);
+	result = isc_nm_tcp_dnslisten(ifp->mgr->nm,
+				      (isc_nmiface_t*) &ifp->addr, /* XXXWPK TODO! */
+				      ns__client_request,
+				      sizeof(ns_client_t),
+				      ifp,
+				      &ifp->tcplistensocket);
 	if (result != ISC_R_SUCCESS) {
 		isc_log_write(IFMGR_COMMON_LOGARGS, ISC_LOG_ERROR,
 				 "creating TCP socket: %s",
 				 isc_result_totext(result));
-		goto tcp_socket_failure;
+		return (result);
 	}
-	isc_socket_setname(ifp->tcpsocket, "dispatcher", NULL);
+/* 	isc_socket_setname(ifp->tcpsocket, "dispatcher", NULL);
 #ifndef ISC_ALLOW_MAPPED
 	isc_socket_ipv6only(ifp->tcpsocket, true);
 #endif
-	result = isc_socket_bind(ifp->tcpsocket, &ifp->addr,
-				 ISC_SOCKET_REUSEADDRESS);
-	if (result != ISC_R_SUCCESS) {
-		isc_log_write(IFMGR_COMMON_LOGARGS, ISC_LOG_ERROR,
-				 "binding TCP socket: %s",
-				 isc_result_totext(result));
-		goto tcp_bind_failure;
-	}
-
-	if (ifp->dscp != -1)
+*/
+/*	if (ifp->dscp != -1)
 		isc_socket_dscp(ifp->tcpsocket, ifp->dscp);
 
-	result = isc_socket_listen(ifp->tcpsocket, ifp->mgr->backlog);
-	if (result != ISC_R_SUCCESS) {
-		isc_log_write(IFMGR_COMMON_LOGARGS, ISC_LOG_ERROR,
-				 "listening on TCP socket: %s",
-				 isc_result_totext(result));
-		goto tcp_listen_failure;
-	}
-
-	/*
-	 * If/when there a multiple filters listen to the
-	 * result.
-	 */
 	(void)isc_socket_filter(ifp->tcpsocket, "dataready");
-
-	result = ISC_R_SUCCESS; /* XXXWPK TODO ns_clientmgr_createclients(ifp->clientmgr,
-					    ifp->ntcptarget,
-					    true); */
-	if (result != ISC_R_SUCCESS) {
-		UNEXPECTED_ERROR(__FILE__, __LINE__,
-				 "TCP ns_clientmgr_createclients(): %s",
-				 isc_result_totext(result));
-		goto accepttcp_failure;
-	}
-	return (ISC_R_SUCCESS);
-
- accepttcp_failure:
- tcp_listen_failure:
- tcp_bind_failure:
-	isc_socket_detach(&ifp->tcpsocket);
- tcp_socket_failure:
+*/
 	return (result);
 }
 
@@ -555,7 +513,7 @@ ns_interface_setup(ns_interfacemgr_t *mgr, isc_sockaddr_t *addr,
 	if (((mgr->sctx->options & NS_SERVER_NOTCP) == 0) &&
 	    accept_tcp == true)
 	{
-		result = ns_interface_accepttcp(ifp);
+		result = ns_interface_listentcp(ifp);
 		if (result != ISC_R_SUCCESS) {
 			if ((result == ISC_R_ADDRINUSE) &&
 			    (addr_in_use != NULL))
@@ -627,7 +585,6 @@ ns_interface_attach(ns_interface_t *source, ns_interface_t **target) {
 void
 ns_interface_detach(ns_interface_t **targetp) {
 	ns_interface_t *target = *targetp;
-	isc_refcount_t oldrefs;
 	REQUIRE(target != NULL);
 	REQUIRE(NS_INTERFACE_VALID(target));
 	if (isc_refcount_decrement(&target->references) == 1) {

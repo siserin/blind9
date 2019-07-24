@@ -622,13 +622,12 @@ client_allocsendbuf(ns_client_t *client, isc_buffer_t *buffer,
 		if (tcpbuffer != NULL) {
 			isc_buffer_init(tcpbuffer, data,
 					NS_CLIENT_TCP_BUFFER_SIZE);
-			isc_buffer_init(buffer, data + 2,
-				        NS_CLIENT_TCP_BUFFER_SIZE - 2);
+			isc_buffer_init(buffer, data,
+				        NS_CLIENT_TCP_BUFFER_SIZE);
 		} else {
 			isc_buffer_init(buffer, data,
 					NS_CLIENT_TCP_BUFFER_SIZE);
 			INSIST(length <= 0xffff);
-			isc_buffer_putuint16(buffer, (uint16_t)length);
 		}
 	} else {
 		data = client->sendbuf;
@@ -887,7 +886,6 @@ client_send(ns_client_t *client) {
 		client->sendcb(&buffer);
 	} else if (TCP_CLIENT(client)) {
 		isc_buffer_usedregion(&buffer, &r);
-		isc_buffer_putuint16(&tcpbuffer, (uint16_t) r.length);
 		isc_buffer_add(&tcpbuffer, r.length);
 #ifdef HAVE_DNSTAP
 		if (client->view != NULL) {
@@ -1920,10 +1918,10 @@ ns__client_request(void *arg,
 		LOCK(&mgr->listlock);
 		ISC_LIST_APPEND(mgr->clients, client, link);
 		UNLOCK(&mgr->listlock);
-
-//		if (tcp) {
-//			client->attributes |= NS_CLIENTATTR_TCP;
-//		}
+		
+		if (isc_nmhandle_is_stream(handle)) {
+			client->attributes |= NS_CLIENTATTR_TCP;
+		}
 		
 	}
 	if (client->handle == NULL) {
@@ -1936,8 +1934,6 @@ ns__client_request(void *arg,
 	INSIST(client->state == NS_CLIENTSTATE_READY);
 
 	ns_client_requests++;
-
-	INSIST(!TCP_CLIENT(client));
 
 	isc_buffer_init(&tbuffer, region->base, region->length);
 	isc_buffer_add(&tbuffer, region->length);
