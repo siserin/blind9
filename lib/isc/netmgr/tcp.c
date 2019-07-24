@@ -1,0 +1,355 @@
+/*
+ * TTTTT   CCC   PPP
+ *   T    C   C  P  P
+ *   T    C      PPP
+ *   T    C   C  P
+ *   T     CCC   P
+ */
+
+/*
+ * isc_nm_tcp_connect connects to 'peer' using (optional) 'iface' as the
+ * source IP.
+ * If the result is ISC_R_SUCCESS then the cb is always called.
+ */
+isc_result_t
+isc_nm_tcp_connect(isc_nm_t*mgr,
+		   isc_nmiface_t *iface,
+		   isc_sockaddr_t *peer,
+		   isc_nm_connect_cb_t cb,
+		   void *cbarg)
+{
+	isc_nmsocket_t *sock;
+	isc__nm_uvreq_t *req;
+	isc_result_t result;
+
+	sock = isc_mem_get(mgr->mctx, sizeof(isc_nmsocket_t));
+	sock->type = isc_nm_tcpsocket;
+	isc_refcount_init(&sock->refs, 1);
+	sock->mgr = mgr;
+	sock->parent = NULL;
+	sock->children = NULL;
+	sock->nchildren = 0;
+
+	sock->uv_handle.tcp.data = sock;
+
+	req = isc__nm_uvreq_get(sock->mgr, sock);
+	memcpy(&req->peer, peer, peer->length);
+	if (iface != NULL) {
+		memcpy(&req->local, iface, iface->addr.length);
+	} else {
+		req->local.length = 0;
+	}
+	req->cb.connect = cb;
+	req->cbarg = cbarg;
+
+	result = isc__nm_tcp_connect_direct(sock, req);
+	if (result != ISC_R_SUCCESS) {
+		isc__nm_uvreq_put(&req, NULL);
+		isc_mem_put(mgr->mctx, sock, sizeof(isc_nmsocket_t));
+	}
+	return (result);
+}
+
+static int
+isc__nm_tcp_connect_direct(isc_nmsocket_t *socket, isc__nm_uvreq_t *req)
+{
+	isc__networker_t *worker;
+	int r;
+
+	REQUIRE(isc_netmgr_tid >= 0);
+
+	worker = &req->mgr->workers[isc_netmgr_tid];
+
+	r = uv_tcp_init(&worker->loop, &socket->uv_handle.tcp);
+	if (r != 0) {
+		return (r);
+	}
+	if (req->local.length != 0) {
+		r = uv_tcp_bind(&socket->uv_handle.tcp,
+				&req->local.type.sa,
+				0);
+		if (r != 0) {
+			/* TODO uv_close() */
+			return (r);
+		}
+	}
+	r = uv_tcp_connect(&req->uv_req.connect,
+			   &socket->uv_handle.tcp,
+			   &req->peer.type.sa,
+			   tcp_connect_cb);
+	return (r);
+}
+
+static void
+handle_tcpconnect(isc__networker_t *worker, isc__netievent_t *ievent0) {
+	int r;
+	isc__netievent_tcpconnect_t *ievent =
+		(isc__netievent_tcpconnect_t *) ievent0;
+	isc_nmsocket_t *socket = ievent->socket;
+	isc__nm_uvreq_t *req = ievent->req;
+
+	REQUIRE(socket->type == isc_nm_tcpsocket);
+	REQUIRE(worker->id == ievent->req->mgr->workers[isc_netmgr_tid].id);
+
+	r = isc__nm_tcp_connect_direct(socket, req);
+	if (r != 0) {
+		/* We need to issue callbacks ourselves */
+		tcp_connect_cb(&req->uv_req.connect, r);
+	}
+}
+
+static void
+tcp_connect_cb(uv_connect_t *uvreq, int status) {
+	isc__nm_uvreq_t *req = (isc__nm_uvreq_t*) uvreq->data;
+	isc_nmsocket_t *socket = uvreq->handle->data;
+	INSIST(VALID_UVREQ(req));
+
+	if (status == 0) {
+		isc_nmhandle_t *handle = isc_mem_get(socket->mgr->mctx,
+						     sizeof(isc_nmhandle_t));
+		handle->socket = socket;
+		/* handle->peer = NULL; */
+		req->cb.connect(handle, ISC_R_SUCCESS, req->cbarg);
+	} else {
+		/* TODO handle it properly, free socket, translate code */
+		req->cb.connect(NULL, ISC_R_FAILURE, req->cbarg);
+	}
+	isc__nm_uvreq_put(&req, socket);
+}
+
+isc_result_t
+isc_nm_tcp_listen(isc_nm_t *mgr,
+		  isc_nmiface_t *iface,
+		  isc_nm_accept_cb_t cb,
+		  size_t extrahandlesize,
+		  void *cbarg,
+		  isc_nmsocket_t ** rv)
+{
+	isc__netievent_tcplisten_t *ievent;
+	INSIST(VALID_NM(mgr));
+	isc_nmsocket_t *nsocket;
+
+	nsocket = isc_mem_get(mgr->mctx, sizeof(*nsocket));
+	nmsocket_init(nsocket, mgr, isc_nm_tcplistener);
+	nsocket->iface = iface;
+	nsocket->rcb.accept = cb;
+	nsocket->rcbarg = cbarg;
+	nsocket->extrahandlesize = extrahandlesize;
+	nsocket->tid = isc_random_uniform(mgr->nworkers);
+	/*
+	 * Listening to TCP is rare enough not to care about the
+	 * added overhead from passing this to another thread.
+	 */
+	ievent = get_ievent(mgr, netievent_tcplisten);
+	ievent->socket = nsocket;
+	enqueue_ievent(&mgr->workers[nsocket->tid],
+		       (isc__netievent_t*) ievent);
+	*rv = nsocket;
+	return (ISC_R_SUCCESS);
+}
+
+static void
+handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
+	int r;
+	isc__netievent_tcpconnect_t *ievent =
+		(isc__netievent_tcpconnect_t *) ievent0;
+	isc_nmsocket_t *socket = ievent->socket;
+
+	REQUIRE(isc_netmgr_tid >= 0);
+	REQUIRE(socket->type == isc_nm_tcplistener);
+//	REQUIRE(worker->id == ievent->req->mgr->workers[isc_netmgr_tid].id);
+
+	r = uv_tcp_init(&worker->loop, &socket->uv_handle.tcp);
+	if (r != 0) {
+		return;
+	}
+
+	uv_tcp_bind(&socket->uv_handle.tcp, &socket->iface->addr.type.sa, 0);
+	r = uv_listen((uv_stream_t*) &socket->uv_handle.tcp,
+		      10,
+		      tcp_connection_cb);
+	return;
+	/* issue callback? */
+}
+
+
+isc_result_t
+isc_nm_read(isc_nmhandle_t *handle, isc_nm_recv_cb_t cb, void* cbarg) {
+	INSIST(VALID_NMHANDLE(handle));
+	isc_nmsocket_t *socket = handle->socket;
+	INSIST(VALID_NMSOCK(socket));
+	socket->rcb.recv = cb;
+	socket->rcbarg = cbarg; /* THat's obviously broken... */
+	if (socket->tid == isc_netmgr_tid) {
+		uv_read_start(&socket->uv_handle.stream, alloc_cb, read_cb);
+	} else {
+		isc__netievent_startread_t *ievent =
+			get_ievent(socket->mgr, netievent_tcpstartread);
+		ievent->socket = socket;
+		enqueue_ievent(&socket->mgr->workers[socket->tid],
+			       (isc__netievent_t*) ievent);
+
+	}
+	return (ISC_R_SUCCESS);
+}
+
+static void
+handle_startread(isc__networker_t *worker, isc__netievent_t *ievent0) {
+	isc__netievent_startread_t *ievent =
+		(isc__netievent_startread_t *) ievent0;
+	REQUIRE(worker->id == isc_netmgr_tid);
+	
+	isc_nmsocket_t *socket = ievent->socket;
+
+	uv_read_start(&socket->uv_handle.stream, alloc_cb, read_cb);
+}
+
+static void
+read_cb(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
+	isc_nmsocket_t *socket = uv_handle_get_data((uv_handle_t*) stream);
+	INSIST(buf != NULL);
+	if (nread < 0) {
+		free_uvbuf(socket, buf);
+		/* XXXWPK TODO clean up handles! */
+		return;
+	}
+	isc_region_t region = { .base = (unsigned char *) buf->base, 
+				.length = nread };
+
+	INSIST(VALID_NMSOCK(socket));
+	INSIST(socket->rcb.recv != NULL);
+
+	socket->rcb.recv(socket->rcbarg, &socket->tcphandle, &region);
+	free_uvbuf(socket, buf);
+}
+
+static void
+tcp_connection_cb(uv_stream_t *server, int status) {
+	(void) status; /* TODO */
+	isc_nmsocket_t *csocket, *ssocket;
+	isc__networker_t *worker;
+
+	ssocket = uv_handle_get_data((uv_handle_t*) server);
+	REQUIRE(VALID_NMSOCK(ssocket));
+	REQUIRE(ssocket->tid == isc_netmgr_tid);
+	INSIST(ssocket->rcb.accept != NULL);
+
+	worker = &ssocket->mgr->workers[isc_netmgr_tid];
+
+	csocket = isc_mem_get(ssocket->mgr->mctx, sizeof(isc_nmsocket_t));
+	nmsocket_init(csocket, ssocket->mgr, isc_nm_tcpsocket);
+	csocket->tid = isc_netmgr_tid;
+	csocket->extrahandlesize = ssocket->extrahandlesize;
+
+	uv_tcp_init(&worker->loop, &csocket->uv_handle.tcp);
+	int r = uv_accept(server, &csocket->uv_handle.stream);
+	if (r != 0) {
+		return; /* XXXWPK TODO LOG */
+	}
+	isc_sockaddr_t peer;
+	struct sockaddr_storage ss;
+	int l = sizeof(ss);
+	uv_tcp_getpeername(&csocket->uv_handle.tcp, (struct sockaddr*) &ss, &l);
+	isc_result_t result = isc_sockaddr_fromsockaddr(&peer, (struct sockaddr*) &ss);
+	INSIST(result == ISC_R_SUCCESS);
+	isc_nmhandle_t *handle = get_handle(csocket, &peer);
+	ssocket->rcb.accept(handle, ISC_R_SUCCESS, ssocket->rcbarg);
+}
+
+/*
+ * isc__nm_tcp_send sends buf to a peer on a socket.
+ */
+static isc_result_t
+isc__nm_tcp_send(isc_nmhandle_t *handle,
+		 isc_region_t *region,
+		 isc_nm_send_cb_t cb,
+		 void *cbarg)
+{
+	isc_nmsocket_t *socket = handle->socket;
+	isc__netievent_udpsend_t *ievent;
+	isc__nm_uvreq_t *uvreq;
+
+	INSIST(socket->type == isc_nm_tcpsocket);
+	
+	uvreq = isc__nm_uvreq_get(socket->mgr, socket);
+	uvreq->uvbuf.base = (char *) region->base;
+	uvreq->uvbuf.len = region->length;
+	isc_nmhandle_attach(handle, &uvreq->handle);
+	uvreq->cb.send = cb;
+	uvreq->cbarg = cbarg;
+
+	if (socket->tid == isc_netmgr_tid) {
+		/*
+		 * If we're in the same thread as the socket we can send the
+		 * data directly
+		 */
+		return (isc__nm_tcp_send_direct(socket, uvreq));
+	} else {
+		/*
+		 * We need to create an event and pass it using async channel
+		 */
+		ievent = get_ievent(socket->mgr, netievent_tcpsend);
+		ievent->handle.socket = socket;
+		ievent->req = uvreq;
+		enqueue_ievent(&socket->mgr->workers[socket->tid],
+			       (isc__netievent_t*) ievent);
+		return (ISC_R_SUCCESS);
+	}
+	return (ISC_R_UNEXPECTED);
+}
+
+
+/*
+ * handle 'tcpsend' async event - send a packet on the socket
+ */
+static void
+handle_tcpsend(isc__networker_t *worker, isc__netievent_t *ievent0) {
+	isc__netievent_udpsend_t *ievent =
+		(isc__netievent_udpsend_t *) ievent0;
+	INSIST(worker->id == ievent->handle.socket->tid);
+	isc__nm_tcp_send_direct(ievent->handle.socket,
+				ievent->req);
+}
+
+/*
+ * udp_send_cb - callback
+ */
+static void
+tcp_send_cb(uv_write_t *req, int status) {
+	isc_result_t result;
+	isc__nm_uvreq_t *uvreq = (isc__nm_uvreq_t*)req->data;
+	INSIST(VALID_UVREQ(uvreq));
+	if (status == 0) {
+		result = ISC_R_SUCCESS;
+	} else {
+		result = ISC_R_FAILURE;
+	}
+	INSIST(VALID_NMHANDLE(uvreq->handle));
+	uvreq->cb.send(uvreq->handle, result, uvreq->cbarg);
+	isc__nm_uvreq_put(&uvreq, uvreq->handle->socket);
+}
+
+/*
+ * isc__nm_udp_send_direct sends buf to a peer on a socket. Sock has to be in
+ * the same thread as the callee.
+ */
+static isc_result_t
+isc__nm_tcp_send_direct(isc_nmsocket_t *socket,
+			isc__nm_uvreq_t *req)
+{
+	int rv;
+	INSIST(socket->tid == isc_netmgr_tid);
+	INSIST(socket->type == isc_nm_tcpsocket);
+
+	rv = uv_write(&req->uv_req.write, 
+			 &socket->uv_handle.stream,
+			 &req->uvbuf,
+			 1,
+			 tcp_send_cb);
+	if (rv == 0) {
+		return (ISC_R_SUCCESS);
+	} else {
+		/* TODO call cb! */
+		return (ISC_R_FAILURE);
+	}
+}
