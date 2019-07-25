@@ -80,21 +80,19 @@ isc_nm_start(isc_mem_t *mctx, int workers) {
 	char name[32];
 
 	mgr = isc_mem_get(mctx, sizeof(*mgr));
-	mgr->mctx = NULL;
+	*mgr = (isc_nm_t) { .nworkers = workers};
 	isc_mem_attach(mctx, &mgr->mctx);
 	isc_mutex_init(&mgr->lock);
 	isc_condition_init(&mgr->wkstatecond);
 	isc_refcount_init(&mgr->refs, 1);
-	mgr->nworkers = workers;
-	mgr->workers_running = 0;
-	mgr->workers_paused = 0;
-
-
 	mgr->workers = isc_mem_get(mctx, workers * sizeof(isc__networker_t));
 	for (i = 0; i < workers; i++) {
 		isc__networker_t *worker = &mgr->workers[i];
-		worker->mgr = mgr;
-		worker->id = i;
+		mgr->workers[i] = (isc__networker_t) {
+			.mgr = mgr,
+			.id = i,
+			.loop.data = &mgr->workers[i]
+		};
 
 		r = uv_loop_init(&worker->loop);
 		RUNTIME_CHECK(r == 0);
@@ -106,16 +104,10 @@ isc_nm_start(isc_mem_t *mctx, int workers) {
 		isc_mutex_init(&worker->lock);
 		isc_condition_init(&worker->cond);
 
-		worker->paused = false;
-		worker->finished = false;
-		worker->loop.data = &mgr->workers[i];
-		worker->mpool_bufs = NULL;
 		isc_mempool_create(mgr->mctx, 65536, &worker->mpool_bufs);
 		struct ck_fifo_mpmc_entry *stub =
 			isc_mem_get(mgr->mctx, sizeof(*stub));
 		ck_fifo_mpmc_init(&worker->ievents, stub);
-		worker->pktcount = 0;
-		worker->udprecvbuf_inuse = false;
 
 		result = isc_thread_create(nm_thread, &mgr->workers[i],
 					   &worker->thread);
@@ -143,7 +135,8 @@ isc_nm_shutdown(isc_nm_t **mgr0) {
 		LOCK(&mgr->workers[i].lock);
 		mgr->workers[i].finished = true;
 		UNLOCK(&mgr->workers[i].lock);
-		isc__netievent_t *ievent = isc__nm_get_ievent(mgr, netievent_stop);
+		isc__netievent_t *ievent = isc__nm_get_ievent(mgr,
+							      netievent_stop);
 		isc__nm_enqueue_ievent(&mgr->workers[i], ievent);
 	}
 	while (mgr->workers_running > 0) {
@@ -269,17 +262,17 @@ async_cb(uv_async_t *handle) {
 		case netievent_tcplisten:
 			isc__nm_handle_tcplisten(worker, ievent);
 			break;
-        	case netievent_tcpstartread:
-                	isc__nm_handle_startread(worker, ievent);
-                	break;
-/*        	case netievent_tcpstopread:
-                	handle_stopread(worker, ievent);
-                	break; */
+		case netievent_tcpstartread:
+			isc__nm_handle_startread(worker, ievent);
+			break;
+/*              case netievent_tcpstopread:
+ *                      handle_stopread(worker, ievent);
+ *                      break; */
 		case netievent_tcpsend:
-                        isc__nm_handle_tcpsend(worker, ievent);
-                        break;
- 
- 
+			isc__nm_handle_tcpsend(worker, ievent);
+			break;
+
+
 /*              case netievent_tcpstoplisten:
  *                      handle_tcpstoplisten(worker, ievent);
  *                      break; */
@@ -349,7 +342,9 @@ isc_nmsocket_detach(isc_nmsocket_t **socketp) {
 }
 
 void
-isc__nmsocket_init(isc_nmsocket_t *socket, isc_nm_t *mgr, isc_nmsocket_type type) {
+isc__nmsocket_init(isc_nmsocket_t *socket,
+		   isc_nm_t *mgr,
+		   isc_nmsocket_type type) {
 	*socket = (isc_nmsocket_t) {
 		.type = type,
 		.fd = -1
@@ -459,7 +454,8 @@ isc_nmhandle_attach(isc_nmhandle_t *handle, isc_nmhandle_t **handlep) {
 
 bool
 isc_nmhandle_is_stream(isc_nmhandle_t *handle) {
-	return handle->socket->type == isc_nm_tcpsocket || handle->socket->type == isc_nm_tcpdnssocket;
+	return(handle->socket->type == isc_nm_tcpsocket ||
+	       handle->socket->type == isc_nm_tcpdnssocket);
 }
 
 void
@@ -576,7 +572,8 @@ isc__nm_uvreq_put(isc__nm_uvreq_t **req0, isc_nmsocket_t *socket) {
 	 */
 	mgr = req->mgr;
 	req->mgr = NULL;
-	if (! (socket != NULL && ck_stack_trypush_mpmc(&socket->inactivereqs, &req->ilink))) {
+	if (!(socket != NULL &&
+	      ck_stack_trypush_mpmc(&socket->inactivereqs, &req->ilink))) {
 		isc_mem_put(mgr->mctx, req, sizeof(isc__nm_uvreq_t));
 	}
 	isc_nm_detach(&mgr);
@@ -590,7 +587,8 @@ isc_result_t
 isc_nm_send(isc_nmhandle_t *handle,
 	    isc_region_t *region,
 	    isc_nm_send_cb_t cb,
-	    void *cbarg) {
+	    void *cbarg)
+{
 	switch (handle->socket->type) {
 	case isc_nm_udpsocket:
 	case isc_nm_udplistener:
@@ -604,4 +602,3 @@ isc_nm_send(isc_nmhandle_t *handle,
 	}
 	return (ISC_R_FAILURE);
 }
-
