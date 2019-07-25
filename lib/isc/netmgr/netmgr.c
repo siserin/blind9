@@ -414,7 +414,7 @@ alloc_handle(isc_nmsocket_t *socket) {
 }
 
 isc_nmhandle_t *
-isc__nm_get_handle(isc_nmsocket_t *socket, isc_sockaddr_t *peer) {
+isc__nmhandle_get(isc_nmsocket_t *socket, isc_sockaddr_t *peer) {
 	isc_nmhandle_t *handle = NULL;
 	ck_stack_entry_t *sentry;
 	REQUIRE(VALID_NMSOCK(socket));
@@ -481,7 +481,10 @@ isc_nmhandle_detach(isc_nmhandle_t **handlep) {
 	REQUIRE(VALID_NMHANDLE(handle));
 	if (isc_refcount_decrement(&handle->refs) == 1) {
 		bool reuse;
-		if (handle->doreset) {
+/*		switch (handle->socket->type) {
+
+		} */
+		if (handle->doreset != NULL) {
 			handle->doreset(handle->opaque);
 		}
 		reuse = ck_stack_trypush_mpmc(&handle->socket->inactivehandles,

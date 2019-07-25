@@ -231,7 +231,7 @@ udp_recv_cb(uv_udp_t *handle,
 	result = isc_sockaddr_fromsockaddr(&sockaddr, addr);
 	REQUIRE(result == ISC_R_SUCCESS);
 
-	nmhandle = isc__nm_get_handle(socket, &sockaddr);
+	nmhandle = isc__nmhandle_get(socket, &sockaddr);
 	region.base = (unsigned char *) buf->base;
 	/* not buf->len, that'd be the whole buffer! */
 	region.length = nrecv;

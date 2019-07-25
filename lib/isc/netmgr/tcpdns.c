@@ -73,7 +73,7 @@ dnslisten_readcb(void *arg, isc_nmhandle_t*handle, isc_region_t *region) {
 	INSIST(((region->base[0] << 8) + (region->base[1]) ==
 		(int) region->length - 2));
 	isc_nmhandle_t *dnshandle =
-		isc__nm_get_handle(dnssocket, &handle->peer);
+		isc__nmhandle_get(dnssocket, &handle->peer);
 	isc_region_t r2 =
 	{.base = region->base + 2, .length = region->length - 2};
 	dnssocket->rcb.recv(dnssocket->rcbarg, dnshandle, &r2);
