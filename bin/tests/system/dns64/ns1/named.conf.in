@@ -49,4 +49,9 @@ zone "signed" {
 	file "signed.db.signed";
 };
 
+zone "ipv4only.arpa" {
+	type master;
+	file "ipv4only.arpa.db";
+};
+
 // include "trusted.conf";

@@ -120,6 +120,7 @@ struct dig_lookup {
 		need_search,
 		done_as_is,
 		besteffort,
+		dns64prefix,
 		dnssec,
 		expire,
 		sendcookie,

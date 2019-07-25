@@ -600,6 +600,7 @@ make_empty_lookup(void) {
 	looknew->ignore = false;
 	looknew->servfail_stops = true;
 	looknew->besteffort = true;
+	looknew->dns64prefix = false;
 	looknew->dnssec = false;
 	looknew->ednsflags = 0;
 	looknew->opcode = dns_opcode_query;
@@ -737,6 +738,7 @@ clone_lookup(dig_lookup_t *lookold, bool servers) {
 	looknew->ignore = lookold->ignore;
 	looknew->servfail_stops = lookold->servfail_stops;
 	looknew->besteffort = lookold->besteffort;
+	looknew->dns64prefix = lookold->dns64prefix;
 	looknew->dnssec = lookold->dnssec;
 	looknew->ednsflags = lookold->ednsflags;
 	looknew->opcode = lookold->opcode;
@@ -3674,7 +3676,7 @@ recv_done(isc_task_t *task, isc_event_t *event) {
 	}
 
 	debug("before parse starts");
-	parseflags = DNS_MESSAGEPARSE_PRESERVEORDER;
+	parseflags = l->dns64prefix ? 0 : DNS_MESSAGEPARSE_PRESERVEORDER;
 	if (l->besteffort) {
 		parseflags |= DNS_MESSAGEPARSE_BESTEFFORT;
 		parseflags |= DNS_MESSAGEPARSE_IGNORETRUNCATION;

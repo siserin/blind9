@@ -666,6 +666,16 @@
 	</varlistentry>
 
 	<varlistentry>
+	  <term><option>+[no]dns64prefix</option></term>
+	  <listitem>
+	    <para>
+	      Lookup IPV4ONLY.ARPA AAAA and print any DNS64 prefixes
+	      found.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
 	  <term><option>+[no]dnssec</option></term>
 	  <listitem>
 	    <para>

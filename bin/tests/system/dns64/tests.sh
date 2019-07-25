@@ -1400,5 +1400,12 @@ n=`expr $n + 1`
 if [ $ret != 0 ]; then echo_i "failed"; fi
 status=`expr $status + $ret`
 
+echo_i "checking 'dig +dns64prefix' ($n)"
+$DIG $DIGOPTS +dns64prefix @10.53.0.1 > dig.out.ns1.test$n || ret=1
+grep '^2001:bbbb::/96$' dig.out.ns1.test$n > /dev/null || ret=1
+n=`expr $n + 1`
+if [ $ret != 0 ]; then echo_i "failed"; fi
+status=`expr $status + $ret`
+
 echo_i "exit status: $status"
 [ $status -eq 0 ] || exit 1
