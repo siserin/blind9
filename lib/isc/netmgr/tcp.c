@@ -54,7 +54,6 @@ static void
 read_cb(uv_stream_t*stream, ssize_t nread, const uv_buf_t*buf);
 
 
-
 /*
  * isc_nm_tcp_connect connects to 'peer' using (optional) 'iface' as the
  * source IP.
@@ -155,9 +154,17 @@ tcp_connect_cb(uv_connect_t *uvreq, int status) {
 	INSIST(VALID_UVREQ(req));
 
 	if (status == 0) {
-		isc_nmhandle_t *handle = isc_mem_get(socket->mgr->mctx,
-						     sizeof(isc_nmhandle_t));
-		handle->socket = socket;
+		isc_sockaddr_t peer;
+		struct sockaddr_storage ss;
+		int l = sizeof(ss);
+		uv_tcp_getpeername(&socket->uv_handle.tcp,
+				   (struct sockaddr*) &ss,
+				   &l);
+		isc_result_t result =
+			isc_sockaddr_fromsockaddr(&peer, (struct sockaddr*) &ss);
+		INSIST(result == ISC_R_SUCCESS);
+
+		isc_nmhandle_t *handle = isc__nmhandle_get(socket, &peer);
 		/* handle->peer = NULL; */
 		req->cb.connect(handle, ISC_R_SUCCESS, req->cbarg);
 	} else {
@@ -224,7 +231,7 @@ isc__nm_handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 
 
 isc_result_t
-isc_nm_read(isc_nmhandle_t *handle, isc_nm_recv_cb_t cb, void*cbarg) {
+isc_nm_read(isc_nmhandle_t *handle, isc_nm_recv_cb_t cb, void *cbarg) {
 	INSIST(VALID_NMHANDLE(handle));
 	isc_nmsocket_t *socket = handle->socket;
 	INSIST(VALID_NMSOCK(socket));
@@ -306,7 +313,7 @@ tcp_connection_cb(uv_stream_t *server, int status) {
 	isc_result_t result =
 		isc_sockaddr_fromsockaddr(&peer, (struct sockaddr*) &ss);
 	INSIST(result == ISC_R_SUCCESS);
-	isc_nmhandle_t *handle = isc__nm_get_handle(csocket, &peer);
+	isc_nmhandle_t *handle = isc__nmhandle_get(csocket, &peer);
 	ssocket->rcb.accept(handle, ISC_R_SUCCESS, ssocket->rcbarg);
 }
 

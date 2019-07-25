@@ -65,15 +65,17 @@ typedef struct isc__networker {
 #define VALID_NMHANDLE(t)                     ISC_MAGIC_VALID(t, \
 							      NMHANDLE_MAGIC)
 
+typedef void (*isc__nm_closecb)(isc_nmhandle_t*);
+
 struct isc_nmhandle {
 	int			magic;
 	isc_refcount_t		refs;
 	isc_nmsocket_t *	socket;
 	isc_sockaddr_t		peer;
-	void *			opaque;
 	ck_stack_entry_t	ilink;
-	isc_nm_opaquecb		doreset;
-	isc_nm_opaquecb		dofree;
+	isc_nm_opaquecb		doreset; /* reset extra callback, external */
+	isc_nm_opaquecb		dofree;  /* free extra callback, external */
+	void *			opaque;
 	char			extra[];
 };
 
@@ -309,7 +311,7 @@ void
 isc__nm_free_uvbuf(isc_nmsocket_t *socket, const uv_buf_t *buf);
 
 isc_nmhandle_t *
-isc__nm_get_handle(isc_nmsocket_t *socket, isc_sockaddr_t *peer);
+isc__nmhandle_get(isc_nmsocket_t *socket, isc_sockaddr_t *peer);
 
 isc__nm_uvreq_t *
 isc__nm_uvreq_get(isc_nm_t *mgr, isc_nmsocket_t *socket);
@@ -375,5 +377,3 @@ isc__nm_tcpdns_send(isc_nmhandle_t *handle,
 		    isc_region_t *region,
 		    isc_nm_send_cb_t cb,
 		    void *cbarg);
-
-
