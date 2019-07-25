@@ -34,7 +34,7 @@
 
 
 static void
-dnslisten_readcb(void *arg, isc_nmhandle_t* handle, isc_region_t *region);
+dnslisten_readcb(void *arg, isc_nmhandle_t*handle, isc_region_t *region);
 
 
 /*
@@ -48,8 +48,10 @@ dnslisten_acceptcb(isc_nmhandle_t *handle, isc_result_t result, void *cbarg) {
 	INSIST(dnslistensocket->type == isc_nm_tcpdnslistener);
 
 	/* We need to create a 'wrapper' dnssocket for this connection */
-	isc_nmsocket_t *dnssocket = isc_mem_get(handle->socket->mgr->mctx, sizeof(*dnssocket));
-	isc__nmsocket_init(dnssocket, handle->socket->mgr, isc_nm_tcpdnssocket);
+	isc_nmsocket_t *dnssocket = isc_mem_get(handle->socket->mgr->mctx,
+						sizeof(*dnssocket));
+	isc__nmsocket_init(dnssocket, handle->socket->mgr,
+			   isc_nm_tcpdnssocket);
 	/* We need to copy read callbacks from parent socket */
 	dnssocket->rcb.recv = dnslistensocket->rcb.recv;
 	dnssocket->rcbarg = dnslistensocket->rcbarg;
@@ -63,14 +65,17 @@ dnslisten_acceptcb(isc_nmhandle_t *handle, isc_result_t result, void *cbarg) {
  * a complete DNS packet and, if so - call the callback
  */
 static void
-dnslisten_readcb(void *arg, isc_nmhandle_t* handle, isc_region_t *region) {
+dnslisten_readcb(void *arg, isc_nmhandle_t*handle, isc_region_t *region) {
 	/* A 'wrapper' handle */
 	(void)handle;
 	isc_nmsocket_t *dnssocket = (isc_nmsocket_t*) arg;
 	/* XXXWPK for the love of all that is holy fix it, that's so wrong */
-	INSIST(((region->base[0] << 8) + (region->base[1]) == (int) region->length - 2));
-	isc_nmhandle_t *dnshandle = isc__nm_get_handle(dnssocket, &handle->peer);
-	isc_region_t r2 = {.base = region->base+2, .length = region->length-2};
+	INSIST(((region->base[0] << 8) + (region->base[1]) ==
+		(int) region->length - 2));
+	isc_nmhandle_t *dnshandle =
+		isc__nm_get_handle(dnssocket, &handle->peer);
+	isc_region_t r2 =
+	{.base = region->base + 2, .length = region->length - 2};
 	dnssocket->rcb.recv(dnssocket->rcbarg, dnshandle, &r2);
 }
 
@@ -90,16 +95,17 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 	isc_result_t result;
 
 	/* A 'wrapper' socket object with parent set to true TCP socket */
-	isc_nmsocket_t *dnslistensocket = isc_mem_get(mgr->mctx, sizeof(*dnslistensocket));
+	isc_nmsocket_t *dnslistensocket =
+		isc_mem_get(mgr->mctx, sizeof(*dnslistensocket));
 	isc__nmsocket_init(dnslistensocket, mgr, isc_nm_tcpdnslistener);
 	dnslistensocket->iface = iface;
 	dnslistensocket->rcb.recv = cb;
 	dnslistensocket->rcbarg = cbarg;
 	dnslistensocket->extrahandlesize = extrahandlesize;
-	
+
 	/* We set dnslistensocket->parent to a true listening socket */
 	result = isc_nm_tcp_listen(mgr,
-			 	   iface,
+				   iface,
 				   dnslisten_acceptcb,
 				   extrahandlesize,
 				   dnslistensocket,
@@ -109,16 +115,16 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 }
 
 typedef struct tcpsend {
-	isc_nmhandle_t *handle;
-	isc_region_t region;
-	isc_nmhandle_t *orighandle;
-	isc_nm_send_cb_t cb;
-	void* cbarg;
+	isc_nmhandle_t *	handle;
+	isc_region_t		region;
+	isc_nmhandle_t *	orighandle;
+	isc_nm_send_cb_t	cb;
+	void*			cbarg;
 } tcpsend_t;
 
 static void
 tcpdnssend_cb(isc_nmhandle_t *handle, isc_result_t result, void *cbarg) {
-	tcpsend_t* ts = (tcpsend_t*) cbarg;
+	tcpsend_t*ts = (tcpsend_t*) cbarg;
 	(void) handle;
 	ts->cb(ts->orighandle, result, ts->cbarg);
 }
@@ -134,15 +140,17 @@ isc__nm_tcpdns_send(isc_nmhandle_t *handle,
 	isc_nmsocket_t *socket = handle->socket;
 
 	INSIST(socket->type == isc_nm_tcpdnssocket);
-	tcpsend_t * t = malloc(sizeof(*t));
+	tcpsend_t *t = malloc(sizeof(*t));
 	*t = (tcpsend_t) {};
 	t->handle = &handle->socket->parent->tcphandle;
 	t->cb = cb;
 	t->cbarg = cbarg;
-	t->region = (isc_region_t) { .base = malloc(region->length+2), .length=region->length+2 };
-	memmove(t->region.base+2, region->base, region->length);
-	t->region.base[0] = (uint8_t) (region->length>>8);
-	t->region.base[1] = (uint8_t) (region->length&0xff);
+	t->region =
+		(isc_region_t) { .base = malloc(region->length + 2),
+				 .length = region->length + 2 };
+	memmove(t->region.base + 2, region->base, region->length);
+	t->region.base[0] = (uint8_t) (region->length >> 8);
+	t->region.base[1] = (uint8_t) (region->length & 0xff);
 	isc_nmhandle_attach(handle, &t->orighandle);
 	return (isc__nm_tcp_send(t->handle, &t->region, tcpdnssend_cb, t));
 }

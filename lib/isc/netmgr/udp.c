@@ -104,7 +104,8 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 		INSIST(res == 0);
 		ievent = isc__nm_get_ievent(mgr, netievent_udplisten);
 		ievent->socket = csocket;
-		isc__nm_enqueue_ievent(&mgr->workers[i], (isc__netievent_t*) ievent);
+		isc__nm_enqueue_ievent(&mgr->workers[i],
+				       (isc__netievent_t*) ievent);
 	}
 	*rv = nsocket;
 	return (ISC_R_SUCCESS);
@@ -121,10 +122,11 @@ isc_nm_udp_stoplistening(isc_nmsocket_t *socket) {
 
 	for (i = 0; i < socket->nchildren; i++) {
 		isc__netievent_udpstoplisten_t *ievent;
-		ievent = isc__nm_get_ievent(socket->mgr, netievent_udpstoplisten);
+		ievent = isc__nm_get_ievent(socket->mgr,
+					    netievent_udpstoplisten);
 		ievent->socket = &socket->children[i];
 		isc__nm_enqueue_ievent(&socket->mgr->workers[i],
-			       (isc__netievent_t*) ievent);
+				       (isc__netievent_t*) ievent);
 	}
 }
 
@@ -149,7 +151,8 @@ isc__nm_handle_udplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	uv_udp_bind(&socket->uv_handle.udp,
 		    &socket->parent->iface->addr.type.sa,
 		    0);
-	uv_udp_recv_start(&socket->uv_handle.udp, isc__nm_alloc_cb, udp_recv_cb);
+	uv_udp_recv_start(&socket->uv_handle.udp, isc__nm_alloc_cb,
+			  udp_recv_cb);
 }
 
 static void
@@ -161,7 +164,8 @@ udp_close_cb(uv_handle_t *handle) {
  * handle 'udpstoplisten' async call - stop listening on a socket.
  */
 void
-isc__nm_handle_udpstoplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
+isc__nm_handle_udpstoplisten(isc__networker_t *worker,
+			     isc__netievent_t *ievent0) {
 	(void) worker;
 	ck_stack_entry_t *sentry;
 	isc__netievent_udplisten_t *ievent =
@@ -292,7 +296,7 @@ isc__nm_udp_send(isc_nmhandle_t *handle,
 		ievent->handle.peer = *peer;
 		ievent->req = uvreq;
 		isc__nm_enqueue_ievent(&socket->mgr->workers[rsocket->tid],
-			       (isc__netievent_t*) ievent);
+				       (isc__netievent_t*) ievent);
 		return (ISC_R_SUCCESS);
 	}
 	return (ISC_R_UNEXPECTED);
@@ -336,8 +340,8 @@ udp_send_cb(uv_udp_send_t *req, int status) {
  */
 static isc_result_t
 udp_send_direct(isc_nmsocket_t *socket,
-			isc__nm_uvreq_t *req,
-			isc_sockaddr_t *peer)
+		isc__nm_uvreq_t *req,
+		isc_sockaddr_t *peer)
 {
 	int rv;
 	INSIST(socket->tid == isc__nm_tid());
