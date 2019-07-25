@@ -170,9 +170,10 @@ isc_result_t
 dns_dns64_findprefix(dns_rdataset_t *rdataset, isc_netprefix_t *prefix,
 		     size_t *len);
 /*
- * Look through 'rdataset' for AAAA pairs which define encode DNS64 prefixes.
- * 'len' should be set to the number of entries in prefix and returns
- * the number of prefixes discovered.
+ * Look through 'rdataset' for AAAA pairs which define encoded DNS64 prefixes.
+ * 'len' should be set to the number of entries in 'prefix' and returns
+ * the number of prefixes discovered.  This may be bigger than those that
+ * can fit in 'prefix'.
  *
  * Requires
  * 	'rdataset'	to be valid and to be for type AAAA and class IN.
@@ -181,8 +182,9 @@ dns_dns64_findprefix(dns_rdataset_t *rdataset, isc_netprefix_t *prefix,
  *
  * Returns
  * 	ISC_R_SUCCESS
- *	ISC_R_NOSPACE
- *	ISC_R_NOTFOUND
+ *	ISC_R_NOSPACE	if there are more prefixes discovered than can fit
+ *			into 'prefix'.
+ *	ISC_R_NOTFOUND	no prefixes where found.
  */
 
 ISC_LANG_ENDDECLS
