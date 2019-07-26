@@ -294,9 +294,8 @@ struct isc_nmsocket {
 int
 isc__nm_tid(void);
 
-
 void
-isc__nmhandle_free(isc_nmhandle_t *handle);
+isc__nmhandle_free(isc_nmsocket_t *socket, isc_nmhandle_t *handle);
 
 void *
 isc__nm_get_ievent(isc_nm_t *mgr, isc__netievent_type type);

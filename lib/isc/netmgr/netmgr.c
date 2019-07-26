@@ -331,11 +331,13 @@ isc_nmsocket_detach(isc_nmsocket_t **socketp) {
 	if (refs == 1) {
 		switch (socket->type) {
 		case isc_nm_udplistener:
-
+			isc_nm_udp_stoplistening(socket);
+			break;
 		case isc_nm_udpsocket:
 		default:
 			break;
 		}
+		/* TODO - wait for callback, only then free everything */
 	}
 	/* TODO free it! */
 	*socketp = NULL;
@@ -407,7 +409,6 @@ alloc_handle(isc_nmsocket_t *socket) {
 			     sizeof(isc_nmhandle_t) +
 			     socket->extrahandlesize);
 	*handle = (isc_nmhandle_t) {};
-	isc_nmsocket_attach(socket, &handle->socket);
 	isc_refcount_init(&handle->refs, 1);
 	handle->magic = NMHANDLE_MAGIC;
 	return (handle);
@@ -418,12 +419,12 @@ isc__nmhandle_get(isc_nmsocket_t *socket, isc_sockaddr_t *peer) {
 	isc_nmhandle_t *handle = NULL;
 	ck_stack_entry_t *sentry;
 	REQUIRE(VALID_NMSOCK(socket));
+	INSIST(peer != NULL);
 	if (socket->type == isc_nm_tcpsocket) {
 		handle = &socket->tcphandle;
 		/* XXXWPK this should be more elegant */
 		INSIST(!VALID_NMHANDLE(handle));
 		*handle = (isc_nmhandle_t) {};
-		isc_nmsocket_attach(socket, &handle->socket);
 		isc_refcount_init(&handle->refs, 1);
 		handle->magic = NMHANDLE_MAGIC;
 	} else {
@@ -438,9 +439,8 @@ isc__nmhandle_get(isc_nmsocket_t *socket, isc_sockaddr_t *peer) {
 			isc_refcount_increment(&handle->refs);
 		}
 	}
-	if (peer != NULL) {
-		memcpy(&handle->peer, peer, sizeof(isc_sockaddr_t));
-	}
+	isc_nmsocket_attach(socket, &handle->socket);
+	memcpy(&handle->peer, peer, sizeof(isc_sockaddr_t));
 	return(handle);
 }
 
@@ -459,20 +459,16 @@ isc_nmhandle_is_stream(isc_nmhandle_t *handle) {
 }
 
 void
-isc__nmhandle_free(isc_nmhandle_t *handle) {
-	isc_nm_t *mgr = NULL;
-	size_t extra = handle->socket->extrahandlesize;
+isc__nmhandle_free(isc_nmsocket_t *socket, isc_nmhandle_t *handle) {
+	size_t extra = socket->extrahandlesize;
 	if (handle->dofree) {
 		handle->dofree(handle->opaque);
 	}
-	isc_nm_attach(handle->socket->mgr, &mgr);
-	isc_nmsocket_detach(&handle->socket);
 	handle->magic = 0;
 	handle->refs = 0;
-	isc_mem_put(mgr->mctx,
+	isc_mem_put(socket->mgr->mctx,
 		    handle,
 		    sizeof(isc_nmhandle_t) + extra);
-	isc_nm_detach(&mgr);
 }
 
 void
@@ -480,18 +476,18 @@ isc_nmhandle_detach(isc_nmhandle_t **handlep) {
 	isc_nmhandle_t *handle = *handlep;
 	REQUIRE(VALID_NMHANDLE(handle));
 	if (isc_refcount_decrement(&handle->refs) == 1) {
-		bool reuse;
-/*		switch (handle->socket->type) {
-
-		} */
+		/* Move reference */
+		isc_nmsocket_t *socket = handle->socket;
+		handle->socket = NULL;
 		if (handle->doreset != NULL) {
 			handle->doreset(handle->opaque);
 		}
-		reuse = ck_stack_trypush_mpmc(&handle->socket->inactivehandles,
-					      &handle->ilink);
+		bool reuse = ck_stack_trypush_mpmc(&socket->inactivehandles,
+						   &handle->ilink);
 		if (!reuse) {
-			isc__nmhandle_free(handle);
+			isc__nmhandle_free(socket, handle);
 		}
+		isc_nmsocket_detach(&socket);
 	}
 	*handlep = NULL;
 }

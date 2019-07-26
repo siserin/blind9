@@ -114,6 +114,10 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 	return (result);
 }
 
+isc_result_t
+isc_nm_tcpdns_stoplistening(isc_nmsocket_t **rv);
+
+
 typedef struct tcpsend {
 	isc_nmhandle_t *	handle;
 	isc_region_t		region;
