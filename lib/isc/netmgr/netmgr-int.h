@@ -294,6 +294,10 @@ struct isc_nmsocket {
 int
 isc__nm_tid(void);
 
+/* Are we in network thread? */
+bool
+isc__nm_in_netthread(void);
+
 void
 isc__nmhandle_free(isc_nmsocket_t *socket, isc_nmhandle_t *handle);
 
