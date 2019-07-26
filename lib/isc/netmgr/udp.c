@@ -186,7 +186,7 @@ isc__nm_handle_udpstoplisten(isc__networker_t *worker,
 	       NULL)
 	{
 		isc_nmhandle_t *handle = nm_handle_is_get(sentry);
-		isc_nmhandle_detach(&handle);
+		isc__nmhandle_free(socket, handle);
 	}
 	while ((sentry = ck_stack_pop_mpmc(&socket->inactivereqs)) != NULL) {
 		isc__nm_uvreq_t *uvreq = uvreq_is_get(sentry);
