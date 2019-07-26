@@ -68,6 +68,11 @@ isc__nm_tid() {
 	return (isc__nm_tid_v);
 }
 
+bool
+isc__nm_in_netthread() {
+	return (isc__nm_tid_v >= 0);
+}
+
 /*
  * isc_nm_start creates and starts a network manager, with `workers` workers.
  */

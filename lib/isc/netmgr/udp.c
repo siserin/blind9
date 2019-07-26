@@ -117,7 +117,7 @@ isc_nm_udp_stoplistening(isc_nmsocket_t *socket) {
 
 	INSIST(VALID_NMSOCK(socket));
 	/* We can't be launched from network thread */
-	INSIST(isc__nm_tid() == ISC_NETMGR_TID_UNKNOWN);
+	REQUIRE(!isc__nm_in_netthread());
 	INSIST(socket->type == isc_nm_udplistener);
 
 	for (i = 0; i < socket->nchildren; i++) {
@@ -128,6 +128,10 @@ isc_nm_udp_stoplistening(isc_nmsocket_t *socket) {
 		isc__nm_enqueue_ievent(&socket->mgr->workers[i],
 				       (isc__netievent_t*) ievent);
 	}
+	/* 
+	 * XXXWPK TODO wait for everything to clean up, we have a race here
+	 * clients think that we stopped listening and we still might issue callbacks
+	 */
 }
 
 /*

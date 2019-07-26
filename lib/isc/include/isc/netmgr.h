@@ -47,6 +47,7 @@ isc_nm_attach(isc_nm_t *mgr, isc_nm_t **dst);
 void
 isc_nm_detach(isc_nm_t **mgr0);
 
+
 /*
  * isc_nm_freehandle frees a handle, releasing resources
  */
