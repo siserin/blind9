@@ -1,0 +1,17 @@
+@@
+expression E;
+statement T, F;
+@@
+
+- if (E == AF_INET6) { T } else { F }
++ switch (E) {
++ case AF_INET:
++ 	F
++ 	break;
++ case AF_INET6:
++ 	T
++ 	break;
++ default:
++ 	INSIST(0);
++ 	ISC_UNREACHABLE();
++ }
