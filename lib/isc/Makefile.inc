@@ -44,7 +44,6 @@ libisc_la_HEADERS = 			\
 	%reldir%/include/isc/httpd.h	\
 	%reldir%/include/isc/interfaceiter.h	\
 	%reldir%/include/isc/iterated_hash.h	\
-	%reldir%/include/isc/json.h	\
 	%reldir%/include/isc/lang.h	\
 	%reldir%/include/isc/lex.h	\
 	%reldir%/include/isc/lfsr.h	\
@@ -91,8 +90,7 @@ libisc_la_HEADERS = 			\
 	%reldir%/include/isc/timer.h	\
 	%reldir%/include/isc/tm.h	\
 	%reldir%/include/isc/types.h	\
-	%reldir%/include/isc/util.h	\
-	%reldir%/include/isc/xml.h
+	%reldir%/include/isc/util.h
 
 libisc_la_SOURCES =			\
 	$(libisc_la_HEADERS)		\
