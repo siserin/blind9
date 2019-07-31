@@ -95,6 +95,8 @@ stages:
     - merge_requests
     - tags
     - web
+  except:
+    - 83-convert-the-documentation-to-sphinx-build
 
 .precheck: &precheck_job
   <<: *default_triggering_rules
