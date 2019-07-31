@@ -422,22 +422,16 @@ AC_ARG_WITH([maxminddb],
 			    [Build with MaxMind GeoIP2 support (auto|yes|no|path) [default=auto]])],
 	    [], [with_maxminddb="$with_geoip2"])
 
-GEOIP2LINKSRCS=
-GEOIP2LINKOBJS=
 AS_IF([test "$enable_geoip" = "yes"],
       [AS_CASE([$with_maxminddb],
 	       [no],[AC_MSG_ERROR([Use '--disable-geoip' to disable the GeoIP])],
 	       [auto],[PKG_CHECK_MODULES([MAXMINDDB], [libmaxminddb],
 					 [AC_DEFINE([HAVE_GEOIP2], [1], [Build with GeoIP2 support])
 					  PKG_CHECK_VAR([MAXMINDDB_PREFIX], [libmaxminddb], [prefix], [], [AC_MSG_ERROR([libmaxminddb prefix not found in pkg-config; set MAXMINDDB_PREFIX in the environment])])
-					  GEOIP2LINKSRCS='${GEOIP2LINKSRCS}'
-					  GEOIP2LINKOBJS='${GEOIP2LINKOBJS}'
 					 ],[:])],
 	       [yes],[PKG_CHECK_MODULES([MAXMINDDB], [libmaxminddb],
 					[AC_DEFINE([HAVE_GEOIP2], [1], [Build with GeoIP2 support])
 					 PKG_CHECK_VAR([MAXMINDDB_PREFIX], [libmaxminddb], [prefix], [], [AC_MSG_ERROR([libmaxminddb prefix not found in pkg-config; set MAXMINDDB_PREFIX in the environment])])
-					 GEOIP2LINKSRCS='${GEOIP2LINKSRCS}'
-					 GEOIP2LINKOBJS='${GEOIP2LINKOBJS}'
 					])],
 	       [ # default
 		   AX_SAVE_FLAGS([maxminddb])
@@ -447,8 +441,6 @@ AS_IF([test "$enable_geoip" = "yes"],
 		   LDFLAGS="$LDFLAGS $MAXMINDDB_LIBS"
 		   AC_SEARCH_LIBS([MMDB_open], [maxminddb],
 				  [AC_DEFINE([HAVE_GEOIP2], [1], [Build with GeoIP2 support])
-				   GEOIP2LINKSRCS='${GEOIP2LINKSRCS}'
-				   GEOIP2LINKOBJS='${GEOIP2LINKOBJS}'
 				   MAXMINDDB_LIBS="$MAXMINDDB_LIBS $ac_cv_search_mmdb_open"
 				   AC_MSG_NOTICE([GeoIP2 default database path set to $with_maxminddb/share/GeoIP])
 				   AS_VAR_COPY([MAXMINDDB_PREFIX], [$with_maxminddb])
@@ -459,10 +451,10 @@ AS_IF([test "$enable_geoip" = "yes"],
        AC_ARG_VAR([MAXMINDDB_PREFIX], [value of prefix for MAXMINDDB, overriding pkg-config])
 ])
 
+AM_CONDITIONAL([HAVE_GEOIP2], [test -n "$MAXMINDDB_LIBS"])
+
 AC_SUBST([MAXMINDDB_CFLAGS])
 AC_SUBST([MAXMINDDB_LIBS])
-AC_SUBST([GEOIP2LINKSRCS])
-AC_SUBST([GEOIP2LINKOBJS])
 
 #
 # Do we have arc4random(), etc ?

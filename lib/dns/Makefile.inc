@@ -262,9 +262,9 @@ libdns_la_SOURCES +=		\
 	%reldir%/spnego.h
 endif
 
-if HAVE_GEOIP
+if HAVE_GEOIP2
 libdns_la_SOURCES += \
-	%reldir%/geoip.c
+	%reldir%/geoip2.c
 endif
 
 libdns_la_CPPFLAGS =		\
@@ -273,6 +273,7 @@ libdns_la_CPPFLAGS =		\
 	$(DNS_INCLUDES)		\
 	-I%reldir%		\
 	$(OPENSSL_CFLAGS)	\
+	$(MAXMINDDB_CFLAGS)	\
 	$(DST_GSSAPI_INC)	\
 	$(USE_GSSAPI)
 
@@ -282,6 +283,7 @@ libdns_la_LDFLAGS =		\
 libdns_la_LIBADD =		\
 	libisc.la		\
 	$(OPENSSL_LIBS)		\
+	$(MAXMINDDB_LIBS)	\
 	$(top_builddir)/libltdl/libltdlc.la
 
 if HAVE_DNSTAP

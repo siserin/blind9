@@ -18,7 +18,8 @@ AM_CPPFLAGS = \
 	$(JSON_C_CFLAGS) $(LIBXML2_CFLAGS)			\
 	$(ZLIB_CFLAGS)				\
 	-DNAMED_LOCALSTATEDIR=\"${localstatedir}\" \
-	-DNAMED_SYSCONFDIR=\"${sysconfdir}\"
+	-DNAMED_SYSCONFDIR=\"${sysconfdir}\"	\
+	-DMAXMINDDB_PREFIX=\"@MAXMINDDB_PREFIX@\"
 
 sbin_PROGRAMS = named
 
@@ -59,7 +60,7 @@ named_SOURCES =		\
 	unix/os.c	\
 	$(named_HEADERS)
 
-if HAVE_GEOIP
+if HAVE_GEOIP2
 named_SOURCES +=	\
 	geoip.c
 endif
