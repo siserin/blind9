@@ -15,7 +15,6 @@ AM_CPPFLAGS = \
 check_PROGRAMS =		\
 	feature-test		\
 	pipelined/pipequeries	\
-	makejournal		\
 	rndc/gencheck
 
 feature_test_LDADD = \
@@ -25,9 +24,6 @@ pipelined_pipequeries_LDADD =		\
 	$(top_builddir)/lib/libisc.la	\
 	$(top_builddir)/lib/libdns.la
 
-makejournal_LDADD =			\
-	$(top_builddir)/lib/libisc.la	\
-	$(top_builddir)/lib/libdns.la
 
 TESTS = \
 	rpzrecurse serve-stale dnssec \
