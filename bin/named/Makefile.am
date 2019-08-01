@@ -75,6 +75,8 @@ named_LDADD =					\
 	$(top_builddir)/libltdl/libltdlc.la	\
 	$(OPENSSL_LIBS)				\
 	$(LIBCAP_LIBS)				\
+	$(MAXMINDDB_LIBS)			\
 	$(DNSTAP_LIBS)				\
-	$(JSON_C_LIBS) $(LIBXML2_LIBS)				\
+	$(JSON_C_LIBS)				\
+	$(LIBXML2_LIBS)				\
 	$(ZLIB_LIBS)
