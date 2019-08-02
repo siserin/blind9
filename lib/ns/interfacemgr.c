@@ -445,6 +445,7 @@ ns_interface_create(ns_interfacemgr_t *mgr, isc_sockaddr_t *addr,
 static isc_result_t
 ns_interface_listenudp(ns_interface_t *ifp) {
 	isc_result_t result;
+	/* XXXWPK TODO we have to increase refcount on ifp, for both UDP and TCP */
 	result = isc_nm_udp_listen(ifp->mgr->nm, 
 				   (isc_nmiface_t*) &ifp->addr, /* XXXWPK TODO! */
 				   ns__client_request,
@@ -536,6 +537,7 @@ ns_interface_setup(ns_interfacemgr_t *mgr, isc_sockaddr_t *addr,
 void
 ns_interface_shutdown(ns_interface_t *ifp) {
 	isc_nm_udp_stoplistening(ifp->udplistensocket);
+//	isc_nm_tcpdns_stoplistening(ifp->tcplistensocket);
 	if (ifp->clientmgr != NULL) {
 		ns_clientmgr_destroy(&ifp->clientmgr);
 	}

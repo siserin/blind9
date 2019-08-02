@@ -334,6 +334,7 @@ isc_nmsocket_detach(isc_nmsocket_t **socketp) {
 	refs = isc_refcount_decrement(&socket->refs);
 	INSIST(refs > 0);
 	if (refs == 1) {
+		atomic_store(&socket->active, false);
 		switch (socket->type) {
 		case isc_nm_udplistener:
 			isc_nm_udp_stoplistening(socket);
@@ -362,8 +363,11 @@ isc__nmsocket_init(isc_nmsocket_t *socket,
 
 	ck_stack_init(&socket->inactivehandles);
 	ck_stack_init(&socket->inactivereqs);
+	isc_mutex_init(&socket->lock);
+	isc_condition_init(&socket->cond);
 	socket->magic = NMSOCK_MAGIC;
 	isc_refcount_init(&socket->refs, 1);
+	atomic_init(&socket->active, true);
 	if (type == isc_nm_tcpsocket) {
 		socket->tcphandle = (isc_nmhandle_t) { .socket = socket};
 	}
@@ -469,8 +473,7 @@ isc__nmhandle_free(isc_nmsocket_t *socket, isc_nmhandle_t *handle) {
 	if (handle->dofree) {
 		handle->dofree(handle->opaque);
 	}
-	handle->magic = 0;
-	handle->refs = 0;
+	*handle = (isc_nmhandle_t) {};
 	isc_mem_put(socket->mgr->mctx,
 		    handle,
 		    sizeof(isc_nmhandle_t) + extra);
@@ -487,8 +490,11 @@ isc_nmhandle_detach(isc_nmhandle_t **handlep) {
 		if (handle->doreset != NULL) {
 			handle->doreset(handle->opaque);
 		}
-		bool reuse = ck_stack_trypush_mpmc(&socket->inactivehandles,
-						   &handle->ilink);
+		bool reuse = false;
+		if (atomic_load(&socket->active)) {
+			reuse = ck_stack_trypush_mpmc(&socket->inactivehandles,
+						      &handle->ilink);
+		}
 		if (!reuse) {
 			isc__nmhandle_free(socket, handle);
 		}
@@ -546,11 +552,10 @@ isc__nm_uvreq_get(isc_nm_t *mgr, isc_nmsocket_t *socket) {
 	if (req == NULL) {
 		req = isc_mem_get(mgr->mctx, sizeof(isc__nm_uvreq_t));
 	}
+	*req = (isc__nm_uvreq_t) {};
 	uv_req_set_data(&req->uv_req.req, req);
-	req->mgr = NULL;
 	isc_nm_attach(mgr, &req->mgr);
 	req->magic = UVREQ_MAGIC;
-	req->handle = NULL;
 	return (req);
 }
 
@@ -576,7 +581,7 @@ isc__nm_uvreq_put(isc__nm_uvreq_t **req0, isc_nmsocket_t *socket) {
 	 */
 	mgr = req->mgr;
 	req->mgr = NULL;
-	if (!(socket != NULL &&
+	if (!(socket != NULL && atomic_load(&socket->active) &&
 	      ck_stack_trypush_mpmc(&socket->inactivereqs, &req->ilink))) {
 		isc_mem_put(mgr->mctx, req, sizeof(isc__nm_uvreq_t));
 	}
