@@ -359,18 +359,6 @@ isc__nm_tcp_send(isc_nmhandle_t *handle,
 	return (ISC_R_UNEXPECTED);
 }
 
-/*
- * handle 'tcpsend' async event - send a packet on the socket
- */
-void
-isc__nm_handle_tcpsend(isc__networker_t *worker, isc__netievent_t *ievent0) {
-	isc__netievent_udpsend_t *ievent =
-		(isc__netievent_udpsend_t *) ievent0;
-	INSIST(worker->id == ievent->handle.socket->tid);
-	tcp_send_direct(ievent->handle.socket,
-			ievent->req);
-}
-
 static void
 tcp_send_cb(uv_write_t *req, int status) {
 	isc_result_t result;
@@ -384,6 +372,22 @@ tcp_send_cb(uv_write_t *req, int status) {
 	INSIST(VALID_NMHANDLE(uvreq->handle));
 	uvreq->cb.send(uvreq->handle, result, uvreq->cbarg);
 	isc__nm_uvreq_put(&uvreq, uvreq->handle->socket);
+}
+
+/*
+ * handle 'tcpsend' async event - send a packet on the socket
+ */
+void
+isc__nm_handle_tcpsend(isc__networker_t *worker, isc__netievent_t *ievent0) {
+	isc__netievent_udpsend_t *ievent =
+		(isc__netievent_udpsend_t *) ievent0;
+	INSIST(worker->id == ievent->handle.socket->tid);
+	isc_result_t result = tcp_send_direct(ievent->handle.socket,
+					      ievent->req);
+	if (result != ISC_R_SUCCESS) {
+		ievent->req->cb.send(NULL, result, ievent->req->cbarg);
+		isc__nm_uvreq_put(&ievent->req, ievent->req->handle->socket);
+	}
 }
 
 static isc_result_t

@@ -264,6 +264,9 @@ struct isc_nmsocket {
 	isc_nmsocket_t *	   children;
 	int			   nchildren;
 	atomic_int_fast32_t	   rchildren;
+	atomic_bool		   active;
+	isc_mutex_t		   lock;
+	isc_condition_t		   cond;
 	int			   tid;
 	isc_nmiface_t *		   iface;
 	isc_nmhandle_t		   tcphandle;

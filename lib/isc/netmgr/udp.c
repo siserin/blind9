@@ -76,7 +76,7 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 	isc__nmsocket_init(nsocket, mgr, isc_nm_udplistener);
 	nsocket->iface = iface;
 	nsocket->nchildren = mgr->nworkers;
-	nsocket->rchildren = mgr->nworkers;
+	atomic_init(&nsocket->rchildren, mgr->nworkers);
 	nsocket->children = malloc(mgr->nworkers * sizeof(*nsocket));
 /* TODO for debugging		isc_mem_get(mgr->mctx, mgr->nworkers *
  * sizeof(*nsocket)); */
@@ -116,7 +116,7 @@ isc_nm_udp_stoplistening(isc_nmsocket_t *socket) {
 	int i;
 
 	INSIST(VALID_NMSOCK(socket));
-	/* We can't be launched from network thread */
+	/* We can't be launched from network thread, we'd deadlock */
 	REQUIRE(!isc__nm_in_netthread());
 	INSIST(socket->type == isc_nm_udplistener);
 
@@ -128,10 +128,11 @@ isc_nm_udp_stoplistening(isc_nmsocket_t *socket) {
 		isc__nm_enqueue_ievent(&socket->mgr->workers[i],
 				       (isc__netievent_t*) ievent);
 	}
-	/* 
-	 * XXXWPK TODO wait for everything to clean up, we have a race here
-	 * clients think that we stopped listening and we still might issue callbacks
-	 */
+	isc_mutex_lock(&socket->lock);
+	while (atomic_load(&socket->rchildren) > 0) {
+		isc_condition_wait(&socket->cond, &socket->lock);
+	}
+	isc_mutex_unlock(&socket->lock);
 }
 
 /*
@@ -196,6 +197,10 @@ isc__nm_handle_udpstoplisten(isc__networker_t *worker,
 		isc__nm_uvreq_t *uvreq = uvreq_is_get(sentry);
 		isc_mem_put(socket->mgr->mctx, uvreq, sizeof(*uvreq));
 	}
+	isc_mutex_lock(&socket->parent->lock);
+	atomic_fetch_sub(&socket->parent->rchildren, 1);
+	isc_mutex_unlock(&socket->parent->lock);
+	isc_condition_broadcast(&socket->parent->cond);
 }
 
 
@@ -360,7 +365,7 @@ udp_send_direct(isc_nmsocket_t *socket,
 	if (rv == 0) {
 		return (ISC_R_SUCCESS);
 	} else {
-		/* TODO call cb! */
+		printf("Fail\n");
 		return (ISC_R_FAILURE);
 	}
 }
