@@ -669,6 +669,7 @@ typedef struct {
 						   names and rdatas */
 	isc_buffer_t 		txlenbuf;	/* Transmit length buffer */
 	isc_buffer_t		txbuf;		/* Transmit message buffer */
+	size_t			cbytes;		/* Lenght of current message */
 	void 			*txmem;
 	unsigned int 		txmemlen;
 	dns_tsigkey_t		*tsigkey;	/* Key used to create TSIG */
@@ -699,7 +700,7 @@ static void
 sendstream(xfrout_ctx_t *xfr);
 
 static void
-xfrout_senddone(isc_task_t *task, isc_event_t *event);
+xfrout_senddone(isc_nmhandle_t *handle, isc_result_t result, void* arg);
 
 static void
 xfrout_fail(xfrout_ctx_t *xfr, isc_result_t result, const char *msg);
@@ -1312,8 +1313,6 @@ sendstream(xfrout_ctx_t *xfr) {
 	dns_message_t *tcpmsg = NULL;
 	dns_message_t *msg = NULL; /* Client message if UDP, tcpmsg if TCP */
 	isc_result_t result;
-	isc_region_t used;
-	isc_region_t region;
 	dns_rdataset_t *qrdataset;
 	dns_name_t *msgname = NULL;
 	dns_rdata_t *msgrdata = NULL;
@@ -1547,6 +1546,7 @@ sendstream(xfrout_ctx_t *xfr) {
 	}
 
 	if (is_tcp) {
+		isc_region_t used;
 		CHECK(dns_compress_init(&cctx, -1, xfr->mctx));
 		dns_compress_setsensitive(&cctx, true);
 		cleanup_cctx = true;
@@ -1558,18 +1558,15 @@ sendstream(xfrout_ctx_t *xfr) {
 		cleanup_cctx = false;
 
 		isc_buffer_usedregion(&xfr->txbuf, &used);
-		isc_buffer_putuint16(&xfr->txlenbuf,
-				     (uint16_t)used.length);
-		region.base = xfr->txlenbuf.base;
-		region.length = 2 + used.length;
 		xfrout_log(xfr, ISC_LOG_DEBUG(8),
 			   "sending TCP message of %d bytes",
 			   used.length);
-		CHECK(isc_socket_send(xfr->client->tcpsocket, /* XXX */
-				      &region, xfr->client->task,
-				      xfrout_senddone,
-				      xfr));
+		CHECK(isc_nm_send(xfr->client->handle,
+				  &used,
+				  xfrout_senddone,
+				  xfr));
 		xfr->sends++;
+		xfr->cbytes = used.length+2;
 	} else {
 		xfrout_log(xfr, ISC_LOG_DEBUG(8), "sending IXFR UDP response");
 		ns_client_send(xfr->client);
@@ -1654,14 +1651,9 @@ xfrout_ctx_destroy(xfrout_ctx_t **xfrp) {
 }
 
 static void
-xfrout_senddone(isc_task_t *task, isc_event_t *event) {
-	isc_socketevent_t *sev = (isc_socketevent_t *)event;
-	xfrout_ctx_t *xfr = (xfrout_ctx_t *)event->ev_arg;
-	isc_result_t evresult = sev->result;
+xfrout_senddone(isc_nmhandle_t *handle, isc_result_t result, void* arg) {
+	xfrout_ctx_t *xfr = (xfrout_ctx_t *)arg;
 
-	UNUSED(task);
-
-	INSIST(event->ev_type == ISC_SOCKEVENT_SENDDONE);
 	INSIST((xfr->client->attributes & NS_CLIENTATTR_TCP) != 0);
 
 	xfr->sends--;
@@ -1671,18 +1663,16 @@ xfrout_senddone(isc_task_t *task, isc_event_t *event) {
 	 * Update transfer statistics if sending succeeded, accounting for the
 	 * two-byte TCP length prefix included in the number of bytes sent.
 	 */
-	if (evresult == ISC_R_SUCCESS) {
+	if (result == ISC_R_SUCCESS) {
 		xfr->stats.nmsg++;
-		xfr->stats.nbytes += sev->region.length - 2;
+		xfr->stats.nbytes += xfr->cbytes;
 	}
-
-	isc_event_free(&event);
 
 //	(void)isc_timer_touch(xfr->client->timer);
 	if (xfr->shuttingdown == true) {
 		xfrout_maybe_destroy(xfr);
-	} else if (evresult != ISC_R_SUCCESS) {
-		xfrout_fail(xfr, evresult, "send");
+	} else if (result != ISC_R_SUCCESS) {
+		xfrout_fail(xfr, result, "send");
 	} else if (xfr->end_of_stream == false) {
 		sendstream(xfr);
 	} else {
