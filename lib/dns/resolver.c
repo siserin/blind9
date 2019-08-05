@@ -10924,9 +10924,6 @@ free_algorithm(void *node, void *arg) {
 
 void
 dns_resolver_reset_algorithms(dns_resolver_t *resolver) {
-
-	REQUIRE(VALID_RESOLVER(resolver));
-
 #if USE_ALGLOCK
 	RWLOCK(&resolver->alglock, isc_rwlocktype_write);
 #endif
