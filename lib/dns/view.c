@@ -714,14 +714,14 @@ resolver_shutdown(isc_task_t *task, isc_event_t *event) {
 
 	isc_event_free(&event);
 
-
-	LOCK(&view->lock);
-	atomic_fetch_or(&view->attributes, DNS_VIEWATTR_RESSHUTDOWN);
-	done = all_done(view);
-	UNLOCK(&view->lock);
-
-	if (done) {
-		destroy(view);
+	if (!(atomic_fetch_or(&view->attributes, DNS_VIEWATTR_RESSHUTDOWN) &
+	      DNS_VIEWATTR_RESSHUTDOWN)) {
+		LOCK(&view->lock);
+		done = all_done(view);
+		UNLOCK(&view->lock);
+		if (done) {
+			destroy(view);
+		}
 	}
 }
 
@@ -738,14 +738,14 @@ adb_shutdown(isc_task_t *task, isc_event_t *event) {
 
 	isc_event_free(&event);
 
-
-	LOCK(&view->lock);
-	atomic_fetch_or(&view->attributes, DNS_VIEWATTR_ADBSHUTDOWN);
-	done = all_done(view);
-	UNLOCK(&view->lock);
-
-	if (done) {
-		destroy(view);
+	if (!(atomic_fetch_or(&view->attributes, DNS_VIEWATTR_ADBSHUTDOWN) &
+	      DNS_VIEWATTR_ADBSHUTDOWN)) {
+		LOCK(&view->lock);
+		done = all_done(view);
+		UNLOCK(&view->lock);
+		if (done) {
+			destroy(view);
+		}
 	}
 }
 
@@ -762,13 +762,14 @@ req_shutdown(isc_task_t *task, isc_event_t *event) {
 
 	isc_event_free(&event);
 
-	LOCK(&view->lock);
-	atomic_fetch_or(&view->attributes, DNS_VIEWATTR_REQSHUTDOWN);
-	done = all_done(view);
-	UNLOCK(&view->lock);
-
-	if (done) {
-		destroy(view);
+	if (!(atomic_fetch_or(&view->attributes, DNS_VIEWATTR_REQSHUTDOWN) &
+	      DNS_VIEWATTR_REQSHUTDOWN)) {
+		LOCK(&view->lock);
+		done = all_done(view);
+		UNLOCK(&view->lock);
+		if (done) {
+			destroy(view);
+		}
 	}
 }
 
