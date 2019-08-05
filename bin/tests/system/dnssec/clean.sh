@@ -27,6 +27,7 @@ rm -f ./dig.out.*
 rm -f ./dsfromkey.out.*
 rm -f ./keygen.err
 rm -f ./dnssectools.out*
+rm -f ./dnssectools.err*
 rm -f ./named.secroots.test*
 rm -f ./nosign.before
 rm -f ./ns*/*.nta
