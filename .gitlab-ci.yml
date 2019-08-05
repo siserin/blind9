@@ -14,6 +14,9 @@ variables:
   BUILD_PARALLEL_JOBS: 6
   TEST_PARALLEL_JOBS: 6
 
+  ASAN_SYMBOLIZER_PATH: "/usr/lib/llvm-9/bin/llvm-symbolizer"
+  TSAN_OPTIONS: "second_deadlock_stack=1 history_size=4 exitcode=0 external_symbolizer_path=/usr/lib/llvm-9/bin/llvm-symbolizer"
+
 stages:
   - precheck
   - build
@@ -511,28 +514,51 @@ unit:gcc:bionic:amd64:
   dependencies:
     - gcc:bionic:amd64
 
-# Jobs for GCC builds with ASAN enabled on Debian Sid (amd64)
+# Jobs for Clang 9 builds with ASAN enabled on Debian Buster (amd64)
 
-asan:sid:amd64:
+asan:buster:amd64:
   variables:
-    CC: gcc
-    CFLAGS: "-Wall -Wextra -O2 -g -fsanitize=address,undefined -DISC_MEM_USE_INTERNAL_MALLOC=0"
+    CC: clang-9
+    CFLAGS: "-Wall -Wextra -O2 -g -fsanitize=address,undefined -fno-omit-frame-pointer -DISC_MEM_USE_INTERNAL_MALLOC=0"
     LDFLAGS: "-fsanitize=address,undefined"
     EXTRA_CONFIGURE: "--with-libidn2"
-  <<: *debian_sid_amd64_image
+  <<: *debian_buster_amd64_image
   <<: *build_job
 
-system:asan:sid:amd64:
-  <<: *debian_sid_amd64_image
+system:asan:buster:amd64:
+  <<: *debian_buster_amd64_image
   <<: *system_test_job
   dependencies:
-    - asan:sid:amd64
+    - asan:buster:amd64
 
-unit:asan:sid:amd64:
-  <<: *debian_sid_amd64_image
+unit:asan:buster:amd64:
+  <<: *debian_buster_amd64_image
   <<: *unit_test_job
   dependencies:
-    - asan:sid:amd64
+    - asan:buster:amd64
+
+# Jobs for Clang 9 builds with TSAN enabled on Debian Buster (amd64)
+
+tsan:buster:amd64:
+  variables:
+    CC: clang-9
+    CFLAGS: "-Wall -Wextra -O2 -g -fsanitize=thread -DISC_MEM_USE_INTERNAL_MALLOC=0"
+    LDFLAGS: "-fsanitize=thread"
+    EXTRA_CONFIGURE: "--with-libidn2 --enable-pthread-rwlock"
+  <<: *debian_buster_amd64_image
+  <<: *build_job
+
+system:tsan:buster:amd64:
+  <<: *debian_buster_amd64_image
+  <<: *system_test_job
+  dependencies:
+    - tsan:buster:amd64
+
+unit:tsan:buster:amd64:
+  <<: *debian_buster_amd64_image
+  <<: *unit_test_job
+  dependencies:
+    - tsan:buster:amd64
 
 rwlock:sid:amd64:
   variables:
