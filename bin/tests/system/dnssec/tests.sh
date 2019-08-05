@@ -56,9 +56,9 @@ wait_for_log() {
 dnssec_loadkeys_on() {
 	nsidx=$1
 	zone=$2
-	nextpart ns${nsidx}/named.run > /dev/null
-	rndccmd 10.53.0.${nsidx} loadkeys ${zone} | sed "s/^/ns${nsidx} /" | cat_i
-	wait_for_log "next key event" ns${nsidx}/named.run
+	nextpart "ns${nsidx}/named.run" > /dev/null
+	rndccmd "10.aaaaaaa53.0.${nsidx}" loadkeys "${zone}" | sed "s/^/ns${nsidx} /" | cat_i
+	wait_for_log "next key event" "ns${nsidx}/named.run"
 }
 
 # convert private-type records to readable form
@@ -193,7 +193,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking positive validation NSEC using dns_client ($n)"
    delv_with_opts @10.53.0.4 a a.example > delv.out$n || ret=1
@@ -216,7 +216,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking positive validation NSEC3 using dns_client ($n)"
    delv_with_opts @10.53.0.4 a a.nsec3.example > delv.out$n || ret=1
@@ -241,7 +241,7 @@ status=$((status+ret))
 
 SP="[[:space:]]+"
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ]; then
    ret=0
    echo_i "checking positive validation OPTOUT using dns_client ($n)"
    delv_with_opts @10.53.0.4 a a.optout.example > delv.out$n || ret=1
@@ -267,7 +267,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking positive wildcard validation NSEC using dns_client ($n)"
    delv_with_opts @10.53.0.4 a a.wild.example > delv.out$n || ret=1
@@ -309,7 +309,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking positive wildcard validation NSEC3 using dns_client ($n)"
    delv_with_opts @10.53.0.4 a a.wild.nsec3.example > delv.out$n || ret=1
@@ -335,7 +335,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking positive wildcard validation OPTOUT using dns_client ($n)"
    delv_with_opts @10.53.0.4 a a.wild.optout.example > delv.out$n || ret=1
@@ -357,7 +357,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking negative validation NXDOMAIN NSEC using dns_client ($n)"
    delv_with_opts @10.53.0.4 a q.example > delv.out$n 2>&1 || ret=1
@@ -380,7 +380,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking negative validation NXDOMAIN NSEC3 using dns_client ($n)"
    delv_with_opts @10.53.0.4 a q.nsec3.example > delv.out$n 2>&1 || ret=1
@@ -404,7 +404,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking negative validation NXDOMAIN OPTOUT using dns_client ($n)"
    delv_with_opts @10.53.0.4 a q.optout.example > delv.out$n 2>&1 || ret=1
@@ -426,7 +426,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking negative validation NODATA OPTOUT using dns_client ($n)"
    delv_with_opts @10.53.0.4 txt a.example > delv.out$n 2>&1 || ret=1
@@ -450,7 +450,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking negative validation NODATA NSEC3 using dns_client ($n)"
    delv_with_opts @10.53.0.4 txt a.nsec3.example > delv.out$n 2>&1 || ret=1
@@ -474,7 +474,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking negative validation NODATA OPTOUT using dns_client ($n)"
    delv_with_opts @10.53.0.4 txt a.optout.example > delv.out$n 2>&1 || ret=1
@@ -495,7 +495,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking negative wildcard validation NSEC using dns_client ($n)"
    delv_with_opts @10.53.0.4 txt b.wild.example > delv.out$n 2>&1 || ret=1
@@ -515,7 +515,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking negative wildcard validation NSEC3 using dns_client ($n)"
    delv_with_opts @10.53.0.4 txt b.wild.nsec3.example > delv.out$n 2>&1 || ret=1
@@ -539,7 +539,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking negative wildcard validation OPTOUT using dns_client ($n)"
    delv_with_opts @10.53.0.4 txt b.optout.nsec3.example > delv.out$n 2>&1 || ret=1
@@ -563,7 +563,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking 1-server insecurity proof NSEC using dns_client ($n)"
    delv_with_opts @10.53.0.4 a a.insecure.example > delv.out$n || ret=1
@@ -585,7 +585,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking 1-server insecurity proof NSEC3 using dns_client ($n)"
    delv_with_opts @10.53.0.4 a a.insecure.nsec3.example > delv.out$n || ret=1
@@ -607,7 +607,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking 1-server insecurity proof OPTOUT using dns_client ($n)"
    delv_with_opts @10.53.0.4 a a.insecure.optout.example > delv.out$n || ret=1
@@ -631,7 +631,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking 1-server negative insecurity proof NSEC using dns_client ($n)"
    delv_with_opts @10.53.0.4 a q.insecure.example > delv.out$n 2>&1 || ret=1
@@ -655,7 +655,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking 1-server negative insecurity proof NSEC3 using dns_client ($n)"
    delv_with_opts @10.53.0.4 a q.insecure.nsec3.example > delv.out$n 2>&1 || ret=1
@@ -679,7 +679,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking 1-server negative insecurity proof OPTOUT using dns_client ($n)"
    delv_with_opts @10.53.0.4 a q.insecure.optout.example > delv.out$n 2>&1 || ret=1
@@ -876,7 +876,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking failed validation using dns_client ($n)"
    delv_with_opts +cd @10.53.0.4 a a.bogus.example > delv.out$n 2>&1 || ret=1
@@ -921,7 +921,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking that validation fails when key record is missing using dns_client ($n)"
    delv_with_opts +cd @10.53.0.4 a a.b.keyless.example > delv.out$n 2>&1 || ret=1
@@ -940,7 +940,7 @@ n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
-if [ -x ${DELV} ] ; then
+if [ -x "${DELV}" ] ; then
    ret=0
    echo_i "checking that validation succeeds when a revoked key is encountered using dns_client ($n)"
    delv_with_opts +cd @10.53.0.4 soa revkey.example > delv.out$n 2>&1 || ret=1
@@ -1446,12 +1446,12 @@ ret=0
 zone=example
 # Fake an unsupported algorithm key
 unsupportedkey=$("$KEYGEN" -q -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" -n zone "$zone")
-awk '$3 == "DNSKEY" { $6 = 255 } { print }' ${unsupportedkey}.key > ${unsupportedkey}.tmp
-mv ${unsupportedkey}.tmp ${unsupportedkey}.key
+awk '$3 == "DNSKEY" { $6 = 255 } { print }' "${unsupportedkey}.key" > "${unsupportedkey}.tmp"
+mv "${unsupportedkey}.tmp" "${unsupportedkey}.key"
 # If dnssec-dsfromkey fails, the test script will exit immediately.  Prevent
 # that from happening, and also trigger a test failure if dnssec-dsfromkey
 # unexpectedly succeeds, by using "&& ret=1".
-$DSFROMKEY ${unsupportedkey} > dnssectools.out.test$n 2>&1 && ret=1
+$DSFROMKEY "${unsupportedkey}" > dnssectools.out.test$n 2>&1 && ret=1
 grep -q "algorithm is unsupported" dnssectools.out.test$n || ret=1
 n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
@@ -1464,7 +1464,7 @@ cat signer/example.db.in "${unsupportedkey}.key" > signer/example.db
 # If dnssec-signzone fails, the test script will exit immediately.  Prevent that
 # from happening, and also trigger a test failure if dnssec-signzone
 # unexpectedly succeeds, by using "&& ret=1".
-$SIGNER -o example signer/example.db ${unsupportedkey} > dnssectools.out.test$n 2> dnssectools.err.test$n && ret=1
+$SIGNER -o example signer/example.db "${unsupportedkey}" > dnssectools.out.test$n 2> dnssectools.err.test$n && ret=1
 grep -q "algorithm is unsupported" dnssectools.err.test$n || ret=1
 n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
@@ -2796,7 +2796,8 @@ awk '{
 	for (i=1;i<7;i++) printf("%s ", $i);
 	for (i=7;i<=NF;i++) printf("%s", $i);
 	printf("\n");
-}' < ns1/dsset-algroll$TP > canonical2.$n || ret=1
+}' < "ns1/dsset-algroll$TP" > canonical2.$n || ret=1
+# shellcheck disable=SC2153
 $DIFF -b canonical1.$n canonical2.$n > /dev/null 2>&1 || ret=1
 n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
@@ -3713,8 +3714,8 @@ dig_with_opts . dnskey +ednsopt=KEY-TAG:fffe +ednsopt=KEY-TAG:fffd @10.53.0.1 > 
 grep "trust-anchor-telemetry './IN' from .* 65534" ns1/named.run > /dev/null || ret=1
 grep "trust-anchor-telemetry './IN' from .* 65533" ns1/named.run > /dev/null && ret=1
 $PERL $SYSTEMTESTTOP/stop.pl dnssec ns1 || ret=1
-$PERL $SYSTEMTESTTOP/start.pl --noclean --restart --port ${PORT} dnssec ns1 || ret=1
-n=$(($n+1))
+$PERL $SYSTEMTESTTOP/start.pl --noclean --restart --port "${PORT}" dnssec ns1 || ret=1
+n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
 status=$((status+ret))
 
@@ -3916,12 +3917,15 @@ status=$((status+ret))
 
 # Save some useful information
 zone="updatecheck-kskonly.secure"
-KSK=`cat ns2/${zone}.ksk.key`
-ZSK=`cat ns2/${zone}.zsk.key`
-KSK_ID=`cat ns2/${zone}.ksk.id`
-ZSK_ID=`cat ns2/${zone}.zsk.id`
-SECTIONS="+answer +noauthority +noadditional"
+KSK=$(cat ns2/${zone}.ksk.key)
+ZSK=$(cat ns2/${zone}.zsk.key)
+KSK_ID=$(cat ns2/${zone}.ksk.id)
+ZSK_ID=$(cat ns2/${zone}.zsk.id)
 echo_i "testing zone $zone KSK=$KSK_ID ZSK=$ZSK_ID"
+
+dig_with_sections() {
+    dig_with_opts +answer +noauthority +noadditional "$@"
+}
 
 # Print IDs of keys used for generating RRSIG records for RRsets of type $1
 # found in dig output file $2.
@@ -3937,7 +3941,7 @@ for qtype in "DNSKEY" "CDNSKEY" "CDS"
 do
   echo_i "checking $qtype RRset is signed with KSK only (update-check-ksk, dnssec-ksk-only) ($n)"
   ret=0
-  dig_with_opts $SECTIONS @10.53.0.2 $qtype $zone > dig.out.test$n
+  dig_with_sections @10.53.0.2 $qtype $zone > dig.out.test$n
   lines=$(get_keys_which_signed $qtype dig.out.test$n | wc -l)
   test "$lines" -eq 1 || ret=1
   get_keys_which_signed $qtype dig.out.test$n | grep "^$KSK_ID$" > /dev/null || ret=1
@@ -3949,7 +3953,7 @@ done
 
 echo_i "checking SOA RRset is signed with ZSK only (update-check-ksk and dnssec-ksk-only) ($n)"
 ret=0
-dig_with_opts $SECTIONS @10.53.0.2 soa $zone > dig.out.test$n
+dig_with_sections @10.53.0.2 soa $zone > dig.out.test$n
 lines=$(get_keys_which_signed "SOA" dig.out.test$n | wc -l)
 test "$lines" -eq 1 || ret=1
 get_keys_which_signed "SOA" dig.out.test$n | grep "^$KSK_ID$" > /dev/null && ret=1
@@ -3961,7 +3965,7 @@ status=$((status+ret))
 # Roll the ZSK.
 zsk2=$("$KEYGEN" -q -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" -K ns2 -n zone "$zone")
 keyfile_to_key_id "$zsk2" > ns2/$zone.zsk.id2
-ZSK_ID2=`cat ns2/$zone.zsk.id2`
+ZSK_ID2=$(cat ns2/$zone.zsk.id2)
 
 echo_i "load new ZSK $ZSK_ID2 for $zone ($n)"
 ret=0
@@ -3973,8 +3977,8 @@ status=$((status+ret))
 # Wait until new ZSK becomes active.
 echo_i "make ZSK $ZSK_ID inactive and make new ZSK $ZSK_ID2 active for zone $zone ($n)"
 ret=0
-$SETTIME -I now -K ns2 $ZSK > /dev/null
-$SETTIME -A now -K ns2 $zsk2 > /dev/null
+$SETTIME -I now -K ns2 "$ZSK" > /dev/null
+$SETTIME -A now -K ns2 "$zsk2" > /dev/null
 dnssec_loadkeys_on 2 $zone || ret=1
 n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
@@ -3982,8 +3986,8 @@ status=$((status+ret))
 
 # Remove the KSK from disk.
 echo_i "remove the KSK $KSK_ID for zone $zone from disk"
-mv ns2/$KSK.key ns2/$KSK.key.bak
-mv ns2/$KSK.private ns2/$KSK.private.bak
+mv "ns2/$KSK.key" "ns2/$KSK.key.bak"
+mv "ns2/$KSK.private" "ns2/$KSK.private.bak"
 
 # Update the zone that requires a resign of the SOA RRset.
 echo_i "update the zone with $zone IN TXT nsupdate added me"
@@ -3999,7 +4003,7 @@ for qtype in "DNSKEY" "CDNSKEY" "CDS"
 do
   echo_i "checking $qtype RRset is signed with KSK only, KSK offline (update-check-ksk, dnssec-ksk-only) ($n)"
   ret=0
-  dig_with_opts $SECTIONS @10.53.0.2 $qtype $zone > dig.out.test$n
+  dig_with_sections @10.53.0.2 $qtype $zone > dig.out.test$n
   lines=$(get_keys_which_signed $qtype dig.out.test$n | wc -l)
   test "$lines" -eq 1 || ret=1
   get_keys_which_signed $qtype dig.out.test$n | grep "^$KSK_ID$" > /dev/null || ret=1
@@ -4014,7 +4018,7 @@ for qtype in "SOA" "TXT"
 do
   echo_i "checking $qtype RRset is signed with ZSK only, KSK offline (update-check-ksk and dnssec-ksk-only) ($n)"
   ret=0
-  dig_with_opts $SECTIONS @10.53.0.2 $qtype $zone > dig.out.test$n
+  dig_with_sections @10.53.0.2 $qtype $zone > dig.out.test$n
   lines=$(get_keys_which_signed $qtype dig.out.test$n | wc -l)
   test "$lines" -eq 1 || ret=1
   get_keys_which_signed $qtype dig.out.test$n | grep "^$KSK_ID$" > /dev/null && ret=1
@@ -4027,13 +4031,13 @@ done
 
 # Put back the KSK.
 echo_i "put back the KSK $KSK_ID for zone $zone from disk"
-mv ns2/$KSK.key.bak ns2/$KSK.key
-mv ns2/$KSK.private.bak ns2/$KSK.private
+mv "ns2/$KSK.key.bak" "ns2/$KSK.key"
+mv "ns2/$KSK.private.bak" "ns2/$KSK.private"
 
 # Roll the ZSK again.
 zsk3=$("$KEYGEN" -q -a "$DEFAULT_ALGORITHM" -b "$DEFAULT_BITS" -K ns2 -n zone "$zone")
 keyfile_to_key_id "$zsk3" > ns2/$zone.zsk.id3
-ZSK_ID3=`cat ns2/$zone.zsk.id3`
+ZSK_ID3=$(cat ns2/$zone.zsk.id3)
 
 echo_i "load new ZSK $ZSK_ID3 for $zone ($n)"
 ret=0
@@ -4044,9 +4048,9 @@ status=$((status+ret))
 
 # Wait until new ZSK becomes active.
 echo_i "delete old ZSK $ZSK_ID make ZSK $ZSK_ID2 inactive and make new ZSK $ZSK_ID3 active for zone $zone ($n)"
-$SETTIME -D now -K ns2 $ZSK > /dev/null
-$SETTIME -I +5 -K ns2 $zsk2 > /dev/null
-$SETTIME -A +5 -K ns2 $zsk3 > /dev/null
+$SETTIME -D now -K ns2 "$ZSK" > /dev/null
+$SETTIME -I +5 -K ns2 "$zsk2" > /dev/null
+$SETTIME -A +5 -K ns2 "$zsk3" > /dev/null
 dnssec_loadkeys_on 2 $zone || ret=1
 n=$((n+1))
 test "$ret" -eq 0 || echo_i "failed"
@@ -4054,8 +4058,8 @@ status=$((status+ret))
 
 # Remove the KSK from disk.
 echo_i "remove the KSK $KSK_ID for zone $zone from disk"
-mv ns2/$KSK.key ns2/$KSK.key.bak
-mv ns2/$KSK.private ns2/$KSK.private.bak
+mv "ns2/$KSK.key" "ns2/$KSK.key.bak"
+mv "ns2/$KSK.private" "ns2/$KSK.private.bak"
 
 # Update the zone that requires a resign of the SOA RRset.
 echo_i "update the zone with $zone IN TXT nsupdate added me again"
@@ -4071,7 +4075,7 @@ for qtype in "DNSKEY" "CDNSKEY" "CDS"
 do
   echo_i "checking $qtype RRset is signed with KSK only, old ZSK deleted (update-check-ksk, dnssec-ksk-only) ($n)"
   ret=0
-  dig_with_opts $SECTIONS @10.53.0.2 $qtype $zone > dig.out.test$n
+  dig_with_sections @10.53.0.2 $qtype $zone > dig.out.test$n
   lines=$(get_keys_which_signed $qtype dig.out.test$n | wc -l)
   test "$lines" -eq 1 || ret=1
   get_keys_which_signed $qtype dig.out.test$n | grep "^$KSK_ID$" > /dev/null || ret=1
@@ -4087,7 +4091,7 @@ for qtype in "SOA" "TXT"
 do
   echo_i "checking $qtype RRset is signed with ZSK only, old ZSK deleted (update-check-ksk and dnssec-ksk-only) ($n)"
   ret=0
-  dig_with_opts $SECTIONS @10.53.0.2 $qtype $zone > dig.out.test$n
+  dig_with_sections @10.53.0.2 $qtype $zone > dig.out.test$n
   lines=$(get_keys_which_signed $qtype dig.out.test$n | wc -l)
   test "$lines" -eq 1 || ret=1
   get_keys_which_signed $qtype dig.out.test$n | grep "^$KSK_ID$" > /dev/null && ret=1
@@ -4117,7 +4121,7 @@ for qtype in "DNSKEY" "CDNSKEY" "CDS"
 do
   echo_i "checking $qtype RRset is signed with KSK only, new ZSK active (update-check-ksk, dnssec-ksk-only) ($n)"
   ret=0
-  dig_with_opts $SECTIONS @10.53.0.2 $qtype $zone > dig.out.test$n
+  dig_with_sections @10.53.0.2 $qtype $zone > dig.out.test$n
   lines=$(get_keys_which_signed $qtype dig.out.test$n | wc -l)
   test "$lines" -eq 1 || ret=1
   get_keys_which_signed $qtype dig.out.test$n | grep "^$KSK_ID$" > /dev/null || ret=1
