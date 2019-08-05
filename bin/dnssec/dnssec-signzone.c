@@ -3152,12 +3152,17 @@ print_stats(isc_time_t *timer_start, isc_time_t *timer_finish,
 	uint64_t sig_ms;	   /* Signatures per millisecond */
 	FILE *out = output_stdout ? stderr : stdout;
 
-	fprintf(out, "Signatures generated:               %10u\n", nsigned);
-	fprintf(out, "Signatures retained:                %10u\n", nretained);
-	fprintf(out, "Signatures dropped:                 %10u\n", ndropped);
-	fprintf(out, "Signatures successfully verified:   %10u\n", nverified);
-	fprintf(out, "Signatures unsuccessfully "
-		     "verified: %10u\n", nverifyfailed);
+	fprintf(out,
+		"Signatures generated:               %10u\n"
+		"Signatures retained:                %10u\n"
+		"Signatures dropped:                 %10u\n"
+		"Signatures successfully verified:   %10u\n"
+		"Signatures unsuccessfully verified: %10u\n",
+		atomic_load_relaxed(&nsigned),
+		atomic_load_relaxed(&nretained),
+		atomic_load_relaxed(&ndropped),
+		atomic_load_relaxed(&nverified),
+		atomic_load_relaxed(&nverifyfailed));
 
 	time_us = isc_time_microdiff(sign_finish, sign_start);
 	time_ms = time_us / 1000;
@@ -3165,7 +3170,7 @@ print_stats(isc_time_t *timer_start, isc_time_t *timer_finish,
 		(unsigned int) (time_ms / 1000),
 		(unsigned int) (time_ms % 1000));
 	if (time_us > 0) {
-		sig_ms = ((uint64_t)nsigned * 1000000000) / time_us;
+		sig_ms = ((uint64_t)atomic_load_relaxed(&nsigned) * 1000000000) / time_us;
 		fprintf(out, "Signatures per second:             %7u.%03u\n",
 			(unsigned int) sig_ms / 1000,
 			(unsigned int) sig_ms % 1000);
