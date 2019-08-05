@@ -432,15 +432,13 @@ incctx_destroy(isc_mem_t *mctx, dns_incctx_t *ictx) {
 static void
 loadctx_destroy(dns_loadctx_t *lctx) {
 	isc_mem_t *mctx;
-	isc_result_t result;
-
-	REQUIRE(DNS_LCTX_VALID(lctx));
 
 	lctx->magic = 0;
 	if (lctx->inc != NULL)
 		incctx_destroy(lctx->mctx, lctx->inc);
 
 	if (lctx->f != NULL) {
+		isc_result_t result;
 		result = isc_stdio_close(lctx->f);
 		if (result != ISC_R_SUCCESS) {
 			UNEXPECTED_ERROR(__FILE__, __LINE__,
