@@ -13279,7 +13279,6 @@ zone_shutdown(isc_task_t *task, isc_event_t *event) {
 	dns_zone_t *raw = NULL, *secure = NULL;
 
 	UNUSED(task);
-	REQUIRE(DNS_ZONE_VALID(zone));
 	INSIST(event->ev_type == DNS_EVENT_ZONECONTROL);
 	INSIST(isc_refcount_current(&zone->references) == 0);
 
