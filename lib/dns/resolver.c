@@ -388,7 +388,7 @@ struct fetchctx {
 };
 
 #define FCTX_MAGIC			ISC_MAGIC('F', '!', '!', '!')
-#define VALID_FCTX(fctx)		ISC_MAGIC_VALID(fctx, FCTX_MAGIC)
+#define VALID_FCTX(fctx)		ISC_OBJECT_VALID(fctx, FCTX_MAGIC)
 
 #define FCTX_ATTR_HAVEANSWER            0x0001
 #define FCTX_ATTR_GLUING                0x0002
@@ -534,7 +534,7 @@ struct dns_resolver {
 };
 
 #define RES_MAGIC			ISC_MAGIC('R', 'e', 's', '!')
-#define VALID_RESOLVER(res)		ISC_MAGIC_VALID(res, RES_MAGIC)
+#define VALID_RESOLVER(res)		ISC_OBJECT_VALID(res, RES_MAGIC)
 
 /*%
  * Private addrinfo flags.  These must not conflict with DNS_FETCHOPT_NOEDNS0

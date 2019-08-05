@@ -124,7 +124,7 @@ isc_rwlock_destroy(isc_rwlock_t *rwl) {
 #else
 
 #define RWLOCK_MAGIC		ISC_MAGIC('R', 'W', 'L', 'k')
-#define VALID_RWLOCK(rwl)	ISC_MAGIC_VALID(rwl, RWLOCK_MAGIC)
+#define VALID_RWLOCK(rwl)	ISC_OBJECT_VALID(rwl, RWLOCK_MAGIC)
 
 #ifndef RWLOCK_DEFAULT_READ_QUOTA
 #define RWLOCK_DEFAULT_READ_QUOTA 4

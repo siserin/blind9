@@ -48,7 +48,7 @@ ISC_LANG_BEGINDECLS
 
 #define DNS_RBTNODE_MAGIC               ISC_MAGIC('R','B','N','O')
 #if DNS_RBT_USEMAGIC
-#define DNS_RBTNODE_VALID(n)            ISC_MAGIC_VALID(n, DNS_RBTNODE_MAGIC)
+#define DNS_RBTNODE_VALID(n)            ISC_OBJECT_VALID(n, DNS_RBTNODE_MAGIC)
 #else
 #define DNS_RBTNODE_VALID(n)            true
 #endif

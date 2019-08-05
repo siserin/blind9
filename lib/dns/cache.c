@@ -51,7 +51,7 @@
 #include "rbtdb.h"
 
 #define CACHE_MAGIC		ISC_MAGIC('$', '$', '$', '$')
-#define VALID_CACHE(cache)	ISC_MAGIC_VALID(cache, CACHE_MAGIC)
+#define VALID_CACHE(cache)	ISC_OBJECT_VALID(cache, CACHE_MAGIC)
 
 /*!
  * Control incremental cleaning.

@@ -45,7 +45,7 @@ struct dns_zt {
 	isc_rwlock_t		rwlock;
 	dns_zt_allloaded_t	loaddone;
 	void *			loaddone_arg;
-	struct zt_load_params 	*loadparams;
+	struct zt_load_params	*loadparams;
 
 	/* Atomic */
 	atomic_bool		flush;
@@ -57,8 +57,7 @@ struct dns_zt {
 };
 
 #define ZTMAGIC			ISC_MAGIC('Z', 'T', 'b', 'l')
-#define VALID_ZT(zt) 		ISC_MAGIC_VALID(zt, ZTMAGIC)
-
+#define VALID_ZT(zt)		ISC_OBJECT_VALID(zt, ZTMAGIC)
 
 static void
 auto_detach(void *, void *);

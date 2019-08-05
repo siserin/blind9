@@ -31,7 +31,7 @@
 #include <dst/dst.h>
 
 #define SSUTABLEMAGIC		ISC_MAGIC('S', 'S', 'U', 'T')
-#define VALID_SSUTABLE(table)	ISC_MAGIC_VALID(table, SSUTABLEMAGIC)
+#define VALID_SSUTABLE(table)	ISC_OBJECT_VALID(table, SSUTABLEMAGIC)
 
 #define SSURULEMAGIC		ISC_MAGIC('S', 'S', 'U', 'R')
 #define VALID_SSURULE(table)	ISC_MAGIC_VALID(table, SSURULEMAGIC)

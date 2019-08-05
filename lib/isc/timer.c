@@ -52,7 +52,7 @@
 #endif /* ISC_TIMER_TRACE */
 
 #define TIMER_MAGIC			ISC_MAGIC('T', 'I', 'M', 'R')
-#define VALID_TIMER(t)			ISC_MAGIC_VALID(t, TIMER_MAGIC)
+#define VALID_TIMER(t)			ISC_OBJECT_VALID(t, TIMER_MAGIC)
 
 typedef struct isc__timer isc__timer_t;
 typedef struct isc__timermgr isc__timermgr_t;

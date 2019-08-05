@@ -38,7 +38,7 @@
 
 struct dns_nta {
 	unsigned int		magic;
-	isc_refcount_t		refcount;
+	isc_refcount_t		references;
 	dns_ntatable_t		*ntatable;
 	bool		forced;
 	isc_timer_t		*timer;
@@ -51,7 +51,7 @@ struct dns_nta {
 };
 
 #define NTA_MAGIC		ISC_MAGIC('N', 'T', 'A', 'n')
-#define VALID_NTA(nn)	 	ISC_MAGIC_VALID(nn, NTA_MAGIC)
+#define VALID_NTA(nn)	 	ISC_OBJECT_VALID(nn, NTA_MAGIC)
 
 /*
  * Obtain a reference to the nta object.  Released by
@@ -59,7 +59,7 @@ struct dns_nta {
  */
 static void
 nta_ref(dns_nta_t *nta) {
-	isc_refcount_increment(&nta->refcount);
+	isc_refcount_increment(&nta->references);
 }
 
 static void
@@ -68,8 +68,8 @@ nta_detach(isc_mem_t *mctx, dns_nta_t **ntap) {
 	dns_nta_t *nta = *ntap;
 	*ntap = NULL;
 
-	if (isc_refcount_decrement(&nta->refcount) == 1) {
-		isc_refcount_destroy(&nta->refcount);
+	if (isc_refcount_decrement(&nta->references) == 1) {
+		isc_refcount_destroy(&nta->references);
 		nta->magic = 0;
 		if (nta->timer != NULL) {
 			(void)isc_timer_reset(nta->timer,
@@ -311,7 +311,7 @@ nta_create(dns_ntatable_t *ntatable, const dns_name_t *name,
 	dns_rdataset_init(&nta->rdataset);
 	dns_rdataset_init(&nta->sigrdataset);
 
-	isc_refcount_init(&nta->refcount, 1);
+	isc_refcount_init(&nta->references, 1);
 
 	nta->name = dns_fixedname_initname(&nta->fn);
 	dns_name_copy(name, nta->name, NULL);

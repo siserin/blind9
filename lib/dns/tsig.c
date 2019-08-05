@@ -43,7 +43,7 @@
 #include <dst/result.h>
 
 #define TSIG_MAGIC		ISC_MAGIC('T', 'S', 'I', 'G')
-#define VALID_TSIG_KEY(x)	ISC_MAGIC_VALID(x, TSIG_MAGIC)
+#define VALID_TSIG_KEY(x)	ISC_OBJECT_VALID(x, TSIG_MAGIC)
 
 #ifndef DNS_TSIG_MAXGENERATEDKEYS
 #define DNS_TSIG_MAXGENERATEDKEYS 4096
@@ -331,7 +331,7 @@ dns_tsigkey_createfromkey(const dns_name_t *name, const dns_name_t *algorithm,
 	if (ring != NULL)
 		refs++;
 
-	isc_refcount_init(&tkey->refs, refs);
+	isc_refcount_init(&tkey->references, refs);
 
 	tkey->generated = generated;
 	tkey->inception = inception;
@@ -369,9 +369,9 @@ dns_tsigkey_createfromkey(const dns_name_t *name, const dns_name_t *algorithm,
  cleanup_refs:
 	tkey->magic = 0;
 	while (refs-- > 0) {
-		isc_refcount_decrement(&tkey->refs);
+		isc_refcount_decrement(&tkey->references);
 	}
-	isc_refcount_destroy(&tkey->refs);
+	isc_refcount_destroy(&tkey->references);
 
 	if (tkey->key != NULL)
 		dst_key_free(&tkey->key);
@@ -432,7 +432,7 @@ cleanup_ring(dns_tsig_keyring_t *ring)
 		tkey = node->data;
 		if (tkey != NULL) {
 			if (tkey->generated
-			    && isc_refcount_current(&tkey->refs) == 1
+			    && isc_refcount_current(&tkey->references) == 1
 			    && tkey->inception != tkey->expire
 			    && tkey->expire < now) {
 				tsig_log(tkey, 2, "tsig expire: deleting");
@@ -700,7 +700,7 @@ dns_tsigkey_attach(dns_tsigkey_t *source, dns_tsigkey_t **targetp) {
 	REQUIRE(VALID_TSIG_KEY(source));
 	REQUIRE(targetp != NULL && *targetp == NULL);
 
-	isc_refcount_increment(&source->refs);
+	isc_refcount_increment(&source->references);
 	*targetp = source;
 }
 
@@ -731,8 +731,8 @@ dns_tsigkey_detach(dns_tsigkey_t **keyp) {
 	dns_tsigkey_t *key = *keyp;
 	*keyp = NULL;
 
-	if (isc_refcount_decrement(&key->refs) == 1) {
-		isc_refcount_destroy(&key->refs);
+	if (isc_refcount_decrement(&key->references) == 1) {
+		isc_refcount_destroy(&key->references);
 		tsigkey_free(key);
 	}
 }
@@ -1742,7 +1742,7 @@ dns_tsigkey_find(dns_tsigkey_t **tsigkey, const dns_name_t *name,
 		return (ISC_R_NOTFOUND);
 	}
 #endif
-	isc_refcount_increment(&key->refs);
+	isc_refcount_increment(&key->references);
 	RWUNLOCK(&ring->lock, isc_rwlocktype_read);
 	adjust_lru(key);
 	*tsigkey = key;
@@ -1812,7 +1812,7 @@ dns_tsigkeyring_add(dns_tsig_keyring_t *ring, const dns_name_t *name,
 
 	result = keyring_add(ring, name, tkey);
 	if (result == ISC_R_SUCCESS)
-		isc_refcount_increment(&tkey->refs);
+		isc_refcount_increment(&tkey->references);
 
 	return (result);
 }

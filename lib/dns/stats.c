@@ -26,7 +26,7 @@
 #include <dns/stats.h>
 
 #define DNS_STATS_MAGIC			ISC_MAGIC('D', 's', 't', 't')
-#define DNS_STATS_VALID(x)		ISC_MAGIC_VALID(x, DNS_STATS_MAGIC)
+#define DNS_STATS_VALID(x)		ISC_OBJECT_VALID(x, DNS_STATS_MAGIC)
 
 /*%
  * Statistics types.

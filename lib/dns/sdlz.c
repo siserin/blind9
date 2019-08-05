@@ -142,14 +142,14 @@ typedef struct sdlz_rdatasetiter {
 
 /*
  * Note that "impmagic" is not the first four bytes of the struct, so
- * ISC_MAGIC_VALID cannot be used.
+ * ISC_OBJECT_VALID cannot be used.
  */
 
 #define VALID_SDLZDB(sdlzdb)	((sdlzdb) != NULL && \
 				 (sdlzdb)->common.impmagic == SDLZDB_MAGIC)
 
 #define SDLZLOOKUP_MAGIC	ISC_MAGIC('D','L','Z','L')
-#define VALID_SDLZLOOKUP(sdlzl)	ISC_MAGIC_VALID(sdlzl, SDLZLOOKUP_MAGIC)
+#define VALID_SDLZLOOKUP(sdlzl)	ISC_OBJECT_VALID(sdlzl, SDLZLOOKUP_MAGIC)
 #define VALID_SDLZNODE(sdlzn)	VALID_SDLZLOOKUP(sdlzn)
 
 /* These values are taken from RFC 1537 */
@@ -827,7 +827,7 @@ findrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 	dns_rdatalist_t *list;
 	dns_sdlznode_t *sdlznode = (dns_sdlznode_t *)node;
 
-	REQUIRE(VALID_SDLZNODE(node));
+	REQUIRE(VALID_SDLZNODE(sdlznode));
 
 	UNUSED(db);
 	UNUSED(version);

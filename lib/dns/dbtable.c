@@ -34,7 +34,7 @@ struct dns_dbtable {
 };
 
 #define DBTABLE_MAGIC		ISC_MAGIC('D', 'B', '-', '-')
-#define VALID_DBTABLE(dbtable)	ISC_MAGIC_VALID(dbtable, DBTABLE_MAGIC)
+#define VALID_DBTABLE(dbtable)	ISC_OBJECT_VALID(dbtable, DBTABLE_MAGIC)
 
 static void
 dbdetach(void *data, void *arg) {

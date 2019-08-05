@@ -58,7 +58,7 @@ ISC_LANG_BEGINDECLS
 #define KEY_MAGIC	ISC_MAGIC('D','S','T','K')
 #define CTX_MAGIC	ISC_MAGIC('D','S','T','C')
 
-#define VALID_KEY(x) ISC_MAGIC_VALID(x, KEY_MAGIC)
+#define VALID_KEY(x) ISC_OBJECT_VALID(x, KEY_MAGIC)
 #define VALID_CTX(x) ISC_MAGIC_VALID(x, CTX_MAGIC)
 
 /***
@@ -78,7 +78,7 @@ typedef enum { DO_SIGN, DO_VERIFY } dst_use_t;
 /*% DST Key Structure */
 struct dst_key {
 	unsigned int	magic;
-	isc_refcount_t	refs;
+	isc_refcount_t	references;
 	dns_name_t *	key_name;	/*%< name of the key */
 	unsigned int	key_size;	/*%< size of the key in bits */
 	unsigned int	key_proto;	/*%< protocols this key is used for */

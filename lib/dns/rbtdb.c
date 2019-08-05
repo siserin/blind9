@@ -105,7 +105,7 @@ struct rbtdb_file_header {
 
 /*%
  * Note that "impmagic" is not the first four bytes of the struct, so
- * ISC_MAGIC_VALID cannot be used.
+ * ISC_OBJECT_VALID cannot be used.
  */
 #define VALID_RBTDB(rbtdb)      ((rbtdb) != NULL && \
 				 (rbtdb)->common.impmagic == RBTDB_MAGIC)

@@ -22,7 +22,7 @@
 #include <isc/util.h>
 
 #define COUNTER_MAGIC			ISC_MAGIC('C', 'n', 't', 'r')
-#define VALID_COUNTER(r)		ISC_MAGIC_VALID(r, COUNTER_MAGIC)
+#define VALID_COUNTER(r)		ISC_OBJECT_VALID(r, COUNTER_MAGIC)
 
 struct isc_counter {
 	unsigned int	magic;

@@ -42,7 +42,7 @@ struct dns_order {
 };
 
 #define DNS_ORDER_MAGIC ISC_MAGIC('O','r','d','r')
-#define DNS_ORDER_VALID(order)	ISC_MAGIC_VALID(order, DNS_ORDER_MAGIC)
+#define DNS_ORDER_VALID(order)	ISC_OBJECT_VALID(order, DNS_ORDER_MAGIC)
 
 isc_result_t
 dns_order_create(isc_mem_t *mctx, dns_order_t **orderp) {

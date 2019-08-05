@@ -44,7 +44,7 @@ struct dns_dyndbctx {
 };
 
 #define DNS_DYNDBCTX_MAGIC	ISC_MAGIC('D', 'd', 'b', 'c')
-#define DNS_DYNDBCTX_VALID(d)	ISC_MAGIC_VALID(d, DNS_DYNDBCTX_MAGIC)
+#define DNS_DYNDBCTX_VALID(d)	ISC_OBJECT_VALID(d, DNS_DYNDBCTX_MAGIC)
 
 /*
  * API version

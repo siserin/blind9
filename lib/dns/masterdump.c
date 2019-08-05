@@ -49,7 +49,7 @@
 #include <dns/ttl.h>
 
 #define DNS_DCTX_MAGIC		ISC_MAGIC('D', 'c', 't', 'x')
-#define DNS_DCTX_VALID(d)	ISC_MAGIC_VALID(d, DNS_DCTX_MAGIC)
+#define DNS_DCTX_VALID(d)	ISC_OBJECT_VALID(d, DNS_DCTX_MAGIC)
 
 #define RETERR(x) do { \
 	isc_result_t _r = (x); \

@@ -57,7 +57,7 @@ struct dns_ntatable {
 };
 
 #define NTATABLE_MAGIC		ISC_MAGIC('N', 'T', 'A', 't')
-#define VALID_NTATABLE(nt) 	ISC_MAGIC_VALID(nt, NTATABLE_MAGIC)
+#define VALID_NTATABLE(nt) 	ISC_OBJECT_VALID(nt, NTATABLE_MAGIC)
 
 isc_result_t
 dns_ntatable_create(dns_view_t *view,

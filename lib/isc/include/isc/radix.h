@@ -96,7 +96,7 @@ typedef struct isc_radix_node {
 } isc_radix_node_t;
 
 #define RADIX_TREE_MAGIC         ISC_MAGIC('R','d','x','T');
-#define RADIX_TREE_VALID(a)      ISC_MAGIC_VALID(a, RADIX_TREE_MAGIC);
+#define RADIX_TREE_VALID(a)      ISC_OBJECT_VALID(a, RADIX_TREE_MAGIC);
 
 typedef struct isc_radix_tree {
 	unsigned int magic;

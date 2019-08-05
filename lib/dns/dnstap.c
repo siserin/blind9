@@ -80,7 +80,7 @@
 #include "dnstap.pb-c.h"
 
 #define DTENV_MAGIC			ISC_MAGIC('D', 't', 'n', 'v')
-#define VALID_DTENV(env)		ISC_MAGIC_VALID(env, DTENV_MAGIC)
+#define VALID_DTENV(env)		ISC_OBJECT_VALID(env, DTENV_MAGIC)
 
 #define DNSTAP_CONTENT_TYPE	"protobuf:dnstap.Dnstap"
 #define DNSTAP_INITIAL_BUF_SIZE 256
@@ -100,7 +100,7 @@ struct dns_dthandle {
 
 struct dns_dtenv {
 	unsigned int magic;
-	isc_refcount_t refcount;
+	isc_refcount_t references;
 
 	isc_mem_t *mctx;
 
@@ -214,7 +214,7 @@ dns_dt_create(isc_mem_t *mctx, dns_dtmode_t mode, const char *path,
 	isc_mutex_init(&env->reopen_lock);
 	env->reopen_queued = false;
 	env->path = isc_mem_strdup(env->mctx, path);
-	isc_refcount_init(&env->refcount, 1);
+	isc_refcount_init(&env->references, 1);
 	CHECK(isc_stats_create(env->mctx, &env->stats, dns_dnstapcounter_max));
 
 	fwopt = fstrm_writer_options_init();
@@ -522,7 +522,7 @@ dns_dt_attach(dns_dtenv_t *source, dns_dtenv_t **destp) {
 	REQUIRE(VALID_DTENV(source));
 	REQUIRE(destp != NULL && *destp == NULL);
 
-	isc_refcount_increment(&source->refcount);
+	isc_refcount_increment(&source->references);
 	*destp = source;
 }
 
@@ -574,8 +574,8 @@ dns_dt_detach(dns_dtenv_t **envp) {
 	dns_dtenv_t *env = *envp;
 	*envp = NULL;
 
-	if (isc_refcount_decrement(&env->refcount) == 1) {
-		isc_refcount_destroy(&env->refcount);
+	if (isc_refcount_decrement(&env->references) == 1) {
+		isc_refcount_destroy(&env->references);
 		destroy(env);
 	}
 }

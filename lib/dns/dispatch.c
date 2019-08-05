@@ -174,7 +174,7 @@ struct dispsocket {
  */
 struct dispportentry {
 	in_port_t			port;
-	isc_refcount_t			refs;
+	isc_refcount_t			references;
 	ISC_LINK(struct dispportentry)	link;
 };
 
@@ -578,7 +578,7 @@ new_portentry(dns_dispatch_t *disp, in_port_t port) {
 		return (portentry);
 
 	portentry->port = port;
-	isc_refcount_init(&portentry->refs, 1);
+	isc_refcount_init(&portentry->references, 1);
 	ISC_LINK_INIT(portentry, link);
 	qid = DNS_QID(disp);
 	LOCK(&qid->lock);
@@ -598,9 +598,9 @@ deref_portentry(dns_dispatch_t *disp, dispportentry_t **portentryp) {
 	dns_qid_t *qid;
 
 	REQUIRE(disp->port_table != NULL);
-	REQUIRE(portentry != NULL && isc_refcount_current(&portentry->refs) > 0);
+	REQUIRE(portentry != NULL && isc_refcount_current(&portentry->references) > 0);
 
-	if (isc_refcount_decrement(&portentry->refs) == 1) {
+	if (isc_refcount_decrement(&portentry->references) == 1) {
 		qid = DNS_QID(disp);
 		LOCK(&qid->lock);
 		ISC_LIST_UNLINK(disp->port_table[portentry->port %
@@ -735,7 +735,7 @@ get_dispsocket(dns_dispatch_t *disp, const isc_sockaddr_t *dest,
 					break;
 				}
 			} else {
-				isc_refcount_increment(&portentry->refs);
+				isc_refcount_increment(&portentry->references);
 			}
 			break;
 		} else if (result == ISC_R_NOPERM) {

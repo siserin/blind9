@@ -74,7 +74,7 @@ struct dns_aclelement {
 struct dns_acl {
 	unsigned int		magic;
 	isc_mem_t		*mctx;
-	isc_refcount_t		refcount;
+	isc_refcount_t		references;
 	dns_iptable_t		*iptable;
 #define node_count		iptable->radix->num_added_node
 	dns_aclelement_t	*elements;
@@ -95,7 +95,7 @@ struct dns_aclenv {
 };
 
 #define DNS_ACL_MAGIC		ISC_MAGIC('D','a','c','l')
-#define DNS_ACL_VALID(a)	ISC_MAGIC_VALID(a, DNS_ACL_MAGIC)
+#define DNS_ACL_VALID(a)	ISC_OBJECT_VALID(a, DNS_ACL_MAGIC)
 
 /***
  *** Functions

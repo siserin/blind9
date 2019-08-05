@@ -1077,7 +1077,7 @@ dst_key_attach(dst_key_t *source, dst_key_t **target) {
 	REQUIRE(target != NULL && *target == NULL);
 	REQUIRE(VALID_KEY(source));
 
-	isc_refcount_increment(&source->refs);
+	isc_refcount_increment(&source->references);
 	*target = source;
 }
 
@@ -1088,8 +1088,8 @@ dst_key_free(dst_key_t **keyp) {
 	dst_key_t *key = *keyp;
 	*keyp = NULL;
 
-	if (isc_refcount_decrement(&key->refs) == 1) {
-		isc_refcount_destroy(&key->refs);
+	if (isc_refcount_decrement(&key->references) == 1) {
+		isc_refcount_destroy(&key->references);
 		isc_mem_t *mctx = key->mctx;
 		if (key->keydata.generic != NULL) {
 			INSIST(key->func->destroy != NULL);
@@ -1295,7 +1295,7 @@ get_key_struct(const dns_name_t *name, unsigned int alg,
 		return (NULL);
 	}
 
-	isc_refcount_init(&key->refs, 1);
+	isc_refcount_init(&key->references, 1);
 	isc_mem_attach(mctx, &key->mctx);
 	key->key_alg = alg;
 	key->key_flags = flags;

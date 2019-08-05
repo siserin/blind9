@@ -30,7 +30,7 @@
 #include <dns/portlist.h>
 
 #define DNS_PORTLIST_MAGIC	ISC_MAGIC('P','L','S','T')
-#define DNS_VALID_PORTLIST(p)	ISC_MAGIC_VALID(p, DNS_PORTLIST_MAGIC)
+#define DNS_VALID_PORTLIST(p)	ISC_OBJECT_VALID(p, DNS_PORTLIST_MAGIC)
 
 typedef struct dns_element {
 	in_port_t	port;
@@ -40,7 +40,7 @@ typedef struct dns_element {
 struct dns_portlist {
 	unsigned int	magic;
 	isc_mem_t	*mctx;
-	isc_refcount_t	refcount;
+	isc_refcount_t	references;
 	isc_mutex_t	lock;
 	dns_element_t 	*list;
 	unsigned int	allocated;
@@ -73,7 +73,7 @@ dns_portlist_create(isc_mem_t *mctx, dns_portlist_t **portlistp) {
 	if (portlist == NULL)
 		return (ISC_R_NOMEMORY);
 	isc_mutex_init(&portlist->lock);
-	isc_refcount_init(&portlist->refcount, 1);
+	isc_refcount_init(&portlist->references, 1);
 	portlist->list = NULL;
 	portlist->allocated = 0;
 	portlist->active = 0;
@@ -221,7 +221,7 @@ dns_portlist_attach(dns_portlist_t *portlist, dns_portlist_t **portlistp) {
 	REQUIRE(DNS_VALID_PORTLIST(portlist));
 	REQUIRE(portlistp != NULL && *portlistp == NULL);
 
-	isc_refcount_increment(&portlist->refcount);
+	isc_refcount_increment(&portlist->references);
 	*portlistp = portlist;
 }
 
@@ -231,9 +231,9 @@ dns_portlist_detach(dns_portlist_t **portlistp) {
 	dns_portlist_t *portlist = *portlistp;
 	*portlistp = NULL;
 
-	if (isc_refcount_decrement(&portlist->refcount) == 1) {
+	if (isc_refcount_decrement(&portlist->references) == 1) {
 		portlist->magic = 0;
-		isc_refcount_destroy(&portlist->refcount);
+		isc_refcount_destroy(&portlist->references);
 		if (portlist->list != NULL)
 			isc_mem_put(portlist->mctx, portlist->list,
 				    portlist->allocated *

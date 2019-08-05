@@ -252,7 +252,7 @@ typedef enum { poll_idle, poll_active, poll_checking } pollstate_t;
 typedef isc_event_t intev_t;
 
 #define SOCKET_MAGIC		ISC_MAGIC('I', 'O', 'i', 'o')
-#define VALID_SOCKET(s)		ISC_MAGIC_VALID(s, SOCKET_MAGIC)
+#define VALID_SOCKET(s)		ISC_OBJECT_VALID(s, SOCKET_MAGIC)
 
 /*!
  * IPv6 control information.  If the socket is an IPv6 socket we want

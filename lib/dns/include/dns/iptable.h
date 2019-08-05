@@ -30,7 +30,7 @@ struct dns_iptable {
 };
 
 #define DNS_IPTABLE_MAGIC	ISC_MAGIC('T','a','b','l')
-#define DNS_IPTABLE_VALID(a)	ISC_MAGIC_VALID(a, DNS_IPTABLE_MAGIC)
+#define DNS_IPTABLE_VALID(a)	ISC_OBJECT_VALID(a, DNS_IPTABLE_MAGIC)
 
 /***
  *** Functions

@@ -27,10 +27,10 @@
 #include <dns/result.h>
 
 #define KEYTABLE_MAGIC                  ISC_MAGIC('K', 'T', 'b', 'l')
-#define VALID_KEYTABLE(kt)              ISC_MAGIC_VALID(kt, KEYTABLE_MAGIC)
+#define VALID_KEYTABLE(kt)              ISC_OBJECT_VALID(kt, KEYTABLE_MAGIC)
 
 #define KEYNODE_MAGIC                   ISC_MAGIC('K', 'N', 'o', 'd')
-#define VALID_KEYNODE(kn)               ISC_MAGIC_VALID(kn, KEYNODE_MAGIC)
+#define VALID_KEYNODE(kn)               ISC_OBJECT_VALID(kn, KEYNODE_MAGIC)
 
 struct dns_keytable {
 	/* Unlocked. */
@@ -45,7 +45,7 @@ struct dns_keytable {
 
 struct dns_keynode {
 	unsigned int            magic;
-	isc_refcount_t          refcount;
+	isc_refcount_t          references;
 	dst_key_t *             key;
 	bool           managed;
 	bool		initial;
@@ -787,7 +787,7 @@ dns_keynode_create(isc_mem_t *mctx, dns_keynode_t **target) {
 	knode->key = NULL;
 	knode->next = NULL;
 
-	isc_refcount_init(&knode->refcount, 1);
+	isc_refcount_init(&knode->references, 1);
 
 	*target = knode;
 	return (ISC_R_SUCCESS);
@@ -796,7 +796,7 @@ dns_keynode_create(isc_mem_t *mctx, dns_keynode_t **target) {
 void
 dns_keynode_attach(dns_keynode_t *source, dns_keynode_t **target) {
 	REQUIRE(VALID_KEYNODE(source));
-	isc_refcount_increment(&source->refcount);
+	isc_refcount_increment(&source->references);
 	*target = source;
 }
 
@@ -806,8 +806,8 @@ dns_keynode_detach(isc_mem_t *mctx, dns_keynode_t **keynode) {
 	dns_keynode_t *node = *keynode;
 	*keynode = NULL;
 
-	if (isc_refcount_decrement(&node->refcount) == 1) {
-		isc_refcount_destroy(&node->refcount);
+	if (isc_refcount_decrement(&node->references) == 1) {
+		isc_refcount_destroy(&node->references);
 		if (node->key != NULL) {
 			dst_key_free(&node->key);
 		}

@@ -55,8 +55,6 @@
 #define DNS_ADBENTRY_VALID(x)     ISC_MAGIC_VALID(x, DNS_ADBENTRY_MAGIC)
 #define DNS_ADBFETCH_MAGIC        ISC_MAGIC('a', 'd', 'F', '4')
 #define DNS_ADBFETCH_VALID(x)     ISC_MAGIC_VALID(x, DNS_ADBFETCH_MAGIC)
-#define DNS_ADBFETCH6_MAGIC       ISC_MAGIC('a', 'd', 'F', '6')
-#define DNS_ADBFETCH6_VALID(x)    ISC_MAGIC_VALID(x, DNS_ADBFETCH6_MAGIC)
 
 /*!
  * For type 3 negative cache entries, we will remember that the address is

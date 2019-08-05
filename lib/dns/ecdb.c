@@ -25,11 +25,10 @@
 #include <dns/rdataslab.h>
 
 #define ECDB_MAGIC		ISC_MAGIC('E', 'C', 'D', 'B')
-#define VALID_ECDB(db)		((db) != NULL && \
-				 (db)->common.impmagic == ECDB_MAGIC)
+#define VALID_ECDB(db)		ISC_OBJECT_VALID(ecdb, ECDB_MAGIC)
 
 #define ECDBNODE_MAGIC		ISC_MAGIC('E', 'C', 'D', 'N')
-#define VALID_ECDBNODE(ecdbn)	ISC_MAGIC_VALID(ecdbn, ECDBNODE_MAGIC)
+#define VALID_ECDBNODE(ecdbn)	ISC_OBJECT_VALID(ecdbn, ECDBNODE_MAGIC)
 
 /*%
  * The 'ephemeral' cache DB (ecdb) implementation.  An ecdb just provides

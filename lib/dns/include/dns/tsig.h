@@ -82,7 +82,7 @@ struct dns_tsigkey {
 	isc_stdtime_t		inception;	/*%< start of validity period */
 	isc_stdtime_t		expire;		/*%< end of validity period */
 	dns_tsig_keyring_t	*ring;		/*%< the enclosing keyring */
-	isc_refcount_t		refs;		/*%< reference counter */
+	isc_refcount_t		references;	/*%< reference counter */
 	ISC_LINK(dns_tsigkey_t) link;
 };
 

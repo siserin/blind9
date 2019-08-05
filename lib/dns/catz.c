@@ -34,9 +34,9 @@
 #define DNS_CATZ_ZONES_MAGIC ISC_MAGIC('c', 'a', 't', 's')
 #define DNS_CATZ_ENTRY_MAGIC ISC_MAGIC('c', 'a', 't', 'e')
 
-#define DNS_CATZ_ZONE_VALID(catz) ISC_MAGIC_VALID(catz, DNS_CATZ_ZONE_MAGIC)
-#define DNS_CATZ_ZONES_VALID(catzs) ISC_MAGIC_VALID(catzs, DNS_CATZ_ZONES_MAGIC)
-#define DNS_CATZ_ENTRY_VALID(entry) ISC_MAGIC_VALID(entry, DNS_CATZ_ENTRY_MAGIC)
+#define DNS_CATZ_ZONE_VALID(catz) ISC_OBJECT_VALID(catz, DNS_CATZ_ZONE_MAGIC)
+#define DNS_CATZ_ZONES_VALID(catzs) ISC_OBJECT_VALID(catzs, DNS_CATZ_ZONES_MAGIC)
+#define DNS_CATZ_ENTRY_VALID(entry) ISC_OBJECT_VALID(entry, DNS_CATZ_ENTRY_MAGIC)
 
 /*%
  * Single member zone in a catalog
@@ -45,7 +45,7 @@ struct dns_catz_entry {
 	unsigned int		magic;
 	dns_name_t		name;
 	dns_catz_options_t	opts;
-	isc_refcount_t		refs;
+	isc_refcount_t		references;
 };
 
 /*%
@@ -77,7 +77,7 @@ struct dns_catz_zone {
 	bool			active;
 	bool			db_registered;
 
-	isc_refcount_t		refs;
+	isc_refcount_t		references;
 };
 
 static isc_result_t
@@ -94,7 +94,7 @@ struct dns_catz_zones {
 	unsigned int			magic;
 	isc_ht_t			*zones;
 	isc_mem_t			*mctx;
-	isc_refcount_t			refs;
+	isc_refcount_t			references;
 	isc_mutex_t			lock;
 	dns_catz_zonemodmethods_t	*zmm;
 	isc_taskmgr_t			*taskmgr;
@@ -217,7 +217,7 @@ dns_catz_entry_new(isc_mem_t *mctx, const dns_name_t *domain,
 	}
 
 	dns_catz_options_init(&nentry->opts);
-	isc_refcount_init(&nentry->refs, 1);
+	isc_refcount_init(&nentry->references, 1);
 	nentry->magic = DNS_CATZ_ENTRY_MAGIC;
 	*nentryp = nentry;
 	return (ISC_R_SUCCESS);
@@ -262,7 +262,7 @@ dns_catz_entry_attach(dns_catz_entry_t *entry, dns_catz_entry_t **entryp) {
 	REQUIRE(DNS_CATZ_ENTRY_VALID(entry));
 	REQUIRE(entryp != NULL && *entryp == NULL);
 
-	isc_refcount_increment(&entry->refs);
+	isc_refcount_increment(&entry->references);
 	*entryp = entry;
 }
 
@@ -277,10 +277,10 @@ dns_catz_entry_detach(dns_catz_zone_t *zone, dns_catz_entry_t **entryp) {
 
 	*entryp = NULL;
 
-	if (isc_refcount_decrement(&entry->refs) == 1) {
+	if (isc_refcount_decrement(&entry->references) == 1) {
 		isc_mem_t *mctx = zone->catzs->mctx;
 		entry->magic = 0;
-		isc_refcount_destroy(&entry->refs);
+		isc_refcount_destroy(&entry->references);
 		dns_catz_options_free(&entry->opts, mctx);
 		if (dns_name_dynamic(&entry->name))
 			dns_name_free(&entry->name, mctx);
@@ -599,7 +599,7 @@ dns_catz_new_zones(dns_catz_zones_t **catzsp, dns_catz_zonemodmethods_t *zmm,
 
 	isc_mutex_init(&new_zones->lock);
 
-	isc_refcount_init(&new_zones->refs, 1);
+	isc_refcount_init(&new_zones->references, 1);
 
 	result = isc_ht_init(&new_zones->zones, mctx, 4);
 	if (result != ISC_R_SUCCESS)
@@ -621,7 +621,7 @@ dns_catz_new_zones(dns_catz_zones_t **catzsp, dns_catz_zonemodmethods_t *zmm,
   cleanup_ht:
 	isc_ht_destroy(&new_zones->zones);
   cleanup_refcount:
-	isc_refcount_destroy(&new_zones->refs);
+	isc_refcount_destroy(&new_zones->references);
 	isc_mutex_destroy(&new_zones->lock);
 	isc_mem_put(mctx, new_zones, sizeof(*new_zones));
 
@@ -683,7 +683,7 @@ dns_catz_new_zone(dns_catz_zones_t *catzs, dns_catz_zone_t **zonep,
 	new_zone->active = true;
 	new_zone->db_registered = false;
 	new_zone->version = (uint32_t)(-1);
-	isc_refcount_init(&new_zone->refs, 1);
+	isc_refcount_init(&new_zone->references, 1);
 	new_zone->magic = DNS_CATZ_ZONE_MAGIC;
 
 	*zonep = new_zone;
@@ -767,7 +767,7 @@ dns_catz_catzs_attach(dns_catz_zones_t *catzs, dns_catz_zones_t **catzsp) {
 	REQUIRE(DNS_CATZ_ZONES_VALID(catzs));
 	REQUIRE(catzsp != NULL && *catzsp == NULL);
 
-	isc_refcount_increment(&catzs->refs);
+	isc_refcount_increment(&catzs->references);
 	*catzsp = catzs;
 }
 
@@ -775,7 +775,7 @@ void
 dns_catz_zone_attach(dns_catz_zone_t *zone, dns_catz_zone_t **zonep) {
 	REQUIRE(zonep != NULL && *zonep == NULL);
 
-	isc_refcount_increment(&zone->refs);
+	isc_refcount_increment(&zone->references);
 	*zonep = zone;
 }
 
@@ -785,9 +785,9 @@ dns_catz_zone_detach(dns_catz_zone_t **zonep) {
 	dns_catz_zone_t *zone = *zonep;
 	*zonep = NULL;
 
-	if (isc_refcount_decrement(&zone->refs) == 1) {
+	if (isc_refcount_decrement(&zone->references) == 1) {
 		isc_mem_t *mctx = zone->catzs->mctx;
-		isc_refcount_destroy(&zone->refs);
+		isc_refcount_destroy(&zone->references);
 		if (zone->entries != NULL) {
 			isc_ht_iter_t *iter = NULL;
 			isc_result_t result;
@@ -842,7 +842,7 @@ dns_catz_catzs_detach(dns_catz_zones_t **catzsp) {
 	catzs = *catzsp;
 	*catzsp = NULL;
 
-	if (isc_refcount_decrement(&catzs->refs) == 1) {
+	if (isc_refcount_decrement(&catzs->references) == 1) {
 		catzs->magic = 0;
 		isc_task_destroy(&catzs->updater);
 		isc_mutex_destroy(&catzs->lock);
@@ -864,7 +864,7 @@ dns_catz_catzs_detach(dns_catz_zones_t **catzsp) {
 			INSIST(isc_ht_count(catzs->zones) == 0);
 			isc_ht_destroy(&catzs->zones);
 		}
-		isc_refcount_destroy(&catzs->refs);
+		isc_refcount_destroy(&catzs->references);
 		isc_mem_putanddetach(&catzs->mctx, catzs, sizeof(*catzs));
 	}
 }

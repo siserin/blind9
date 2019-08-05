@@ -170,7 +170,7 @@ struct dns_incctx {
 };
 
 #define DNS_LCTX_MAGIC ISC_MAGIC('L','c','t','x')
-#define DNS_LCTX_VALID(lctx) ISC_MAGIC_VALID(lctx, DNS_LCTX_MAGIC)
+#define DNS_LCTX_VALID(lctx) ISC_OBJECT_VALID(lctx, DNS_LCTX_MAGIC)
 
 #define DNS_AS_STR(t) ((t).value.as_textregion.base)
 
