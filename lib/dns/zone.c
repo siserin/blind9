@@ -1111,7 +1111,6 @@ zone_free(dns_zone_t *zone) {
 	isc_event_t *setnsec3param_event;
 	dns_include_t *include;
 
-	REQUIRE(DNS_ZONE_VALID(zone));
 	isc_refcount_destroy(&zone->references);
 	isc_refcount_destroy(&zone->irefs);
 	REQUIRE(!LOCKED_ZONE(zone));
