@@ -42,3 +42,4 @@ FOR %%I IN (1,2) DO (
 	netsh interface ipv6 add address interface=Loopback fd92:7065:b8e:99ff::%%I/64
 	netsh interface ipv6 add address interface=Loopback fd92:7065:b8e:ff::%%I/64
 )
+netsh interface ipv6 add address interface=Loopback fd92:7065:b8e:fffe:10.53.0.4/64

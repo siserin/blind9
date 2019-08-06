@@ -18,6 +18,7 @@
 # IPv6: fd92:7065:b8e:ffff::{1..10}		ULA
 #       fd92:7065:b8e:99ff::{1..2}
 #       fd92:7065:b8e:ff::{1..2}
+#       fd92:7065:b8e:fffe::10.53.0.4
 #
 
 SYSTEMTESTTOP="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
@@ -41,10 +42,232 @@ case "$sys" in
                 ;;
 esac
 
+#
+# up <family> <interface-number> <address>
+#
+up() {
+	case "$sys" in
+	    *-pc-solaris2.5.1)
+		case $1 in
+		inet) ifconfig lo0:$2 $3 netmask 0xffffffff up ;;
+		esac
+		;;
+	    *-sun-solaris2.[6-7])
+		case $1 in
+		inet) ifconfig lo0:$2 $3 netmask 0xffffffff up ;;
+		esac
+		;;
+	    *-*-solaris2.[8-9]|*-*-solaris2.1[0-9])
+		case $1 in
+		inet)
+			/sbin/ifconfig lo0:$2 plumb
+			/sbin/ifconfig lo0:$2 $3 up
+			;;
+		inet6)
+			/sbin/ifconfig lo0:$2 inet6 plumb
+			/sbin/ifconfig lo0:$2 inet6 $3 up
+			;;
+		esac
+		;;
+	    *-*-linux*)
+		case $useip in
+		yes)
+			case $1 in
+			inet) ip address add $3/24 dev lo:$2 ;;
+			inet6) ip address add $3/64 dev lo ;;
+			esac
+			;;
+		*)
+			case $1 in
+			inet) ifconfig lo:$2 $3 up netmask 255.255.255.0 ;;
+			inet6) ifconfig lo inet6 add $3/64 ;;
+			esac
+			;;
+		esac
+		;;
+	    *-unknown-freebsd*)
+		case $1 in
+		inet) ifconfig lo0 $3 alias netmask 0xffffffff ;;
+		inet6) ifconfig lo0 inet6 $3 alias ;;
+		esac
+		;;
+	    *-unknown-dragonfly*|*-unknown-netbsd*|*-unknown-openbsd*)
+		case $1 in
+		inet) ifconfig lo0 $3 alias netmask 255.255.255.0 ;;
+		inet6) ifconfig lo0 inet6 $3 alias ;;
+		esac
+		;;
+	    *-*-bsdi[3-5].*)
+		case $1 in
+		inet) ifconfig lo0 add $3 netmask 255.255.255.0 ;;
+		esac
+		;;
+	    *-dec-osf[4-5].*)
+		case $1 in
+		inet) ifconfig lo0 alias $3 ;;
+		esac
+		;;
+	    *-sgi-irix6.*)
+		case $1 in
+		inet) ifconfig lo0 alias $3 ;;
+		esac
+		;;
+	    *-*-sysv5uw7*|*-*-sysv*UnixWare*|*-*-sysv*OpenUNIX*)
+		case $1 in
+		inet) ifconfig lo0 $3 alias netmask 0xffffffff ;;
+		esac
+		;;
+	    *-ibm-aix4.*|*-ibm-aix5.*)
+		case $1 in
+		inet) ifconfig lo0 alias $3 ;;
+		inet6) ifconfig lo0 inet6 alias -dad $3/64 ;;
+		esac
+		;;
+	    hpux)
+		case $1 in
+		inet) ifconfig lo0:$2 $3 netmask 255.255.255.0 up ;;
+		inet6) ifconfig lo0:$2 inet6 $3 up ;;
+		esac
+		;;
+	    *-sco3.2v*)
+		case $1 in
+		inet) ifconfig lo0 alias $3 ;;
+		esac
+		;;
+	    *-darwin*)
+		case $1 in
+		inet) ifconfig lo0 alias $3 ;;
+		inet6) ifconfig lo0 inet6 $3 alias ;;
+		esac
+		;;
+	    *-cygwin*)
+		echo "Please run ifconfig.bat as Administrator."
+		exit 1
+		;;
+	    *)
+		echo "Don't know how to set up interface.  Giving up."
+		exit 1
+	esac
+}
+
+#
+# down <family> <interface-number> <address>
+#
+down() {
+	case "$sys" in
+	    *-pc-solaris2.5.1)
+		case $1 in
+		inet) ifconfig lo0:$2 0.0.0.0 down ;;
+		esac
+		;;
+	    *-sun-solaris2.[6-7])
+		case $1 in
+		inet) ifconfig lo0:$2 $3 down ;;
+		esac
+		;;
+	    *-*-solaris2.[8-9]|*-*-solaris2.1[0-9])
+		case $1 in
+		inet)
+			ifconfig lo0:$2 $3 down
+			ifconfig lo0:$2 $3 unplumb
+			;;
+		inet6)
+			ifconfig lo0:$2 inet6 down
+			ifconfig lo0:$2 inet6 unplumb
+			;;
+		esac
+		;;
+	    *-*-linux*)
+		case $use_ip in
+		yes)
+			case $1 in
+			inet) ip address del $3/24 dev lo:$2 ;;
+			inet6) ip address del $3/64 dev lo ;;
+			esac
+			;;
+		*)
+			case $1 in
+			inet) ifconfig lo:$2 $3 down ;;
+			inet6) ifconfig lo inet6 del $3/64 ;;
+			esac
+			;;
+		esac
+		;;
+	    *-unknown-freebsd*)
+		case $1 in
+		inet) ifconfig lo0 $3 delete ;;
+		inet6) ifconfig lo0 inet6 $3 delete ;;
+		esac
+		;;
+	    *-unknown-netbsd*)
+		case $1 in
+		inet) ifconfig lo0 $3 delete ;;
+		net6) ifconfig lo0 inet6 $3 delete ;;
+		esac
+		;;
+	    *-unknown-openbsd*)
+		case $1 in
+		inet) ifconfig lo0 $3 delete ;;
+		inet6) fconfig lo0 inet6 $3 delete ;;
+		esac
+		;;
+	    *-*-bsdi[3-5].*)
+		case $1 in
+		inet) ifconfig lo0 remove $3 ;;
+		esac
+		;;
+	    *-dec-osf[4-5].*)
+		case $1 in
+		inet) ifconfig lo0 -alias $3 ;;
+		esac
+		;;
+	    *-sgi-irix6.*)
+		case $1 in
+		inet) ifconfig lo0 -alias $3 ;;
+		esac
+		;;
+	    *-*-sysv5uw7*|*-*-sysv*UnixWare*|*-*-sysv*OpenUNIX*)
+		case $1 in
+		inet) ifconfig lo0 -alias $3 ;;
+		esac
+		;;
+	    *-ibm-aix4.*|*-ibm-aix5.*)
+		case $1 in
+		inet) ifconfig lo0 delete $3 ;;
+		inet6) ifconfig lo0 delete inet6 $3/64 ;;
+		esac
+		;;
+	    hpux)
+		case $1 in
+		inet) ifconfig lo0:$int 0.0.0.0 ;;
+		inet6) ifconfig lo0:$int inet6 :: ;;
+		esac
+		;;
+	    *-sco3.2v*)
+		case $1 in
+		inet) ifconfig lo0 -alias $3 ;;
+		esac
+		;;
+	    *darwin*)
+		case $1 in
+		inet) ifconfig lo0 -alias $3 ;;
+		inet6) ifconfig lo0 inet6 $3 delete ;;
+		esac
+		;;
+	    *-cygwin*)
+		echo "Please run ifconfig.bat as Administrator."
+		exit 1
+		;;
+	    *)
+		echo "Don't know how to destroy interface.  Giving up."
+		exit 1
+	esac
+}
+
 case "$1" in
 
     start|up)
-	for i in 0 1 2
+	for i in 0 1 2 3
 	do
 		case $i in
 		  0) ipv6="ff" ;;
@@ -54,97 +277,24 @@ case "$1" in
 		esac
 		for ns in 1 2 3 4 5 6 7 8 9 10
 		do
-			[ $i -gt 0 -a $ns -gt 2 ] && break
 			int=`expr $i \* 10 + $ns`
-			case "$sys" in
-			    *-pc-solaris2.5.1)
-				ifconfig lo0:$int 10.53.$i.$ns \
-					netmask 0xffffffff up
+			case $i in
+			[012])
+				[ $i -gt 0 -a $ns -gt 2 ] && break
+				up inet $int 10.53.$i.$ns
+				up inet6 $int fd92:7065:b8e:${ipv6}ff::$ns
 				;;
-			    *-sun-solaris2.[6-7])
-				ifconfig lo0:$int 10.53.$i.$ns \
-					netmask 0xffffffff up
+			3)
+				[ $ns -ne 4 ] && continue
+				up inet6 $int fd92:7065:b8e:fffe::10.53.0.$ns
 				;;
-			    *-*-solaris2.[8-9]|*-*-solaris2.1[0-9])
-				/sbin/ifconfig lo0:$int plumb
-				/sbin/ifconfig lo0:$int 10.53.$i.$ns up
-				/sbin/ifconfig lo0:$int inet6 plumb
-				[ "$ipv6" ] && /sbin/ifconfig lo0:$int \
-					inet6 fd92:7065:b8e:${ipv6}ff::$ns up
-				;;
-			    *-*-linux*)
-                                if [ $use_ip ]; then
-                                        ip address add 10.53.$i.$ns/24 \
-                                            dev lo:$int
-                                        [ "$ipv6" ] && ip address add \
-                                            fd92:7065:b8e:${ipv6}ff::$ns/64 \
-                                            dev lo
-                                else
-                                        ifconfig lo:$int 10.53.$i.$ns up \
-                                                netmask 255.255.255.0
-                                        [ "$ipv6" ] && ifconfig lo inet6 add \
-                                                fd92:7065:b8e:${ipv6}ff::$ns/64
-                                fi
-				;;
-			    *-unknown-freebsd*)
-				ifconfig lo0 10.53.$i.$ns alias \
-					netmask 0xffffffff
-				[ "$ipv6" ] && ifconfig lo0 inet6 \
-					fd92:7065:b8e:${ipv6}ff::$ns alias
-				;;
-			    *-unknown-dragonfly*|*-unknown-netbsd*|*-unknown-openbsd*)
-				ifconfig lo0 10.53.$i.$ns alias \
-					netmask 255.255.255.0
-				[ "$ipv6" ] && ifconfig lo0 inet6 \
-					fd92:7065:b8e:${ipv6}ff::$ns alias
-				;;
-			    *-*-bsdi[3-5].*)
-				ifconfig lo0 add 10.53.$i.$ns \
-					netmask 255.255.255.0
-				;;
-			    *-dec-osf[4-5].*)
-				ifconfig lo0 alias 10.53.$i.$ns
-				;;
-			    *-sgi-irix6.*)
-				ifconfig lo0 alias 10.53.$i.$ns
-				;;
-			    *-*-sysv5uw7*|*-*-sysv*UnixWare*|*-*-sysv*OpenUNIX*)
-				ifconfig lo0 10.53.$i.$ns alias \
-					netmask 0xffffffff
-				;;
-			    *-ibm-aix4.*|*-ibm-aix5.*)
-				ifconfig lo0 alias 10.53.$i.$ns
-				[ "$ipv6" ] && ifconfig lo0 inet6 alias -dad \
-					fd92:7065:b8e:${ipv6}ff::$ns/64
-				;;
-			    hpux)
-				ifconfig lo0:$int 10.53.$i.$ns \
-					netmask 255.255.255.0 up
-				[ "$ipv6" ] && ifconfig lo0:$int inet6 \
-					fd92:7065:b8e:${ipv6}ff::$ns up
-				;;
-			    *-sco3.2v*)
-				ifconfig lo0 alias 10.53.$i.$ns
-				;;
-			    *-darwin*)
-				ifconfig lo0 alias 10.53.$i.$ns
-				[ "$ipv6" ] && ifconfig lo0 inet6 \
-					fd92:7065:b8e:${ipv6}ff::$ns alias
-				;;
-			    *-cygwin*)
-			        echo "Please run ifconfig.bat as Administrator."
-			        exit 1
-			        ;;
-			    *)
-				echo "Don't know how to set up interface.  Giving up."
-				exit 1
 			esac
 		done
 	done
 	;;
 
     stop|down)
-	for i in 0 1 2
+	for i in 0 1 2 3
 	do
 		case $i in
 		  0) ipv6="ff" ;;
@@ -152,87 +302,19 @@ case "$1" in
 		  2) ipv6="00" ;;
 		  *) ipv6="" ;;
 		esac
-		for ns in 10 9 8 7 6 5 4 3 2 1
+		for ns in 1 2 3 4 5 6 7 8 9 10
 		do
-			[ $i -gt 0 -a $ns -gt 2 ] && continue
-			int=`expr $i \* 10 + $ns - 1`
-			case "$sys" in
-			    *-pc-solaris2.5.1)
-				ifconfig lo0:$int 0.0.0.0 down
+			int=`expr $i \* 10 + $ns`
+			case $i in
+			[012])
+				[ $i -gt 0 -a $ns -gt 2 ] && break
+				down inet $int 10.53.$i.$ns
+				down inet6 $int fd92:7065:b8e:${ipv6}ff::$ns
 				;;
-			    *-sun-solaris2.[6-7])
-				ifconfig lo0:$int 10.53.$i.$ns down
+			3)
+				[ $ns -ne 4 ] && break
+				down inet6 $int fd92:7065:b8e:fffe::10.53.0.$ns
 				;;
-			    *-*-solaris2.[8-9]|*-*-solaris2.1[0-9])
-				ifconfig lo0:$int 10.53.$i.$ns down
-				ifconfig lo0:$int 10.53.$i.$ns unplumb
-				ifconfig lo0:$int inet6 down
-				ifconfig lo0:$int inet6 unplumb
-				;;
-			    *-*-linux*)
-                                if [ $use_ip ]; then
-                                        ip address del 10.53.$i.$ns/24 \
-                                            dev lo:$int
-                                        [ "$ipv6" ] && ip address del \
-                                            fd92:7065:b8e:${ipv6}ff::$ns/64 \
-                                            dev lo
-                                else
-                                        ifconfig lo:$int 10.53.$i.$ns down
-                                        [ "$ipv6" ] && ifconfig lo inet6 \
-                                            del fd92:7065:b8e:${ipv6}ff::$ns/64
-                                fi
-				;;
-			    *-unknown-freebsd*)
-				ifconfig lo0 10.53.$i.$ns delete
-				[ "$ipv6" ] && ifconfig lo0 inet6 \
-					fd92:7065:b8e:${ipv6}ff::$ns delete
-				;;
-			    *-unknown-netbsd*)
-				ifconfig lo0 10.53.$i.$ns delete
-				[ "$ipv6" ] && ifconfig lo0 inet6 \
-					fd92:7065:b8e:${ipv6}ff::$ns delete
-				;;
-			    *-unknown-openbsd*)
-				ifconfig lo0 10.53.$i.$ns delete
-				[ "$ipv6" ] && ifconfig lo0 inet6 \
-					fd92:7065:b8e:${ipv6}ff::$ns delete
-				;;
-			    *-*-bsdi[3-5].*)
-				ifconfig lo0 remove 10.53.$i.$ns
-				;;
-			    *-dec-osf[4-5].*)
-				ifconfig lo0 -alias 10.53.$i.$ns
-				;;
-			    *-sgi-irix6.*)
-				ifconfig lo0 -alias 10.53.$i.$ns
-				;;
-			    *-*-sysv5uw7*|*-*-sysv*UnixWare*|*-*-sysv*OpenUNIX*)
-				ifconfig lo0 -alias 10.53.$i.$ns
-				;;
-			    *-ibm-aix4.*|*-ibm-aix5.*)
-				ifconfig lo0 delete 10.53.$i.$ns
-				[ "$ipv6" ] && ifconfig lo0 delete inet6 \
-					fd92:7065:b8e:${ipv6}ff::$ns/64
-				;;
-			    hpux)
-				ifconfig lo0:$int 0.0.0.0
-				ifconfig lo0:$int inet6 ::
-				;;
-			    *-sco3.2v*)
-				ifconfig lo0 -alias 10.53.$i.$ns
-				;;
-			    *darwin*)
-				ifconfig lo0 -alias 10.53.$i.$ns
-				[ "$ipv6" ] && ifconfig lo0 inet6 \
-					fd92:7065:b8e:${ipv6}ff::$ns delete
-				;;
-			    *-cygwin*)
-			        echo "Please run ifconfig.bat as Administrator."
-			        exit 1
-			        ;;
-			    *)
-				echo "Don't know how to destroy interface.  Giving up."
-				exit 1
 			esac
 		done
 	done
