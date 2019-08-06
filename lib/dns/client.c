@@ -17,6 +17,7 @@
 #include <isc/mem.h>
 #include <isc/mutex.h>
 #include <isc/portset.h>
+#include <isc/refcount.h>
 #include <isc/safe.h>
 #include <isc/sockaddr.h>
 #include <isc/socket.h>
@@ -49,7 +50,7 @@
 #include <dst/dst.h>
 
 #define DNS_CLIENT_MAGIC		ISC_MAGIC('D', 'N', 'S', 'c')
-#define DNS_CLIENT_VALID(c)		ISC_MAGIC_VALID(c, DNS_CLIENT_MAGIC)
+#define DNS_CLIENT_VALID(c)		ISC_OBJECT_VALID(c, DNS_CLIENT_MAGIC)
 
 #define RCTX_MAGIC			ISC_MAGIC('R', 'c', 't', 'x')
 #define RCTX_VALID(c)			ISC_MAGIC_VALID(c, RCTX_MAGIC)
@@ -93,7 +94,7 @@ struct dns_client {
 	unsigned int			find_udpretries;
 
 	/* Locked */
-	unsigned int			references;
+	isc_refcount_t			references;
 	dns_viewlist_t			viewlist;
 	ISC_LIST(struct resctx)		resctxs;
 	ISC_LIST(struct reqctx)		reqctxs;
@@ -562,7 +563,7 @@ dns_client_createx(isc_mem_t *mctx, isc_appctx_t *actx,
 	client->find_udpretries = DEF_FIND_UDPRETRIES;
 	client->attributes = 0;
 
-	client->references = 1;
+	isc_refcount_init(&client->references, 1);
 	client->magic = DNS_CLIENT_MAGIC;
 
 	*clientp = client;
@@ -633,16 +634,19 @@ dns_client_destroy(dns_client_t **clientp) {
 	REQUIRE(DNS_CLIENT_VALID(client));
 
 	LOCK(&client->lock);
-	client->references--;
-	if (client->references == 0 && ISC_LIST_EMPTY(client->resctxs) &&
-	    ISC_LIST_EMPTY(client->reqctxs) &&
-	    ISC_LIST_EMPTY(client->updatectxs)) {
-		destroyok = true;
+	if (isc_refcount_decrement(&client->references) == 1) {
+		if (ISC_LIST_EMPTY(client->resctxs) &&
+		    ISC_LIST_EMPTY(client->reqctxs) &&
+		    ISC_LIST_EMPTY(client->updatectxs))
+		{
+			destroyok = true;
+		}
 	}
 	UNLOCK(&client->lock);
 
-	if (destroyok)
+	if (destroyok) {
 		destroyclient(&client);
+	}
 
 	*clientp = NULL;
 }
@@ -1221,7 +1225,6 @@ resolve_done(isc_task_t *task, isc_event_t *event) {
 	resarg_t *resarg = event->ev_arg;
 	dns_clientresevent_t *rev = (dns_clientresevent_t *)event;
 	dns_name_t *name;
-	isc_result_t result;
 
 	UNUSED(task);
 
@@ -1246,8 +1249,10 @@ resolve_done(isc_task_t *task, isc_event_t *event) {
 		 * action to call isc_app_ctxsuspend when we do start
 		 * running.
 		 */
-		result = isc_app_ctxonrun(resarg->actx, resarg->client->mctx,
-					   task, suspend, resarg->actx);
+		isc_result_t result = isc_app_ctxonrun(resarg->actx,
+						       resarg->client->mctx,
+						       task, suspend,
+						       resarg->actx);
 		if (result == ISC_R_ALREADYRUNNING)
 			isc_app_ctxsuspend(resarg->actx);
 	} else {
@@ -1529,10 +1534,12 @@ dns_client_destroyrestrans(dns_clientrestrans_t **transp) {
 	INSIST(ISC_LINK_LINKED(rctx, link));
 	ISC_LIST_UNLINK(client->resctxs, rctx, link);
 
-	if (client->references == 0 && ISC_LIST_EMPTY(client->resctxs) &&
+	if (isc_refcount_current(&client->references) == 0 &&
+	    ISC_LIST_EMPTY(client->resctxs) &&
 	    ISC_LIST_EMPTY(client->reqctxs) &&
-	    ISC_LIST_EMPTY(client->updatectxs))
+	    ISC_LIST_EMPTY(client->updatectxs)) {
 		need_destroyclient = true;
+	}
 
 	UNLOCK(&client->lock);
 
@@ -1884,9 +1891,11 @@ dns_client_destroyreqtrans(dns_clientreqtrans_t **transp) {
 	INSIST(ISC_LINK_LINKED(ctx, link));
 	ISC_LIST_UNLINK(client->reqctxs, ctx, link);
 
-	if (client->references == 0 && ISC_LIST_EMPTY(client->resctxs) &&
+	if (isc_refcount_current(&client->references) == 0 &&
+	    ISC_LIST_EMPTY(client->resctxs) &&
 	    ISC_LIST_EMPTY(client->reqctxs) &&
-	    ISC_LIST_EMPTY(client->updatectxs)) {
+	    ISC_LIST_EMPTY(client->updatectxs))
+	{
 		need_destroyclient = true;
 	}
 
@@ -2371,11 +2380,11 @@ receive_soa(isc_task_t *task, isc_event_t *event) {
 	}
 
  lookforsoa:
-	if (pass == 0)
+	if (pass == 0) {
 		section = DNS_SECTION_ANSWER;
-	else if (pass == 1)
+	} else if (pass == 1) {
 		section = DNS_SECTION_AUTHORITY;
-	else {
+	} else {
 		droplabel = true;
 		goto out;
 	}
@@ -3086,10 +3095,13 @@ dns_client_destroyupdatetrans(dns_clientupdatetrans_t **transp) {
 	INSIST(ISC_LINK_LINKED(uctx, link));
 	ISC_LIST_UNLINK(client->updatectxs, uctx, link);
 
-	if (client->references == 0 && ISC_LIST_EMPTY(client->resctxs) &&
+	if (isc_refcount_current(&client->references) == 0 &&
+	    ISC_LIST_EMPTY(client->resctxs) &&
 	    ISC_LIST_EMPTY(client->reqctxs) &&
 	    ISC_LIST_EMPTY(client->updatectxs))
+	{
 		need_destroyclient = true;
+	}
 
 	UNLOCK(&client->lock);
 
