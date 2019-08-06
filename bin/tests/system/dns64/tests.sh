@@ -1400,5 +1400,14 @@ n=`expr $n + 1`
 if [ $ret != 0 ]; then echo_i "failed"; fi
 status=`expr $status + $ret`
 
+echo_i "checking use-dns64 ($n)"
+ret=0
+$DIG $DIGOPTS @10.53.0.3 no-aaaa aaaa > dig.out.ns3.test$n || ret=1
+grep "status: NOERROR" dig.out.ns3.test$n > /dev/null || ret=1
+grep "fd92:7065:b8e:fffe::102:304" dig.out.ns3.test$n > /dev/null || ret=1
+n=`expr $n + 1`
+if [ $ret != 0 ]; then echo_i "failed"; fi
+status=`expr $status + $ret`
+
 echo_i "exit status: $status"
 [ $status -eq 0 ] || exit 1
