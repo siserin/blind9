@@ -585,6 +585,9 @@ static const dns_name_t underscore_name =
 	DNS_NAME_INITNONABSOLUTE(underscore_data, underscore_offsets);
 
 static void destroy(dns_resolver_t *res);
+static void destroy_ds_digests(dns_resolver_t *res);
+static void destroy_algorithms(dns_resolver_t *res);
+static void destroy_mustbesecure(dns_resolver_t *res);
 static void empty_bucket(dns_resolver_t *res);
 static isc_result_t resquery_send(resquery_t *query);
 static void resquery_response(isc_task_t *task, isc_event_t *event);
@@ -9831,10 +9834,10 @@ destroy(dns_resolver_t *res) {
 			dns_name_free(&a->_u._n.name, res->mctx);
 		isc_mem_put(res->mctx, a, sizeof(*a));
 	}
-	dns_resolver_reset_algorithms(res);
-	dns_resolver_reset_ds_digests(res);
+	destroy_algorithms(res);
+	destroy_ds_digests(res);
 	dns_badcache_destroy(&res->badcache);
-	dns_resolver_resetmustbesecure(res);
+	destroy_mustbesecure(res);
 #if USE_ALGLOCK
 	isc_rwlock_destroy(&res->alglock);
 #endif
@@ -10922,13 +10925,19 @@ free_algorithm(void *node, void *arg) {
 	isc_mem_put(mctx, algorithms, *algorithms);
 }
 
+static void
+destroy_algorithms(dns_resolver_t *resolver) {
+	if (resolver->algorithms != NULL) {
+		dns_rbt_destroy(&resolver->algorithms);
+	}
+}
+
 void
 dns_resolver_reset_algorithms(dns_resolver_t *resolver) {
 #if USE_ALGLOCK
 	RWLOCK(&resolver->alglock, isc_rwlocktype_write);
 #endif
-	if (resolver->algorithms != NULL)
-		dns_rbt_destroy(&resolver->algorithms);
+	destroy_algorithms(resolver);
 #if USE_ALGLOCK
 	RWUNLOCK(&resolver->alglock, isc_rwlocktype_write);
 #endif
@@ -11059,6 +11068,13 @@ free_digest(void *node, void *arg) {
 	isc_mem_put(mctx, digests, *digests);
 }
 
+static void
+destroy_ds_digests(dns_resolver_t *resolver) {
+	if (resolver->digests != NULL) {
+		dns_rbt_destroy(&resolver->digests);
+	}
+}
+
 void
 dns_resolver_reset_ds_digests(dns_resolver_t *resolver) {
 
@@ -11067,8 +11083,7 @@ dns_resolver_reset_ds_digests(dns_resolver_t *resolver) {
 #if USE_ALGLOCK
 	RWLOCK(&resolver->alglock, isc_rwlocktype_write);
 #endif
-	if (resolver->digests != NULL)
-		dns_rbt_destroy(&resolver->digests);
+	destroy_ds_digests(resolver);
 #if USE_ALGLOCK
 	RWUNLOCK(&resolver->alglock, isc_rwlocktype_write);
 #endif
@@ -11181,6 +11196,13 @@ dns_resolver_ds_digest_supported(dns_resolver_t *resolver,
 	return (dst_ds_digest_supported(digest_type));
 }
 
+static void
+destroy_mustbesecure(dns_resolver_t *resolver) {
+	if (resolver->mustbesecure != NULL) {
+		dns_rbt_destroy(&resolver->mustbesecure);
+	}
+}
+
 void
 dns_resolver_resetmustbesecure(dns_resolver_t *resolver) {
 
@@ -11189,8 +11211,7 @@ dns_resolver_resetmustbesecure(dns_resolver_t *resolver) {
 #if USE_MBSLOCK
 	RWLOCK(&resolver->mbslock, isc_rwlocktype_write);
 #endif
-	if (resolver->mustbesecure != NULL)
-		dns_rbt_destroy(&resolver->mustbesecure);
+	destroy_mustbesecure(resolver);
 #if USE_MBSLOCK
 	RWUNLOCK(&resolver->mbslock, isc_rwlocktype_write);
 #endif
