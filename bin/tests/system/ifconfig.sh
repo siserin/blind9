@@ -70,7 +70,7 @@ up() {
 		esac
 		;;
 	    *-*-linux*)
-		case $useip in
+		case $use_ip in
 		yes)
 			case $1 in
 			inet) ip address add $3/24 dev lo:$2 ;;
