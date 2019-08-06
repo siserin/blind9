@@ -1242,22 +1242,32 @@ dns_view_untrust(dns_view_t *view, const dns_name_t *keyname,
  * \li	'dnskey' is valid.
  */
 
+void
+dns_view_disallownewzones(dns_view_t *view);
+/*%<
+ * Set the internal state of the view to disallow zones to be created or
+ * delete at the runtime.
+ *
+ * Also removes any existing references to a configuration context and frees any
+ * memory.
+ *
+ * Requires:
+ * \li 'view' is valid.
+ */
+
 isc_result_t
-dns_view_setnewzones(dns_view_t *view, bool allow, void *cfgctx,
+dns_view_allownewzones(dns_view_t *view, void *cfgctx,
 		     void (*cfg_destroy)(void **), uint64_t mapsize);
 /*%<
- * Set whether or not to allow zones to be created or deleted at runtime.
+ * Set the internal state of the view to allow zones to be created or deleted
+ * at runtime.
  *
- * If 'allow' is true, determines the filename into which new zone
- * configuration will be written.  Preserves the configuration context
- * (a pointer to which is passed in 'cfgctx') for use when parsing new
- * zone configuration.  'cfg_destroy' points to a callback routine to
- * destroy the configuration context when the view is destroyed.  (This
- * roundabout method is used in order to avoid libdns having a dependency
- * on libisccfg and libbind9.)
- *
- * If 'allow' is false, removes any existing references to
- * configuration context and frees any memory.
+ * Determines the filename into which new zone configuration will be written.
+ * Preserves the configuration context (a pointer to which is passed in
+ * 'cfgctx') for use when parsing new zone configuration.  'cfg_destroy' points
+ * to a callback routine to destroy the configuration context when the view is
+ * destroyed.  (This roundabout method is used in order to avoid libdns having a
+ * dependency on libisccfg and libbind9.)
  *
  * Requires:
  * \li 'view' is valid.

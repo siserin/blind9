@@ -74,6 +74,7 @@
 static void resolver_shutdown(isc_task_t *task, isc_event_t *event);
 static void adb_shutdown(isc_task_t *task, isc_event_t *event);
 static void req_shutdown(isc_task_t *task, isc_event_t *event);
+static void clear_newzones(dns_view_t *view);
 
 isc_result_t
 dns_view_create(isc_mem_t *mctx, dns_rdataclass_t rdclass,
@@ -522,7 +523,7 @@ destroy(dns_view_t *view) {
 	if (view->dtenv != NULL)
 		dns_dt_detach(&view->dtenv);
 #endif /* HAVE_DNSTAP */
-	dns_view_setnewzones(view, false, NULL, NULL, 0ULL);
+	clear_newzones(view);
 	if (view->new_zone_file != NULL) {
 		isc_mem_free(view->mctx, view->new_zone_file);
 		view->new_zone_file = NULL;
@@ -2048,24 +2049,8 @@ nz_legacy(const char *directory, const char *viewname,
 	return (ISC_R_SUCCESS);
 }
 
-isc_result_t
-dns_view_setnewzones(dns_view_t *view, bool allow, void *cfgctx,
-		     void (*cfg_destroy)(void **), uint64_t mapsize)
-{
-	isc_result_t result = ISC_R_SUCCESS;
-	char buffer[1024];
-#ifdef HAVE_LMDB
-	MDB_env *env = NULL;
-	int status;
-#endif
-
-#ifndef HAVE_LMDB
-	UNUSED(mapsize);
-#endif
-
-	REQUIRE(DNS_VIEW_VALID(view));
-	REQUIRE((cfgctx != NULL && cfg_destroy != NULL) || !allow);
-
+static void
+clear_newzones(dns_view_t *view) {
 	if (view->new_zone_file != NULL) {
 		isc_mem_free(view->mctx, view->new_zone_file);
 		view->new_zone_file = NULL;
@@ -2087,10 +2072,34 @@ dns_view_setnewzones(dns_view_t *view, bool allow, void *cfgctx,
 		view->cfg_destroy(&view->new_zone_config);
 		view->cfg_destroy = NULL;
 	}
+}
 
-	if (!allow) {
-		return (ISC_R_SUCCESS);
-	}
+void
+dns_view_disallownewzones(dns_view_t *view) {
+	REQUIRE(DNS_VIEW_VALID(view));
+
+	clear_newzones(view);
+}
+
+isc_result_t
+dns_view_allownewzones(dns_view_t *view, void *cfgctx,
+		       void (*cfg_destroy)(void **), uint64_t mapsize)
+{
+	isc_result_t result = ISC_R_SUCCESS;
+	char buffer[1024];
+#ifdef HAVE_LMDB
+	MDB_env *env = NULL;
+	int status;
+#endif
+
+#ifndef HAVE_LMDB
+	UNUSED(mapsize);
+#endif
+
+	REQUIRE(DNS_VIEW_VALID(view));
+	REQUIRE((cfgctx != NULL && cfg_destroy != NULL));
+
+	clear_newzones(view);
 
 	CHECK(nz_legacy(view->new_zone_dir, view->name, "nzf",
 			buffer, sizeof(buffer)));
