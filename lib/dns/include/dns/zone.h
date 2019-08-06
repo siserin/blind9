@@ -601,6 +601,8 @@ dns_zone_maintenance(dns_zone_t *zone);
  *\li	'zone' to be a valid zone.
  */
 
+void
+dns_zone_clearmasters(dns_zone_t *zone);
 isc_result_t
 dns_zone_setmasters(dns_zone_t *zone, const isc_sockaddr_t *masters,
 		    uint32_t count);
@@ -610,7 +612,7 @@ dns_zone_setmasterswithkeys(dns_zone_t *zone,
 			    dns_name_t **keynames,
 			    uint32_t count);
 /*%<
- *	Set the list of master servers for the zone.
+ *	Set and clears the list of master servers for the zone.
  *
  * Require:
  *\li	'zone' to be a valid zone.
@@ -621,7 +623,10 @@ dns_zone_setmasterswithkeys(dns_zone_t *zone,
  *  \li    dns_zone_setmasters() is just a wrapper to setmasterswithkeys(),
  *      passing NULL in the keynames field.
  *
- * \li	If 'masters' is NULL then 'count' must be zero.
+ * Requires:
+ *\li    'zone' to be a valid zone.
+ *\li    'master' to be non-NULL.
+ *\li    'count' to be the number of masters and != 0.
  *
  * Returns:
  *\li	#ISC_R_SUCCESS
@@ -629,6 +634,8 @@ dns_zone_setmasterswithkeys(dns_zone_t *zone,
  *\li      Any result dns_name_dup() can return, if keynames!=NULL
  */
 
+void
+dns_zone_clearalsonotify(dns_zone_t *zone);
 isc_result_t
 dns_zone_setalsonotify(dns_zone_t *zone, const isc_sockaddr_t *notify,
 		       uint32_t count);
@@ -641,15 +648,15 @@ dns_zone_setalsonotifydscpkeys(dns_zone_t *zone, const isc_sockaddr_t *notify,
 			       uint32_t count);
 /*%<
  *	Set the list of additional servers to be notified when
- *	a zone changes.	 To clear the list use 'count = 0'.
+ *	a zone changes.	 To clear the list use dns_zone_clearalsonotify().
  *
  *	dns_zone_alsonotifywithkeys() allows each notify address to
  *	be associated with a TSIG key.
  *
  * Require:
  *\li	'zone' to be a valid zone.
- *\li	'notify' to be non-NULL if count != 0.
- *\li	'count' to be the number of notifiees.
+ *\li	'notify' to be non-NULL.
+ *\li	'count' to be the number of notifiees and != 0.
  *
  * Returns:
  *\li	#ISC_R_SUCCESS

@@ -1262,16 +1262,18 @@ named_zone_configure(const cfg_obj_t *config, const cfg_obj_t *vconfig,
 			dns_ipkeylist_init(&ipkl);
 
 			RETERR(named_config_getipandkeylist(config, obj, mctx,
-							 &ipkl));
-			result = dns_zone_setalsonotifydscpkeys(zone,
-								ipkl.addrs,
-								ipkl.dscps,
-								ipkl.keys,
-								ipkl.count);
+							    &ipkl));
+			result = dns_zone_setalsonotifydscpkeys(
+				zone,
+				ipkl.addrs,
+				ipkl.dscps,
+				ipkl.keys,
+				ipkl.count);
 			dns_ipkeylist_clear(mctx, &ipkl);
 			RETERR(result);
-		} else
-			RETERR(dns_zone_setalsonotify(zone, NULL, 0));
+		} else {
+			dns_zone_clearalsonotify(zone);
+		}
 
 		obj = NULL;
 		result = named_config_get(maps, "notify-source", &obj);
@@ -1820,8 +1822,9 @@ named_zone_configure(const cfg_obj_t *config, const cfg_obj_t *vconfig,
 			count = ipkl.count;
 			dns_ipkeylist_clear(mctx, &ipkl);
 			RETERR(result);
-		} else
-			result = dns_zone_setmasters(mayberaw, NULL, 0);
+		} else {
+			dns_zone_clearmasters(mayberaw);
+		}
 		RETERR(result);
 
 		multi = false;

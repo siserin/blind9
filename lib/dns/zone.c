@@ -793,6 +793,8 @@ static isc_result_t zonemgr_getio(dns_zonemgr_t *zmgr, bool high,
 				  void *arg, dns_io_t **iop);
 static void zonemgr_putio(dns_io_t **iop);
 static void zonemgr_cancelio(dns_io_t *io);
+static void clear_masters(dns_zone_t *zone);
+static void clear_alsonotify(dns_zone_t *zone);
 
 static isc_result_t
 zone_get_from_db(dns_zone_t *zone, dns_db_t *db, unsigned int *nscount,
@@ -1217,9 +1219,8 @@ zone_free(dns_zone_t *zone) {
 		dns_catz_catzs_detach(&zone->catzs);
 	}
 	zone_freedbargs(zone);
-	RUNTIME_CHECK(dns_zone_setmasterswithkeys(zone, NULL,
-						  NULL, 0) == ISC_R_SUCCESS);
-	RUNTIME_CHECK(dns_zone_setalsonotify(zone, NULL, 0) == ISC_R_SUCCESS);
+	clear_masters(zone);
+	clear_alsonotify(zone);
 	zone->check_names = dns_severity_ignore;
 	if (zone->update_acl != NULL) {
 		dns_acl_detach(&zone->update_acl);
@@ -1276,9 +1277,9 @@ zone_free(dns_zone_t *zone) {
  */
 static inline bool
 inline_secure(dns_zone_t *zone) {
-	REQUIRE(DNS_ZONE_VALID(zone));
-	if (zone->raw != NULL)
+	if (zone->raw != NULL) {
 		return (true);
+	}
 	return (false);
 }
 
@@ -1288,9 +1289,9 @@ inline_secure(dns_zone_t *zone) {
  */
 static inline bool
 inline_raw(dns_zone_t *zone) {
-	REQUIRE(DNS_ZONE_VALID(zone));
-	if (zone->secure != NULL)
+	if (zone->secure != NULL) {
 		return (true);
+	}
 	return (false);
 }
 
@@ -5982,6 +5983,21 @@ dns_zone_getnotifysrc6dscp(dns_zone_t *zone) {
 	return (zone->notifysrc6dscp);
 }
 
+void clear_alsonotify(dns_zone_t *zone) {
+	clear_addresskeylist(&zone->notify, &zone->notifydscp,
+			     &zone->notifykeynames, &zone->notifycnt,
+			     zone->mctx);
+}
+
+void
+dns_zone_clearalsonotify(dns_zone_t *zone) {
+	REQUIRE(DNS_ZONE_VALID(zone));
+
+	LOCK_ZONE(zone);
+	clear_alsonotify(zone);
+	UNLOCK_ZONE(zone);
+}
+
 isc_result_t
 dns_zone_setalsonotify(dns_zone_t *zone, const isc_sockaddr_t *notify,
 		       uint32_t count)
@@ -6010,19 +6026,17 @@ dns_zone_setalsonotifydscpkeys(dns_zone_t *zone, const isc_sockaddr_t *notify,
 
 	REQUIRE(DNS_ZONE_VALID(zone));
 	REQUIRE(count == 0 || notify != NULL);
-	if (keynames != NULL)
-		REQUIRE(count != 0);
+	REQUIRE(keynames == NULL || count != 0);
 
 	LOCK_ZONE(zone);
 
 	if (count == zone->notifycnt &&
 	    same_addrs(zone->notify, notify, count) &&
-	    same_keynames(zone->notifykeynames, keynames, count))
+	    same_keynames(zone->notifykeynames, keynames, count)) {
 		goto unlock;
+	}
 
-	clear_addresskeylist(&zone->notify, &zone->notifydscp,
-			     &zone->notifykeynames, &zone->notifycnt,
-			     zone->mctx);
+	clear_alsonotify(zone);
 
 	if (count == 0)
 		goto unlock;
@@ -6057,6 +6071,39 @@ dns_zone_setmasters(dns_zone_t *zone, const isc_sockaddr_t *masters,
 	return (result);
 }
 
+static void
+clear_masters(dns_zone_t *zone) {
+	/*
+	 * The refresh code assumes that 'masters' wouldn't change under it.  If
+	 * it will change then kill off any current refresh in progress and
+	 * update the masters info.
+	 */
+	if (zone->request != NULL) {
+		dns_request_cancel(zone->request);
+	}
+
+	/*
+	 * This needs to happen before clear_addresskeylist() sets
+	 * zone->masterscnt to 0:
+	 */
+	if (zone->mastersok != NULL) {
+		isc_mem_put(zone->mctx, zone->mastersok,
+			    zone->masterscnt * sizeof(bool));
+		zone->mastersok = NULL;
+	}
+	clear_addresskeylist(&zone->masters, &zone->masterdscps,
+			     &zone->masterkeynames, &zone->masterscnt,
+			     zone->mctx);
+}
+
+void
+dns_zone_clearmasters(dns_zone_t *zone) {
+	REQUIRE(DNS_ZONE_VALID(zone));
+	LOCK_ZONE(zone);
+	clear_masters(zone);
+	UNLOCK_ZONE(zone);
+}
+
 isc_result_t
 dns_zone_setmasterswithkeys(dns_zone_t *zone,
 			    const isc_sockaddr_t *masters,
@@ -6072,43 +6119,29 @@ dns_zone_setmasterswithkeys(dns_zone_t *zone,
 
 	REQUIRE(DNS_ZONE_VALID(zone));
 	REQUIRE(count == 0 || masters != NULL);
-	if (keynames != NULL) {
-		REQUIRE(count != 0);
-	}
+	REQUIRE(keynames == NULL || count != 0);
 
 	LOCK_ZONE(zone);
-	/*
-	 * The refresh code assumes that 'masters' wouldn't change under it.
-	 * If it will change then kill off any current refresh in progress
-	 * and update the masters info.  If it won't change then we can just
-	 * unlock and exit.
-	 */
-	if (count != zone->masterscnt ||
-	    !same_addrs(zone->masters, masters, count) ||
-	    !same_keynames(zone->masterkeynames, keynames, count)) {
-		if (zone->request != NULL)
-			dns_request_cancel(zone->request);
-	} else
-		goto unlock;
 
 	/*
-	 * This needs to happen before clear_addresskeylist() sets
-	 * zone->masterscnt to 0:
+	 * If it won't change then we can just unlock and exit.
 	 */
-	if (zone->mastersok != NULL) {
-		isc_mem_put(zone->mctx, zone->mastersok,
-			    zone->masterscnt * sizeof(bool));
-		zone->mastersok = NULL;
+	if (count == zone->masterscnt &&
+	    same_addrs(zone->masters, masters, count) &&
+	    same_keynames(zone->masterkeynames, keynames, count))
+	{
+		goto unlock;
 	}
-	clear_addresskeylist(&zone->masters, &zone->masterdscps,
-			     &zone->masterkeynames, &zone->masterscnt,
-			     zone->mctx);
+
+	clear_masters(zone);
+
 	/*
 	 * If count == 0, don't allocate any space for masters, mastersok or
 	 * keynames so internally, those pointers are NULL if count == 0
 	 */
-	if (count == 0)
+	if (count == 0) {
 		goto unlock;
+	}
 
 	/*
 	 * mastersok must contain count elements
