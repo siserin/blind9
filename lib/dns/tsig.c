@@ -706,8 +706,6 @@ dns_tsigkey_attach(dns_tsigkey_t *source, dns_tsigkey_t **targetp) {
 
 static void
 tsigkey_free(dns_tsigkey_t *key) {
-	REQUIRE(VALID_TSIG_KEY(key));
-
 	key->magic = 0;
 	dns_name_free(&key->name, key->mctx);
 	if (dns__tsig_algallocated(key->algorithm)) {
