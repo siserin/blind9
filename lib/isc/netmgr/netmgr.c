@@ -391,18 +391,18 @@ isc__nmsocket_prep_destroy(isc_nmsocket_t *socket) {
 
 	atomic_store(&socket->active, false);
 	isc_mutex_unlock(&socket->lock);
-	/* 
+	/*
 	 * XXXWPK if we're here we already stopped listening, otherwise
 	 * we'd have a hanging reference from the listening process.
 	 */
 /*	switch (socket->type) {
-	case isc_nm_udplistener:
-		isc_nm_udp_stoplistening(socket);
-		break;
-	case isc_nm_udpsocket:
-	default:
-		break;
-	} */
+ *      case isc_nm_udplistener:
+ *              isc_nm_udp_stoplistening(socket);
+ *              break;
+ *      case isc_nm_udpsocket:
+ *      default:
+ *              break;
+ *      } */
 	isc__nmsocket_maybe_destroy(socket);
 }
 
@@ -555,13 +555,12 @@ isc__nmhandle_get(isc_nmsocket_t *socket, isc_sockaddr_t *peer) {
 		socket->ah_frees = isc_mem_reallocate(socket->mgr->mctx,
 						      socket->ah_frees,
 						      socket->ah_size * 2 *
-						      sizeof(int));
+						      sizeof(size_t));
 		socket->ah_handles = isc_mem_reallocate(socket->mgr->mctx,
 							socket->ah_handles,
 							socket->ah_size * 2 *
 							sizeof(isc_nmhandle_t*));
-		for (size_t i = socket->ah_size; i < socket->ah_size * 2;
-		     i++)
+		for (size_t i = socket->ah_size; i < socket->ah_size * 2; i++)
 		{
 			socket->ah_frees[i] = i;
 			socket->ah_handles[i] = NULL;
@@ -620,6 +619,8 @@ isc_nmhandle_detach(isc_nmhandle_t **handlep) {
 		 */
 		isc_mutex_lock(&socket->lock);
 		INSIST(socket->ah_handles[handle->ah_pos] == handle);
+		INSIST(socket->ah_size > handle->ah_pos);
+		INSIST(socket->ah_cpos > 0);
 		socket->ah_handles[handle->ah_pos] = NULL;
 		socket->ah_frees[--socket->ah_cpos] = handle->ah_pos;
 		handle->ah_pos = 0;

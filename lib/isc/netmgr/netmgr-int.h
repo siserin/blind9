@@ -75,7 +75,7 @@ struct isc_nmhandle {
 	 * This way, we don't have circular dependencies and we can close all
 	 * handles when we're destroying the socket. */
 	isc_nmsocket_t *	socket;
-	int			ah_pos;  /* Position in socket active handles
+	size_t			ah_pos;  /* Position in socket active handles
 	                                  * array */
 	/* The handle is 'inflight' if netmgr is not currently processing it in
 	 * any way - it might mean that e.g. a recursive resolution is
