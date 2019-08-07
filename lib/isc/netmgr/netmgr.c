@@ -89,11 +89,11 @@ isc_nm_start(isc_mem_t *mctx, int workers) {
 	isc_mem_attach(mctx, &mgr->mctx);
 	isc_mutex_init(&mgr->lock);
 	isc_condition_init(&mgr->wkstatecond);
-	isc_refcount_init(&mgr->refs, 1);
+	isc_refcount_init(&mgr->references, 1);
 	mgr->workers = isc_mem_get(mctx, workers * sizeof(isc__networker_t));
 	for (i = 0; i < workers; i++) {
 		isc__networker_t *worker = &mgr->workers[i];
-		mgr->workers[i] = (isc__networker_t) {
+		*worker = (isc__networker_t) {
 			.mgr = mgr,
 			.id = i,
 			.loop.data = &mgr->workers[i]
@@ -166,22 +166,22 @@ void
 isc_nm_attach(isc_nm_t *mgr, isc_nm_t **dst) {
 	INSIST(mgr != NULL);
 	INSIST(dst != NULL && *dst == NULL);
-	INSIST(isc_refcount_increment(&mgr->refs) > 0);
+	INSIST(isc_refcount_increment(&mgr->references) > 0);
 	*dst = mgr;
 }
 
 void
 isc_nm_detach(isc_nm_t **mgr0) {
 	isc_nm_t *mgr;
-	int refs;
+	int references;
 
 	INSIST(mgr0 != NULL);
 	mgr = *mgr0;
 	INSIST(VALID_NM(mgr));
 
-	refs = isc_refcount_decrement(&mgr->refs);
-	INSIST(refs > 0);
-	if (refs == 1) {
+	references = isc_refcount_decrement(&mgr->references);
+	INSIST(references > 0);
+	if (references == 1) {
 		/* XXXWPK TODO */
 	}
 	mgr0 = NULL;
@@ -313,41 +313,127 @@ isc__nm_enqueue_ievent(isc__networker_t *worker, isc__netievent_t *event) {
 	uv_async_send(&worker->async);
 }
 
-
+static bool
+isc__nmsocket_active(isc_nmsocket_t *socket) {
+	if (socket->parent != NULL) {
+		return (atomic_load(&socket->parent->active));
+	} else {
+		return (atomic_load(&socket->active));
+	}
+}
 
 void
 isc_nmsocket_attach(isc_nmsocket_t *socket, isc_nmsocket_t **target) {
 	REQUIRE(VALID_NMSOCK(socket));
 	REQUIRE(target != NULL && *target == NULL);
-	isc_refcount_increment(&socket->refs);
+	if (socket->parent != NULL) {
+		INSIST(socket->parent->parent == NULL); /* sanity check */
+		isc_refcount_increment(&socket->parent->references);
+	} else {
+		isc_refcount_increment(&socket->references);
+	}
 	*target = socket;
+}
+
+/*
+ * Destroy socket (and its children), freeing all resources and optionally
+ * socket itself.
+ */
+static void
+isc__nmsocket_destroy(isc_nmsocket_t *socket, bool dofree) {
+	INSIST(VALID_NMSOCK(socket));
+	REQUIRE(socket->ah_cpos == 0);  /* We don't have active handles */
+	REQUIRE(!isc__nmsocket_active(socket));
+	isc_nm_t *mgr = socket->mgr;
+	for (int i = 0; i < socket->nchildren; i++) {
+		isc__nmsocket_destroy(&socket->children[i], false);
+	}
+
+	ck_stack_entry_t *se;
+	while ((se = ck_stack_pop_mpmc(&socket->inactivehandles)) != NULL) {
+		isc_nmhandle_t *handle = nm_handle_is_get(se);
+		isc__nmhandle_free(socket, handle);
+	}
+
+	while ((se = ck_stack_pop_mpmc(&socket->inactivereqs)) != NULL) {
+		isc__nm_uvreq_t *uvreq = uvreq_is_get(se);
+		isc_mem_put(mgr->mctx, uvreq, sizeof(*uvreq));
+	}
+	isc_mem_free(mgr->mctx, socket->ah_frees);
+	isc_mem_free(mgr->mctx, socket->ah_handles);
+	if (dofree) {
+		isc_mem_put(mgr->mctx, socket, sizeof(*socket));
+	}
+	isc_nm_detach(&mgr);
+}
+
+
+static void
+isc__nmsocket_maybe_destroy(isc_nmsocket_t *socket) {
+	isc_mutex_lock(&socket->lock);
+	INSIST(!isc__nmsocket_active(socket));
+	/* XXXWPK TODO destroy non-inflight handles, launching callbacks */
+	bool destroy = (socket->ah_cpos == 0);
+	isc_mutex_unlock(&socket->lock);
+	if (destroy) {
+		isc__nmsocket_destroy(socket, true);
+	}
+}
+
+/* The final external reference to the socket is gone, we can try destroying the
+ * socket, but we have to wait for all the inflight handles to finish first. */
+static void
+isc__nmsocket_prep_destroy(isc_nmsocket_t *socket) {
+	isc_mutex_lock(&socket->lock);
+	INSIST(socket->parent == NULL);
+	/* XXXWPK cmpxchg? */
+	INSIST(isc__nmsocket_active(socket));
+
+	atomic_store(&socket->active, false);
+	isc_mutex_unlock(&socket->lock);
+	/* 
+	 * XXXWPK if we're here we already stopped listening, otherwise
+	 * we'd have a hanging reference from the listening process.
+	 */
+/*	switch (socket->type) {
+	case isc_nm_udplistener:
+		isc_nm_udp_stoplistening(socket);
+		break;
+	case isc_nm_udpsocket:
+	default:
+		break;
+	} */
+	isc__nmsocket_maybe_destroy(socket);
 }
 
 void
 isc_nmsocket_detach(isc_nmsocket_t **socketp) {
-	isc_nmsocket_t *socket;
-	int refs;
+	isc_nmsocket_t *socket, *rsocket;
+	int references;
 	REQUIRE(socketp != NULL && *socketp != NULL);
 	socket = *socketp;
 	REQUIRE(VALID_NMSOCK(socket));
 
-	refs = isc_refcount_decrement(&socket->refs);
-	INSIST(refs > 0);
-	if (refs == 1) {
-		atomic_store(&socket->active, false);
-		switch (socket->type) {
-		case isc_nm_udplistener:
-			isc_nm_udp_stoplistening(socket);
-			break;
-		case isc_nm_udpsocket:
-		default:
-			break;
-		}
-		/* TODO - wait for callback, only then free everything */
+	/*
+	 * If the socket is a part of a set (a child socket) we are
+	 * counting references for the whole set at the parent.
+	 */
+	if (socket->parent != NULL) {
+		rsocket = socket->parent;
+		INSIST(rsocket->parent == NULL); /* Sanity check */
+	} else {
+		rsocket = socket;
 	}
-	/* TODO free it! */
+
+	references = isc_refcount_decrement(&rsocket->references);
+	INSIST(references > 0);
+	if (references == 1) {
+		isc__nmsocket_prep_destroy(rsocket);
+	}
 	*socketp = NULL;
 }
+
+
 
 void
 isc__nmsocket_init(isc_nmsocket_t *socket,
@@ -363,10 +449,23 @@ isc__nmsocket_init(isc_nmsocket_t *socket,
 
 	ck_stack_init(&socket->inactivehandles);
 	ck_stack_init(&socket->inactivereqs);
+
+	socket->ah_cpos = 0;
+	socket->ah_size = 32;
+	socket->ah_frees =
+		isc_mem_allocate(mgr->mctx, socket->ah_size * sizeof(size_t));
+	socket->ah_handles = isc_mem_allocate(mgr->mctx,
+					      socket->ah_size *
+					      sizeof(isc_nmhandle_t*));
+	for (size_t i = 0; i < 32; i++) {
+		socket->ah_frees[i] = i;
+		socket->ah_handles[i] = NULL;
+	}
+
 	isc_mutex_init(&socket->lock);
 	isc_condition_init(&socket->cond);
 	socket->magic = NMSOCK_MAGIC;
-	isc_refcount_init(&socket->refs, 1);
+	isc_refcount_init(&socket->references, 1);
 	atomic_init(&socket->active, true);
 	if (type == isc_nm_tcpsocket) {
 		socket->tcphandle = (isc_nmhandle_t) { .socket = socket};
@@ -418,7 +517,7 @@ alloc_handle(isc_nmsocket_t *socket) {
 			     sizeof(isc_nmhandle_t) +
 			     socket->extrahandlesize);
 	*handle = (isc_nmhandle_t) {};
-	isc_refcount_init(&handle->refs, 1);
+	isc_refcount_init(&handle->references, 1);
 	handle->magic = NMHANDLE_MAGIC;
 	return (handle);
 }
@@ -434,7 +533,7 @@ isc__nmhandle_get(isc_nmsocket_t *socket, isc_sockaddr_t *peer) {
 		/* XXXWPK this should be more elegant */
 		INSIST(!VALID_NMHANDLE(handle));
 		*handle = (isc_nmhandle_t) {};
-		isc_refcount_init(&handle->refs, 1);
+		isc_refcount_init(&handle->references, 1);
 		handle->magic = NMHANDLE_MAGIC;
 	} else {
 		sentry = ck_stack_pop_mpmc(&socket->inactivehandles);
@@ -445,11 +544,36 @@ isc__nmhandle_get(isc_nmsocket_t *socket, isc_sockaddr_t *peer) {
 			handle = alloc_handle(socket);
 		} else {
 			INSIST(VALID_NMHANDLE(handle));
-			isc_refcount_increment(&handle->refs);
+			isc_refcount_increment(&handle->references);
 		}
 	}
-	isc_nmsocket_attach(socket, &handle->socket);
+	handle->socket = socket;
 	memcpy(&handle->peer, peer, sizeof(isc_sockaddr_t));
+
+	isc_mutex_lock(&socket->lock);
+	if (socket->ah_cpos == socket->ah_size) {
+		socket->ah_frees = isc_mem_reallocate(socket->mgr->mctx,
+						      socket->ah_frees,
+						      socket->ah_size * 2 *
+						      sizeof(int));
+		socket->ah_handles = isc_mem_reallocate(socket->mgr->mctx,
+							socket->ah_handles,
+							socket->ah_size * 2 *
+							sizeof(isc_nmhandle_t*));
+		for (size_t i = socket->ah_size; i < socket->ah_size * 2;
+		     i++)
+		{
+			socket->ah_frees[i] = i;
+			socket->ah_handles[i] = NULL;
+		}
+		socket->ah_size *= 2;
+	}
+	int pos = socket->ah_frees[socket->ah_cpos++];
+	INSIST(socket->ah_handles[pos] == NULL);
+	socket->ah_handles[pos] = handle;
+	handle->ah_pos = pos;
+	isc_mutex_unlock(&socket->lock);
+
 	return(handle);
 }
 
@@ -457,7 +581,7 @@ void
 isc_nmhandle_attach(isc_nmhandle_t *handle, isc_nmhandle_t **handlep) {
 	REQUIRE(VALID_NMHANDLE(handle));
 	REQUIRE(handlep != NULL && *handlep == NULL);
-	INSIST(isc_refcount_increment(&handle->refs) > 0);
+	INSIST(isc_refcount_increment(&handle->references) > 0);
 	*handlep = handle;
 }
 
@@ -483,22 +607,38 @@ void
 isc_nmhandle_detach(isc_nmhandle_t **handlep) {
 	isc_nmhandle_t *handle = *handlep;
 	REQUIRE(VALID_NMHANDLE(handle));
-	if (isc_refcount_decrement(&handle->refs) == 1) {
-		/* Move reference */
+	if (isc_refcount_decrement(&handle->references) == 1) {
 		isc_nmsocket_t *socket = handle->socket;
 		handle->socket = NULL;
 		if (handle->doreset != NULL) {
 			handle->doreset(handle->opaque);
 		}
+
+		/*
+		 * We do it all under lock to avoid races with socket
+		 * destruction.
+		 */
+		isc_mutex_lock(&socket->lock);
+		INSIST(socket->ah_handles[handle->ah_pos] == handle);
+		socket->ah_handles[handle->ah_pos] = NULL;
+		socket->ah_frees[--socket->ah_cpos] = handle->ah_pos;
+		handle->ah_pos = 0;
+
 		bool reuse = false;
 		if (atomic_load(&socket->active)) {
 			reuse = ck_stack_trypush_mpmc(&socket->inactivehandles,
 						      &handle->ilink);
 		}
+
+		isc_mutex_unlock(&socket->lock);
+
 		if (!reuse) {
 			isc__nmhandle_free(socket, handle);
 		}
-		isc_nmsocket_detach(&socket);
+
+		if (!atomic_load(&socket->active)) {
+			isc__nmsocket_maybe_destroy(socket);
+		}
 	}
 	*handlep = NULL;
 }
@@ -541,7 +681,7 @@ isc_nmhandle_peeraddr(isc_nmhandle_t *handle) {
 isc__nm_uvreq_t *
 isc__nm_uvreq_get(isc_nm_t *mgr, isc_nmsocket_t *socket) {
 	isc__nm_uvreq_t *req = NULL;
-	if (socket != NULL) {
+	if (socket != NULL && atomic_load(&socket->active)) {
 		/* Try to reuse one */
 		ck_stack_entry_t *sentry =
 			ck_stack_pop_mpmc(&socket->inactivereqs);

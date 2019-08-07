@@ -533,6 +533,9 @@ ns_client_endrequest(ns_client_t *client) {
 				   ns_statscounter_recursclients);
 	}
 
+	if (client->handle != NULL) {
+		isc_nmhandle_detach(&client->handle);
+	}
 	/*
 	 * Clear all client attributes that are specific to
 	 * the request; that's all except the TCP flag.

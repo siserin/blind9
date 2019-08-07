@@ -71,12 +71,7 @@ isc_nm_tcp_connect(isc_nm_t*mgr,
 	isc_result_t result;
 
 	sock = isc_mem_get(mgr->mctx, sizeof(isc_nmsocket_t));
-	sock->type = isc_nm_tcpsocket;
-	isc_refcount_init(&sock->refs, 1);
-	sock->mgr = mgr;
-	sock->parent = NULL;
-	sock->children = NULL;
-	sock->nchildren = 0;
+	isc__nmsocket_init(sock, mgr, isc_nm_tcpsocket);
 
 	sock->uv_handle.tcp.data = sock;
 
@@ -204,6 +199,8 @@ isc_nm_tcp_listen(isc_nm_t *mgr,
 	*rv = nsocket;
 	return (ISC_R_SUCCESS);
 }
+
+
 
 void
 isc__nm_handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {

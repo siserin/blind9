@@ -70,9 +70,7 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 	 * thread
 	 */
 
-	nsocket = malloc(sizeof(*nsocket)); /* TODO for debugging
-	                                     * isc_mem_get(mgr->mctx,
-	                                     * sizeof(*nsocket)); */
+	nsocket = isc_mem_get(mgr->mctx, sizeof(*nsocket));
 	isc__nmsocket_init(nsocket, mgr, isc_nm_udplistener);
 	nsocket->iface = iface;
 	nsocket->nchildren = mgr->nworkers;
@@ -80,6 +78,7 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 	nsocket->children = malloc(mgr->nworkers * sizeof(*nsocket));
 /* TODO for debugging		isc_mem_get(mgr->mctx, mgr->nworkers *
  * sizeof(*nsocket)); */
+	INSIST(nsocket->rcb.recv == NULL && nsocket->rcbarg == NULL);
 	nsocket->rcb.recv = cb;
 	nsocket->rcbarg = arg;
 	nsocket->extrahandlesize = extrahandlesize;
@@ -92,6 +91,7 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 		csocket->iface = iface;
 		csocket->tid = i;
 		csocket->extrahandlesize = extrahandlesize;
+		INSIST(csocket->rcb.recv == NULL && csocket->rcbarg == NULL);
 		csocket->rcb.recv = cb;
 		csocket->rcbarg = arg;
 		csocket->fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -172,7 +172,6 @@ void
 isc__nm_handle_udpstoplisten(isc__networker_t *worker,
 			     isc__netievent_t *ievent0) {
 	(void) worker;
-	ck_stack_entry_t *sentry;
 	isc__netievent_udplisten_t *ievent =
 		(isc__netievent_udplisten_t *) ievent0;
 	isc_nmsocket_t *socket = ievent->socket;
@@ -187,16 +186,6 @@ isc__nm_handle_udpstoplisten(isc__networker_t *worker,
 	}
 	uv_udp_recv_stop(&socket->uv_handle.udp);
 	uv_close((uv_handle_t*) &socket->uv_handle.udp, udp_close_cb);
-	while ((sentry = ck_stack_pop_mpmc(&socket->inactivehandles)) !=
-	       NULL)
-	{
-		isc_nmhandle_t *handle = nm_handle_is_get(sentry);
-		isc__nmhandle_free(socket, handle);
-	}
-	while ((sentry = ck_stack_pop_mpmc(&socket->inactivereqs)) != NULL) {
-		isc__nm_uvreq_t *uvreq = uvreq_is_get(sentry);
-		isc_mem_put(socket->mgr->mctx, uvreq, sizeof(*uvreq));
-	}
 	isc_mutex_lock(&socket->parent->lock);
 	atomic_fetch_sub(&socket->parent->rchildren, 1);
 	isc_mutex_unlock(&socket->parent->lock);
