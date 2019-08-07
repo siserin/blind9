@@ -60,6 +60,8 @@ isc_nm_freehandle(isc_nmhandle_t *handle);
 void
 isc_nmsocket_attach(isc_nmsocket_t *socket, isc_nmsocket_t **target);
 
+void
+isc_nmsocket_close(isc_nmsocket_t *socket);
 /*
  * isc_nmsocket_detach detaches from socket, decreasing refcount
  * and possibly destroying the socket if it's no longer referenced.

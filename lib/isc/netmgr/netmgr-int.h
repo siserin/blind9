@@ -68,9 +68,20 @@ typedef struct isc__networker {
 typedef void (*isc__nm_closecb)(isc_nmhandle_t*);
 
 struct isc_nmhandle {
-	int			magic;
-	isc_refcount_t		refs;
+	int		      magic;
+	isc_refcount_t	      references;
+	/* The socket is not 'attached' in the traditional reference-counting
+	 * sense. Instead, we keep all handles in an array in the socket object.
+	 * This way, we don't have circular dependencies and we can close all
+	 * handles when we're destroying the socket. */
 	isc_nmsocket_t *	socket;
+	int			ah_pos;  /* Position in socket active handles
+	                                  * array */
+	/* The handle is 'inflight' if netmgr is not currently processing it in
+	 * any way - it might mean that e.g. a recursive resolution is
+	 * happening. For an inflight handle we must wait for the calling
+	 * code to finish before we can free it. */
+	atomic_bool		inflight;
 	isc_sockaddr_t		peer;
 	ck_stack_entry_t	ilink;
 	isc_nm_opaquecb		doreset; /* reset extra callback, external */
@@ -227,7 +238,7 @@ typedef struct isc__netievent_storage {
 
 struct isc_nm {
 	int			    magic;
-	isc_refcount_t		    refs;
+	isc_refcount_t		    references;
 	isc_mem_t *		    mctx;
 	int			    nworkers;
 	isc_mutex_t		    lock;
@@ -256,30 +267,22 @@ typedef enum isc_nmsocket_type {
 #define NMSOCK_MAGIC                    ISC_MAGIC('N', 'M', 'S', 'K')
 #define VALID_NMSOCK(t)                 ISC_MAGIC_VALID(t, NMSOCK_MAGIC)
 struct isc_nmsocket {
-	int			   magic;
-	isc_nmsocket_type	   type;
-	isc_refcount_t		   refs;
-	isc_nm_t *		   mgr;
-	isc_nmsocket_t *	   parent;
-	isc_nmsocket_t *	   children;
-	int			   nchildren;
-	atomic_int_fast32_t	   rchildren;
-	atomic_bool		   active;
-	isc_mutex_t		   lock;
-	isc_condition_t		   cond;
-	int			   tid;
-	isc_nmiface_t *		   iface;
-	isc_nmhandle_t		   tcphandle;
-	/*
-	 * 'spare' handles for that can be reused to avoid allocations,
-	 * for UDP.
-	 */
-	ck_stack_t inactivehandles	  CK_CC_CACHELINE;
-	ck_stack_t inactivereqs		  CK_CC_CACHELINE;
-	/* extra data allocated at the end of each isc_nmhandle_t */
-	size_t				  extrahandlesize;
+	/* Unlocked, RO */
+	int			 magic;
+	int			 tid;
+	isc_nmsocket_type	 type;
+	isc_nm_t *		 mgr;
+	isc_nmsocket_t *	 parent;
+	isc_nmsocket_t *	 children;
+	int			 nchildren;
+	isc_nmiface_t *		 iface;
+	isc_nmhandle_t		 tcphandle;
 
-	uv_os_sock_t			  fd;
+	/* extra data allocated at the end of each isc_nmhandle_t */
+	size_t			 extrahandlesize;
+
+	/* libuv data */
+	uv_os_sock_t		 fd;
 	union {
 		uv_handle_t	   handle;
 		uv_stream_t	   stream;
@@ -287,10 +290,59 @@ struct isc_nmsocket {
 		uv_tcp_t	   tcp;
 	} uv_handle;
 
-	isc__nm_readcb_t	 rcb;
-	void *			 rcbarg;
-	isc__nm_writecb_t	 wcb;
-	void *			 wcbarg;
+	/* Atomic */
+	/* Number of running (e.g. listening) children sockets */
+	atomic_int_fast32_t        rchildren;
+	/*
+	 * Socket if active if it's listening, working, etc., if we're
+	 * closing a socket it doesn't make any sense to e.g. still
+	 * push handles or reqs for reuse
+	 */
+	atomic_bool        active;
+	/*
+	 * Socket is closed if it's not active and all the possible callbacks
+	 * were fired, there are no active handles, etc.
+	 * active==false, closed == false means the socket is closing.
+	 */
+	atomic_bool	      closed;
+	isc_refcount_t	      references;
+	/*
+	 * 'spare' handles for that can be reused to avoid allocations,
+	 * for UDP.
+	 */
+	ck_stack_t inactivehandles	  CK_CC_CACHELINE;
+	ck_stack_t inactivereqs		  CK_CC_CACHELINE;
+
+	/* Used for active/rchildren during shutdown */
+	isc_mutex_t			  lock;
+	isc_condition_t			  cond;
+
+	/*
+	 * List of active handles.
+	 * ah_size - size of ah_frees and ah_handles
+	 * ah_cpos - current position in ah_frees;
+	 * ah_handles - array of *handles.
+	 * Adding a handle
+	 *  - if ah_cpos == ah_size, realloc
+	 *  - x = ah_frees[ah_cpos]
+	 *  - ah_frees[ah_cpos++] = 0;
+	 *  - ah_handles[x] = handle
+	 *  - x must be stored with the handle!
+	 * Removing a handle:
+	 *  - ah_frees[--ah_cpos] = x
+	 *  - ah_handles[x] = NULL;
+	 *
+	 * XXXWPK for now this is locked with socket->lock, but we might want
+	 * to change it to something lockless
+	 */
+	size_t			ah_size;
+	size_t			ah_cpos;
+	size_t *		ah_frees;
+	isc_nmhandle_t **	ah_handles;
+
+	/* XXXWPK can it be not locked? */
+	isc__nm_readcb_t	rcb;
+	void *			rcbarg;
 };
 
 /* Return thread id of current thread, or ISC_NETMGR_TID_UNKNOWN */
