@@ -92,7 +92,7 @@ ht_hash_wrapper(struct ck_ht_hash *h, const void *key, size_t length,
 		uint64_t seed)
 {
 	(void)seed;
-	h->value = isc_hash_function(key, length, false, NULL);
+	h->value = isc_hash_function(key, length, false);
 	return;
 }
 
