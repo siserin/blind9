@@ -10719,6 +10719,7 @@ dumpdone(void *arg, isc_result_t result) {
 	}
 	if (dctx->view != NULL)
 		dctx->view = ISC_LIST_NEXT(dctx->view, link);
+	/* cppcheck-suppress duplicateCondition */
 	if (dctx->view != NULL)
 		goto nextview;
  done:
@@ -15266,6 +15267,7 @@ named_server_servestale(named_server_t *server, isc_lex_t *lex,
 		viewtxt = next_token(lex, text);
 	}
 
+	/* cppcheck-suppress duplicateCondition */
 	if (classtxt != NULL) {
 		isc_textregion_t r;
 

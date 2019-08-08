@@ -467,7 +467,7 @@ main(int argc, char **argv) {
 	dns_rdataset_init(&rdataset);
 
 	if (usekeyset || filename != NULL) {
-		if (argc < isc_commandline_index + 1 && filename != NULL) {
+		if (argc < isc_commandline_index + 1) {
 			/* using zone name as the zone file name */
 			namestr = filename;
 		} else {
@@ -482,6 +482,7 @@ main(int argc, char **argv) {
 		if (usekeyset) {
 			result = loadkeyset(dir, &rdataset);
 		} else {
+			INSIST(filename != NULL);
 			result = loadset(filename, &rdataset);
 		}
 

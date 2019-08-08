@@ -546,6 +546,7 @@ exit_check(ns_client_t *client) {
 		}
 
 		/* Still waiting for read cancel completion. */
+		/* cppcheck-suppress duplicateCondition */
 		if (client->nreads > 0) {
 			return (true);
 		}
@@ -641,6 +642,7 @@ exit_check(ns_client_t *client) {
 		}
 
 		/* Still waiting for accept cancel completion. */
+		/* cppcheck-suppress duplicateCondition */
 		if (client->naccepts > 0) {
 			return (true);
 		}
@@ -652,6 +654,7 @@ exit_check(ns_client_t *client) {
 		}
 
 		/* Still waiting for recv cancel completion. */
+		/* cppcheck-suppress duplicateCondition */
 		if (client->nrecvs > 0) {
 			return (true);
 		}
@@ -1071,7 +1074,6 @@ client_sendpkg(ns_client_t *client, isc_buffer_t *buffer) {
 	isc_netaddr_t netaddr;
 	int match;
 	unsigned int sockflags = ISC_SOCKFLAG_IMMEDIATE;
-	isc_dscp_t dispdscp = -1;
 
 	if (TCP_CLIENT(client)) {
 		sock = client->tcpsocket;
@@ -1101,9 +1103,9 @@ client_sendpkg(ns_client_t *client, isc_buffer_t *buffer) {
 		pktinfo = NULL;
 
 	if (client->dispatch != NULL) {
-		dispdscp = dns_dispatch_getdscp(client->dispatch);
-		if (dispdscp != -1)
-			client->dscp = dispdscp;
+		isc_dscp_t dscp = dns_dispatch_getdscp(client->dispatch);
+		if (dscp != -1)
+			client->dscp = dscp;
 	}
 
 	if (client->dscp == -1) {
@@ -3796,7 +3798,7 @@ get_client(ns_clientmgr_t *manager, ns_interface_t *ifp,
 	ev = &client->ctlevent;
 	isc_task_send(client->task, &ev);
 
-	return (ISC_R_SUCCESS);
+	return (result);
 }
 
 static isc_result_t
@@ -3869,7 +3871,7 @@ get_worker(ns_clientmgr_t *manager, ns_interface_t *ifp, isc_socket_t *sock,
 	ev = &client->ctlevent;
 	isc_task_send(client->task, &ev);
 
-	return (ISC_R_SUCCESS);
+	return (result);
 }
 
 isc_result_t
@@ -3918,7 +3920,7 @@ ns__clientmgr_getclient(ns_clientmgr_t *manager, ns_interface_t *ifp,
 
 	*clientp = client;
 
-	return (ISC_R_SUCCESS);
+	return (result);
 }
 
 isc_result_t
@@ -4034,6 +4036,8 @@ ns_client_logv(ns_client_t *client, isc_logcategory_t *category,
 	const char *sep1 = "", *sep2 = "", *sep3 = "", *sep4 = "";
 	const char *signer = "", *qname = "";
 	dns_name_t *q = NULL;
+
+	REQUIRE(client != NULL);
 
 	vsnprintf(msgbuf, sizeof(msgbuf), fmt, ap);
 

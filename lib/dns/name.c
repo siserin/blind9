@@ -2375,6 +2375,7 @@ dns_name_format(const dns_name_t *name, char *cp, unsigned int size) {
 		 */
 		isc_region_t r;
 		isc_buffer_usedregion(&buf, &r);
+		/* cppcheck-suppress unreadVariable */
 		((char *) r.base)[r.length] = '\0';
 
 	} else
