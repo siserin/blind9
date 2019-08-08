@@ -1872,14 +1872,13 @@ lowac_checksend(ns_client_t *client) {
 	isc_buffer_t buffer;
 	isc_buffer_t tcpbuffer;
 	isc_region_t r;
-	unsigned char sendbuf[SEND_BUFFER_SIZE];
 	result = client_allocsendbuf(client, &buffer, &tcpbuffer, 0,
-				     sendbuf, &data);
+				     &data);
 	if (result != ISC_R_SUCCESS) {
 		return (result);
 	}
 	int blen;
-	result = dns_lowac_get(client->view->lowac, ISC_LIST_HEAD(client->message->sections[0]), data, &blen, TCP_CLIENT(client));
+	result = dns_lowac_get(client->view->lowac, ISC_LIST_HEAD(client->message->sections[0]), data, &blen, false);
 	if (result != ISC_R_SUCCESS) {
 		goto done;
 	}
@@ -1891,15 +1890,7 @@ lowac_checksend(ns_client_t *client) {
 	        data[1] = client->message->id & 0xff;
 	}
 	isc_buffer_add(&buffer, blen);
-/*
-	isc_buffer_putuint16(&buffer, client->message->id);
-	isc_buffer_putuint8(&buffer, 0x81);
-	isc_buffer_putuint8(&buffer, 0x80);
-	isc_buffer_putuint16(&buffer, 0);
-	isc_buffer_putuint16(&buffer, 0);
-	isc_buffer_putuint16(&buffer, 0);
-	isc_buffer_putuint16(&buffer, 0);
-*/
+
 	if (client->sendcb != NULL) {
 		client->sendcb(&buffer);
 	} else if (TCP_CLIENT(client)) {
@@ -1912,7 +1903,7 @@ lowac_checksend(ns_client_t *client) {
 	}
 done:
 	if (client->tcpbuf != NULL) {
-		isc_mem_put(client->mctx, client->tcpbuf, TCP_BUFFER_SIZE);
+		isc_mem_put(client->mctx, client->tcpbuf, NS_CLIENT_TCP_BUFFER_SIZE);
 		client->tcpbuf = NULL;
 	}
 	return result;
