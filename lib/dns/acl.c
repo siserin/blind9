@@ -182,6 +182,7 @@ dns_acl_match(const isc_netaddr_t *reqaddr,
 	isc_result_t result;
 	int match_num = -1;
 	unsigned int i;
+	INSIST(DNS_ACL_VALID(acl));
 
 	REQUIRE(reqaddr != NULL);
 	REQUIRE(matchelt == NULL || *matchelt == NULL);
