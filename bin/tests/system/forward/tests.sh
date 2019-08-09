@@ -142,20 +142,41 @@ echo "//" | $SENDCMD
 # resolution.
 $DIG $DIGOPTS txt.example7. txt @$f1 > dig.out.f1 || ret=1
 # The forwarder for the "example7" zone should only be queried once.
-sent=`tr -d '\r' < ns3/named.run | sed -n '/sending packet to 10.53.0.6/,/^$/p' | grep ";txt.example7.*IN.*TXT" | wc -l`
-if [ $sent -ne 1 ]; then ret=1; fi
+# We repeat the check to make sure it was logged properly
+ret=1
+for i in 0 1 2 3 4 5
+do
+ sent=`tr -d '\r' < ns3/named.run | sed -n '/sending packet to 10.53.0.6/,/^$/p' | grep ";txt.example7.*IN.*TXT" | wc -l`
+ if [ $sent -eq 1 ]; then
+  ret=0;
+  break;
+ elif [ $sent -ge 1 ]; then
+  ret=1;
+  break;
+ elif [ $sent -eq 0 ]; then
+  sleep 1;
+ fi
+done
+
 if [ $ret != 0 ]; then echo_i "failed"; fi
 status=`expr $status + $ret`
 
 echo_i "checking that priming queries are not forwarded"
-ret=0
+ret=1
 $DIG $DIGOPTS +noadd +noauth txt.example1. txt @10.53.0.7 > dig.out.f7 || ret=1
-sent=`tr -d '\r' < ns7/named.run | sed -n '/sending packet to 10.53.0.1/,/^$/p' | grep ";.*IN.*NS" | wc -l`
-[ $sent -eq 1 ] || ret=1
-sent=`grep "10.53.0.7#.* (.): query '\./NS/IN' approved" ns4/named.run | wc -l`
-[ $sent -eq 0 ] || ret=1
-sent=`grep "10.53.0.7#.* (.): query '\./NS/IN' approved" ns1/named.run | wc -l`
-[ $sent -eq 1 ] || ret=1
+#test multiple times to avoid races with logging
+for i in 0 1 2 3 4 5
+do
+ sent=`tr -d '\r' < ns7/named.run | sed -n '/sending packet to 10.53.0.1/,/^$/p' | grep ";.*IN.*NS" | wc -l`
+ approved4=`grep "10.53.0.7#.* (.): query '\./NS/IN' approved" ns4/named.run | wc -l`
+ approved1=`grep "10.53.0.7#.* (.): query '\./NS/IN' approved" ns1/named.run | wc -l`
+ if [ $sent -eq 1 ] && [ $approved4 -eq 0 ] && [ $approved1 -eq 1 ]; then
+  ret=0
+  break
+ else
+  sleep 1
+ fi
+done
 if [ $ret != 0 ]; then echo_i "failed"; fi
 status=`expr $status + $ret`
 
