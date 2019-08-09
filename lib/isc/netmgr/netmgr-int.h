@@ -345,10 +345,6 @@ struct isc_nmsocket {
 	void *			rcbarg;
 };
 
-/* Return thread id of current thread, or ISC_NETMGR_TID_UNKNOWN */
-int
-isc__nm_tid(void);
-
 /* Are we in network thread? */
 bool
 isc__nm_in_netthread(void);

@@ -64,7 +64,7 @@ async_cb(uv_async_t *handle);
 
 
 int
-isc__nm_tid() {
+isc_nm_tid() {
 	return (isc__nm_tid_v);
 }
 
@@ -516,9 +516,8 @@ alloc_handle(isc_nmsocket_t *socket) {
 	handle = isc_mem_get(socket->mgr->mctx,
 			     sizeof(isc_nmhandle_t) +
 			     socket->extrahandlesize);
-	*handle = (isc_nmhandle_t) {};
+	*handle = (isc_nmhandle_t) {.magic = NMHANDLE_MAGIC};
 	isc_refcount_init(&handle->references, 1);
-	handle->magic = NMHANDLE_MAGIC;
 	return (handle);
 }
 
@@ -560,7 +559,8 @@ isc__nmhandle_get(isc_nmsocket_t *socket, isc_sockaddr_t *peer) {
 							socket->ah_handles,
 							socket->ah_size * 2 *
 							sizeof(isc_nmhandle_t*));
-		for (size_t i = socket->ah_size; i < socket->ah_size * 2; i++)
+		for (size_t i = socket->ah_size; i < socket->ah_size * 2;
+		     i++)
 		{
 			socket->ah_frees[i] = i;
 			socket->ah_handles[i] = NULL;

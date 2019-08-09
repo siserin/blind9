@@ -47,6 +47,9 @@ isc_nm_attach(isc_nm_t *mgr, isc_nm_t **dst);
 void
 isc_nm_detach(isc_nm_t **mgr0);
 
+/* Return thread id of current thread, or ISC_NETMGR_TID_UNKNOWN */
+int
+isc_nm_tid(void);
 
 /*
  * isc_nm_freehandle frees a handle, releasing resources

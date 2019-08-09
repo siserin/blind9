@@ -538,9 +538,9 @@ ns_client_endrequest(ns_client_t *client) {
 	}
 	/*
 	 * Clear all client attributes that are specific to
-	 * the request; that's all except the TCP flag.
+	 * the request
 	 */
-	client->attributes &= NS_CLIENTATTR_TCP;
+	client->attributes = 0;
 #ifdef ENABLE_AFL
 	if (client->sctx->fuzznotify != NULL &&
 	    (client->sctx->fuzztype == isc_fuzz_client ||
@@ -1917,16 +1917,16 @@ ns__client_request(void *arg,
 		ISC_LIST_APPEND(mgr->clients, client, link);
 		UNLOCK(&mgr->listlock);
 		
-		if (isc_nmhandle_is_stream(handle)) {
-			client->attributes |= NS_CLIENTATTR_TCP;
-		}
-		
+
 	}
 	if (client->handle == NULL) {
 		isc_nmhandle_setdata(handle, client, client_reset_cb, client_put_cb);
 		isc_nmhandle_attach(handle, &client->handle);
 	}
-
+	if (isc_nmhandle_is_stream(handle)) {
+		client->attributes |= NS_CLIENTATTR_TCP;
+	}
+		
 	INSIST(client->recursionquota == NULL);
 
 	INSIST(client->state == NS_CLIENTSTATE_READY);
@@ -2472,13 +2472,17 @@ get_clientmctx(ns_clientmgr_t *manager, isc_mem_t **mctxp) {
 	 */
 
 #if CLIENT_NMCTXS > 0
-	nextmctx = manager->nextmctx++;
-	if (manager->nextmctx == CLIENT_NMCTXS)
-		manager->nextmctx = 0;
+	if (isc_nm_tid()>=0) {
+		nextmctx = isc_nm_tid();
+	} else {
+		nextmctx = manager->nextmctx++;
+		if (manager->nextmctx == CLIENT_NMCTXS)
+			manager->nextmctx = 0;
 
-	INSIST(nextmctx < CLIENT_NMCTXS);
-
+		INSIST(nextmctx < CLIENT_NMCTXS);
+	}
 	clientmctx = manager->mctxpool[nextmctx];
+
 	if (clientmctx == NULL) {
 		result = isc_mem_create(0, 0, &clientmctx);
 		if (result != ISC_R_SUCCESS)
