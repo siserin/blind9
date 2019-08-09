@@ -198,6 +198,7 @@ nm_thread(void *worker0) {
 	atomic_fetch_add_explicit(&worker->mgr->workers_running, 1,
 				  memory_order_relaxed);
 	isc__nm_tid_v = worker->id;
+	isc_thread_setaffinity(isc__nm_tid_v);
 	while (true) {
 		int r = uv_run(&worker->loop, UV_RUN_DEFAULT);
 		/*
