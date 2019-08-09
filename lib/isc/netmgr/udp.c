@@ -267,8 +267,8 @@ isc__nm_udp_send(isc_nmhandle_t *handle,
 		return (ISC_R_UNEXPECTED);
 	}
 
-	ntid = isc__nm_tid() >= 0 ?
-	       isc__nm_tid() : (int) isc_random_uniform(socket->nchildren);
+	ntid = isc_nm_tid() >= 0 ?
+	       isc_nm_tid() : (int) isc_random_uniform(socket->nchildren);
 
 	rsocket = &psocket->children[ntid];
 
@@ -279,7 +279,7 @@ isc__nm_udp_send(isc_nmhandle_t *handle,
 	uvreq->cb.send = cb;
 	uvreq->cbarg = cbarg;
 
-	if (isc__nm_tid() == rsocket->tid) {
+	if (isc_nm_tid() == rsocket->tid) {
 		/*
 		 * If we're in the same thread as the socket we can send the
 		 * data directly
@@ -342,7 +342,7 @@ udp_send_direct(isc_nmsocket_t *socket,
 		isc_sockaddr_t *peer)
 {
 	int rv;
-	INSIST(socket->tid == isc__nm_tid());
+	INSIST(socket->tid == isc_nm_tid());
 	INSIST(socket->type == isc_nm_udpsocket);
 
 	rv = uv_udp_send(&req->uv_req.udp_send,

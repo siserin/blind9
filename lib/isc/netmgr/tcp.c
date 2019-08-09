@@ -99,9 +99,9 @@ tcp_connect_direct(isc_nmsocket_t *socket, isc__nm_uvreq_t *req)
 	isc__networker_t *worker;
 	int r;
 
-	REQUIRE(isc__nm_tid() >= 0);
+	REQUIRE(isc_nm_tid() >= 0);
 
-	worker = &req->mgr->workers[isc__nm_tid()];
+	worker = &req->mgr->workers[isc_nm_tid()];
 
 	r = uv_tcp_init(&worker->loop, &socket->uv_handle.tcp);
 	if (r != 0) {
@@ -133,7 +133,7 @@ isc__nm_handle_tcpconnect(isc__networker_t *worker,
 	isc__nm_uvreq_t *req = ievent->req;
 
 	REQUIRE(socket->type == isc_nm_tcpsocket);
-	REQUIRE(worker->id == ievent->req->mgr->workers[isc__nm_tid()].id);
+	REQUIRE(worker->id == ievent->req->mgr->workers[isc_nm_tid()].id);
 
 	r = tcp_connect_direct(socket, req);
 	if (r != 0) {
@@ -209,9 +209,9 @@ isc__nm_handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 		(isc__netievent_tcpconnect_t *) ievent0;
 	isc_nmsocket_t *socket = ievent->socket;
 
-	REQUIRE(isc__nm_tid() >= 0);
+	REQUIRE(isc_nm_tid() >= 0);
 	REQUIRE(socket->type == isc_nm_tcplistener);
-/*	REQUIRE(worker->id == ievent->req->mgr->workers[isc__nm_tid()].id); */
+/*	REQUIRE(worker->id == ievent->req->mgr->workers[isc_nm_tid()].id); */
 
 	r = uv_tcp_init(&worker->loop, &socket->uv_handle.tcp);
 	if (r != 0) {
@@ -234,7 +234,7 @@ isc_nm_read(isc_nmhandle_t *handle, isc_nm_recv_cb_t cb, void *cbarg) {
 	INSIST(VALID_NMSOCK(socket));
 	socket->rcb.recv = cb;
 	socket->rcbarg = cbarg; /* THat's obviously broken... */
-	if (socket->tid == isc__nm_tid()) {
+	if (socket->tid == isc_nm_tid()) {
 		uv_read_start(&socket->uv_handle.stream,
 			      isc__nm_alloc_cb,
 			      read_cb);
@@ -253,7 +253,7 @@ void
 isc__nm_handle_startread(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	isc__netievent_startread_t *ievent =
 		(isc__netievent_startread_t *) ievent0;
-	REQUIRE(worker->id == isc__nm_tid());
+	REQUIRE(worker->id == isc_nm_tid());
 
 	isc_nmsocket_t *socket = ievent->socket;
 
@@ -287,14 +287,14 @@ tcp_connection_cb(uv_stream_t *server, int status) {
 
 	ssocket = uv_handle_get_data((uv_handle_t*) server);
 	REQUIRE(VALID_NMSOCK(ssocket));
-	REQUIRE(ssocket->tid == isc__nm_tid());
+	REQUIRE(ssocket->tid == isc_nm_tid());
 	INSIST(ssocket->rcb.accept != NULL);
 
-	worker = &ssocket->mgr->workers[isc__nm_tid()];
+	worker = &ssocket->mgr->workers[isc_nm_tid()];
 
 	csocket = isc_mem_get(ssocket->mgr->mctx, sizeof(isc_nmsocket_t));
 	isc__nmsocket_init(csocket, ssocket->mgr, isc_nm_tcpsocket);
-	csocket->tid = isc__nm_tid();
+	csocket->tid = isc_nm_tid();
 	csocket->extrahandlesize = ssocket->extrahandlesize;
 
 	uv_tcp_init(&worker->loop, &csocket->uv_handle.tcp);
@@ -336,7 +336,7 @@ isc__nm_tcp_send(isc_nmhandle_t *handle,
 	uvreq->cb.send = cb;
 	uvreq->cbarg = cbarg;
 
-	if (socket->tid == isc__nm_tid()) {
+	if (socket->tid == isc_nm_tid()) {
 		/*
 		 * If we're in the same thread as the socket we can send the
 		 * data directly
@@ -391,7 +391,7 @@ static isc_result_t
 tcp_send_direct(isc_nmsocket_t *socket, isc__nm_uvreq_t *req)
 {
 	int rv;
-	INSIST(socket->tid == isc__nm_tid());
+	INSIST(socket->tid == isc_nm_tid());
 	INSIST(socket->type == isc_nm_tcpsocket);
 
 	rv = uv_write(&req->uv_req.write,
