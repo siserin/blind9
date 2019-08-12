@@ -83,7 +83,7 @@ isc_nm_udp_listen(isc_nm_t *mgr,
 	nsocket->rcbarg = arg;
 	nsocket->extrahandlesize = extrahandlesize;
 
-	for (int i = 0; i < mgr->nworkers; i++) {
+	for (size_t i = 0; i < mgr->nworkers; i++) {
 		isc__netievent_udplisten_t *ievent;
 		isc_nmsocket_t *csocket = &nsocket->children[i];
 		isc__nmsocket_init(csocket, mgr, isc_nm_udpsocket);
