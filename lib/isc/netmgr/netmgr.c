@@ -132,11 +132,12 @@ isc_nm_start(isc_mem_t *mctx, int workers) {
  */
 void
 isc_nm_shutdown(isc_nm_t **mgr0) {
+	INSIST(mgr0 != NULL);
 	isc_nm_t *mgr = *mgr0;
-	int i;
+	INSIST(VALID_NM(mgr));
+	INSIST(!isc__nm_in_netthread());
 
-	LOCK(&mgr->lock);
-	for (i = 0; i < mgr->nworkers; i++) {
+	for (size_t i = 0; i < mgr->nworkers; i++) {
 		LOCK(&mgr->workers[i].lock);
 		mgr->workers[i].finished = true;
 		UNLOCK(&mgr->workers[i].lock);
@@ -144,10 +145,11 @@ isc_nm_shutdown(isc_nm_t **mgr0) {
 							      netievent_stop);
 		isc__nm_enqueue_ievent(&mgr->workers[i], ievent);
 	}
+	LOCK(&mgr->lock);
 	while (mgr->workers_running > 0) {
 		isc_condition_wait(&mgr->wkstatecond, &mgr->lock);
 	}
-	for (i = 0; i < mgr->nworkers; i++) {
+	for (size_t i = 0; i < mgr->nworkers; i++) {
 		struct ck_fifo_mpmc_entry *garbage;
 		ck_fifo_mpmc_deinit(&mgr->workers[i].ievents, &garbage);
 		isc_mem_put(mgr->mctx, garbage, sizeof(*garbage));
@@ -160,6 +162,43 @@ isc_nm_shutdown(isc_nm_t **mgr0) {
 		    mgr->nworkers * sizeof(isc__networker_t));
 	isc_mem_putanddetach(&mgr->mctx, mgr, sizeof(*mgr));
 	*mgr0 = NULL;
+}
+
+void
+isc_nm_pause(isc_nm_t *mgr) {
+	INSIST(VALID_NM(mgr));
+	INSIST(!isc__nm_in_netthread());
+
+	for (size_t i = 0; i < mgr->nworkers; i++) {
+		LOCK(&mgr->workers[i].lock);
+		mgr->workers[i].paused = true;
+		UNLOCK(&mgr->workers[i].lock);
+		/* We have to issue a stop, otherwise the uv_run loop will
+		 * run indefinitely! */
+		isc__netievent_t *ievent = isc__nm_get_ievent(mgr,
+							      netievent_stop);
+		isc__nm_enqueue_ievent(&mgr->workers[i], ievent);
+	}
+	LOCK(&mgr->lock);
+	while (atomic_load_relaxed(&mgr->workers_paused) != mgr->nworkers) {
+		isc_condition_wait(&mgr->wkstatecond, &mgr->lock);
+	}
+	UNLOCK(&mgr->lock);
+}
+
+void
+isc_nm_resume(isc_nm_t *mgr) {
+	INSIST(VALID_NM(mgr));
+	INSIST(!isc__nm_in_netthread());
+
+	for (size_t i = 0; i < mgr->nworkers; i++) {
+		LOCK(&mgr->workers[i].lock);
+		mgr->workers[i].paused = false;
+		isc_condition_signal(&mgr->workers[i].cond);
+		UNLOCK(&mgr->workers[i].lock);
+	}
+	/* We're not waiting for all the workers to come back to life, they
+	 * eventually will, we don't care */
 }
 
 void
@@ -207,12 +246,14 @@ nm_thread(void *worker0) {
 		 */
 		LOCK(&worker->lock);
 		while (worker->paused) {
-			atomic_fetch_sub_explicit(&worker->mgr->workers_paused,
+			LOCK(&worker->mgr->lock);
+			atomic_fetch_add_explicit(&worker->mgr->workers_paused,
 						  1, memory_order_acquire);
 			isc_condition_signal(&worker->mgr->wkstatecond);
+			UNLOCK(&worker->mgr->lock);
 			isc_condition_wait(&worker->cond, &worker->lock);
 		}
-		atomic_fetch_add_explicit(&worker->mgr->workers_paused, 1,
+		atomic_fetch_sub_explicit(&worker->mgr->workers_paused, 1,
 					  memory_order_release);
 		UNLOCK(&worker->lock);
 		if (worker->finished) {

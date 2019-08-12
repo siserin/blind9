@@ -240,7 +240,7 @@ struct isc_nm {
 	int			    magic;
 	isc_refcount_t		    references;
 	isc_mem_t *		    mctx;
-	int			    nworkers;
+	uint32_t		    nworkers;
 	isc_mutex_t		    lock;
 	isc_condition_t		    wkstatecond;
 	isc__networker_t *	    workers;

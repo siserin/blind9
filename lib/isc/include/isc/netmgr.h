@@ -89,7 +89,7 @@ typedef void (*isc_nm_opaquecb)(void *arg);
 bool
 isc_nmhandle_is_stream(isc_nmhandle_t *handle);
 
-/* 
+/*
  * isc_nmhandle_t has a void* opaque field (usually - ns_client_t).
  * We reuse handle and `opaque` can also be reused between calls.
  * This function sets this field and two callbacks:
@@ -97,7 +97,10 @@ isc_nmhandle_is_stream(isc_nmhandle_t *handle);
  * - dofree frees everything associated with `opaque`
  */
 void
-isc_nmhandle_setdata(isc_nmhandle_t *handle, void *arg, isc_nm_opaquecb doreset, isc_nm_opaquecb dofree);
+isc_nmhandle_setdata(isc_nmhandle_t *handle,
+		     void *arg,
+		     isc_nm_opaquecb doreset,
+		     isc_nm_opaquecb dofree);
 
 isc_sockaddr_t
 isc_nmhandle_peeraddr(isc_nmhandle_t *handle);
@@ -109,7 +112,7 @@ isc_nmhandle_peeraddr(isc_nmhandle_t *handle);
  * region - contains the received data. It will be freed after
  *          return by caller
  */
-typedef void (*isc_nm_recv_cb_t)(void *arg, isc_nmhandle_t* handle,
+typedef void (*isc_nm_recv_cb_t)(void *arg, isc_nmhandle_t*handle,
 				 isc_region_t *region);
 
 /*
@@ -129,21 +132,32 @@ isc_nm_udp_stoplistening(isc_nmsocket_t *socket);
 
 
 /* XXXWPK TODOs */
-typedef void (*isc_nm_send_cb_t)(isc_nmhandle_t *handle, isc_result_t result, void *cbarg);
-typedef void (*isc_nm_connect_cb_t)(isc_nmhandle_t *handle, isc_result_t result, void *cbarg);
-typedef void (*isc_nm_accept_cb_t)(isc_nmhandle_t *handle, isc_result_t result, void *cbarg);
+typedef void (*isc_nm_send_cb_t)(isc_nmhandle_t *handle, isc_result_t result,
+				 void *cbarg);
+typedef void (*isc_nm_connect_cb_t)(isc_nmhandle_t *handle,
+				    isc_result_t result, void *cbarg);
+typedef void (*isc_nm_accept_cb_t)(isc_nmhandle_t *handle, isc_result_t result,
+				   void *cbarg);
 
 isc_result_t
 isc_nm_listen_tcp(isc_nm_t*mgr, isc_nm_accept_cb_t*cb);
 
-isc_result_t
-isc_nm_pause(isc_nm_t*mgr);
+/*
+ * isc_nm_pause pauses all processing, equivalent to taskmgr exclusive tasks.
+ * It won't return until all workers are paused.
+ */
+void
+isc_nm_pause(isc_nm_t *mgr);
+
+/*
+ * isc_nm_resume resumes paused processing. It will return immediately
+ * after signalling workers to resume.
+ */
+void
+isc_nm_resume(isc_nm_t *mgr);
 
 isc_result_t
-isc_nm_resume(isc_nm_t*mgr);
-
-isc_result_t
-isc_nm_tcp_connect(isc_nm_t* mgr,
+isc_nm_tcp_connect(isc_nm_t*mgr,
 		   isc_nmiface_t *iface,
 		   isc_sockaddr_t *peer,
 		   isc_nm_connect_cb_t cb,
@@ -157,15 +171,18 @@ isc_nm_dnsread(isc_nmsocket_t *socket, isc_buffer_t*buf);
 
 
 isc_result_t
-isc_nm_read(isc_nmhandle_t *handle, isc_nm_recv_cb_t cb, void* cbarg);
+isc_nm_read(isc_nmhandle_t *handle, isc_nm_recv_cb_t cb, void*cbarg);
 
 /*
- * isc_nm_send sends region to handle, after finishing cb is called. 
+ * isc_nm_send sends region to handle, after finishing cb is called.
  * region is not copied, it has to be allocated beforehand and freed in cb.
  * Callback can be invoked directly from the calling thread, or called later.
  */
 isc_result_t
-isc_nm_send(isc_nmhandle_t *handle, isc_region_t *region, isc_nm_send_cb_t cb, void *cbarg);
+isc_nm_send(isc_nmhandle_t *handle,
+	    isc_region_t *region,
+	    isc_nm_send_cb_t cb,
+	    void *cbarg);
 
 isc_result_t
 isc_nm_tcp_listen(isc_nm_t *mgr,
