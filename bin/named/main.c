@@ -869,8 +869,15 @@ create_managers(void) {
 		      "using %u UDP listener%s per interface",
 		      named_g_udpdisp, named_g_udpdisp == 1 ? "" : "s");
 
+	named_g_nm = isc_nm_start(named_g_mctx, named_g_cpus);
+	if (named_g_nm == NULL) {
+		UNEXPECTED_ERROR(__FILE__, __LINE__,
+				"isc_nm_start() failed");
+		return (ISC_R_UNEXPECTED);
+	}
+
 	result = isc_taskmgr_create(named_g_mctx, named_g_cpus, 0,
-				    &named_g_taskmgr);
+				    named_g_nm, &named_g_taskmgr);
 	if (result != ISC_R_SUCCESS) {
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
 				 "isc_taskmgr_create() failed: %s",
@@ -902,12 +909,6 @@ create_managers(void) {
 			      ISC_LOG_INFO, "using up to %u sockets", socks);
 	}
 
-	named_g_nm = isc_nm_start(named_g_mctx, named_g_cpus);
-	if (named_g_nm == NULL) {
-		UNEXPECTED_ERROR(__FILE__, __LINE__,
-				"isc_nm_start() failed");
-		return (ISC_R_UNEXPECTED);
-	}
 	return (ISC_R_SUCCESS);
 }
 

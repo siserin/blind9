@@ -9563,6 +9563,10 @@ shutdown_server(isc_task_t *task, isc_event_t *event) {
 	UNUSED(task);
 	INSIST(task == server->task);
 
+	/* We need to shutdown the interface before going exclusive (and
+	 * pausing netmgr. */
+	ns_interfacemgr_shutdown(server->interfacemgr);
+
 	result = isc_task_beginexclusive(server->task);
 	RUNTIME_CHECK(result == ISC_R_SUCCESS);
 
@@ -9612,7 +9616,6 @@ shutdown_server(isc_task_t *task, isc_event_t *event) {
 	isc_timer_detach(&server->pps_timer);
 	isc_timer_detach(&server->tat_timer);
 
-	ns_interfacemgr_shutdown(server->interfacemgr);
 	ns_interfacemgr_detach(&server->interfacemgr);
 
 	dns_dispatchmgr_destroy(&named_g_dispatchmgr);
