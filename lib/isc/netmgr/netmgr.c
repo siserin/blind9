@@ -318,11 +318,9 @@ async_cb(uv_async_t *handle) {
 		case netievent_tcpsend:
 			isc__nm_handle_tcpsend(worker, ievent);
 			break;
-
-
-/*              case netievent_tcpstoplisten:
- *                      handle_tcpstoplisten(worker, ievent);
- *                      break; */
+		case netievent_tcpstoplisten:
+			isc__nm_handle_tcpstoplistening(worker, ievent);
+			break;
 		default:
 			INSIST(0);
 		}
@@ -337,9 +335,9 @@ async_cb(uv_async_t *handle) {
  */
 void *
 isc__nm_get_ievent(isc_nm_t *mgr, isc__netievent_type type) {
-	isc__netievent_t *event =
+	isc__netievent_storage_t *event =
 		isc_mem_get(mgr->mctx, sizeof(isc__netievent_storage_t));
-	*event = (isc__netievent_t) { .type = type };
+	*event = (isc__netievent_storage_t) { .ni.type = type };
 	return (event);
 }
 

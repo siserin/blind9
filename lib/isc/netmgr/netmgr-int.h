@@ -74,8 +74,8 @@ struct isc_nmhandle {
 	 * sense. Instead, we keep all handles in an array in the socket object.
 	 * This way, we don't have circular dependencies and we can close all
 	 * handles when we're destroying the socket. */
-	isc_nmsocket_t *	socket;
-	size_t			ah_pos;  /* Position in socket active handles
+	isc_nmsocket_t *      socket;
+	size_t		      ah_pos;    /* Position in socket active handles
 	                                  * array */
 	/* The handle is 'inflight' if netmgr is not currently processing it in
 	 * any way - it might mean that e.g. a recursive resolution is
@@ -173,8 +173,7 @@ typedef struct isc__nm_uvreq {
 CK_STACK_CONTAINER(struct isc__nm_uvreq, ilink, uvreq_is_get);
 
 /*
- * Make the worker listen for UDP requests on a specified socket.
- * socket must have FD and iface filled.
+ * TODO: unify the events.
  */
 
 typedef struct isc__netievent_udplisten {
@@ -204,6 +203,12 @@ typedef struct isc__netievent_tcplisten {
 	isc_nmsocket_t *	   socket;
 	isc__nm_uvreq_t *	   req;
 } isc__netievent_tcplisten_t;
+
+typedef struct isc__netievent_tcpstoplisten {
+	isc__netievent_type	   type;
+	isc_nmsocket_t *	   socket;
+	isc__nm_uvreq_t *	   req;
+} isc__netievent_tcpstoplisten_t;
 
 typedef struct isc__netievent_tcpsend {
 	isc__netievent_type	   type;
@@ -305,6 +310,7 @@ struct isc_nmsocket {
 	 * active==false, closed == false means the socket is closing.
 	 */
 	atomic_bool	      closed;
+	atomic_bool	      listening;
 	isc_refcount_t	      references;
 	/*
 	 * 'spare' handles for that can be reused to avoid allocations,
@@ -416,6 +422,9 @@ void
 isc__nm_handle_tcpconnect(isc__networker_t *worker, isc__netievent_t *ievent0);
 void
 isc__nm_handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0);
+void
+isc__nm_handle_tcpstoplistening(isc__networker_t *worker,
+				isc__netievent_t *ievent0);
 void
 isc__nm_handle_tcpsend(isc__networker_t *worker, isc__netievent_t *ievent0);
 void

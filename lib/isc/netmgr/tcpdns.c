@@ -92,7 +92,6 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 		     void *cbarg,
 		     isc_nmsocket_t **rv)
 {
-	return (ISC_R_SUCCESS);
 	isc_result_t result;
 
 	/* A 'wrapper' socket object with parent set to true TCP socket */
@@ -111,12 +110,17 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 				   extrahandlesize,
 				   dnslistensocket,
 				   &dnslistensocket->parent);
+	dnslistensocket->listening = true;
 	*rv = dnslistensocket;
 	return (result);
 }
 
-isc_result_t
-isc_nm_tcpdns_stoplistening(isc_nmsocket_t **rv);
+void
+isc_nm_tcpdns_stoplistening(isc_nmsocket_t *socket) {
+	isc_nm_tcp_stoplistening(socket->parent);
+	atomic_store(&socket->listening, false);
+	isc_nmsocket_detach(&socket->parent);
+}
 
 
 typedef struct tcpsend {
@@ -129,7 +133,7 @@ typedef struct tcpsend {
 
 static void
 tcpdnssend_cb(isc_nmhandle_t *handle, isc_result_t result, void *cbarg) {
-	tcpsend_t*ts = (tcpsend_t*) cbarg;
+	tcpsend_t *ts = (tcpsend_t *) cbarg;
 	(void) handle;
 	ts->cb(ts->orighandle, result, ts->cbarg);
 }

@@ -140,7 +140,10 @@ typedef void (*isc_nm_accept_cb_t)(isc_nmhandle_t *handle, isc_result_t result,
 				   void *cbarg);
 
 isc_result_t
-isc_nm_listen_tcp(isc_nm_t*mgr, isc_nm_accept_cb_t*cb);
+isc_nm_listen_tcp(isc_nm_t *mgr, isc_nm_accept_cb_t *cb);
+
+void
+isc_nm_tcp_stoplistening(isc_nmsocket_t *socket);
 
 /*
  * isc_nm_pause pauses all processing, equivalent to taskmgr exclusive tasks.
@@ -200,3 +203,6 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 		     size_t extrahandlesize,
 		     void *arg,
 		     isc_nmsocket_t **rv);
+
+void
+isc_nm_tcpdns_stoplistening(isc_nmsocket_t *socket);

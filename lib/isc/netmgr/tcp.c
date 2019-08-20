@@ -156,7 +156,8 @@ tcp_connect_cb(uv_connect_t *uvreq, int status) {
 				   (struct sockaddr*) &ss,
 				   &l);
 		isc_result_t result =
-			isc_sockaddr_fromsockaddr(&peer, (struct sockaddr*) &ss);
+			isc_sockaddr_fromsockaddr(&peer,
+						  (struct sockaddr*) &ss);
 		INSIST(result == ISC_R_SUCCESS);
 
 		isc_nmhandle_t *handle = isc__nmhandle_get(socket, &peer);
@@ -200,18 +201,15 @@ isc_nm_tcp_listen(isc_nm_t *mgr,
 	return (ISC_R_SUCCESS);
 }
 
-
-
 void
 isc__nm_handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	int r;
-	isc__netievent_tcpconnect_t *ievent =
-		(isc__netievent_tcpconnect_t *) ievent0;
+	isc__netievent_tcplisten_t *ievent =
+		(isc__netievent_tcplisten_t *) ievent0;
 	isc_nmsocket_t *socket = ievent->socket;
 
 	REQUIRE(isc_nm_tid() >= 0);
 	REQUIRE(socket->type == isc_nm_tcplistener);
-/*	REQUIRE(worker->id == ievent->req->mgr->workers[isc_nm_tid()].id); */
 
 	r = uv_tcp_init(&worker->loop, &socket->uv_handle.tcp);
 	if (r != 0) {
@@ -222,8 +220,52 @@ isc__nm_handle_tcplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	r = uv_listen((uv_stream_t*) &socket->uv_handle.tcp,
 		      10,
 		      tcp_connection_cb);
+	socket->listening = true;
 	return;
 	/* issue callback? */
+}
+
+
+void
+isc_nm_tcp_stoplistening(isc_nmsocket_t *socket) {
+	isc__netievent_tcpstoplisten_t *ievent;
+	INSIST(VALID_NMSOCK(socket));
+	REQUIRE(!isc__nm_in_netthread());
+
+	ievent = isc__nm_get_ievent(socket->mgr, netievent_tcpstoplisten);
+	isc_nmsocket_attach(socket, &ievent->socket);
+	isc__nm_enqueue_ievent(&socket->mgr->workers[socket->tid],
+			       (isc__netievent_t*) ievent);
+	isc_mutex_lock(&socket->lock);
+	while (atomic_load(&socket->listening) == true) {
+		isc_condition_wait(&socket->cond, &socket->lock);
+	}
+	isc_mutex_unlock(&socket->lock);
+	isc_nmsocket_detach(&socket);
+}
+
+static void
+stoplistening_cb(uv_handle_t *handle) {
+	isc_nmsocket_t *socket = handle->data;
+	isc_mutex_lock(&socket->lock);
+	atomic_store(&socket->listening, false);
+	isc_condition_signal(&socket->cond);
+	isc_mutex_unlock(&socket->lock);
+}
+
+void
+isc__nm_handle_tcpstoplistening(isc__networker_t *worker,
+				isc__netievent_t *ievent0) {
+	(void)worker;
+	isc__netievent_tcpstoplisten_t *ievent =
+		(isc__netievent_tcpstoplisten_t *) ievent0;
+	isc_nmsocket_t *socket = ievent->socket;
+
+	REQUIRE(isc_nm_tid() >= 0);
+	REQUIRE(VALID_NMSOCK(socket));
+	REQUIRE(socket->type == isc_nm_tcplistener);
+
+	uv_close(&socket->uv_handle.handle, stoplistening_cb);
 }
 
 
@@ -233,7 +275,7 @@ isc_nm_read(isc_nmhandle_t *handle, isc_nm_recv_cb_t cb, void *cbarg) {
 	isc_nmsocket_t *socket = handle->socket;
 	INSIST(VALID_NMSOCK(socket));
 	socket->rcb.recv = cb;
-	socket->rcbarg = cbarg; /* THat's obviously broken... */
+	socket->rcbarg = cbarg; /* That's obviously broken... */
 	if (socket->tid == isc_nm_tid()) {
 		uv_read_start(&socket->uv_handle.stream,
 			      isc__nm_alloc_cb,
@@ -261,7 +303,7 @@ isc__nm_handle_startread(isc__networker_t *worker, isc__netievent_t *ievent0) {
 }
 
 static void
-read_cb(uv_stream_t*stream, ssize_t nread, const uv_buf_t*buf) {
+read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t*buf) {
 	isc_nmsocket_t *socket = uv_handle_get_data((uv_handle_t*) stream);
 	INSIST(buf != NULL);
 	if (nread < 0) {
@@ -288,6 +330,10 @@ tcp_connection_cb(uv_stream_t *server, int status) {
 	ssocket = uv_handle_get_data((uv_handle_t*) server);
 	REQUIRE(VALID_NMSOCK(ssocket));
 	REQUIRE(ssocket->tid == isc_nm_tid());
+	if (!atomic_load_relaxed(&ssocket->active)) {
+		/* We're closing, bail */
+		return;
+	}
 	INSIST(ssocket->rcb.accept != NULL);
 
 	worker = &ssocket->mgr->workers[isc_nm_tid()];
