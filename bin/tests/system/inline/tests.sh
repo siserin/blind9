@@ -1091,8 +1091,8 @@ ret=0
 $RNDC -c ../common/rndc.conf -s 10.53.0.3 -p 9953 zonestatus master > rndc.out.ns3.test$n
 grep "type: master" rndc.out.ns3.test$n > /dev/null || ret=1
 if [ $ret != 0 ]; then echo "I:failed"; fi
-
 status=`expr $status + $ret`
+
 n=`expr $n + 1`
 echo "I:check that zonestatus reports 'type: slave' for a inline slave zone ($n)"
 ret=0
@@ -1101,7 +1101,9 @@ grep "type: slave" rndc.out.ns3.test$n > /dev/null || ret=1
 if [ $ret != 0 ]; then echo "I:failed"; fi
 status=`expr $status + $ret`
 
-set -x
+n=`expr $n + 1`
+echo "I:test DNSKEY removal using dnssec-settime ($n)"
+ret=0
 echo "before"
 $DIG -p 5300 axfr remove-dnskeys @10.53.0.3 | awk '$4 == "NSEC3" {print}'
 keys=`$DIG -p 5300 dnskey remove-dnskeys @10.53.0.3 +rrcomments |
@@ -1115,12 +1117,22 @@ do
 	$SETTIME -K ns3 -I +0 -D +0 Kremove-dnskeys.+008+$key
 done
 $RNDC -c ../common/rndc.conf -s 10.53.0.3 -p 9953 loadkeys remove-dnskeys > /dev/null 2>&1
+mkdir -p ns3/oldkeys
+for key in $keys -
+do
+	test "$key" = "$zsk" && continue
+	test "$key" = - && continue
+	mv -f ns3/Kremove-dnskeys.+008+$key.key ns3/Kremove-dnskeys.+008+$key.private ns3/oldkeys
+done
+# wait for DNSKEY records to be removed
 for i in 1 2 3 4 5 6 7 8 9 10
 do
 	l=`$DIG -p 5300 dnskey remove-dnskeys @10.53.0.3 | awk '$4 == "DNSKEY" { print }' | wc -l`
 	test $l -le 2 && break
 done
+test $l -gt 2 && ret=1
 echo "after"
+# wait for TYPE65534 records to be removed
 $DIG -p 5300 axfr remove-dnskeys @10.53.0.3 | awk '$4 == "NSEC3" {print}'
 for i in 1 2 3 4 5 6 7 8 9 10
 do
@@ -1129,7 +1141,14 @@ do
 done
 echo "post"
 $DIG -p 5300 axfr remove-dnskeys @10.53.0.3 | awk '$4 == "NSEC3" {print}'
+# check the NSEC3 TTLs. they should all be 3600.
+l=`$DIG -p 5300 axfr remove-dnskeys @10.53.0.3 | awk '$4 == "NSEC3" && $2 == 3600 {print $2}' | sort -u | wc -l`
+test $l -eq 1 || ret=1
+l=`$DIG -p 5300 axfr remove-dnskeys @10.53.0.3 | awk '$4 == "NSEC3" && $2 != 3600 {print $2}' | sort -u | wc -l`
+test $l -eq 0 || ret=1
 set +x
+if [ $ret != 0 ]; then echo "I:failed"; fi
+status=`expr $status + $ret`
 
 echo "I:exit status: $status"
 [ $status -eq 0 ] || exit 1

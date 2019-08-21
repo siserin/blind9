@@ -101,3 +101,4 @@ rm -f dig.out.*
 rm -f ns3/nzf-*
 rm -f rndc.out.ns*
 rm -f ns3/remove-dnskeys.db*
+rm -rf ns3/oldkeys
