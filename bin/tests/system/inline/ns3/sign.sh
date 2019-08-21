@@ -93,6 +93,15 @@ keyname=`$KEYGEN -q -r $RANDFILE -a RSASHA256 -b 1024 -n zone $zone`
 keyname=`$KEYGEN -q -r $RANDFILE -a RSASHA256 -b 1024 -n zone -f KSK $zone`
 $DSFROMKEY -T 1200 $keyname >> ../ns1/root.db
 
+zone=remove-dnskeys
+rm -f K${zone}.+*+*.key
+rm -f K${zone}.+*+*.private
+keyname=`$KEYGEN -q -r $RANDFILE -a 8 -b 1024 -n zone -P now -A now $zone`
+keyname=`$KEYGEN -q -r $RANDFILE -a 8 -b 1024 -n zone -P now -A now-2d -I now-1d $zone`
+keyname=`$KEYGEN -q -r $RANDFILE -a 8 -b 1024 -n zone -P now -A now-3d -I now-2d $zone`
+keyname=`$KEYGEN -q -r $RANDFILE -a 8 -b 1024 -n zone -f KSK $zone`
+$DSFROMKEY -T 1200 $keyname >> ../ns1/root.db
+
 for s in a c d h k l m q z
 do
 	zone=test-$s

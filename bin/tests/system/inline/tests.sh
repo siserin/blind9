@@ -15,6 +15,7 @@ status=0
 n=0
 
 $RNDC -c ../common/rndc.conf -s 10.53.0.3 -p 9953 signing -nsec3param 1 0 0 - nsec3 > /dev/null 2>&1
+$RNDC -c ../common/rndc.conf -s 10.53.0.3 -p 9953 signing -nsec3param 1 0 10 4B41524C remove-dnskeys > /dev/null 2>&1
 
 for i in 1 2 3 4 5 6 7 8 9 0
 do
@@ -43,7 +44,7 @@ echo "I:checking that rrsigs are replaced with ksk only ($n)"
 ret=0
 $DIG @10.53.0.3 -p 5300 axfr nsec3. |
 	awk '/RRSIG NSEC3/ {a[$1]++} END { for (i in a) {if (a[i] != 1) exit (1)}}' || ret=1
-#$DIG @10.53.0.3 -p 5300 axfr nsec3. | grep -w NSEC | grep -v "IN.RRSIG.NSEC" 
+#$DIG @10.53.0.3 -p 5300 axfr nsec3. | grep -w NSEC | grep -v "IN.RRSIG.NSEC"
 if [ $ret != 0 ]; then echo "I:failed"; fi
 status=`expr $status + $ret`
 
@@ -450,7 +451,7 @@ EOF
 [ -f ns3/dynamic.db.jnl ] || { ret=1 ; echo "I:journal does not exist (posttest)" ; }
 
 for i in 1 2 3 4 5 6 7 8 9 10
-do 
+do
 	ans=0
 	$DIG $DIGOPTS @10.53.0.3 -p 5300 e.dynamic > dig.out.ns3.test$n
 	grep "status: NOERROR" dig.out.ns3.test$n > /dev/null || ans=1
@@ -645,7 +646,7 @@ status=`expr $status + $ret`
 n=`expr $n + 1`
 echo "I:checking rndc freeze/thaw of dynamic inline zone ($n)"
 ret=0
-$RNDC -c ../common/rndc.conf -s 10.53.0.3 -p 9953 freeze dynamic > freeze.test$n 2>&1 || ret=1 
+$RNDC -c ../common/rndc.conf -s 10.53.0.3 -p 9953 freeze dynamic > freeze.test$n 2>&1 || ret=1
 sleep 1
 awk '$2 == ";" && $3 == "serial" { printf("%d %s %s\n", $1 + 1, $2, $3); next; }
      { print; }
@@ -1099,6 +1100,36 @@ $RNDC -c ../common/rndc.conf -s 10.53.0.3 -p 9953 zonestatus bits > rndc.out.ns3
 grep "type: slave" rndc.out.ns3.test$n > /dev/null || ret=1
 if [ $ret != 0 ]; then echo "I:failed"; fi
 status=`expr $status + $ret`
+
+set -x
+echo "before"
+$DIG -p 5300 axfr remove-dnskeys @10.53.0.3 | awk '$4 == "NSEC3" {print}'
+keys=`$DIG -p 5300 dnskey remove-dnskeys @10.53.0.3 +rrcomments |
+      awk '$4 == "DNSKEY" && $5 == 256 { printf "%05u\n", $NF }'`
+zsk=`$DIG -p 5300 soa remove-dnskeys @10.53.0.3 +dnssec |
+     awk '$4 == "RRSIG" && $5 == "SOA" { printf "%05u\n", $11 }'`
+for key in $keys -
+do
+	test "$key" = "$zsk" && continue
+	test "$key" = - && continue
+	$SETTIME -K ns3 -I +0 -D +0 Kremove-dnskeys.+008+$key
+done
+$RNDC -c ../common/rndc.conf -s 10.53.0.3 -p 9953 loadkeys remove-dnskeys > /dev/null 2>&1
+for i in 1 2 3 4 5 6 7 8 9 10
+do
+	l=`$DIG -p 5300 dnskey remove-dnskeys @10.53.0.3 | awk '$4 == "DNSKEY" { print }' | wc -l`
+	test $l -le 2 && break
+done
+echo "after"
+$DIG -p 5300 axfr remove-dnskeys @10.53.0.3 | awk '$4 == "NSEC3" {print}'
+for i in 1 2 3 4 5 6 7 8 9 10
+do
+	l=`$DIG -p 5300 TYPE65534 remove-dnskeys @10.53.0.3 | awk '$4 == "TYPE65534" { print }' | wc -l`
+	test $l -eq 0 && break
+done
+echo "post"
+$DIG -p 5300 axfr remove-dnskeys @10.53.0.3 | awk '$4 == "NSEC3" {print}'
+set +x
 
 echo "I:exit status: $status"
 [ $status -eq 0 ] || exit 1

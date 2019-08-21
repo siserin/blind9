@@ -4,8 +4,6 @@
 ; License, v. 2.0. If a copy of the MPL was not distributed with this
 ; file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-; $Id: root.db.in,v 1.8 2012/02/23 06:53:15 marka Exp $
-
 $TTL 300
 . 			IN SOA	gson.nominum.com. a.root.servers.nil. (
 				2000042100   	; serial
@@ -54,3 +52,6 @@ ns3.inactiveksk.	A	10.53.0.3
 
 inactivezsk.		NS	ns3.inactivezsk.
 ns3.inactivezsk.	A	10.53.0.3
+
+remove-dnskeys		NS	ns3.remove-dnskeys
+ns3.remove-dnskeys	A	10.53.0.3
