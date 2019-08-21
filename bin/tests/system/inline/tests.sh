@@ -15,14 +15,20 @@ status=0
 n=0
 
 $RNDC -c ../common/rndc.conf -s 10.53.0.3 -p 9953 signing -nsec3param 1 0 0 - nsec3 > /dev/null 2>&1
-$RNDC -c ../common/rndc.conf -s 10.53.0.3 -p 9953 signing -nsec3param 1 0 10 4B41524C remove-dnskeys > /dev/null 2>&1
-
 for i in 1 2 3 4 5 6 7 8 9 0
 do
 	nsec3param=`$DIG +short @10.53.0.3 -p 5300 nsec3param nsec3.`
 	test "$nsec3param" = "1 0 0 -" && break
 	sleep 1
 done
+
+for i in 1 2 3 4 5 6 7 8 9 0
+do
+	l=`$DIG +short @10.53.0.3 -p 5300 soa remove-dnskeys | wc -l`
+	test $l -eq 1 && break
+	sleep 1
+done
+$RNDC -c ../common/rndc.conf -s 10.53.0.3 -p 9953 signing -nsec3param 1 0 10 4B41524C remove-dnskeys > /dev/null 2>&1
 
 # Loop until retransfer3 has been transferred.
 for i in 1 2 3 4 5 6 7 8 9 0
