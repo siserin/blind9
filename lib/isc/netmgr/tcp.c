@@ -308,6 +308,7 @@ read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t*buf) {
 	INSIST(buf != NULL);
 	if (nread < 0) {
 		isc__nm_free_uvbuf(socket, buf);
+		socket->rcb.recv(socket->rcbarg, &socket->tcphandle, NULL);
 		/* XXXWPK TODO clean up handles! */
 		return;
 	}
@@ -358,6 +359,7 @@ tcp_connection_cb(uv_stream_t *server, int status) {
 	INSIST(result == ISC_R_SUCCESS);
 	isc_nmhandle_t *handle = isc__nmhandle_get(csocket, &peer);
 	ssocket->rcb.accept(handle, ISC_R_SUCCESS, ssocket->rcbarg);
+	isc_nmsocket_detach(&csocket);
 }
 
 /*

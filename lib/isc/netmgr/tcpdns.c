@@ -52,11 +52,11 @@ dnslisten_acceptcb(isc_nmhandle_t *handle, isc_result_t result, void *cbarg) {
 						sizeof(*dnssocket));
 	isc__nmsocket_init(dnssocket, handle->socket->mgr,
 			   isc_nm_tcpdnssocket);
-	/* We need to copy read callbacks from parent socket */
+	/* We need to copy read callbacks from outer socket */
 	dnssocket->rcb.recv = dnslistensocket->rcb.recv;
 	dnssocket->rcbarg = dnslistensocket->rcbarg;
 	dnssocket->extrahandlesize = dnslistensocket->extrahandlesize;
-	isc_nmsocket_attach(handle->socket, &dnssocket->parent);
+	isc_nmsocket_attach(handle->socket, &dnssocket->outer);
 	isc_nm_read(handle, dnslisten_readcb, dnssocket);
 }
 
@@ -65,18 +65,26 @@ dnslisten_acceptcb(isc_nmhandle_t *handle, isc_result_t result, void *cbarg) {
  * a complete DNS packet and, if so - call the callback
  */
 static void
-dnslisten_readcb(void *arg, isc_nmhandle_t*handle, isc_region_t *region) {
+dnslisten_readcb(void *arg, isc_nmhandle_t *handle, isc_region_t *region) {
 	/* A 'wrapper' handle */
 	(void)handle;
 	isc_nmsocket_t *dnssocket = (isc_nmsocket_t*) arg;
+	if (region == NULL) {
+		/* Connection closed */
+		isc_nmhandle_detach(&handle);
+		isc_nmsocket_detach(&dnssocket->outer);
+		isc_nmsocket_detach(&dnssocket);
+		return;
+	}
+	isc_nmhandle_t *dnshandle =
+		isc__nmhandle_get(dnssocket, &handle->peer);
 	/* XXXWPK for the love of all that is holy fix it, that's so wrong */
 	INSIST(((region->base[0] << 8) + (region->base[1]) ==
 		(int) region->length - 2));
-	isc_nmhandle_t *dnshandle =
-		isc__nmhandle_get(dnssocket, &handle->peer);
 	isc_region_t r2 =
 	{.base = region->base + 2, .length = region->length - 2};
 	dnssocket->rcb.recv(dnssocket->rcbarg, dnshandle, &r2);
+	isc_nmhandle_detach(&dnshandle);
 }
 
 /*
@@ -94,7 +102,7 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 {
 	isc_result_t result;
 
-	/* A 'wrapper' socket object with parent set to true TCP socket */
+	/* A 'wrapper' socket object with outer set to true TCP socket */
 	isc_nmsocket_t *dnslistensocket =
 		isc_mem_get(mgr->mctx, sizeof(*dnslistensocket));
 	isc__nmsocket_init(dnslistensocket, mgr, isc_nm_tcpdnslistener);
@@ -103,13 +111,13 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 	dnslistensocket->rcbarg = cbarg;
 	dnslistensocket->extrahandlesize = extrahandlesize;
 
-	/* We set dnslistensocket->parent to a true listening socket */
+	/* We set dnslistensocket->outer to a true listening socket */
 	result = isc_nm_tcp_listen(mgr,
 				   iface,
 				   dnslisten_acceptcb,
 				   extrahandlesize,
 				   dnslistensocket,
-				   &dnslistensocket->parent);
+				   &dnslistensocket->outer);
 	dnslistensocket->listening = true;
 	*rv = dnslistensocket;
 	return (result);
@@ -117,9 +125,9 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 
 void
 isc_nm_tcpdns_stoplistening(isc_nmsocket_t *socket) {
-	isc_nm_tcp_stoplistening(socket->parent);
+	isc_nm_tcp_stoplistening(socket->outer);
 	atomic_store(&socket->listening, false);
-	isc_nmsocket_detach(&socket->parent);
+	isc_nmsocket_detach(&socket->outer);
 }
 
 
@@ -136,6 +144,7 @@ tcpdnssend_cb(isc_nmhandle_t *handle, isc_result_t result, void *cbarg) {
 	tcpsend_t *ts = (tcpsend_t *) cbarg;
 	(void) handle;
 	ts->cb(ts->orighandle, result, ts->cbarg);
+	isc_nmhandle_detach(&ts->orighandle);
 }
 /*
  * isc__nm_tcp_send sends buf to a peer on a socket.
@@ -151,7 +160,7 @@ isc__nm_tcpdns_send(isc_nmhandle_t *handle,
 	INSIST(socket->type == isc_nm_tcpdnssocket);
 	tcpsend_t *t = malloc(sizeof(*t));
 	*t = (tcpsend_t) {};
-	t->handle = &handle->socket->parent->tcphandle;
+	t->handle = &handle->socket->outer->tcphandle;
 	t->cb = cb;
 	t->cbarg = cbarg;
 	t->region =

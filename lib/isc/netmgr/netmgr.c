@@ -389,6 +389,11 @@ isc__nmsocket_destroy(isc_nmsocket_t *socket, bool dofree) {
 		isc__nmsocket_destroy(&socket->children[i], false);
 	}
 
+	if (VALID_NMHANDLE(&socket->tcphandle) && socket->tcphandle.dofree != NULL) {
+		socket->tcphandle.dofree(socket->tcphandle.opaque);
+	}
+	socket->tcphandle = (isc_nmhandle_t) {};
+
 	ck_stack_entry_t *se;
 	while ((se = ck_stack_pop_mpmc(&socket->inactivehandles)) != NULL) {
 		isc_nmhandle_t *handle = nm_handle_is_get(se);
@@ -667,8 +672,13 @@ isc_nmhandle_detach(isc_nmhandle_t **handlep) {
 
 		bool reuse = false;
 		if (atomic_load(&socket->active)) {
-			reuse = ck_stack_trypush_mpmc(&socket->inactivehandles,
-						      &handle->ilink);
+			if (handle != &socket->tcphandle) {
+				reuse = ck_stack_trypush_mpmc(
+					&socket->inactivehandles,
+					&handle->ilink);
+			} else {
+				reuse = true;
+			}
 		}
 
 		isc_mutex_unlock(&socket->lock);

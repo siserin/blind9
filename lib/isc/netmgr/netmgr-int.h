@@ -278,6 +278,8 @@ struct isc_nmsocket {
 	isc_nmsocket_type	 type;
 	isc_nm_t *		 mgr;
 	isc_nmsocket_t *	 parent;
+	/* outer socket is for 'wrapped' sockets - e.g. tcpdns in tcp */
+	isc_nmsocket_t *	 outer;
 	isc_nmsocket_t *	 children;
 	int			 nchildren;
 	isc_nmiface_t *		 iface;
