@@ -79,7 +79,6 @@ isc__nm_in_netthread() {
 isc_nm_t*
 isc_nm_start(isc_mem_t *mctx, int workers) {
 	int i;
-	isc_result_t result;
 	isc_nm_t*mgr;
 	int r;
 	char name[32];
@@ -114,9 +113,8 @@ isc_nm_start(isc_mem_t *mctx, int workers) {
 			isc_mem_get(mgr->mctx, sizeof(*stub));
 		ck_fifo_mpmc_init(&worker->ievents, stub);
 
-		result = isc_thread_create(nm_thread, &mgr->workers[i],
-					   &worker->thread);
-		RUNTIME_CHECK(result == ISC_R_SUCCESS);
+		isc_thread_create(nm_thread, &mgr->workers[i],
+				  &worker->thread);
 
 		snprintf(name, sizeof(name), "isc-net-%04u", i);
 		isc_thread_setname(worker->thread, name);
