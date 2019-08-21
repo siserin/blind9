@@ -1294,7 +1294,6 @@ xfrout_ctx_create(isc_mem_t *mctx, ns_client_t *client, unsigned int id,
 	*xfrp = xfr;
 	return (ISC_R_SUCCESS);
 
-failure:
 	xfrout_ctx_destroy(&xfr);
 	return (result);
 }
