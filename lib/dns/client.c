@@ -2852,6 +2852,7 @@ dns_client_startupdate(dns_client_t *client, dns_rdataclass_t rdclass,
 	if (zonename != NULL) {
 		uctx->zonename = dns_fixedname_name(&uctx->zonefname);
 		result = dns_name_copy(zonename, uctx->zonename, NULL);
+		RUNTIME_CHECK(result == ISC_R_SUCCESS);
 	}
 	if (servers != NULL) {
 		for (server = ISC_LIST_HEAD(*servers);
