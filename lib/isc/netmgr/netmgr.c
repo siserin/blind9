@@ -540,10 +540,12 @@ isc__nm_free_uvbuf(isc_nmsocket_t *socket, const uv_buf_t *buf) {
 	REQUIRE(worker->udprecvbuf_inuse);
 	REQUIRE(buf->base == worker->udprecvbuf);
 	worker->udprecvbuf_inuse = false;
-/*	void *b = buf->base;
- *      if (b != NULL) {
- *              isc_mempool_put(worker->mpool_bufs, b);
- *      } */
+#if 0
+	void *b = buf->base;
+	if (b != NULL) {
+		isc_mempool_put(worker->mpool_bufs, b);
+	}
+#endif
 }
 
 /*
@@ -703,7 +705,8 @@ void
 isc_nmhandle_setdata(isc_nmhandle_t *handle,
 		     void *arg,
 		     isc_nm_opaquecb doreset,
-		     isc_nm_opaquecb dofree) {
+		     isc_nm_opaquecb dofree)
+{
 	INSIST(VALID_NMHANDLE(handle));
 	handle->opaque = arg;
 	handle->doreset = doreset;
@@ -770,8 +773,9 @@ isc__nm_uvreq_put(isc__nm_uvreq_t **req0, isc_nmsocket_t *socket) {
 	 */
 	mgr = req->mgr;
 	req->mgr = NULL;
-	if (!(socket != NULL && atomic_load(&socket->active) &&
-	      ck_stack_trypush_mpmc(&socket->inactivereqs, &req->ilink))) {
+	if (socket == NULL || !atomic_load(&socket->active) ||
+	    !ck_stack_trypush_mpmc(&socket->inactivereqs, &req->ilink))
+	{
 		isc_mem_put(mgr->mctx, req, sizeof(isc__nm_uvreq_t));
 	}
 	isc_nm_detach(&mgr);
