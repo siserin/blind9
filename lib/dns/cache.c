@@ -367,6 +367,7 @@ cache_free(dns_cache_t *cache) {
 	if (cache->stats != NULL)
 		isc_stats_detach(&cache->stats);
 
+	isc_refcount_destroy(&cache->references);
 	isc_mutex_destroy(&cache->lock);
 	isc_mutex_destroy(&cache->filelock);
 
