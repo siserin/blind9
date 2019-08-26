@@ -132,6 +132,7 @@ struct dns_cache {
 	isc_mem_t		*hmctx;		/* Heap memory */
 	char			*name;
 	isc_refcount_t		references;
+	isc_refcount_t		ireferences;
 
 	/* Locked by 'lock'. */
 	int			live_tasks;
@@ -210,6 +211,7 @@ dns_cache_create(isc_mem_t *cmctx, isc_mem_t *hmctx, isc_taskmgr_t *taskmgr,
 	isc_mutex_init(&cache->filelock);
 
 	isc_refcount_init(&cache->references, 1);
+	isc_refcount_init(&cache->ireferences, 1);
 	cache->live_tasks = 0;
 	cache->rdclass = rdclass;
 	cache->serve_stale_ttl = 0;
@@ -317,7 +319,12 @@ cache_free(dns_cache_t *cache) {
 	int i;
 
 	REQUIRE(VALID_CACHE(cache));
-	REQUIRE(isc_refcount_current(&cache->references) == 0);
+
+	if (isc_refcount_decrement(&cache->ireferences) != 1) {
+		return;
+	}
+
+	INSIST(isc_refcount_current(&cache->references) == 0);
 
 	isc_mem_setwater(cache->mctx, NULL, NULL, 0, 0);
 
@@ -368,6 +375,7 @@ cache_free(dns_cache_t *cache) {
 		isc_stats_detach(&cache->stats);
 
 	isc_refcount_destroy(&cache->references);
+	isc_refcount_destroy(&cache->ireferences);
 	isc_mutex_destroy(&cache->lock);
 	isc_mutex_destroy(&cache->filelock);
 
@@ -391,42 +399,38 @@ dns_cache_attach(dns_cache_t *cache, dns_cache_t **targetp) {
 void
 dns_cache_detach(dns_cache_t **cachep) {
 	dns_cache_t *cache;
-	bool free_cache = false;
 
 	REQUIRE(cachep != NULL);
 	cache = *cachep;
 	REQUIRE(VALID_CACHE(cache));
 	*cachep = NULL;
 
-	if (isc_refcount_decrement(&cache->references) == 1) {
-		LOCK(&cache->lock);
-		free_cache = true;
-		cache->cleaner.overmem = false;
-		/*
-		 * When the cache is shut down, dump it to a file if one is
-		 * specified.
-		 */
-		isc_result_t result = dns_cache_dump(cache);
-		if (result != ISC_R_SUCCESS)
-			isc_log_write(dns_lctx, DNS_LOGCATEGORY_DATABASE,
-				      DNS_LOGMODULE_CACHE, ISC_LOG_WARNING,
-				      "error dumping cache: %s ",
-				      isc_result_totext(result));
-
-		/*
-		 * If the cleaner task exists, let it free the cache.
-		 */
-		if (cache->live_tasks > 0) {
-			isc_task_shutdown(cache->cleaner.task);
-			free_cache = false;
-		}
-		UNLOCK(&cache->lock);
+	if (isc_refcount_decrement(&cache->references) != 1) {
+		return;
 	}
 
+	LOCK(&cache->lock);
+	cache->cleaner.overmem = false;
+	/*
+	 * When the cache is shut down, dump it to a file if one is
+	 * specified.
+	 */
+	isc_result_t result = dns_cache_dump(cache);
+	if (result != ISC_R_SUCCESS)
+		isc_log_write(dns_lctx, DNS_LOGCATEGORY_DATABASE,
+			      DNS_LOGMODULE_CACHE, ISC_LOG_WARNING,
+			      "error dumping cache: %s ",
+			      isc_result_totext(result));
 
-	if (free_cache) {
-		cache_free(cache);
+	/*
+	 * If the cleaner task exists, let it free the cache.
+	 */
+	if (cache->live_tasks > 0) {
+		isc_task_shutdown(cache->cleaner.task);
 	}
+	UNLOCK(&cache->lock);
+
+	cache_free(cache);
 }
 
 void
@@ -542,9 +546,11 @@ cache_cleaner_init(dns_cache_t *cache, isc_taskmgr_t *taskmgr,
 		cleaner->cache->live_tasks++;
 		isc_task_setname(cleaner->task, "cachecleaner", cleaner);
 
+		isc_refcount_increment(&cache->ireferences);
 		result = isc_task_onshutdown(cleaner->task,
 					     cleaner_shutdown_action, cache);
 		if (result != ISC_R_SUCCESS) {
+			isc_refcount_decrement(&cache->ireferences);
 			UNEXPECTED_ERROR(__FILE__, __LINE__,
 					 "cache cleaner: "
 					 "isc_task_onshutdown() failed: %s",
@@ -985,7 +991,6 @@ dns_cache_getservestalettl(dns_cache_t *cache) {
 static void
 cleaner_shutdown_action(isc_task_t *task, isc_event_t *event) {
 	dns_cache_t *cache = event->ev_arg;
-	bool should_free = false;
 
 	UNUSED(task);
 
@@ -1002,17 +1007,12 @@ cleaner_shutdown_action(isc_task_t *task, isc_event_t *event) {
 	cache->live_tasks--;
 	INSIST(cache->live_tasks == 0);
 
-	if (isc_refcount_current(&cache->references) == 0) {
-		should_free = true;
-	}
-
 	/* Make sure we don't reschedule anymore. */
 	(void)isc_task_purge(task, NULL, DNS_EVENT_CACHECLEAN, NULL);
 
 	UNLOCK(&cache->lock);
 
-	if (should_free)
-		cache_free(cache);
+	cache_free(cache);
 }
 
 isc_result_t
