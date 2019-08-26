@@ -46,7 +46,6 @@ typedef struct dns_ecdb {
 
 	/* Protected by atomics */
 	isc_refcount_t			references;
-	isc_refcount_t			ireferences;
 
 	/* Locked */
 	ISC_LIST(struct dns_ecdbnode)	nodes;
@@ -170,12 +169,11 @@ attach(dns_db_t *source, dns_db_t **targetp) {
 static void
 destroy_ecdb(dns_ecdb_t *ecdb) {
 
-	if (isc_refcount_decrement(&ecdb->ireferences) != 1) {
+	if (isc_refcount_decrement(&ecdb->references) != 1) {
 		return;
 	}
 
 	INSIST(ISC_LIST_EMPTY(ecdb->nodes));
-	INSIST(isc_refcount_current(&ecdb->ireferences) == 0);
 
 	if (dns_name_dynamic(&ecdb->common.origin)) {
 		dns_name_free(&ecdb->common.origin, ecdb->common.mctx);
@@ -183,7 +181,6 @@ destroy_ecdb(dns_ecdb_t *ecdb) {
 
 	isc_mutex_destroy(&ecdb->lock);
 	isc_refcount_destroy(&ecdb->references);
-	isc_refcount_destroy(&ecdb->ireferences);
 
 	ecdb->common.impmagic = 0;
 	ecdb->common.magic = 0;
@@ -200,10 +197,6 @@ detach(dns_db_t **dbp) {
 	REQUIRE(VALID_ECDB(ecdb));
 
 	*dbp = NULL;
-
-	if (isc_refcount_decrement(&ecdb->references) != 1) {
-		return;
-	}
 
 	destroy_ecdb(ecdb);
 }
@@ -354,7 +347,7 @@ findnode(dns_db_t *db, const dns_name_t *name, bool create,
 
 	ISC_LINK_INIT(node, link);
 
-	isc_refcount_increment(&ecdb->ireferences);
+	isc_refcount_increment(&ecdb->references);
 	node->ecdb = ecdb;
 
 	LOCK(&ecdb->lock);
@@ -604,7 +597,6 @@ dns_ecdb_create(isc_mem_t *mctx, const dns_name_t *origin, dns_dbtype_t type,
 	isc_mutex_init(&ecdb->lock);
 
 	isc_refcount_init(&ecdb->references, 1);
-	isc_refcount_init(&ecdb->ireferences, 1);
 	ISC_LIST_INIT(ecdb->nodes);
 
 	ecdb->common.mctx = NULL;
