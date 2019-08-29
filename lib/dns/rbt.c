@@ -2973,7 +2973,7 @@ dns_rbt_printnodeinfo(dns_rbtnode_t *n, FILE *f) {
 	fprintf(f, "Right: %p\n", n->right);
 	fprintf(f, "Left: %p\n", n->left);
 	fprintf(f, "Down: %p\n", n->down);
-	fprintf(f, "daTa: %p\n", n->data);
+	fprintf(f, "Data: %p\n", n->data);
 }
 
 static void
