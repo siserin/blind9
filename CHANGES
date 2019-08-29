@@ -1,3 +1,6 @@
+5282.	[func]		Dig can now report the DNS64 prefixes in use
+			(+dns64prefix). [GL #1154]
+
 5281.	[cleanup]	Don't escape commas when reporting named's command
 			line. [GL #1189]
 
