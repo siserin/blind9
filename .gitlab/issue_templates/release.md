@@ -39,6 +39,9 @@
  - [ ] Update tickets in case of waiting support customers.
 
 ## Marketing
- - [ ] Post short note to Twitter.
+ - [ ] Update BIND Product page if needed
+ - [ ] Update BIND Significant Features Matrix in KB if needed
+ - [ ] Update BIND -S Edition data sheet if S Edition feature change
+ - [ ] Announce on social media
  - [ ] Update [Wikipedia entry for BIND](http://en.wikipedia.org/wiki/BIND).
  - [ ] Write blog article (if a major release).
