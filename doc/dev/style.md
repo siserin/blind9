@@ -35,7 +35,7 @@ used for indentation are indicated with `"_"`:
     		_______"a", "printf");
     	}
 
-Text editors should be configured with tabstop set to 8 characters, and
+Text editors should be configured with tab-stop set to 8 characters, and
 tabs should not be expanded to into spaces.  The following `vim` settings
 conform well to BIND 9 C style:
 
@@ -85,12 +85,12 @@ comprehensibility of the code.  Comments describing public functions are
 usually in the header file below the function prototype; comments
 describing static functions are above the function declaration.
 
-Comments may be single-line or multiline.  A single-line comment should be
+Comments may be single-line or multi-line.  A single-line comment should be
 at the end of the line if there is other text on the line, and should start
 in the same column as other nearby end-of-line comments.  The comment
 should be at the same indentation level as the code it is referring to.
 
-Multiline comments should start with `"/*"` on a line by itself.
+Multi-line comments should start with `"/*"` on a line by itself.
 Subsequent lines should have `" *"` lined-up with the `"*"` above.  The end of
 the comment should be `" */"` on a line by itself, again with the `"*"`
 lined-up with the one above.  Comments should start with a capital letter
@@ -203,8 +203,6 @@ or for public files that do not declare any functions.
     	ISC_LANG_BEGINDECLS
     	/* (Function declarations here, with full prototypes.) */
     	ISC_LANG_ENDDECLS
-    
-    	#endif /* ISC_WHATEVER_H */
 
 #### Including Interfaces (.h files)
 
@@ -365,13 +363,13 @@ Not so good:
 #### Integral Types
 
 Careful thought should be given to whether an integral type should be signed or
-unsigned, and to whether a specific size is required.  The basic rule of thum is
-to use `size_t` for sizes, cardinalities or ordinal numbers (e.g. iteration
+unsigned, and to whether a specific size is required.  The basic rule of thumb
+is to use `size_t` for sizes, cardinalities or ordinal numbers (e.g. iteration
 counters, array subscripts).  Use unsigned type for small quantities that can’t
 be negative, use signed types for small quantities that bear a sign, and finally
 use ptrdiff_t for large differences that bear a sign.  Assignments and
 comparisons between signed and unsigned integers should be avoided; suppressing
-the warnings with casts is not desireable.
+the warnings with casts is not desirable.
 
 C99 standard integer types are generally preferred, and must be used when
 `unsigned long` or `short` could be ambiguous, and `size_t` is preferred to
@@ -539,8 +537,8 @@ Good:
 
 #### Variable Scopes
 
-Always use minimal scope for the variables.  Function scope is discouraged and
-the usage of then minimal scope for variable i instead:
+Always use minimal scopes for the variables, e.g. use block scope instead of
+local scope whenever possible.
 
 Bad:
     	void
