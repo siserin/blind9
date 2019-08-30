@@ -1684,6 +1684,7 @@ plus_option(char *option, bool is_batchfile,
 			printcmd = false;
 			lookup->stats = false;
 			lookup->rrcomments = -1;
+			lookup->comments = false;
 		}
 		break;
 	case 'z': /* zflag */
