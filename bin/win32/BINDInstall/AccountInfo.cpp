@@ -220,12 +220,14 @@ CreateServiceAccount(char *name, char *password) {
 	 * Call the NetUserAdd function, specifying level 1.
 	 */
 	nStatus = NetUserAdd(NULL, dwLevel, (LPBYTE)&ui, &dwError);
-	if (nStatus != NERR_Success)
+	if (nStatus != NERR_Success) {
 		return (FALSE);
+	}
 
 	retstat = AddPrivilegeToAcccount(name, SE_SERVICE_LOGON_PRIV);
-	if (retstat != RTN_OK)
+	if (retstat != RTN_OK) {
 		return (FALSE);
+	}
 
 	return (TRUE);
 }
