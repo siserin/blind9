@@ -438,7 +438,7 @@ dns_dns64_findprefix(dns_rdataset_t *rdataset, isc_netprefix_t *prefix,
 
 			/* We have a prefix. */
 			memset(ina6.s6_addr, 0, sizeof(ina6.s6_addr));
-			memcpy(ina6.s6_addr, rd1.data, oplen/8);
+			memmove(ina6.s6_addr, rd1.data, oplen / 8);
 			isc_netaddr_fromin6(&prefix[count].addr, &ina6);
 			prefix[count].prefixlen = oplen;
 			count++;

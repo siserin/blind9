@@ -103,8 +103,8 @@ dns64_findprefix(void **state) {
 		 */
 		memset(ina6[0].s6_addr, 0, sizeof(ina6[0].s6_addr));
 		memset(ina6[1].s6_addr, 0, sizeof(ina6[1].s6_addr));
-		memcpy(ina6[0].s6_addr, tests[i].prefix, 12);
-		memcpy(ina6[1].s6_addr, tests[i].prefix, 12);
+		memmove(ina6[0].s6_addr, tests[i].prefix, 12);
+		memmove(ina6[1].s6_addr, tests[i].prefix, 12);
 		o = tests[i].prefixlen/8;
 		for (j = 0; j < 4; j++) {
 			if ((o + j) == 8U) {
