@@ -1,8 +1,8 @@
 5281.	[func]		Added +unexpected command line option to dig. 
-                        By default, dig won't accept a reply from a source
-                        other than the one to which it sent the query.
-                        Invoking dig with +unexpected argument will allow it
-                        to process replies from unexpected sources.
+			By default, dig won't accept a reply from a source
+			other than the one to which it sent the query.
+			Invoking dig with +unexpected argument will allow it
+			to process replies from unexpected sources.
 
 5280.	[protocol]	Add support for displaying EDNS option LLQ. [GL #1201]
 
