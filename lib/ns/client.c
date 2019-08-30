@@ -543,12 +543,10 @@ exit_check(ns_client_t *client) {
 
 		if (client->nreads > 0) {
 			dns_tcpmsg_cancelread(&client->tcpmsg);
-		}
-
-		/* Still waiting for read cancel completion. */
-		/* cppcheck-suppress duplicateCondition */
-		if (client->nreads > 0) {
-			return (true);
+			/* Still waiting for read cancel completion? */
+			if (client->nreads > 0) {
+				return (true);
+			}
 		}
 
 		if (client->tcpmsg_valid) {
