@@ -637,19 +637,17 @@ exit_check(ns_client_t *client) {
 		if (client->naccepts > 0) {
 			isc_socket_cancel(client->tcplistener, client->task,
 					  ISC_SOCKCANCEL_ACCEPT);
-		}
-
-		/* Still waiting for accept cancel completion. */
-		/* cppcheck-suppress duplicateCondition */
-		if (client->naccepts > 0) {
-			return (true);
+			/* Still waiting for accept cancel completion? */
+			if (client->naccepts > 0) {
+				return (true);
+			}
 		}
 
 		/* Accept cancel is complete. */
 		if (client->nrecvs > 0) {
 			isc_socket_cancel(client->udpsocket, client->task,
 					  ISC_SOCKCANCEL_RECV);
-			/* Still waiting for recv cancel completion. */
+			/* Still waiting for recv cancel completion? */
 			if (client->nrecvs > 0) {
 				return (true);
 			}
