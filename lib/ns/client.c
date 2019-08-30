@@ -1100,8 +1100,9 @@ client_sendpkg(ns_client_t *client, isc_buffer_t *buffer) {
 
 	if (client->dispatch != NULL) {
 		isc_dscp_t dscp = dns_dispatch_getdscp(client->dispatch);
-		if (dscp != -1)
+		if (dscp != -1) {
 			client->dscp = dscp;
+		}
 	}
 
 	if (client->dscp == -1) {
