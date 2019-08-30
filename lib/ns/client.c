@@ -649,12 +649,10 @@ exit_check(ns_client_t *client) {
 		if (client->nrecvs > 0) {
 			isc_socket_cancel(client->udpsocket, client->task,
 					  ISC_SOCKCANCEL_RECV);
-		}
-
-		/* Still waiting for recv cancel completion. */
-		/* cppcheck-suppress duplicateCondition */
-		if (client->nrecvs > 0) {
-			return (true);
+			/* Still waiting for recv cancel completion. */
+			if (client->nrecvs > 0) {
+				return (true);
+			}
 		}
 
 		/* Still waiting for control event to be delivered */
