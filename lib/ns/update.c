@@ -1569,6 +1569,335 @@ respond(ns_client_t *client, isc_result_t result) {
 	ns_client_next(client, msg_result);
 }
 
+static bool
+signedby(dns_message_t *request, dns_name_t *name, dns_rdata_t *rdata) {
+	UNUSED(request);
+	UNUSED(name);
+	UNUSED(rdata);
+	return (true);
+}
+
+static bool
+is_srp(dns_message_t *request, dns_rdataclass_t zoneclass, isc_mem_t *mctx) {
+	struct {
+		dns_name_t *	name;
+		dns_rdata_t	rdata;
+	} *ptrs = NULL, *srvs = NULL;
+	bool have_srp_ttl = false;
+	bool seen_add = false;
+	dns_name_t *hst = NULL;
+	dns_name_t *hst_del = NULL;
+	dns_name_t *hst_key = NULL;
+	dns_rdata_t hst_key_rr;
+	dns_ttl_t srp_ttl = 0;
+	isc_result_t result;
+	size_t delcnt = 0, del2cnt = 0;
+	size_t keycnt = 0, key2cnt = 0;
+	size_t txtcnt = 0, txt2cnt = 0;
+	size_t ptrcnt = 0;
+	size_t srvcnt = 0;
+	size_t s, p;
+
+	/*
+	 * Prerequisites must be empty.
+	 */
+	if (request->counts[DNS_SECTION_PREREQUISITE] != 0U) {
+		goto fail;
+	}
+
+	/*
+	 * Find host description update name.  There must be exactly one.
+	 * Record counts of PTR, SRV, KEY and TXT records.
+	 * Record counts of delete all RRsets.
+	 */
+	for (result = dns_message_firstname(request, DNS_SECTION_UPDATE);
+	     result == ISC_R_SUCCESS;
+	     result = dns_message_nextname(request, DNS_SECTION_UPDATE)) {
+		dns_name_t *name = NULL;
+		dns_rdata_t rdata = DNS_RDATA_INIT;
+		dns_ttl_t ttl;
+		dns_rdataclass_t update_class;
+		dns_rdatatype_t covers;
+
+		get_current_rr(request, DNS_SECTION_UPDATE, zoneclass,
+			       &name, &rdata, &covers, &ttl, &update_class);
+		if (update_class == zoneclass) {
+			/*
+			 * All TTLs must be identical (Section 2.5).
+			 */
+			if (have_srp_ttl) {
+				if (ttl != srp_ttl) {
+					goto fail;
+				}
+			} else {
+				srp_ttl = ttl;
+				have_srp_ttl = true;
+			}
+
+			/*
+			 * Only PTR, TXT, KEY, SRV, A, and AAAA can be added.
+			 */
+			switch (rdata.type) {
+			case dns_rdatatype_ptr:
+				ptrcnt++;
+				break;
+			case dns_rdatatype_srv:
+				srvcnt++;
+				break;
+			case dns_rdatatype_key:
+				keycnt++;
+				break;
+			case dns_rdatatype_txt:
+				txtcnt++;
+				break;
+			case dns_rdatatype_a:
+			case dns_rdatatype_aaaa:
+				if (hst == NULL) {
+					hst = name;
+				} else if (!dns_name_equal(hst, name)) {
+					goto fail;
+				}
+				break;
+			default:
+				/* No other additions permitted */
+				goto fail;
+			}
+		} else if (rdata.type == dns_rdatatype_any &&
+			   update_class == dns_rdataclass_any)
+		{
+			delcnt++;
+		} else {
+			/* No other changes permitted */
+			goto fail;
+		}
+	}
+	if (hst == NULL) {
+		goto fail;
+	}
+
+	/*
+	 * Look for host description KEY.
+	 * Look for host description delete all RRsets.
+	 */
+	seen_add = false;
+	for (result = dns_message_firstname(request, DNS_SECTION_UPDATE);
+	     result == ISC_R_SUCCESS;
+	     result = dns_message_nextname(request, DNS_SECTION_UPDATE)) {
+		dns_name_t *name = NULL;
+		dns_rdata_t rdata = DNS_RDATA_INIT;
+		dns_ttl_t ttl;
+		dns_rdataclass_t update_class;
+		dns_rdatatype_t covers;
+
+		get_current_rr(request, DNS_SECTION_UPDATE, zoneclass,
+			       &name, &rdata, &covers, &ttl, &update_class);
+		if (update_class == zoneclass &&
+		    rdata.type == dns_rdatatype_key &&
+		    dns_name_equal(name, hst)) {
+			if (hst_key != NULL) {
+				/* Exactly one key. */
+				goto fail;
+			}
+			key2cnt++;
+			hst_key_rr = rdata;
+			hst_key = name;
+			seen_add = true;
+		} else if (update_class == dns_rdataclass_any &&
+			   rdata.type == dns_rdatatype_any &&
+			   dns_name_equal(name, hst)) {
+			if (hst_del != NULL) {
+				/* Exactly one delete. */
+				goto fail;
+			} else {
+				/* Delete must be before add. */
+				if (seen_add) {
+					goto fail;
+				}
+				del2cnt++;
+				hst_del = name;
+				seen_add = true;
+			}
+		} else if (name == hst) {
+			/* First address record. */
+			seen_add = true;
+		}
+	}
+	if (hst_key == NULL || hst_del == NULL) {
+		goto fail;
+	}
+	if (!signedby(request, hst_key, &hst_key_rr)) {
+		goto fail;
+	}
+
+	srvs = isc_mem_get(mctx, srvcnt * sizeof(*srvs));
+	ptrs = isc_mem_get(mctx, ptrcnt * sizeof(*ptrs));
+	memset(srvs, 0, srvcnt * sizeof(*srvs));
+	memset(ptrs, 0, ptrcnt * sizeof(*ptrs));
+
+	/*
+	 * Extract all PTR and SRV updates.
+	 */
+	s = 0;
+	p = 0;
+	for (result = dns_message_firstname(request, DNS_SECTION_UPDATE);
+	     result == ISC_R_SUCCESS;
+	     result = dns_message_nextname(request, DNS_SECTION_UPDATE)) {
+		dns_name_t *name = NULL;
+		dns_rdata_t rdata = DNS_RDATA_INIT;
+		dns_ttl_t ttl;
+		dns_rdataclass_t update_class;
+		dns_rdatatype_t covers;
+
+		get_current_rr(request, DNS_SECTION_UPDATE, zoneclass,
+			       &name, &rdata, &covers, &ttl, &update_class);
+		if (update_class == zoneclass) {
+			switch (rdata.type) {
+			case dns_rdatatype_ptr:
+				INSIST(p < ptrcnt);
+				ptrs[p].name = name;
+				ptrs[p++].rdata = rdata;
+				break;
+			case dns_rdatatype_srv:
+				INSIST(p < srvcnt);
+				srvs[s].name = name;
+				srvs[s++].rdata = rdata;
+				break;
+			}
+		}
+	}
+
+	/*
+	 * Check that Service Discoveries points to a Service Description.
+	 * Check that Service Discoveries are unique.
+	 */
+	for (p = 0; p < ptrcnt; p++) {
+		dns_rdata_ptr_t ptr;
+
+		dns_rdata_tostruct(&ptrs[p].rdata, &ptr, NULL);
+		for (s = 0; s < srvcnt; s++) {
+			if (dns_name_equal(&ptr.ptr, srvs[s].name)) {
+				break;
+			}
+		}
+		if (s == srvcnt) {
+			/* No matching Service Description. */
+			goto fail;
+		}
+
+		/*
+		 * Service Discovery updates must be unique.
+		 */
+		for (size_t i = 0; i < ptrcnt; p++) {
+			if (i != p &&
+			    dns_name_equal(ptrs[i].name, ptrs[p].name)) {
+				goto fail;
+			}
+		}
+	}
+
+	/*
+	 * Check Service Description updates.
+	 */
+	for (s = 0; s < srvcnt; s++) {
+		dns_name_t *key = NULL;
+		dns_name_t *del = NULL;
+		dns_name_t *txt = NULL;
+		dns_rdata_t key_rr;
+
+		/*
+		 * Service Descriptions must be unique.
+		 */
+		for (size_t i = 0; i < srvcnt; p++) {
+			if (i != s &&
+			    dns_name_equal(srvs[i].name, srvs[s].name)) {
+				goto fail;
+			}
+		}
+
+		seen_add = false;
+		for (result = dns_message_firstname(request,
+						    DNS_SECTION_UPDATE);
+		     result == ISC_R_SUCCESS;
+		     result = dns_message_nextname(request, DNS_SECTION_UPDATE))
+		{
+			dns_name_t *name = NULL;
+			dns_rdata_t rdata = DNS_RDATA_INIT;
+			dns_ttl_t ttl;
+			dns_rdataclass_t update_class;
+			dns_rdatatype_t covers;
+
+			get_current_rr(request, DNS_SECTION_UPDATE, zoneclass,
+				       &name, &rdata, &covers, &ttl,
+				       &update_class);
+			if (update_class == zoneclass &&
+			    rdata.type == dns_rdatatype_key &&
+			    dns_name_equal(name, srvs[s].name)) {
+				if (key != NULL) {
+					/* Exactly one key. */
+					goto fail;
+				}
+				key2cnt++;
+				key_rr = rdata;
+				key = name;
+				seen_add = true;
+			} else if (update_class == zoneclass &&
+				   rdata.type == dns_rdatatype_txt &&
+				   dns_name_equal(name, srvs[s].name)) {
+				txt2cnt++;
+				txt = name;
+				seen_add = true;
+			} else if (update_class == dns_rdataclass_any &&
+				   rdata.type == dns_rdatatype_any &&
+				   dns_name_equal(name, hst)) {
+				if (del != NULL) {
+					/* Exactly one delete. */
+					goto fail;
+				} else if (!seen_add) {
+					/* Delete must be before add. */
+					del2cnt++;
+					del = name;
+					seen_add = true;
+				}
+			} else if (name == srvs[s].name) {
+				dns_rdata_in_srv_t srv;
+
+				dns_rdata_tostruct(&srvs[s].rdata, &srv, NULL);
+				if (!dns_name_equal(&srv.target, hst)) {
+					goto fail;
+				}
+				seen_add = true;
+			}
+		}
+		if (txt == NULL) {
+			goto fail;
+		}
+		if (key != NULL &&
+		    dns_rdata_compare(&key_rr, &hst_key_rr) != 0) {
+			goto fail;
+		}
+	}
+
+	/*
+	 * No unaccounted for TXT and KEY records or deletions?
+	 */
+	if (txtcnt != txt2cnt || keycnt != key2cnt || delcnt != del2cnt) {
+		goto fail;
+	}
+
+	isc_mem_put(mctx, srvs, srvcnt * sizeof(*srvs));
+	isc_mem_put(mctx, ptrs, ptrcnt * sizeof(*ptrs));
+	return (true);
+
+ fail:
+	if (srvs) {
+		isc_mem_put(mctx, srvs, srvcnt * sizeof(*srvs));
+	}
+	if (ptrs) {
+		isc_mem_put(mctx, ptrs, ptrcnt * sizeof(*ptrs));
+	}
+	return (false);
+}
+
 void
 ns_update_start(ns_client_t *client, isc_result_t sigresult) {
 	dns_message_t *request = client->message;
@@ -2676,6 +3005,8 @@ update_action(isc_task_t *task, isc_event_t *event) {
 		FAILC(DNS_R_REFUSED, "dynamic update temporarily disabled "
 				     "because the zone is frozen.  Use "
 				     "'rndc thaw' to re-enable updates.");
+
+	is_srp(request, zoneclass, mctx);
 
 	/*
 	 * Perform the Update Section Prescan.
