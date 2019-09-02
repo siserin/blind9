@@ -22,6 +22,7 @@
 #include <isc/magic.h>
 #include <isc/mem.h>
 #include <isc/netmgr.h>
+#include <isc/quota.h>
 #include <isc/random.h>
 #include <isc/refcount.h>
 #include <isc/region.h>
@@ -319,6 +320,9 @@ async_cb(uv_async_t *handle) {
 		case netievent_tcpstoplisten:
 			isc__nm_handle_tcpstoplistening(worker, ievent);
 			break;
+		case netievent_tcpclose:
+			isc__nm_handle_tcpclose(worker, ievent);
+			break;
 		default:
 			INSIST(0);
 		}
@@ -387,10 +391,14 @@ isc__nmsocket_destroy(isc_nmsocket_t *socket, bool dofree) {
 		isc__nmsocket_destroy(&socket->children[i], false);
 	}
 
-	if (VALID_NMHANDLE(&socket->tcphandle) && socket->tcphandle.dofree != NULL) {
+	if (VALID_NMHANDLE(&socket->tcphandle) &&
+	    socket->tcphandle.dofree != NULL) {
 		socket->tcphandle.dofree(socket->tcphandle.opaque);
 	}
 	socket->tcphandle = (isc_nmhandle_t) {};
+	if (socket->quota != NULL) {
+		isc_quota_detach(&socket->quota);
+	}
 
 	ck_stack_entry_t *se;
 	while ((se = ck_stack_pop_mpmc(&socket->inactivehandles)) != NULL) {
@@ -425,28 +433,31 @@ isc__nmsocket_maybe_destroy(isc_nmsocket_t *socket) {
 
 /* The final external reference to the socket is gone, we can try destroying the
  * socket, but we have to wait for all the inflight handles to finish first. */
-static void
+void
 isc__nmsocket_prep_destroy(isc_nmsocket_t *socket) {
-	isc_mutex_lock(&socket->lock);
 	INSIST(socket->parent == NULL);
-	/* XXXWPK cmpxchg? */
-	INSIST(isc__nmsocket_active(socket));
-
 	atomic_store(&socket->active, false);
-	isc_mutex_unlock(&socket->lock);
 	/*
 	 * XXXWPK if we're here we already stopped listening, otherwise
 	 * we'd have a hanging reference from the listening process.
+	 *
+	 * If that's a regular socket we need to close it.
 	 */
-/*	switch (socket->type) {
- *      case isc_nm_udplistener:
- *              isc_nm_udp_stoplistening(socket);
- *              break;
- *      case isc_nm_udpsocket:
- *      default:
- *              break;
- *      } */
-	isc__nmsocket_maybe_destroy(socket);
+	if (atomic_load(&socket->closed)) {
+		isc__nmsocket_maybe_destroy(socket);
+	} else {
+		switch (socket->type) {
+		case isc_nm_tcpsocket:
+			isc__nm_tcp_close(socket);
+			break;
+		case isc_nm_tcpdnssocket:
+			isc__nm_tcpdns_close(socket);
+			break;
+		default: /* This socket does not require closing */
+			isc__nmsocket_maybe_destroy(socket);
+			break;
+		}
+	}
 }
 
 void
@@ -481,7 +492,8 @@ isc_nmsocket_detach(isc_nmsocket_t **socketp) {
 void
 isc__nmsocket_init(isc_nmsocket_t *socket,
 		   isc_nm_t *mgr,
-		   isc_nmsocket_type type) {
+		   isc_nmsocket_type type)
+{
 	*socket = (isc_nmsocket_t) {
 		.type = type,
 		.fd = -1

@@ -463,6 +463,7 @@ ns_interface_listentcp(ns_interface_t *ifp) {
 				      ns__client_request,
 				      sizeof(ns_client_t),
 				      ifp,
+				      &ifp->mgr->sctx->tcpquota,
 				      &ifp->tcplistensocket);
 	if (result != ISC_R_SUCCESS) {
 		isc_log_write(IFMGR_COMMON_LOGARGS, ISC_LOG_ERROR,

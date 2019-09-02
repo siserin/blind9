@@ -22,6 +22,7 @@
 #include <isc/magic.h>
 #include <isc/mem.h>
 #include <isc/netmgr.h>
+#include <isc/quota.h>
 #include <isc/random.h>
 #include <isc/refcount.h>
 #include <isc/region.h>
@@ -151,10 +152,9 @@ tcp_connect_cb(uv_connect_t *uvreq, int status) {
 	if (status == 0) {
 		isc_sockaddr_t peer;
 		struct sockaddr_storage ss;
-		int l = sizeof(ss);
 		uv_tcp_getpeername(&socket->uv_handle.tcp,
 				   (struct sockaddr*) &ss,
-				   &l);
+				   &(int){sizeof(ss)});
 		isc_result_t result =
 			isc_sockaddr_fromsockaddr(&peer,
 						  (struct sockaddr*) &ss);
@@ -176,6 +176,7 @@ isc_nm_tcp_listen(isc_nm_t *mgr,
 		  isc_nm_accept_cb_t cb,
 		  size_t extrahandlesize,
 		  void *cbarg,
+		  isc_quota_t *quota,
 		  isc_nmsocket_t **rv)
 {
 	isc__netievent_tcplisten_t *ievent;
@@ -188,6 +189,16 @@ isc_nm_tcp_listen(isc_nm_t *mgr,
 	nsocket->rcb.accept = cb;
 	nsocket->rcbarg = cbarg;
 	nsocket->extrahandlesize = extrahandlesize;
+	if (quota != NULL) {
+		/*
+		 * We need to force it to make sure we get it attached.
+		 * An example failure mode would be server under attack
+		 * reconfiguring interfaces - that might cause weak attach
+		 * to fail and leave this listening socket without limits.
+		 * We can ignore the result.
+		 */
+		isc_quota_force(quota, &nsocket->quota);
+	}
 	nsocket->tid = isc_random_uniform(mgr->nworkers);
 	/*
 	 * Listening to TCP is rare enough not to care about the
@@ -277,9 +288,10 @@ isc_nm_read(isc_nmhandle_t *handle, isc_nm_recv_cb_t cb, void *cbarg) {
 	socket->rcb.recv = cb;
 	socket->rcbarg = cbarg; /* That's obviously broken... */
 	if (socket->tid == isc_nm_tid()) {
-		uv_read_start(&socket->uv_handle.stream,
-			      isc__nm_alloc_cb,
-			      read_cb);
+		int r = uv_read_start(&socket->uv_handle.stream,
+				      isc__nm_alloc_cb,
+				      read_cb);
+		INSIST(r == 0);
 	} else {
 		isc__netievent_startread_t *ievent =
 			isc__nm_get_ievent(socket->mgr,
@@ -309,7 +321,8 @@ read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t*buf) {
 	if (nread < 0) {
 		isc__nm_free_uvbuf(socket, buf);
 		socket->rcb.recv(socket->rcbarg, &socket->tcphandle, NULL);
-		/* XXXWPK TODO clean up handles! */
+		/* XXXWPK TODO clean up handles, close the connection, reclaim
+		 * quota */
 		return;
 	}
 	isc_region_t region = { .base = (unsigned char *) buf->base,
@@ -322,45 +335,75 @@ read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t*buf) {
 	isc__nm_free_uvbuf(socket, buf);
 }
 
-static void
-tcp_connection_cb(uv_stream_t *server, int status) {
-	(void) status; /* TODO */
-	isc_nmsocket_t *csocket, *ssocket;
-	isc__networker_t *worker;
-
-	ssocket = uv_handle_get_data((uv_handle_t*) server);
+static isc_result_t
+accept_connection(isc_nmsocket_t *ssocket) {
 	REQUIRE(VALID_NMSOCK(ssocket));
 	REQUIRE(ssocket->tid == isc_nm_tid());
 	if (!atomic_load_relaxed(&ssocket->active)) {
 		/* We're closing, bail */
-		return;
+		return (ISC_R_CANCELED);
 	}
 	INSIST(ssocket->rcb.accept != NULL);
 
-	worker = &ssocket->mgr->workers[isc_nm_tid()];
+	isc_quota_t *quota = NULL;
+	if (ssocket->quota != NULL) {
+		isc_result_t result = isc_quota_attach(ssocket->quota, &quota);
+		if (result != ISC_R_SUCCESS) {
+			return (result);
+		}
+	}
 
-	csocket = isc_mem_get(ssocket->mgr->mctx, sizeof(isc_nmsocket_t));
+	isc_nmsocket_t *csocket =
+		isc_mem_get(ssocket->mgr->mctx, sizeof(isc_nmsocket_t));
 	isc__nmsocket_init(csocket, ssocket->mgr, isc_nm_tcpsocket);
 	csocket->tid = isc_nm_tid();
 	csocket->extrahandlesize = ssocket->extrahandlesize;
+	csocket->quota = quota;
+	quota = NULL;
 
+	isc__networker_t *worker = &ssocket->mgr->workers[isc_nm_tid()];
 	uv_tcp_init(&worker->loop, &csocket->uv_handle.tcp);
-	int r = uv_accept(server, &csocket->uv_handle.stream);
+	int r = uv_accept(&ssocket->uv_handle.stream,
+			  &csocket->uv_handle.stream);
 	if (r != 0) {
-		return; /* XXXWPK TODO LOG */
+		if (csocket->quota != NULL) {
+			isc_quota_detach(&csocket->quota);
+		}
+		isc_mem_put(ssocket->mgr->mctx, csocket,
+			    sizeof(isc_nmsocket_t));
+		return (ISC_R_FAILURE); /* XXXWPK TODO translate ! */
 	}
+
+	isc_nmsocket_attach(ssocket, &csocket->server);
+
 	isc_sockaddr_t peer;
 	struct sockaddr_storage ss;
-	int l = sizeof(ss);
 	uv_tcp_getpeername(&csocket->uv_handle.tcp, (struct sockaddr*) &ss,
-			   &l);
+			   &(int){sizeof(ss)});
 	isc_result_t result =
 		isc_sockaddr_fromsockaddr(&peer, (struct sockaddr*) &ss);
 	INSIST(result == ISC_R_SUCCESS);
 	isc_nmhandle_t *handle = isc__nmhandle_get(csocket, &peer);
+
 	ssocket->rcb.accept(handle, ISC_R_SUCCESS, ssocket->rcbarg);
 	isc_nmsocket_detach(&csocket);
+	return (ISC_R_SUCCESS);
 }
+
+static void
+tcp_connection_cb(uv_stream_t *server, int status) {
+	(void) status;
+	isc_nmsocket_t *ssocket = uv_handle_get_data((uv_handle_t*) server);
+	isc_result_t result = accept_connection(ssocket);
+	if (result != ISC_R_SUCCESS) {
+		if (result == ISC_R_QUOTA || result == ISC_R_SOFTQUOTA) {
+			ssocket->overquota = true;
+		}
+		/* XXXWPK TODO LOG */
+	}
+}
+
+
 
 /*
  * isc__nm_tcp_send sends buf to a peer on a socket.
@@ -424,8 +467,8 @@ tcp_send_cb(uv_write_t *req, int status) {
  */
 void
 isc__nm_handle_tcpsend(isc__networker_t *worker, isc__netievent_t *ievent0) {
-	isc__netievent_udpsend_t *ievent =
-		(isc__netievent_udpsend_t *) ievent0;
+	isc__netievent_tcpsend_t *ievent =
+		(isc__netievent_tcpsend_t *) ievent0;
 	INSIST(worker->id == ievent->handle.socket->tid);
 	isc_result_t result = tcp_send_direct(ievent->handle.socket,
 					      ievent->req);
@@ -453,4 +496,59 @@ tcp_send_direct(isc_nmsocket_t *socket, isc__nm_uvreq_t *req)
 		/* TODO call cb! */
 		return (ISC_R_FAILURE);
 	}
+}
+
+static void
+tcp_close_cb(uv_handle_t *uvhandle) {
+	isc_nmsocket_t *socket = uvhandle->data;
+	INSIST(VALID_NMSOCK(socket));
+	atomic_store(&socket->closed, true);
+	isc__nmsocket_prep_destroy(socket);
+}
+
+static void
+tcp_close_direct(isc_nmsocket_t *socket) {
+	INSIST(VALID_NMSOCK(socket));
+	INSIST(socket->tid == isc_nm_tid());
+	INSIST(socket->type == isc_nm_tcpsocket);
+	if (socket->quota != NULL) {
+		isc_quota_detach(&socket->quota);
+		isc_nmsocket_t *ssocket = socket->server;
+		if (ssocket->overquota) {
+			/* XXXWPK TODO we should loop here */
+			isc_result_t result = accept_connection(ssocket);
+			if (result != ISC_R_QUOTA &&
+			    result != ISC_R_SOFTQUOTA) {
+				ssocket->overquota = false;
+			}
+		}
+	}
+	isc_nmsocket_detach(&socket->server);
+	uv_close(&socket->uv_handle.handle, tcp_close_cb);
+}
+
+void
+isc__nm_tcp_close(isc_nmsocket_t *socket) {
+	INSIST(VALID_NMSOCK(socket));
+	INSIST(socket->type == isc_nm_tcpsocket);
+	if (socket->tid == isc_nm_tid()) {
+		tcp_close_direct(socket);
+	} else {
+		/*
+		 * We need to create an event and pass it using async channel
+		 */
+		isc__netievent_tcpclose_t *ievent;
+		ievent = isc__nm_get_ievent(socket->mgr, netievent_tcpclose);
+		ievent->socket = socket;
+		isc__nm_enqueue_ievent(&socket->mgr->workers[socket->tid],
+				       (isc__netievent_t*) ievent);
+	}
+}
+
+void
+isc__nm_handle_tcpclose(isc__networker_t *worker, isc__netievent_t *ievent0) {
+	isc__netievent_tcpclose_t *ievent =
+		(isc__netievent_tcpclose_t *) ievent0;
+	INSIST(worker->id == ievent->socket->tid);
+	tcp_close_direct(ievent->socket);
 }

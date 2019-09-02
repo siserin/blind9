@@ -112,6 +112,7 @@ typedef enum isc__netievent_type {
 	netievent_tcpstopread,
 	netievent_tcplisten,
 	netievent_tcpstoplisten,
+	netievent_tcpclose,
 } isc__netievent_type;
 
 typedef struct isc__netievent_stop {
@@ -207,8 +208,13 @@ typedef struct isc__netievent_tcplisten {
 typedef struct isc__netievent_tcpstoplisten {
 	isc__netievent_type	   type;
 	isc_nmsocket_t *	   socket;
-	isc__nm_uvreq_t *	   req;
 } isc__netievent_tcpstoplisten_t;
+
+typedef struct isc__netievent_tcpclose {
+	isc__netievent_type	   type;
+	isc_nmsocket_t *	   socket;
+	isc__nm_uvreq_t *	   req;
+} isc__netievent_tcpclose_t;
 
 typedef struct isc__netievent_tcpsend {
 	isc__netievent_type	   type;
@@ -273,29 +279,29 @@ typedef enum isc_nmsocket_type {
 #define VALID_NMSOCK(t)                 ISC_MAGIC_VALID(t, NMSOCK_MAGIC)
 struct isc_nmsocket {
 	/* Unlocked, RO */
-	int			 magic;
-	int			 tid;
-	isc_nmsocket_type	 type;
-	isc_nm_t *		 mgr;
-	isc_nmsocket_t *	 parent;
+	int			   magic;
+	int			   tid;
+	isc_nmsocket_type	   type;
+	isc_nm_t *		   mgr;
+	isc_nmsocket_t *	   parent;
+	isc_quota_t *		   quota;
+	bool			   overquota;
 	/* outer socket is for 'wrapped' sockets - e.g. tcpdns in tcp */
-	isc_nmsocket_t *	 outer;
-	isc_nmsocket_t *	 children;
-	int			 nchildren;
-	isc_nmiface_t *		 iface;
-	isc_nmhandle_t		 tcphandle;
+	isc_nmsocket_t *	   outer;
+	/* server socket for connections */
+	isc_nmsocket_t *	   server;
+	/* children sockets for multi-socket setups */
+	isc_nmsocket_t *	   children;
+	int			   nchildren;
+	isc_nmiface_t *		   iface;
+	isc_nmhandle_t		   tcphandle;
 
 	/* extra data allocated at the end of each isc_nmhandle_t */
-	size_t			 extrahandlesize;
+	size_t			   extrahandlesize;
 
 	/* libuv data */
-	uv_os_sock_t		 fd;
-	union {
-		uv_handle_t	   handle;
-		uv_stream_t	   stream;
-		uv_udp_t	   udp;
-		uv_tcp_t	   tcp;
-	} uv_handle;
+	uv_os_sock_t		   fd;
+	union uv_any_handle	   uv_handle;
 
 	/* Atomic */
 	/* Number of running (e.g. listening) children sockets */
@@ -386,6 +392,9 @@ isc__nmsocket_init(isc_nmsocket_t *socket,
 		   isc_nm_t *mgr,
 		   isc_nmsocket_type type);
 
+void
+isc__nmsocket_prep_destroy(isc_nmsocket_t *socket);
+
 /*
  * Send for UDP handle
  */
@@ -415,6 +424,9 @@ isc__nm_tcp_send(isc_nmhandle_t *handle,
 		 isc_nm_send_cb_t cb,
 		 void *cbarg);
 
+void
+isc__nm_tcp_close(isc_nmsocket_t *socket);
+
 
 /*
  * Async callbacks for TCP
@@ -431,7 +443,8 @@ void
 isc__nm_handle_tcpsend(isc__networker_t *worker, isc__netievent_t *ievent0);
 void
 isc__nm_handle_startread(isc__networker_t *worker, isc__netievent_t *ievent0);
-
+void
+isc__nm_handle_tcpclose(isc__networker_t *worker, isc__netievent_t *ievent0);
 /* static void
  * handle_stopread(isc__networker_t *worker, isc__netievent_t *ievent0);
  */
@@ -442,3 +455,5 @@ isc__nm_tcpdns_send(isc_nmhandle_t *handle,
 		    isc_region_t *region,
 		    isc_nm_send_cb_t cb,
 		    void *cbarg);
+void
+isc__nm_tcpdns_close(isc_nmsocket_t *socket);

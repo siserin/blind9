@@ -193,6 +193,7 @@ isc_nm_tcp_listen(isc_nm_t *mgr,
 		  isc_nm_accept_cb_t cb,
 		  size_t extrahandlesize,
 		  void *cbarg,
+		  isc_quota_t *quota,
 		  isc_nmsocket_t **rv);
 
 
@@ -202,6 +203,7 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 		     isc_nm_recv_cb_t cb,
 		     size_t extrahandlesize,
 		     void *arg,
+		     isc_quota_t *quota,
 		     isc_nmsocket_t **rv);
 
 void

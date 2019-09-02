@@ -71,6 +71,7 @@ dnslisten_readcb(void *arg, isc_nmhandle_t *handle, isc_region_t *region) {
 	isc_nmsocket_t *dnssocket = (isc_nmsocket_t*) arg;
 	if (region == NULL) {
 		/* Connection closed */
+		atomic_store(&dnssocket->closed, true);
 		isc_nmhandle_detach(&handle);
 		isc_nmsocket_detach(&dnssocket->outer);
 		isc_nmsocket_detach(&dnssocket);
@@ -98,6 +99,7 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 		     isc_nm_recv_cb_t cb,
 		     size_t extrahandlesize,
 		     void *cbarg,
+		     isc_quota_t *quota,
 		     isc_nmsocket_t **rv)
 {
 	isc_result_t result;
@@ -117,6 +119,7 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 				   dnslisten_acceptcb,
 				   extrahandlesize,
 				   dnslistensocket,
+				   quota,
 				   &dnslistensocket->outer);
 	dnslistensocket->listening = true;
 	*rv = dnslistensocket;
@@ -125,6 +128,7 @@ isc_nm_tcp_dnslisten(isc_nm_t *mgr,
 
 void
 isc_nm_tcpdns_stoplistening(isc_nmsocket_t *socket) {
+	INSIST(socket->type == isc_nm_tcpdnslistener);
 	isc_nm_tcp_stoplistening(socket->outer);
 	atomic_store(&socket->listening, false);
 	isc_nmsocket_detach(&socket->outer);
@@ -171,4 +175,11 @@ isc__nm_tcpdns_send(isc_nmhandle_t *handle,
 	t->region.base[1] = (uint8_t) (region->length & 0xff);
 	isc_nmhandle_attach(handle, &t->orighandle);
 	return (isc__nm_tcp_send(t->handle, &t->region, tcpdnssend_cb, t));
+}
+
+void
+isc__nm_tcpdns_close(isc_nmsocket_t *socket) {
+	isc_nmsocket_detach(&socket->outer);
+	socket->closed = true;
+	isc__nmsocket_prep_destroy(socket);
 }

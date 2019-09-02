@@ -156,8 +156,10 @@ isc__nm_handle_udplisten(isc__networker_t *worker, isc__netievent_t *ievent0) {
 	uv_udp_bind(&socket->uv_handle.udp,
 		    &socket->parent->iface->addr.type.sa,
 		    0);
-	uv_recv_buffer_size(&socket->uv_handle.handle, &(int){16*1024*1024});
-	uv_send_buffer_size(&socket->uv_handle.handle, &(int){16*1024*1024});
+	uv_recv_buffer_size(&socket->uv_handle.handle,
+			    &(int){16 * 1024 * 1024});
+	uv_send_buffer_size(&socket->uv_handle.handle,
+			    &(int){16 * 1024 * 1024});
 	uv_udp_recv_start(&socket->uv_handle.udp, isc__nm_alloc_cb,
 			  udp_recv_cb);
 }
