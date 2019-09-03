@@ -15282,14 +15282,14 @@ named_server_servestale(named_server_t *server, isc_lex_t *lex,
 	/* Look for the optional class name. */
 	classtxt = next_token(lex, text);
 	if (classtxt != NULL) {
-		/* Look for the optional view name. */
-		viewtxt = next_token(lex, text);
-	}
-
-	/* cppcheck-suppress duplicateCondition */
-	if (classtxt != NULL) {
 		isc_textregion_t r;
 
+		/* Look for the optional view name. */
+		viewtxt = next_token(lex, text);
+
+		/*
+		 * If 'classtext' is not a valid class then it us a view name.
+		 */
 		r.base = classtxt;
 		r.length = strlen(classtxt);
 		result = dns_rdataclass_fromtext(&rdclass, &r);
