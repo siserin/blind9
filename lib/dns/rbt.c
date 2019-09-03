@@ -2950,7 +2950,7 @@ void
 dns_rbt_printnodeinfo(dns_rbtnode_t *n, FILE *f) {
 
 	if (n == NULL) {
-		fprintf(f, "n = %p\n", n);
+		fprintf(f, "Null node\n");
 		return;
 	}
 
