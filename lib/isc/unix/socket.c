@@ -3524,7 +3524,7 @@ isc_socketmgr_setreserved(isc_socketmgr_t *manager0, uint32_t reserved) {
 }
 
 void
-isc_socketmgr_maxudp(isc_socketmgr_t *manager0, int maxudp) {
+isc_socketmgr_maxudp(isc_socketmgr_t *manager0, unsigned int maxudp) {
 	isc__socketmgr_t *manager = (isc__socketmgr_t *)manager0;
 
 	REQUIRE(VALID_MANAGER(manager));

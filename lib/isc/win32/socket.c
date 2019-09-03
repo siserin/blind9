@@ -3900,7 +3900,7 @@ isc_socketmgr_createinctx(isc_mem_t *mctx, isc_socketmgr_t **managerp)
 }
 
 void
-isc_socketmgr_maxudp(isc_socketmgr_t *manager, int maxudp) {
+isc_socketmgr_maxudp(isc_socketmgr_t *manager, unsigned int maxudp) {
 
 	REQUIRE(VALID_MANAGER(manager));
 
